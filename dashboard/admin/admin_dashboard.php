@@ -288,7 +288,7 @@
 <td class="px-6 py-4 text-sm font-bold">$12,400.00</td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-1.5">
-<span class="material-icons text-primary text-sm">currency_bitcoin</span>
+<img alt="BTC" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png"/>
 <span class="text-xs font-medium">BTC</span>
 </div>
 </td>
@@ -317,7 +317,7 @@
 <td class="px-6 py-4 text-sm font-bold">$5,000.00</td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-1.5">
-<span class="material-icons text-primary text-sm">payments</span>
+<img alt="USDT" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/325/large/Tether.png"/>
 <span class="text-xs font-medium">USDT</span>
 </div>
 </td>

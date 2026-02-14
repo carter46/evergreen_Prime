@@ -104,11 +104,11 @@
 <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-white/5 p-5 shadow-sm hover:shadow-md transition-all group">
 <div class="flex justify-between items-start mb-4">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-orange-100 dark:bg-orange-500/20 rounded-lg flex items-center justify-center">
-<span class="material-icons text-orange-500">currency_bitcoin</span>
+<div class="w-10 h-10 bg-orange-100 dark:bg-orange-500/20 rounded-lg flex items-center justify-center overflow-hidden">
+<img class="w-6 h-6" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="Bitcoin"/>
 </div>
 <div>
-<h3 class="font-bold text-slate-900 dark:text-white">BTC / USDT</h3>
+<h3 class="font-bold text-slate-900 dark:text-white">BTC / USDT <span class="text-xs font-normal text-slate-500" data-coin="bitcoin" data-price=""></span></h3>
 <span class="text-[10px] text-slate-400 uppercase font-semibold">Timeframe: 4H</span>
 </div>
 </div>
@@ -162,11 +162,11 @@
 <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-white/5 p-5 shadow-sm hover:shadow-md transition-all group">
 <div class="flex justify-between items-start mb-4">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-500/20 rounded-lg flex items-center justify-center">
-<span class="material-icons text-indigo-500">waves</span>
+<div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-500/20 rounded-lg flex items-center justify-center overflow-hidden">
+<img class="w-6 h-6" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png" alt="Ethereum"/>
 </div>
 <div>
-<h3 class="font-bold text-slate-900 dark:text-white">ETH / USDT</h3>
+<h3 class="font-bold text-slate-900 dark:text-white">ETH / USDT <span class="text-xs font-normal text-slate-500" data-coin="ethereum" data-price=""></span></h3>
 <span class="text-[10px] text-slate-400 uppercase font-semibold">Timeframe: 1D</span>
 </div>
 </div>
@@ -220,11 +220,11 @@
 <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-white/5 p-5 shadow-sm hover:shadow-md transition-all group">
 <div class="flex justify-between items-start mb-4">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-teal-100 dark:bg-teal-500/20 rounded-lg flex items-center justify-center">
-<span class="material-icons text-teal-500">hub</span>
+<div class="w-10 h-10 bg-teal-100 dark:bg-teal-500/20 rounded-lg flex items-center justify-center overflow-hidden">
+<img class="w-6 h-6" src="https://assets.coingecko.com/coins/images/4128/large/solana.png" alt="Solana"/>
 </div>
 <div>
-<h3 class="font-bold text-slate-900 dark:text-white">SOL / USDT</h3>
+<h3 class="font-bold text-slate-900 dark:text-white">SOL / USDT <span class="text-xs font-normal text-slate-500" data-coin="solana" data-price=""></span></h3>
 <span class="text-[10px] text-slate-400 uppercase font-semibold">Timeframe: 1H</span>
 </div>
 </div>
@@ -480,4 +480,15 @@
 </div>
 </footer>
 </main>
+<script src="/js/crypto-config.js"></script>
+<script src="/js/crypto-prices.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.BloombitCryptoPrices) {
+        window.BloombitCryptoPrices.init(['bitcoin','ethereum','solana'], {
+            refreshInterval: 300000
+        });
+    }
+});
+</script>
 </body></html>

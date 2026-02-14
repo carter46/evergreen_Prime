@@ -169,24 +169,24 @@
 <button class="px-8 py-3 bg-primary text-black font-bold rounded-lg hover:shadow-lg transition-all">View Full Market</button>
 </div>
 <div class="relative bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-primary/10 overflow-hidden">
-<div class="flex gap-6 animate-infinite-scroll whitespace-nowrap">
-<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm">
-<span class="material-icons text-orange-500">currency_bitcoin</span>
+<div class="flex gap-6 animate-infinite-scroll whitespace-nowrap crypto-ticker">
+<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm crypto-ticker-item" data-coin="bitcoin">
+<img class="crypto-logo w-6 h-6 rounded-full" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="Bitcoin"/>
 <span class="font-bold">BTC</span>
-<span class="font-medium">$64,231</span>
-<span class="text-green-500 text-sm">+2.4%</span>
+<span class="font-medium crypto-price">--</span>
+<span class="text-sm crypto-change text-green-500">--</span>
 </div>
-<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm">
-<span class="material-icons text-blue-500">token</span>
+<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm crypto-ticker-item" data-coin="ethereum">
+<img class="crypto-logo w-6 h-6 rounded-full" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png" alt="Ethereum"/>
 <span class="font-bold">ETH</span>
-<span class="font-medium">$3,421</span>
-<span class="text-red-500 text-sm">-0.8%</span>
+<span class="font-medium crypto-price">--</span>
+<span class="text-sm crypto-change text-red-500">--</span>
 </div>
-<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm">
-<span class="material-icons text-yellow-500">savings</span>
+<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm crypto-ticker-item" data-coin="binancecoin">
+<img class="crypto-logo w-6 h-6 rounded-full" src="https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png" alt="BNB"/>
 <span class="font-bold">BNB</span>
-<span class="font-medium">$582</span>
-<span class="text-green-500 text-sm">+1.5%</span>
+<span class="font-medium crypto-price">--</span>
+<span class="text-sm crypto-change text-green-500">--</span>
 </div>
 </div>
 </div>
@@ -248,7 +248,7 @@
 </div>
 <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-100 dark:border-slate-700">
 <div class="overflow-x-auto">
-<table class="w-full text-left border-collapse">
+<table class="w-full text-left border-collapse crypto-table">
 <thead>
 <tr class="bg-slate-50 dark:bg-slate-900/50">
 <th class="p-6 font-bold text-sm text-slate-400 uppercase">Rank</th>
@@ -260,16 +260,16 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group" data-coin="bitcoin">
 <td class="p-6 font-bold">1</td>
 <td class="p-6">
 <div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center"><span class="material-icons text-orange-500 text-lg">currency_bitcoin</span></div>
+<div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="Bitcoin"/></div>
 <div><div class="font-bold">Bitcoin</div><div class="text-xs text-slate-400">BTC</div></div>
 </div>
 </td>
-<td class="p-6 font-medium font-mono">$64,231.20</td>
-<td class="p-6 text-green-500">+2.45%</td>
+<td class="p-6 font-medium font-mono crypto-price">--</td>
+<td class="p-6 crypto-change text-green-500">--</td>
 <td class="p-6 font-medium font-mono">$1.26T</td>
 <td class="p-6">
 <div class="w-24 h-8 bg-green-500/10 rounded overflow-hidden">
@@ -277,22 +277,61 @@
 </div>
 </td>
 </tr>
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="ethereum">
 <td class="p-6 font-bold">2</td>
 <td class="p-6">
 <div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center"><span class="material-icons text-blue-500 text-lg">token</span></div>
+<div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png" alt="Ethereum"/></div>
 <div><div class="font-bold">Ethereum</div><div class="text-xs text-slate-400">ETH</div></div>
 </div>
 </td>
-<td class="p-6 font-medium font-mono">$3,421.15</td>
-<td class="p-6 text-red-500">-0.82%</td>
+<td class="p-6 font-medium font-mono crypto-price">--</td>
+<td class="p-6 crypto-change text-red-500">--</td>
 <td class="p-6 font-medium font-mono">$411.2B</td>
 <td class="p-6">
 <div class="w-24 h-8 bg-red-500/10 rounded overflow-hidden">
 <div class="h-full w-1/2 bg-red-500/20 animate-pulse"></div>
 </div>
 </td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="tether">
+<td class="p-6 font-bold">3</td>
+<td class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/325/large/Tether.png" alt="Tether"/></div>
+<div><div class="font-bold">Tether</div><div class="text-xs text-slate-400">USDT</div></div>
+</div>
+</td>
+<td class="p-6 font-medium font-mono crypto-price">--</td>
+<td class="p-6 crypto-change text-green-500">--</td>
+<td class="p-6 font-medium font-mono">--</td>
+<td class="p-6"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="binancecoin">
+<td class="p-6 font-bold">4</td>
+<td class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png" alt="BNB"/></div>
+<div><div class="font-bold">BNB</div><div class="text-xs text-slate-400">BNB</div></div>
+</div>
+</td>
+<td class="p-6 font-medium font-mono crypto-price">--</td>
+<td class="p-6 crypto-change text-green-500">--</td>
+<td class="p-6 font-medium font-mono">--</td>
+<td class="p-6"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="solana">
+<td class="p-6 font-bold">5</td>
+<td class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/4128/large/solana.png" alt="Solana"/></div>
+<div><div class="font-bold">Solana</div><div class="text-xs text-slate-400">SOL</div></div>
+</div>
+</td>
+<td class="p-6 font-medium font-mono crypto-price">--</td>
+<td class="p-6 crypto-change text-green-500">--</td>
+<td class="p-6 font-medium font-mono">--</td>
+<td class="p-6"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
 </tr>
 </tbody>
 </table>
@@ -611,4 +650,17 @@
 </div>
 </div>
 </footer>
+<script src="/js/crypto-config.js"></script>
+<script src="/js/crypto-prices.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.BloombitCryptoPrices) {
+        window.BloombitCryptoPrices.init(['bitcoin','ethereum','tether','binancecoin','solana'], {
+            tickerSelector: '.crypto-ticker',
+            tableSelector: '.crypto-table',
+            refreshInterval: 120000
+        });
+    }
+});
+</script>
 </body></html>

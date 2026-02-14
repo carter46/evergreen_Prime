@@ -332,7 +332,7 @@
 </td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
-<img alt="BTC" class="w-5 h-5" data-alt="Bitcoin cryptocurrency logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATLC5DAe1SMTpRwPSl6-WbRJ9H8f3Lduu3sJZckVmMwkeE8axBYzWKNKGHM0iQjw1-25a6oIrxTyGVBhu0hyjQ0fz8uOBpOPLiCh9X2g0GGPzNY8iYYf-Z5fYq0C5TG_TSv7uhk05VJVp1yF37Uvp7wGH-eGN4b9R0sl6ngNFdXofXNChmZY8F9w61i8gfzgnOd7qfF1FjHaiHAAUboxwrRVn35CP1OE6_AIs3ZjhTHCb2CuA2DniqTvFR7-e0V4ND0K-uJJTHy8Q"/>
+<img alt="BTC" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png"/>
 <span class="font-medium">BTC</span>
 </div>
 </td>
@@ -361,7 +361,7 @@
 </td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
-<img alt="USDT" class="w-5 h-5" data-alt="Tether USDT cryptocurrency logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXbirqtCgP5z0-96K_eOK2m1hfUTVy9ejBbRt10LN-KIXkpUuDXes5977rgZX1xlbTJpVYZM8a2iqzY6uaFuAaQeVXf7JjkoP65Zu0wzvguBJBWCcig4Cmx1z1s0xvdsyoXL0P8jzS7kYRE9dbYyXpCE0x_j6fSqJgfj5o2tFKdIU5gvFXQEMIXuq8WHECQtoi7EdvLO3lz4Dz9Wkg9iBGogpqKp8O0xLa_rEMCIoz8EX8lZE1zK-ZZrpdpyxJkAH_8rYm6xartu8"/>
+<img alt="USDT" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/325/large/Tether.png"/>
 <span class="font-medium">USDT</span>
 </div>
 </td>
@@ -390,7 +390,7 @@
 </td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
-<img alt="ETH" class="w-5 h-5" data-alt="Ethereum cryptocurrency logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBX1r6QdOhsd1JZv4tdFtJPyiTiX4SzNfM7PHdsrRwh-z6c63xc2I0mwcnYtxrrFayK2PmKwchoja7hnrlgpWNc3J6neP8wgJCa7sfnxPTO-JJ6UfM-fnH227lvij-mqPNXU_MpCrUy133tY-2znlk3PG2TYRbVHcA0UcuObpoAwqti-lEcEtHjt-peSSrQZnTNMDxv4LKsPB56Z5C_AQbMbwsAsc7rbdt8zdEGZRCwZaDoXd-OdM6pEbLfu9krRuPmw_r1qm1L-a0"/>
+<img alt="ETH" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png"/>
 <span class="font-medium">ETH</span>
 </div>
 </td>
@@ -419,7 +419,7 @@
 </td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
-<img alt="SOL" class="w-5 h-5" data-alt="Solana cryptocurrency logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAU0WF3DbCqZhvW5qtHAJkUsYEBC5awNHJqwvWjUSCLGQsQ4O0_4-2y0ZDUvXtTObVtfwPHI_Y066HsyDH9FiD2VaXySPQj_Fq3KBz8pbhduqeZq4B6_-o4qzX_zAit3dFvsFubhdb0S7G56sCBYc4ZyjRcgTtt9pEmTYuMb8RJY0A1THynSV6s3fDOJopvqQV-qkEPC5xTsucRxg_G_RzS4aHmhJYWz9u9pHnzdlUkikDcP_ecPsKEjeKzPjw44-hUgIij0QRs3tI"/>
+<img alt="SOL" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/4128/large/solana.png"/>
 <span class="font-medium">SOL</span>
 </div>
 </td>
@@ -448,7 +448,7 @@
 </td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
-<img alt="BTC" class="w-5 h-5" data-alt="Bitcoin cryptocurrency logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqLW9aqfbKvyI4mbvZxQ-haSYzye_ezVej7L1FoEGBIDJNcuABHO5Byif-wrMRsVnUdhlBuAHr_mI2aLgwQzznHolXalJPTdVaUDERJtqdwzRTbKo7azL2FrVtMK1HboSokVs_rcnK1-Ha5qJKRilrB_KqYMFh7Ur40M3eyYmKwYtLMPa96wnI0k45K3z4OJ2QJtMyNNjr8YSi780A34hm8ZVBs2ZI9JBO2HQuKCqhGtCwc19vBieiqTMq1TDnsjA02-XprG24Bnw"/>
+<img alt="BTC" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png"/>
 <span class="font-medium">BTC</span>
 </div>
 </td>

@@ -91,7 +91,7 @@
 <p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
 <h1 class="text-4xl font-bold tracking-tight">$124,592.84 <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1">
-<span class="material-icons text-sm">currency_bitcoin</span>
+<img class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="BTC"/>
                                     2.41829043 BTC
                                 </p>
 </div>
@@ -141,12 +141,12 @@
 <th class="px-6 py-4 font-semibold text-right">Action</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-slate-50 dark:divide-slate-800">
-<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<tbody class="divide-y divide-slate-50 dark:divide-slate-800 wallet-assets-table">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="bitcoin" data-balance="1.45028">
 <td class="px-6 py-5">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-<img alt="BTC" class="w-6 h-6" data-alt="Bitcoin cryptocurrency orange logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAgHf9gwfJySLp8j0u7cNjsqQCWPFPPncdHgaWlTjK_WmJnas9ZlV0SpW7pL7gVq5qN60y3DH_G-Od2M3Yh0K6kj8zdVzeFHn-FdDdwB4aeo0IOyRN8bCCBq4VIgO6u0Axh_9FxeU4bbJMFVep2yPUTId_BeXu1y2i4hfEtUd4FicbkR40Ym1V27k7YlhlbQ7dm81hzcoEAvZCwigc0-2EHjn0l7qUnKSyZnzlylaKnUP3v-AJW3xiYLncAsmYdBzse7q5ulQHOTw"/>
+<div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
+<img alt="BTC" class="w-6 h-6 crypto-logo" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png"/>
 </div>
 <div>
 <p class="font-bold text-sm">Bitcoin</p>
@@ -155,16 +155,16 @@
 </div>
 </td>
 <td class="px-6 py-5 text-right font-medium text-sm">1.45028 BTC</td>
-<td class="px-6 py-5 text-right font-bold text-sm">$64,302.10</td>
+<td class="px-6 py-5 text-right font-bold text-sm wallet-value" data-coin="bitcoin">--</td>
 <td class="px-6 py-5 text-right">
 <button class="text-xs font-bold px-4 py-1.5 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
 </td>
 </tr>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="ethereum" data-balance="12.84">
 <td class="px-6 py-5">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-<img alt="ETH" class="w-6 h-6" data-alt="Ethereum cryptocurrency indigo logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZ2Xm_cuJ5FHs2kwwIi-RsVbAARjZhU4bJhlidtjubYNkqH6n4gwhR-2y9E6OcKsmbYzjm1k1bugYHEgPcWyjIChyIPx81fIcNR4HVvwivnlctVxSUYx13NgQmomtSPK4ffkWqX5RjRtaJMudNqBTv1wEHlX83YIwPePmjaW61_n3KxFHl1bpIybECO50I9MEFoE7abawZyQ7KfUm-1ZhKf4if7WPv_N1LFeaQhe3ndZTDdzcVEF-6Zd3P77KC0Utc-FIsQ0UtE_E"/>
+<div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
+<img alt="ETH" class="w-6 h-6 crypto-logo" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png"/>
 </div>
 <div>
 <p class="font-bold text-sm">Ethereum</p>
@@ -173,16 +173,16 @@
 </div>
 </td>
 <td class="px-6 py-5 text-right font-medium text-sm">12.8400 ETH</td>
-<td class="px-6 py-5 text-right font-bold text-sm">$32,150.24</td>
+<td class="px-6 py-5 text-right font-bold text-sm wallet-value" data-coin="ethereum">--</td>
 <td class="px-6 py-5 text-right">
 <button class="text-xs font-bold px-4 py-1.5 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
 </td>
 </tr>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="tether" data-balance="18500">
 <td class="px-6 py-5">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-<img alt="USDT" class="w-6 h-6" data-alt="Tether USDT cryptocurrency green logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiN9v9rbKBNgJOxhr2bi-10sgOhn3YxTrb7WLlPeQXOxuAhmHdrzJklQlIcLuAnKmTJN7WoS6iXQMTtytwMd7n6OWaztMPnL6GAlIKwt294bhlqQMyuMpp1ngxzpOjVw_zvvtQgRE_A3l5hpEllCizz02cc_YDfxp596rYHoJeprEGzkwAzkvd6SI1FOnlxSkHXGe9q09JzhlOCpOCEKTCuVqytDWCkMWZg4mw8MvSGG736TqdXkpUn84VfTzkFL_E42DgIx7OpbA"/>
+<div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
+<img alt="USDT" class="w-6 h-6 crypto-logo" src="https://assets.coingecko.com/coins/images/325/large/Tether.png"/>
 </div>
 <div>
 <p class="font-bold text-sm">Tether</p>
@@ -191,7 +191,7 @@
 </div>
 </td>
 <td class="px-6 py-5 text-right font-medium text-sm">18,500.00 USDT</td>
-<td class="px-6 py-5 text-right font-bold text-sm">$18,500.00</td>
+<td class="px-6 py-5 text-right font-bold text-sm wallet-value" data-coin="tether">--</td>
 <td class="px-6 py-5 text-right">
 <button class="text-xs font-bold px-4 py-1.5 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
 </td>
@@ -406,4 +406,29 @@
 </div>
 </footer>
 <script src="/js/app.js"></script>
+<script>window.BLOOMBIT_API_BASE = '';</script>
+<script src="/js/crypto-config.js"></script>
+<script src="/js/crypto-prices.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.BloombitCryptoPrices) return;
+    var coinIds = ['bitcoin','ethereum','tether'];
+    function updateWalletValues(prices) {
+        if (!prices) return;
+        document.querySelectorAll('.wallet-assets-table tr[data-coin][data-balance]').forEach(function(row) {
+            var coinId = row.getAttribute('data-coin');
+            var balance = parseFloat(row.getAttribute('data-balance')) || 0;
+            var p = prices[coinId];
+            var valueEl = row.querySelector('.wallet-value');
+            if (valueEl && p && p.usd != null) {
+                valueEl.textContent = '$' + (balance * p.usd).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
+        });
+    }
+    window.BloombitCryptoPrices.fetch(coinIds).then(updateWalletValues);
+    setInterval(function() {
+        window.BloombitCryptoPrices.fetch(coinIds).then(updateWalletValues);
+    }, 300000);
+});
+</script>
 </body></html>

@@ -112,8 +112,8 @@
 <div class="flex gap-4">
 <div class="bg-white dark:bg-white/5 border border-primary/10 px-4 py-2 rounded-xl flex items-center gap-3 shadow-sm">
 <span class="text-xs text-slate-400 uppercase font-bold">BTC/USD</span>
-<span class="font-bold">$48,290.15</span>
-<span class="text-emerald-500 text-xs font-bold">+2.4%</span>
+<span class="font-bold" data-coin="bitcoin" data-price="">--</span>
+<span class="text-xs font-bold crypto-change text-emerald-500" data-coin="bitcoin" data-change="">--</span>
 </div>
 </div>
 <div class="flex items-center gap-4 border-l border-slate-200 dark:border-white/10 pl-6">
@@ -356,4 +356,16 @@
 </main>
 </div>
 <script src="/js/app.js"></script>
+<script>window.BLOOMBIT_API_BASE = '';</script>
+<script src="/js/crypto-config.js"></script>
+<script src="/js/crypto-prices.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.BloombitCryptoPrices) {
+        window.BloombitCryptoPrices.init(['bitcoin'], {
+            refreshInterval: 300000
+        });
+    }
+});
+</script>
 </body></html>
