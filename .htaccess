@@ -1,0 +1,51 @@
+# Bloombit - Clean URL Routing
+# Requires mod_rewrite enabled
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Protect sensitive config files
+    <FilesMatch "^config\.php$">
+        Require all denied
+    </FilesMatch>
+
+    # Redirect .html and .php URLs to clean URLs (301 permanent)
+    RewriteCond %{REQUEST_URI} \.(html|php)$
+    RewriteRule ^(.*)\.(html|php)$ /$1 [R=301,L]
+
+    # Skip rewrite for API and vendor
+    RewriteRule ^api/ - [L]
+    RewriteRule ^vendor/ - [L]
+
+    # Root -> index.html
+    RewriteRule ^$ index.html [L]
+
+    # Dashboard - explicit mappings (clean URL -> PHP)
+    RewriteRule ^dashboard$ dashboard/user/dashboard.php [L]
+    RewriteRule ^dashboard/user/dashboard$ dashboard/user/dashboard.php [L]
+    RewriteRule ^dashboard/user/wallet$ dashboard/user/user_wallet.php [L]
+    RewriteRule ^dashboard/user/profile$ dashboard/user/user_profile.php [L]
+    RewriteRule ^dashboard/user/kyc$ dashboard/user/user_kyc.php [L]
+    RewriteRule ^dashboard/user/analytics$ dashboard/user/user_analytics.php [L]
+    RewriteRule ^dashboard/admin$ dashboard/admin/admin_dashboard.php [L]
+    RewriteRule ^dashboard/admin/users$ dashboard/admin/user_management.php [L]
+    RewriteRule ^dashboard/admin/plans$ dashboard/admin/plan_management.php [L]
+    RewriteRule ^dashboard/admin/communication$ dashboard/admin/communication_hub.php [L]
+
+    # Skip rewrite for existing files and directories (static assets: js, css, images)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Generic: try .php first, then .html (for about_us, plans, help_centre, legal_centre, trading_signals)
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.+)$ $1.php [L]
+    RewriteCond %{REQUEST_FILENAME}.html -f
+    RewriteRule ^(.+)$ $1.html [L]
+</IfModule>
+
+# Default index
+DirectoryIndex index.html

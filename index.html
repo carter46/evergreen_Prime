@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bloombit - AI Crypto Trading</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ffc105",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#231e0f",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .neural-bg {
+            background-image: radial-gradient(circle at 2px 2px, #ffc10515 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 193, 5, 0.2);
+        }
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ffc105;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 10px rgba(255, 193, 5, 0.4);
+        }
+    </style>
+<style>
+    @keyframes infinite-scroll {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+    }
+    .animate-infinite-scroll {
+        animation: infinite-scroll 25s linear infinite;
+        width: max-content;
+    }
+</style></head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 transition-colors duration-300">
+<!-- Navigation -->
+<nav class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
+<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+<a class="flex items-center gap-2" href="/">
+<div class="w-10 h-10 bg-primary rounded flex items-center justify-center">
+<span class="material-icons text-white">auto_awesome</span>
+</div>
+<span class="text-2xl font-bold tracking-tight">Bloom<span class="text-primary">bit</span></span>
+</a>
+<div class="hidden md:flex items-center gap-10 font-medium">
+<a class="hover:text-primary transition-colors" href="/#technology">Technology</a>
+<a class="hover:text-primary transition-colors" href="/#how-it-works">How It Works</a>
+<a class="hover:text-primary transition-colors" href="/plans">Pricing</a>
+<a class="hover:text-primary transition-colors" href="/about_us">Company</a>
+</div>
+<div class="flex items-center gap-4">
+<a class="px-6 py-2.5 font-semibold hover:text-primary transition-colors" href="/login">Login</a>
+<a class="px-6 py-2.5 bg-primary text-black font-bold rounded hover:shadow-lg hover:shadow-primary/20 transition-all" href="/register">Get Started</a>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative overflow-hidden pt-20 pb-32 neural-bg">
+<div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+<div>
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold mb-6">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+                    AI ENGINE V4.0 NOW LIVE
+                </div>
+<h1 class="text-6xl lg:text-7xl font-bold leading-[1.1] mb-8">
+                    Smarter Crypto Investing Powered by <span class="text-primary">Advanced AI</span>
+</h1>
+<p class="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-lg leading-relaxed">
+                    Automate your wealth with institutional-grade machine learning algorithms. Deploy sophisticated bots that trade 24/7 while you sleep.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4">
+<button class="px-8 py-4 bg-primary text-black font-bold text-lg rounded-lg shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all">Start Your Free Trial</button>
+<button class="px-8 py-4 bg-white dark:bg-slate-800 border border-primary/20 font-bold text-lg rounded-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+<span class="material-icons">play_circle</span> Watch Demo
+                    </button>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -top-20 -right-20 w-96 h-96 bg-primary/20 blur-[120px] rounded-full"></div>
+<img alt="AI Trading Interface" class="relative z-10 w-full h-auto rounded-2xl shadow-2xl border-4 border-white/50 dark:border-slate-800/50" data-alt="Futuristic 3D robot arm or abstract neural AI sphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAERFUp6io6mfsuU1xT4reC0MNfdbS-TG3S4WGzJcCZSgr20oMTW8dUmGTeXv13y8kWRb5oPvDKI71MY9ZPevM-uGRz6fdP5rwt94fPuFxrKeaT7jUgMJ9Vbc7eaMqT5j76CADhsg_voWOtIyJCJYcyKMSY_fVn5C2XOdVDDAxc9__oxwyA4PGAsGCjAAoYpnKqfXpEzSY8_0IuPOPCBU6Rn8GNYiSkYg173iJeDY9itvWtl5KgpyHI0p4yDw2MBFoiRPPEhihDvU4"/>
+</div>
+</div>
+</section>
+<!-- Stats Section -->
+<section class="bg-primary py-12">
+<div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
+<div class="text-center">
+<div class="text-4xl font-bold text-black">$4.2B+</div>
+<div class="text-black/70 font-medium">Assets Managed</div>
+</div>
+<div class="text-center border-l border-black/10">
+<div class="text-4xl font-bold text-black">85k+</div>
+<div class="text-black/70 font-medium">Active AI Bots</div>
+</div>
+<div class="text-center border-l border-black/10">
+<div class="text-4xl font-bold text-black">99.9%</div>
+<div class="text-black/70 font-medium">Uptime Guarantee</div>
+</div>
+<div class="text-center border-l border-black/10">
+<div class="text-4xl font-bold text-black">12.4%</div>
+<div class="text-black/70 font-medium">Avg. Monthly ROI</div>
+</div>
+</div>
+</section><section class="bg-white dark:bg-background-dark border-y border-primary/10 py-6">
+<div class="max-w-7xl mx-auto px-6">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+<div class="flex flex-col items-center border-r border-slate-100 dark:border-slate-800 last:border-0">
+<span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Market Cap</span>
+<span class="text-xl font-bold">$2.45T <span class="text-green-500 text-xs">+1.2%</span></span>
+</div>
+<div class="flex flex-col items-center border-r border-slate-100 dark:border-slate-800 lg:last:border-0">
+<span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">24h Volume</span>
+<span class="text-xl font-bold">$84.2B</span>
+</div>
+<div class="flex flex-col items-center border-r border-slate-100 dark:border-slate-800 last:border-0">
+<span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">BTC Dominance</span>
+<span class="text-xl font-bold">52.4%</span>
+</div>
+<div class="flex flex-col items-center last:border-0">
+<span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Active Traders</span>
+<span class="text-xl font-bold">12.8M+</span>
+</div>
+</div>
+</div>
+</section><section class="py-24 overflow-hidden relative">
+<div class="absolute inset-0 pointer-events-none opacity-5">
+<span class="material-icons absolute top-10 left-10 text-6xl">currency_bitcoin</span>
+<span class="material-icons absolute bottom-10 right-10 text-6xl">token</span>
+</div>
+<div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+<div>
+<h2 class="text-4xl font-bold mb-6">Live Crypto Market Overview</h2>
+<p class="text-slate-500 text-lg mb-8">Stay ahead of the curve with real-time price feeds and market sentiment analysis powered by our proprietary AI engine.</p>
+<button class="px-8 py-3 bg-primary text-black font-bold rounded-lg hover:shadow-lg transition-all">View Full Market</button>
+</div>
+<div class="relative bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-primary/10 overflow-hidden">
+<div class="flex gap-6 animate-infinite-scroll whitespace-nowrap">
+<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm">
+<span class="material-icons text-orange-500">currency_bitcoin</span>
+<span class="font-bold">BTC</span>
+<span class="font-medium">$64,231</span>
+<span class="text-green-500 text-sm">+2.4%</span>
+</div>
+<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm">
+<span class="material-icons text-blue-500">token</span>
+<span class="font-bold">ETH</span>
+<span class="font-medium">$3,421</span>
+<span class="text-red-500 text-sm">-0.8%</span>
+</div>
+<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm">
+<span class="material-icons text-yellow-500">savings</span>
+<span class="font-bold">BNB</span>
+<span class="font-medium">$582</span>
+<span class="text-green-500 text-sm">+1.5%</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- How It Works -->
+<section class="py-32">
+<div class="max-w-7xl mx-auto px-6 text-center mb-20">
+<h2 class="text-4xl font-bold mb-4">5 Steps to Financial Freedom</h2>
+<p class="text-slate-500 max-w-2xl mx-auto">Our streamlined process makes institutional-grade trading accessible to everyone.</p>
+</div>
+<div class="max-w-7xl mx-auto px-6 grid md:grid-cols-5 gap-8">
+<div class="relative group">
+<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
+<span class="material-icons text-primary group-hover:text-black">account_balance_wallet</span>
+</div>
+<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 01</div>
+<h3 class="text-xl font-bold mb-3">Connect Wallet</h3>
+<p class="text-sm text-slate-500">Securely link your exchange or hardware wallet.</p>
+</div>
+<div class="relative group">
+<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
+<span class="material-icons text-primary group-hover:text-black">insights</span>
+</div>
+<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 02</div>
+<h3 class="text-xl font-bold mb-3">Select Strategy</h3>
+<p class="text-sm text-slate-500">Choose from dozens of AI-vetted models.</p>
+</div>
+<div class="relative group">
+<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
+<span class="material-icons text-primary group-hover:text-black">smart_toy</span>
+</div>
+<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 03</div>
+<h3 class="text-xl font-bold mb-3">Deploy AI Bot</h3>
+<p class="text-sm text-slate-500">Launch your customized trading algorithm.</p>
+</div>
+<div class="relative group">
+<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
+<span class="material-icons text-primary group-hover:text-black">query_stats</span>
+</div>
+<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 04</div>
+<h3 class="text-xl font-bold mb-3">Real-time Tracking</h3>
+<p class="text-sm text-slate-500">Monitor every trade in our 24/7 dashboard.</p>
+</div>
+<div class="relative group">
+<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
+<span class="material-icons text-primary group-hover:text-black">payments</span>
+</div>
+<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 05</div>
+<h3 class="text-xl font-bold mb-3">Compound Gains</h3>
+<p class="text-sm text-slate-500">Watch your portfolio grow with automated reinvesting.</p>
+</div>
+</div>
+</section><section class="py-32 bg-slate-50 dark:bg-slate-900/30">
+<div class="max-w-7xl mx-auto px-6">
+<div class="text-center mb-16">
+<h2 class="text-4xl font-bold mb-4">Top 10 Most Popular Coins</h2>
+<p class="text-slate-500">Real-time data for the most traded assets on our platform.</p>
+</div>
+<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-100 dark:border-slate-700">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-900/50">
+<th class="p-6 font-bold text-sm text-slate-400 uppercase">Rank</th>
+<th class="p-6 font-bold text-sm text-slate-400 uppercase">Coin</th>
+<th class="p-6 font-bold text-sm text-slate-400 uppercase">Price</th>
+<th class="p-6 font-bold text-sm text-slate-400 uppercase">24h Change</th>
+<th class="p-6 font-bold text-sm text-slate-400 uppercase">Market Cap</th>
+<th class="p-6 font-bold text-sm text-slate-400 uppercase">Last 7 Days</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+<td class="p-6 font-bold">1</td>
+<td class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center"><span class="material-icons text-orange-500 text-lg">currency_bitcoin</span></div>
+<div><div class="font-bold">Bitcoin</div><div class="text-xs text-slate-400">BTC</div></div>
+</div>
+</td>
+<td class="p-6 font-medium font-mono">$64,231.20</td>
+<td class="p-6 text-green-500">+2.45%</td>
+<td class="p-6 font-medium font-mono">$1.26T</td>
+<td class="p-6">
+<div class="w-24 h-8 bg-green-500/10 rounded overflow-hidden">
+<div class="h-full w-2/3 bg-green-500/20 animate-pulse"></div>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+<td class="p-6 font-bold">2</td>
+<td class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center"><span class="material-icons text-blue-500 text-lg">token</span></div>
+<div><div class="font-bold">Ethereum</div><div class="text-xs text-slate-400">ETH</div></div>
+</div>
+</td>
+<td class="p-6 font-medium font-mono">$3,421.15</td>
+<td class="p-6 text-red-500">-0.82%</td>
+<td class="p-6 font-medium font-mono">$411.2B</td>
+<td class="p-6">
+<div class="w-24 h-8 bg-red-500/10 rounded overflow-hidden">
+<div class="h-full w-1/2 bg-red-500/20 animate-pulse"></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<!-- AI Tech Section -->
+<section class="bg-slate-900 py-32 overflow-hidden relative">
+<div class="absolute inset-0 opacity-20">
+<div class="absolute top-0 left-1/4 w-96 h-96 bg-primary/30 blur-[150px] rounded-full"></div>
+<div class="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/20 blur-[150px] rounded-full"></div>
+</div>
+<div class="max-w-7xl mx-auto px-6 relative z-10">
+<div class="grid lg:grid-cols-2 gap-20 items-center">
+<div>
+<h2 class="text-4xl font-bold text-white mb-6">Neural Engine Architecture</h2>
+<p class="text-slate-400 text-lg mb-8">Our bots use Deep Reinforcement Learning to adapt to market volatility in milliseconds, outperforming human traders and traditional logic-based scripts.</p>
+<ul class="space-y-4 mb-10">
+<li class="flex items-start gap-4 text-slate-300">
+<span class="material-icons text-primary">check_circle</span>
+<span>Predictive sentiment analysis from 40+ social signals</span>
+</li>
+<li class="flex items-start gap-4 text-slate-300">
+<span class="material-icons text-primary">check_circle</span>
+<span>High-frequency execution with zero-latency APIs</span>
+</li>
+<li class="flex items-start gap-4 text-slate-300">
+<span class="material-icons text-primary">check_circle</span>
+<span>Dynamic risk-adjusted position sizing</span>
+</li>
+</ul>
+<button class="text-primary font-bold flex items-center gap-2 hover:translate-x-2 transition-transform">
+                        Explore Our Documentation <span class="material-icons">arrow_forward</span>
+</button>
+</div>
+<div class="grid gap-6">
+<div class="glass-card p-8 rounded-xl bg-white/5 border-white/10">
+<div class="flex items-center gap-4 mb-4">
+<div class="p-3 bg-primary/20 rounded-lg">
+<span class="material-icons text-primary">psychology</span>
+</div>
+<h3 class="text-xl font-bold text-white">Sentiment Core</h3>
+</div>
+<p class="text-slate-400 text-sm">Analyzes massive datasets from Twitter, Reddit, and News in real-time to predict market moves before they happen.</p>
+</div>
+<div class="glass-card p-8 rounded-xl bg-white/5 border-white/10 ml-8">
+<div class="flex items-center gap-4 mb-4">
+<div class="p-3 bg-primary/20 rounded-lg">
+<span class="material-icons text-primary">speed</span>
+</div>
+<h3 class="text-xl font-bold text-white">Execution Node</h3>
+</div>
+<p class="text-slate-400 text-sm">Low-latency proprietary infrastructure ensures your orders are filled at the best possible price across all major CEXs.</p>
+</div>
+<div class="glass-card p-8 rounded-xl bg-white/5 border-white/10">
+<div class="flex items-center gap-4 mb-4">
+<div class="p-3 bg-primary/20 rounded-lg">
+<span class="material-icons text-primary">shield</span>
+</div>
+<h3 class="text-xl font-bold text-white">Risk Matrix</h3>
+</div>
+<p class="text-slate-400 text-sm">Automatically adjusts stop-losses and take-profits based on current market volatility and asset correlation.</p>
+</div>
+</div>
+</div>
+</div>
+</section><section class="py-32 bg-slate-900 border-t border-white/5 overflow-hidden">
+<div class="max-w-7xl mx-auto px-6 text-center">
+<h2 class="text-3xl font-bold text-white mb-20">AI Market Intelligence Orbit</h2>
+<div class="relative flex items-center justify-center h-[500px]">
+<!-- Rotating Rings -->
+<div class="absolute w-[450px] h-[450px] border border-primary/20 rounded-full animate-[spin_20s_linear_infinite]">
+<span class="material-icons absolute -top-4 left-1/2 -translate-x-1/2 text-primary">currency_bitcoin</span>
+<span class="material-icons absolute top-1/2 -right-4 -translate-y-1/2 text-primary">token</span>
+</div>
+<div class="absolute w-[300px] h-[300px] border border-primary/30 rounded-full animate-[spin_15s_linear_infinite_reverse]">
+<span class="material-icons absolute -bottom-4 left-1/2 -translate-x-1/2 text-primary">savings</span>
+</div>
+<div class="absolute w-[150px] h-[150px] border border-primary/40 rounded-full animate-[spin_10s_linear_infinite]"></div>
+<!-- Central Core -->
+<div class="relative z-10 w-40 h-40 bg-primary rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(255,193,7,0.4)]">
+<div class="text-black text-center">
+<div class="font-black leading-tight text-sm">AI CORE</div>
+<div class="text-[10px] font-bold opacity-80 uppercase tracking-tighter">Intelligence<br/>Engine</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Investment Calculator -->
+<section class="py-32 bg-background-light dark:bg-background-dark">
+<div class="max-w-4xl mx-auto px-6">
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-primary/10">
+<div class="p-10 border-b border-slate-100 dark:border-slate-800">
+<h2 class="text-3xl font-bold text-center mb-2">Investment Calculator</h2>
+<p class="text-slate-500 text-center">Estimate your potential returns based on historical performance data.</p>
+</div>
+<div class="p-10 grid md:grid-cols-2 gap-12">
+<div class="space-y-10">
+<div>
+<div class="flex justify-between mb-4 font-bold">
+<span>Investment Amount</span>
+<span class="text-primary">$25,000</span>
+</div>
+<input class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer custom-slider" max="100000" min="100" step="500" type="range" value="25000"/>
+<div class="flex justify-between text-xs text-slate-400 mt-2">
+<span>$100</span>
+<span>$100,000</span>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-4 font-bold">
+<span>Duration</span>
+<span class="text-primary">12 Months</span>
+</div>
+<input class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer custom-slider" max="24" min="1" step="1" type="range" value="12"/>
+<div class="flex justify-between text-xs text-slate-400 mt-2">
+<span>1 Month</span>
+<span>24 Months</span>
+</div>
+</div>
+</div>
+<div class="bg-primary/5 rounded-2xl p-8 flex flex-col justify-center items-center border border-primary/20">
+<div class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">Projected Return</div>
+<div class="text-5xl font-bold text-black mb-1">$43,250</div>
+<div class="text-primary font-bold">+73% Profit</div>
+<div class="mt-8 w-full">
+<button class="w-full py-4 bg-black text-white font-bold rounded-lg hover:bg-slate-800 transition-all">Open Account Now</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Plans Preview -->
+<section class="py-32 bg-white dark:bg-slate-900/50">
+<div class="max-w-7xl mx-auto px-6 text-center mb-16">
+<h2 class="text-4xl font-bold mb-4">Choose Your Strategy</h2>
+<p class="text-slate-500">Flexible plans tailored to your investment goals.</p>
+</div>
+<div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-8">
+<!-- Starter -->
+<div class="bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:-translate-y-2 transition-transform duration-300">
+<div class="text-primary font-bold mb-2">Starter</div>
+<div class="text-4xl font-bold mb-6">$0<span class="text-lg text-slate-400 font-normal">/mo</span></div>
+<p class="text-slate-500 mb-8 text-sm">Perfect for beginners testing the waters of AI trading.</p>
+<ul class="space-y-4 mb-10 text-left">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        2 Active Trading Bots
+                    </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        Standard Execution Speed
+                    </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        Email Support
+                    </li>
+</ul>
+<button class="w-full py-3 border-2 border-primary text-black dark:text-white font-bold rounded-lg hover:bg-primary hover:text-black transition-all">Get Started</button>
+</div>
+<!-- Growth -->
+<div class="bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-2xl border-2 border-primary relative hover:-translate-y-2 transition-transform duration-300">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-black text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div>
+<div class="text-primary font-bold mb-2">Growth</div>
+<div class="text-4xl font-bold mb-6">$49<span class="text-lg text-slate-400 font-normal">/mo</span></div>
+<p class="text-slate-500 mb-8 text-sm">Scaling your portfolio with advanced machine learning.</p>
+<ul class="space-y-4 mb-10 text-left">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        10 Active Trading Bots
+                    </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        Priority AI Sentiment Core
+                    </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        Advanced Analytics Pro
+                    </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        24/7 Live Chat Support
+                    </li>
+</ul>
+<button class="w-full py-3 bg-primary text-black font-bold rounded-lg shadow-xl shadow-primary/20 hover:shadow-2xl transition-all">Choose Growth</button>
+</div>
+<!-- Premium -->
+<div class="bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:-translate-y-2 transition-transform duration-300">
+<div class="text-primary font-bold mb-2">Premium</div>
+<div class="text-4xl font-bold mb-6">$199<span class="text-lg text-slate-400 font-normal">/mo</span></div>
+<p class="text-slate-500 mb-8 text-sm">Institutional features for professional investors.</p>
+<ul class="space-y-4 mb-10 text-left">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        Unlimited Trading Bots
+                    </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        Custom Strategy API Access
+                    </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        Dedicated Account Manager
+                    </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-lg">check</span>
+                        Low-Latency Node Direct
+                    </li>
+</ul>
+<button class="w-full py-3 border-2 border-primary text-black dark:text-white font-bold rounded-lg hover:bg-primary hover:text-black transition-all">Contact Sales</button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<section class="py-32">
+<div class="max-w-7xl mx-auto px-6">
+<div class="flex justify-between items-end mb-12">
+<div>
+<h2 class="text-4xl font-bold mb-4">Market Insights</h2>
+<p class="text-slate-500">Latest crypto news analyzed by our AI system.</p>
+</div>
+<button class="text-primary font-bold hover:underline">View All News</button>
+</div>
+<div class="grid lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2 group">
+<div class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
+<div class="h-80 overflow-hidden relative">
+<img alt="News" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC-F372qA9-wGfW16H5zN4V_y8RjI8_r34W_u3e7jR45"/>
+<span class="absolute top-6 left-6 bg-primary text-black text-xs font-bold px-3 py-1 rounded">MARKET TRENDS</span>
+</div>
+<div class="p-8 flex-grow">
+<h3 class="text-2xl font-bold mb-4 group-hover:text-primary transition-colors">The Rise of AI in Decentralized Finance: 2024 Outlook</h3>
+<p class="text-slate-500 mb-6">New institutional data suggests that AI-driven trading protocols now account for over 35% of total DEX volume...</p>
+<a class="font-bold flex items-center gap-2" href="#">Read Full Article <span class="material-icons text-sm">arrow_forward</span></a>
+</div>
+</div>
+</div>
+<div class="space-y-8">
+<div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+<span class="text-xs font-bold text-primary mb-3 block">REGULATION</span>
+<h4 class="text-lg font-bold mb-3 group-hover:text-primary transition-colors">Global crypto policy shifts and what they mean for you</h4>
+<p class="text-sm text-slate-500 mb-4">Summary of the latest SEC guidelines regarding AI bots.</p>
+<a class="text-sm font-bold flex items-center gap-1" href="#">Read More <span class="material-icons text-xs">chevron_right</span></a>
+</div>
+<div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+<span class="text-xs font-bold text-primary mb-3 block">SECURITY</span>
+<h4 class="text-lg font-bold mb-3 group-hover:text-primary transition-colors">Protecting your assets in the age of quantum computing</h4>
+<p class="text-sm text-slate-500 mb-4">Best practices for hardware wallet security in 2024.</p>
+<a class="text-sm font-bold flex items-center gap-1" href="#">Read More <span class="material-icons text-xs">chevron_right</span></a>
+</div>
+</div>
+</div>
+</div>
+</section><footer class="bg-white dark:bg-background-dark border-t border-primary/10 pt-20 pb-10">
+<div class="max-w-7xl mx-auto px-6">
+<div class="grid md:grid-cols-4 gap-12 mb-16">
+<div class="col-span-1 md:col-span-1">
+<div class="flex items-center gap-2 mb-6">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-icons text-white text-sm">auto_awesome</span>
+</div>
+<span class="text-xl font-bold tracking-tight">Bloombit</span>
+</div>
+<p class="text-slate-500 text-sm mb-6 leading-relaxed">
+                        Leading the future of decentralized finance with advanced artificial intelligence and machine learning technologies.
+                    </p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center hover:bg-primary transition-colors" href="#">
+<img alt="Twitter" data-alt="Twitter social icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMC7qfpVjZIEX6NYqoW9ucKEzVVp40d1E4YKXYzidDaack9iQAveHA-_B-0CBi7zu0Rf8vv146jVVfx6CUttJCETvtVx-oogvWuqIGJa_T3vQS-0HaQJuUa9-ptULfT-N1rpr9aFjNfBsC_LwplGZMRJ8FL8rxxuRpIiJTyY-mDGAAZrIPw68NoVqsRp1k3bF9V8L14H-eLa2k9mH7qL-JUOnQS54dSoaFXu5l-Ab--ir8KSyREoEllbvWuQg-fy8-Bs_anz-XvVU"/>
+</a>
+<a class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center hover:bg-primary transition-colors" href="#">
+<img alt="LinkedIn" data-alt="LinkedIn social icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbojB6-NKa0gltn4xztyzeDs3kjjTduzZX8Yta91AmMH2k4Fap8nooCwysp9Ef3Re5dY-AuuV7__SXDgXVjIHwF4EXxW3rpeFDJwAzffcz6mBW_He5h5dwA74z456BjWOsiL1QrQN4dL_BFJn-7ASCRqBzAKv5AhOF4eJMfDdoPasNZjC_r_m4XZqRq_kHucXKF2lqWuxia4EuF5SKA66n8XskCe2wzZx5TpUepXo6hUAxDl6FrjVDRmc6EQXZ1Q5w5_46HOOArYM"/>
+</a>
+<a class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center hover:bg-primary transition-colors" href="#">
+<img alt="Github" data-alt="Github social icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6VOCH9ZJeV7lhUw3qw5Wt9ZCORCRqJ5q3Qg_2DSva9nSm-FIJtzFu789QRCDGPGn3vHWg_jxKlO0kf79A8IOrRaRVG523RX00dKVZd-RVclcFve0Zp64KSis61Br2kaX9FMuP7vir_iAFdGnAjh4nJHXoy6byX812tfcZLFxMkbZjMK_ll1Rr5G1KPoAzQUdviAl9mkgzpmf5qXMZirxUctQudqfhIZr6g8pKL0QfUWzRZZVfcu30drKQY-eumvp-pLe_XU-iWsY"/>
+</a>
+</div>
+</div>
+<div>
+<h4 class="font-bold mb-6">Product</h4>
+<ul class="space-y-4 text-sm text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">AI Strategies</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Trading Bots</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Risk Management</a></li>
+<li><a class="hover:text-primary transition-colors" href="/plans">Pricing</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Company</h4>
+<ul class="space-y-4 text-sm text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="/about_us">About Us</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Careers</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Security</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Partners</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Resources</h4>
+<ul class="space-y-4 text-sm text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">Documentation</a></li>
+<li><a class="hover:text-primary transition-colors" href="/help_centre">Help Center</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">API Reference</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+</ul>
+</div>
+</div>
+<div class="pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:row items-center justify-between gap-4">
+<div class="text-sm text-slate-400">© 2024 Bloombit AI. All rights reserved.</div>
+<div class="flex gap-6 text-sm text-slate-400">
+<a class="hover:text-primary" href="/legal_centre">Terms of Service</a>
+<a class="hover:text-primary" href="/legal_centre">Cookies Policy</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

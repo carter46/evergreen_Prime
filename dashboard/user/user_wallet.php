@@ -1,0 +1,409 @@
+<?php require_once __DIR__ . '/../../includes/auth-check.php'; ?>
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bloombit | Wallet &amp; Withdrawals</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f9bd0b",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#231e0f",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
+<!-- Navigation Header -->
+<nav class="border-b border-primary/10 bg-white/50 dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-50">
+<div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-8">
+<a class="flex items-center gap-2" href="/">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-icons text-white text-xl">bolt</span>
+</div>
+<span class="text-xl font-bold tracking-tight">BLOOMBIT</span>
+</a>
+<div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-500 dark:text-slate-400">
+<a class="hover:text-primary transition-colors" href="/dashboard/user/dashboard">Dashboard</a>
+<a class="hover:text-primary transition-colors" href="/trading_signals">Market</a>
+<a class="text-primary border-b-2 border-primary py-5" href="/dashboard/user/wallet">Wallet</a>
+<a class="hover:text-primary transition-colors" href="/dashboard/user/analytics">Staking</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-icons text-slate-600 dark:text-slate-300">notifications</span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-semibold">Alex Thompson</p>
+<p class="text-[10px] text-slate-500">Pro Account</p>
+</div>
+<img alt="User" class="w-8 h-8 rounded-full border border-primary/20" data-alt="User profile avatar circle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMhH9uPeV0AalZXkL6cgWaAKiPFdTaP5U6xLyRtOAidR0wXTr1ko_gzrMDr4dXOk0uy93hqAbpSfrw4z3fbJqDFf-oQzuOkefItwcoYHJ0VeKPMXJAfk3q9JurgKkQoLx6UJZgH3GOLyluRwGgaHl3aA5Nqz2vbBkKZTe3ZlARV-6MaP6mf1-L7Y6UP2_7tqbLvym2u3yYErycJuK5pxsZWO4NlyHT0KT_aT8Z8NP_Vuez2fSwKOfhC1YhzDT7jUHjVomCYqQ2hww"/>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-[1440px] mx-auto px-6 py-8">
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Column: Balances & Assets -->
+<div class="col-span-12 lg:col-span-8 space-y-8">
+<!-- Main Wallet Card -->
+<div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+<div class="relative z-10">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
+<h1 class="text-4xl font-bold tracking-tight">$124,592.84 <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
+<p class="text-primary mt-2 flex items-center gap-1">
+<span class="material-icons text-sm">currency_bitcoin</span>
+                                    2.41829043 BTC
+                                </p>
+</div>
+<div class="flex gap-3">
+<button class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
+<span class="material-icons text-sm">add</span> Deposit
+                                </button>
+<button class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all backdrop-blur-sm">
+<span class="material-icons text-sm">file_upload</span> Withdraw
+                                </button>
+</div>
+</div>
+<div class="mt-10 grid grid-cols-3 gap-6 border-t border-white/10 pt-8">
+<div>
+<p class="text-slate-400 text-xs mb-1">24h Change</p>
+<p class="text-emerald-400 font-bold flex items-center gap-1">
+<span class="material-icons text-xs">trending_up</span> +4.25%
+                                </p>
+</div>
+<div>
+<p class="text-slate-400 text-xs mb-1">Spot Wallet</p>
+<p class="font-bold">$89,201.12</p>
+</div>
+<div>
+<p class="text-slate-400 text-xs mb-1">Staking Rewards</p>
+<p class="font-bold text-primary">$1,420.50</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Asset Breakdown -->
+<div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<h2 class="text-lg font-bold">Your Assets</h2>
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="pl-9 pr-4 py-1.5 bg-slate-50 dark:bg-slate-900 border-none rounded-lg text-sm focus:ring-1 focus:ring-primary w-48" placeholder="Search coin..." type="text"/>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-slate-400 text-[10px] uppercase tracking-wider border-b border-slate-50 dark:border-slate-800">
+<th class="px-6 py-4 font-semibold">Asset</th>
+<th class="px-6 py-4 font-semibold text-right">Balance</th>
+<th class="px-6 py-4 font-semibold text-right">Value (USD)</th>
+<th class="px-6 py-4 font-semibold text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-50 dark:divide-slate-800">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+<img alt="BTC" class="w-6 h-6" data-alt="Bitcoin cryptocurrency orange logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAgHf9gwfJySLp8j0u7cNjsqQCWPFPPncdHgaWlTjK_WmJnas9ZlV0SpW7pL7gVq5qN60y3DH_G-Od2M3Yh0K6kj8zdVzeFHn-FdDdwB4aeo0IOyRN8bCCBq4VIgO6u0Axh_9FxeU4bbJMFVep2yPUTId_BeXu1y2i4hfEtUd4FicbkR40Ym1V27k7YlhlbQ7dm81hzcoEAvZCwigc0-2EHjn0l7qUnKSyZnzlylaKnUP3v-AJW3xiYLncAsmYdBzse7q5ulQHOTw"/>
+</div>
+<div>
+<p class="font-bold text-sm">Bitcoin</p>
+<p class="text-xs text-slate-500">BTC</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right font-medium text-sm">1.45028 BTC</td>
+<td class="px-6 py-5 text-right font-bold text-sm">$64,302.10</td>
+<td class="px-6 py-5 text-right">
+<button class="text-xs font-bold px-4 py-1.5 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+<img alt="ETH" class="w-6 h-6" data-alt="Ethereum cryptocurrency indigo logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZ2Xm_cuJ5FHs2kwwIi-RsVbAARjZhU4bJhlidtjubYNkqH6n4gwhR-2y9E6OcKsmbYzjm1k1bugYHEgPcWyjIChyIPx81fIcNR4HVvwivnlctVxSUYx13NgQmomtSPK4ffkWqX5RjRtaJMudNqBTv1wEHlX83YIwPePmjaW61_n3KxFHl1bpIybECO50I9MEFoE7abawZyQ7KfUm-1ZhKf4if7WPv_N1LFeaQhe3ndZTDdzcVEF-6Zd3P77KC0Utc-FIsQ0UtE_E"/>
+</div>
+<div>
+<p class="font-bold text-sm">Ethereum</p>
+<p class="text-xs text-slate-500">ETH</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right font-medium text-sm">12.8400 ETH</td>
+<td class="px-6 py-5 text-right font-bold text-sm">$32,150.24</td>
+<td class="px-6 py-5 text-right">
+<button class="text-xs font-bold px-4 py-1.5 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+<img alt="USDT" class="w-6 h-6" data-alt="Tether USDT cryptocurrency green logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiN9v9rbKBNgJOxhr2bi-10sgOhn3YxTrb7WLlPeQXOxuAhmHdrzJklQlIcLuAnKmTJN7WoS6iXQMTtytwMd7n6OWaztMPnL6GAlIKwt294bhlqQMyuMpp1ngxzpOjVw_zvvtQgRE_A3l5hpEllCizz02cc_YDfxp596rYHoJeprEGzkwAzkvd6SI1FOnlxSkHXGe9q09JzhlOCpOCEKTCuVqytDWCkMWZg4mw8MvSGG736TqdXkpUn84VfTzkFL_E42DgIx7OpbA"/>
+</div>
+<div>
+<p class="font-bold text-sm">Tether</p>
+<p class="text-xs text-slate-500">USDT</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right font-medium text-sm">18,500.00 USDT</td>
+<td class="px-6 py-5 text-right font-bold text-sm">$18,500.00</td>
+<td class="px-6 py-5 text-right">
+<button class="text-xs font-bold px-4 py-1.5 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Transaction History Table -->
+<div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<h2 class="text-lg font-bold">Recent History</h2>
+<button class="text-primary text-xs font-bold hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-slate-400 text-[10px] uppercase tracking-wider border-b border-slate-50 dark:border-slate-800">
+<th class="px-6 py-4 font-semibold">Type / Date</th>
+<th class="px-6 py-4 font-semibold">Asset</th>
+<th class="px-6 py-4 font-semibold text-right">Amount</th>
+<th class="px-6 py-4 font-semibold text-center">Status</th>
+<th class="px-6 py-4 font-semibold text-right">TXID</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-50 dark:divide-slate-800">
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-icons text-emerald-500 text-lg">arrow_downward</span>
+<div>
+<p class="text-sm font-bold">Deposit</p>
+<p class="text-[10px] text-slate-400">Oct 24, 2023 14:20</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm font-medium">BTC</td>
+<td class="px-6 py-4 text-right text-sm font-bold text-emerald-500">+0.0500</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">COMPLETED</span>
+</td>
+<td class="px-6 py-4 text-right font-mono text-[10px] text-slate-400">0x4a9...e2f3</td>
+</tr>
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-icons text-red-500 text-lg">arrow_upward</span>
+<div>
+<p class="text-sm font-bold">Withdraw</p>
+<p class="text-[10px] text-slate-400">Oct 22, 2023 09:15</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm font-medium">USDT</td>
+<td class="px-6 py-4 text-right text-sm font-bold text-red-500">-2,500.00</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-tighter">Pending</span>
+</td>
+<td class="px-6 py-4 text-right font-mono text-[10px] text-slate-400">0x8b2...c10d</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Column: Withdrawal Form & Safety -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Security Hint -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex gap-4">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center">
+<span class="material-icons text-primary">gpp_maybe</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white">Security Checklist</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                            Ensure 2FA is active before withdrawing. Double-check the recipient address; crypto transfers are irreversible.
+                        </p>
+</div>
+</div>
+<!-- Withdrawal Form -->
+<div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg sticky top-24 overflow-hidden">
+<div class="bg-primary p-4">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-icons text-xl">payments</span> Withdraw Funds
+                        </h3>
+</div>
+<form id="withdrawal-form" class="p-6 space-y-6">
+<!-- Step 1: Currency Selection -->
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wide text-slate-500">1. Select Currency</label>
+<div class="relative">
+<select name="currency" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-lg py-3 px-4 appearance-none text-sm font-medium focus:ring-primary focus:border-primary">
+<option value="BTC">Bitcoin (BTC)</option>
+<option value="ETH">Ethereum (ETH)</option>
+<option value="USDT">Tether (USDT)</option>
+<option value="SOL">Solana (SOL)</option>
+</select>
+<span class="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Step 2: Address -->
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wide text-slate-500">2. Recipient Address</label>
+<div class="relative">
+<input name="address" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-lg py-3 px-4 text-sm focus:ring-primary focus:border-primary" placeholder="Paste external wallet address" type="text" required/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-primary font-bold text-xs uppercase hover:underline">Paste</button>
+</div>
+</div>
+<!-- Step 3: Network -->
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wide text-slate-500">3. Network</label>
+<div class="grid grid-cols-2 gap-2">
+<button class="p-3 border-2 border-primary bg-primary/5 rounded-lg text-left">
+<p class="text-[10px] font-bold">BTC</p>
+<p class="text-xs font-medium">Bitcoin Mainnet</p>
+</button>
+<button class="p-3 border border-slate-200 dark:border-slate-800 rounded-lg text-left opacity-50">
+<p class="text-[10px] font-bold">BEP20</p>
+<p class="text-xs font-medium">BSC Network</p>
+</button>
+</div>
+</div>
+<!-- Step 4: Amount -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="text-xs font-bold uppercase tracking-wide text-slate-500">4. Amount</label>
+<span class="text-[10px] text-slate-400">Available: 1.45028 BTC</span>
+</div>
+<div class="relative">
+<input name="amount" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-lg py-3 px-4 text-sm font-bold focus:ring-primary focus:border-primary" placeholder="0.00" step="any" type="number" required/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+<button class="text-[10px] font-bold bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">MAX</button>
+<span class="text-xs font-bold text-slate-400">BTC</span>
+</div>
+</div>
+</div>
+<!-- Transaction Summary -->
+<div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 space-y-2">
+<div class="flex justify-between text-xs">
+<span class="text-slate-500">Network Fee</span>
+<span class="font-medium">0.0002 BTC (~$9.00)</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-slate-500">Service Fee</span>
+<span class="font-medium text-emerald-500">FREE</span>
+</div>
+<div class="pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between items-end">
+<span class="text-xs font-bold">You will receive</span>
+<div class="text-right">
+<p class="text-lg font-bold leading-none">0.0000 <span class="text-xs text-slate-400">BTC</span></p>
+</div>
+</div>
+</div>
+<div id="withdrawal-message" class="text-sm hidden"></div>
+<button type="submit" class="w-full bg-primary hover:bg-primary/90 text-black font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                            Withdraw Now <span class="material-icons text-sm">arrow_forward</span>
+</button>
+</form>
+</div>
+</div>
+<!-- Ad/Banner Area -->
+<div class="rounded-xl overflow-hidden relative group">
+<div class="bg-slate-900 p-6">
+<h5 class="text-primary text-xs font-bold uppercase mb-1">Coming Soon</h5>
+<h4 class="text-white font-bold mb-4">Earn up to 12% APY with Bloombit Staking</h4>
+<img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" data-alt="Abstract 3D digital shapes with neon yellow lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHwE3RtjthIQUFIpsY37xhY3Ziz9_BghfRaF1Da-SKX8FIY0BxVEGSxFroAwi_MmV4rBeyjRAKJNJZ3RCacRRUXijjAg2qspHfiq9b7r_YWoqj4Uorszlk6d_gNBd-RUMIrQZ7wUkv41PQ8M8fythPyPmQQPGx1pytl-6tw3sJfeOhrh7jQbSQqVq1K_vISLkLjSRIEhhFZtWL6mPf-6OsvzjasHfzYOjNJIhio4U0Z2HEzzQ4psJuR9WbHB6q1-inYAn25jXo7Ys"/>
+<button class="w-full mt-4 py-2 border border-white/20 text-white text-xs font-bold rounded hover:bg-white/10 transition-colors">Join Waitlist</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="mt-20 border-t border-slate-200 dark:border-slate-800 py-12 bg-white dark:bg-background-dark/20">
+<div class="max-w-[1440px] mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="col-span-1 md:col-span-2">
+<div class="flex items-center gap-2 mb-6">
+<div class="w-6 h-6 bg-primary rounded flex items-center justify-center">
+<span class="material-icons text-white text-sm">bolt</span>
+</div>
+<span class="text-lg font-bold tracking-tight">BLOOMBIT</span>
+</div>
+<p class="text-slate-500 text-sm max-w-sm leading-relaxed">
+                    Bloombit is a next-generation AI-powered investment platform for digital assets. Trade, invest, and manage your portfolio with professional-grade tools.
+                </p>
+</div>
+<div>
+<h5 class="font-bold text-sm mb-4">Platform</h5>
+<ul class="text-slate-500 text-sm space-y-2">
+<li><a class="hover:text-primary transition-colors" href="#">Spot Trading</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Institutional Services</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">API Documentation</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Security</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-bold text-sm mb-4">Support</h5>
+<ul class="text-slate-500 text-sm space-y-2">
+<li><a class="hover:text-primary transition-colors" href="/help_centre">Help Center</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Submit a Ticket</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Fees Schedule</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Status</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-[1440px] mx-auto px-6 mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-xs text-slate-400">© 2023 Bloombit International. All rights reserved.</p>
+<div class="flex gap-6 text-xs text-slate-400">
+<a class="hover:text-primary" href="/legal_centre">Privacy Policy</a>
+<a class="hover:text-primary" href="/legal_centre">Terms of Service</a>
+<a class="hover:text-primary" href="#">Cookie Settings</a>
+</div>
+</div>
+</footer>
+<script src="/js/app.js"></script>
+</body></html>

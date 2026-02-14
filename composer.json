@@ -1,0 +1,12 @@
+{
+    "name": "bloombit/platform",
+    "description": "Bloombit AI Crypto Trading Platform",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "phpmailer/phpmailer": "^6.8"
+    },
+    "autoload": {
+        "files": []
+    }
+}

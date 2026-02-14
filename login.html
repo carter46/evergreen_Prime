@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bloombit | Secure Login</title>
+<!-- Tailwind CSS with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Space Grotesk -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ffc105",
+              "background-light": "#f8f8f5",
+              "background-dark": "#231e0f",
+              "neutral-soft": "#f4f1e6",
+              "text-main": "#1d180c",
+              "text-muted": "#a18a45",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #f8f8f5;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .checkbox-custom:checked {
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='rgb(29,24,12)' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main antialiased overflow-x-hidden min-h-screen">
+<div class="flex flex-col lg:flex-row min-h-screen w-full">
+<!-- Left Section: Login Form -->
+<div class="w-full lg:w-[45%] xl:w-[40%] flex flex-col bg-white dark:bg-background-dark px-6 py-8 md:px-12 lg:px-20">
+<!-- Header/Logo -->
+<header class="flex items-center gap-2 mb-16 lg:mb-24">
+<div class="size-8 text-primary">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"></path>
+</svg>
+</div>
+<h2 class="text-text-main dark:text-white text-2xl font-bold tracking-tight">Bloombit</h2>
+</header>
+<div class="max-w-md w-full mx-auto lg:mx-0">
+<div class="mb-10">
+<h1 class="text-text-main dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] mb-3">Welcome back</h1>
+<p class="text-text-muted text-lg font-normal">Enter your details to manage your digital assets securely.</p>
+</div>
+<form id="login-form" class="space-y-6">
+<!-- Email Field -->
+<div class="flex flex-col gap-2">
+<label class="text-text-main dark:text-white text-sm font-semibold uppercase tracking-wider">Email Address</label>
+<input name="email" class="w-full rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary h-14 px-4 text-text-main dark:text-white placeholder:text-text-muted transition-all" placeholder="e.g. name@company.com" type="email" required/>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<label class="text-text-main dark:text-white text-sm font-semibold uppercase tracking-wider">Password</label>
+</div>
+<div class="relative flex items-center group">
+<input name="password" class="w-full rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary h-14 px-4 pr-12 text-text-main dark:text-white placeholder:text-text-muted transition-all" placeholder="Enter your password" type="password" required/>
+<button class="absolute right-4 text-text-muted hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Utilities -->
+<div class="flex items-center justify-between py-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="checkbox-custom h-5 w-5 rounded border-neutral-soft dark:border-neutral-800 text-primary focus:ring-0 focus:ring-offset-0 transition-all cursor-pointer bg-white dark:bg-neutral-900" type="checkbox"/>
+<span class="text-text-main dark:text-neutral-300 text-sm font-medium group-hover:text-primary transition-colors">Remember me</span>
+</label>
+<a class="text-sm font-semibold text-text-main dark:text-neutral-300 hover:text-primary transition-colors decoration-primary underline-offset-4 decoration-2" href="/forgot-password">Forgot password?</a>
+</div>
+<div id="login-form-message" class="text-sm hidden"></div>
+<!-- Sign In Button -->
+<button class="w-full bg-primary hover:brightness-105 active:scale-[0.98] text-text-main font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group" type="submit">
+<span>Sign In to Bloombit</span>
+<span class="material-symbols-outlined transition-transform group-hover:translate-x-1" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</form>
+<!-- Social Login -->
+<div class="mt-10">
+<div class="relative mb-8">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-neutral-soft dark:border-neutral-800"></div>
+</div>
+<div class="relative flex justify-center text-xs uppercase">
+<span class="bg-white dark:bg-background-dark px-2 text-text-muted font-semibold tracking-widest">Or continue with</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-neutral-soft dark:border-neutral-800 hover:bg-neutral-soft/50 dark:hover:bg-neutral-800 transition-colors">
+<img alt="Google" class="size-5" data-alt="Google colorful logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXYzb7hVR5q8r7fOnaSuj5SYQIjOrOodNS3mfccvpuH0Nr7cxSixnfczYAuhcKMYhigXqQlLpeX44OUYnJPaz70rX7pZdNzTxRTZfdN3v0JSdLIs4HlayNQs-dGQWXxLp1dr5MYCRVB0Np8p6-0jsl9v67RNzUfVLX4NSGOtaocEIa9jO2IsH5M0WH3MtOPQh_4cbh-IUaNTaoSjeDKgdCWRUlrL81Cm9ZyspLDvhiClGlPdufKQDC2-C7u7To_Xl9T-EtbMD1Y4w"/>
+<span class="text-sm font-semibold text-text-main dark:text-white">Google</span>
+</button>
+<button class="flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-neutral-soft dark:border-neutral-800 hover:bg-neutral-soft/50 dark:hover:bg-neutral-800 transition-colors">
+<img alt="Apple" class="size-5 dark:invert" data-alt="Apple minimalist logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUnt15Rez7KW550gA3BGWt4q0KBxa1s2WP8Ef4Kiuxkw5uX2M9tku__oixglWl5qq_mqvYDKICbbwb6ybzr9eDYjNwLV97wCU9rU_GiLXW_TY4DmF6msj3hN6CspQKDYuNZVT4cbwlrPpXkgr4OzHJiu9AF6U9TkYohrewtQD172SOIVyyC7ftqoZt_LsZamVZ5v1pAamoJkIy3PStRCupFK_8sQgvD52Tme33BTCCOgvJR26x_EtT4p735nebl-OYhoHcwY7U8FE"/>
+<span class="text-sm font-semibold text-text-main dark:text-white">Apple ID</span>
+</button>
+</div>
+</div>
+<!-- Footer Link -->
+<p class="mt-12 text-center text-text-muted text-sm">
+                    Don't have an account? 
+                    <a class="text-text-main dark:text-white font-bold hover:text-primary transition-colors ml-1" href="/register">Create an account</a>
+</p>
+</div>
+<footer class="mt-auto pt-10 text-xs text-text-muted/60">
+                © 2024 Bloombit Technologies Inc. All rights reserved. Secure assets &amp; Fintech solutions.
+            </footer>
+</div>
+<!-- Right Section: Branded Illustration -->
+<div class="hidden lg:flex lg:w-[55%] xl:w-[60%] bg-background-dark relative overflow-hidden items-center justify-center">
+<!-- Background Decorations -->
+<div class="absolute top-0 right-0 w-full h-full opacity-30">
+<div class="absolute -top-24 -right-24 size-[600px] bg-primary/10 rounded-full blur-[120px]"></div>
+<div class="absolute -bottom-48 -left-48 size-[800px] bg-primary/5 rounded-full blur-[150px]"></div>
+</div>
+<!-- Main Graphic Content -->
+<div class="relative z-10 w-full h-full flex flex-col items-center justify-center p-12">
+<div class="relative w-full max-w-2xl aspect-square flex items-center justify-center">
+<!-- Placeholder for 3D AI Branded Graphic -->
+<div class="absolute w-4/5 h-4/5 bg-gradient-to-br from-primary/20 to-transparent rounded-full animate-pulse blur-3xl"></div>
+<div class="relative z-20 w-full h-full rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
+<div class="absolute inset-0 bg-neutral-900/40 mix-blend-overlay"></div>
+<img alt="Fintech AI Graphic" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Abstract 3D digital golden data structures representing AI and growth" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCz2XR3IJemsQH6Ekarn2ATRGKY__az2d3uIrODDs34QsYPfc8MdkdpuANzNvTANyRxCQhfKkXWDbXED0QsMa05b89aRPHtAIRRayxSjjj5FuR0vHZgF0oRzoNtATZ61JtURIHMaIODyGkYkfCFnN23V5yWmMlGAeId5NStX3u9x_BMMI3LYvB2xSCLntCCgrDUTvKkhVwHmsYL9hGthRWNn1k5wr5Re1TkKmkg6b27OcF1A4M-gFVmcsnkOMYKIDEXimGaRPuIeSU"/>
+<!-- Floating Fintech UI Element Over Graphic -->
+<div class="absolute bottom-8 left-8 right-8 glass-panel p-6 rounded-2xl border border-white/20">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-text-main font-bold" data-icon="trending_up">trending_up</span>
+</div>
+<div>
+<p class="text-white font-bold text-lg">AI-Powered Insights</p>
+<p class="text-white/60 text-xs uppercase tracking-widest font-medium">Real-time asset optimization</p>
+</div>
+</div>
+<div class="space-y-3">
+<div class="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full w-3/4 bg-primary"></div>
+</div>
+<div class="h-2 w-1/2 bg-white/10 rounded-full overflow-hidden">
+<div class="h-full w-2/3 bg-primary/60"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12 text-center max-w-md">
+<h3 class="text-white text-3xl font-black mb-4">Master your digital fortune</h3>
+<p class="text-neutral-400 text-lg">Join 2M+ users who trust Bloombit's AI intelligence for smarter asset management and secure high-yield growth.</p>
+</div>
+</div>
+<!-- Mesh Pattern Overlay -->
+<div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#fff 1px, transparent 0); background-size: 40px 40px;"></div>
+</div>
+</div>
+<script src="/js/app.js"></script>
+</body></html>

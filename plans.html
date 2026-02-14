@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bloombit | Investment Plans Comparison</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#ffc105",
+                "background-light": "#f8f8f5",
+                "background-dark": "#231e0f",
+              },
+              fontFamily: {
+                "display": ["Space Grotesk"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 antialiased font-display">
+<!-- Navigation -->
+<nav class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
+<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+<a class="flex items-center gap-2" href="/">
+<div class="w-10 h-10 bg-primary flex items-center justify-center rounded-lg">
+<span class="material-icons text-background-dark">bolt</span>
+</div>
+<span class="text-2xl font-bold tracking-tight">Bloom<span class="text-primary">bit</span></span>
+</a>
+<div class="hidden md:flex items-center gap-8 text-sm font-medium">
+<a class="hover:text-primary transition-colors" href="/trading_signals">Markets</a>
+<a class="text-primary" href="/plans">Investment Plans</a>
+<a class="hover:text-primary transition-colors" href="/">AI Strategies</a>
+<a class="hover:text-primary transition-colors" href="/">Security</a>
+</div>
+<div class="flex items-center gap-4">
+<a class="px-5 py-2 text-sm font-semibold hover:text-primary transition-colors" href="/login">Log In</a>
+<a class="bg-primary text-background-dark px-6 py-2 rounded-lg font-bold text-sm hover:opacity-90 transition-opacity" href="/register">Get Started</a>
+</div>
+</div>
+</nav>
+<!-- Hero Header -->
+<header class="py-20 px-6">
+<div class="max-w-4xl mx-auto text-center">
+<span class="inline-block px-4 py-1.5 mb-6 text-xs font-bold tracking-widest uppercase bg-primary/10 text-primary border border-primary/20 rounded-full">Maximize Your Capital</span>
+<h1 class="text-5xl md:text-6xl font-bold mb-6 tracking-tight">Flexible Investment Plans</h1>
+<p class="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                Choose a plan tailored to your financial goals. Our AI-powered algorithms work 24/7 to optimize your returns based on your risk tolerance.
+            </p>
+</div>
+</header>
+<!-- Plan Cards -->
+<section class="pb-24 px-6">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Starter Plan -->
+<div class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-8 rounded-xl hover:border-primary/50 transition-all group flex flex-col">
+<div class="mb-8">
+<h3 class="text-xl font-bold mb-2">Starter</h3>
+<p class="text-slate-500 text-sm">Ideal for crypto newcomers</p>
+</div>
+<div class="mb-8">
+<div class="text-4xl font-bold mb-1">0.5% - 1.2%</div>
+<div class="text-sm font-medium text-primary">Daily Yield Range</div>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span>$100 - $2,500 Deposit</span>
+</li>
+<li class="flex items-center gap-3 text-sm text-slate-500">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span>Basic AI Strategy</span>
+</li>
+<li class="flex items-center gap-3 text-sm text-slate-500">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span>Weekly Withdrawals</span>
+</li>
+</ul>
+<button class="w-full py-4 border-2 border-primary text-primary hover:bg-primary hover:text-background-dark font-bold rounded-lg transition-all">Start Investing</button>
+</div>
+<!-- Growth Plan (Highlighted) -->
+<div class="bg-white dark:bg-slate-900 border-2 border-primary p-8 rounded-xl shadow-xl shadow-primary/5 relative flex flex-col scale-105 z-10">
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-background-dark text-[10px] font-bold uppercase tracking-widest px-4 py-1 rounded-full">Most Popular</div>
+<div class="mb-8">
+<h3 class="text-xl font-bold mb-2">Growth</h3>
+<p class="text-slate-500 text-sm">Accelerated portfolio scaling</p>
+</div>
+<div class="mb-8">
+<div class="text-4xl font-bold mb-1 text-primary">1.5% - 2.5%</div>
+<div class="text-sm font-medium text-slate-400">Daily Yield Range</div>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span class="font-semibold text-slate-900 dark:text-white">$2,501 - $10,000 Deposit</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span>Advanced AI Strategy</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span>Bi-Weekly Withdrawals</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span>Priority Support</span>
+</li>
+</ul>
+<button class="w-full py-4 bg-primary text-background-dark font-bold rounded-lg hover:opacity-90 transition-all">Start Investing</button>
+</div>
+<!-- Premium Plan -->
+<div class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-8 rounded-xl hover:border-primary/50 transition-all group flex flex-col">
+<div class="mb-8">
+<h3 class="text-xl font-bold mb-2">Premium</h3>
+<p class="text-slate-500 text-sm">Institutional grade performance</p>
+</div>
+<div class="mb-8">
+<div class="text-4xl font-bold mb-1">3.0% - 5.0%</div>
+<div class="text-sm font-medium text-primary">Daily Yield Range</div>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span>$10,001+ Deposit</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span>Institutional Elite AI</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span>Instant Withdrawals</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-icons text-primary text-sm">check_circle</span>
+<span>Dedicated Portfolio Manager</span>
+</li>
+</ul>
+<button class="w-full py-4 border-2 border-primary text-primary hover:bg-primary hover:text-background-dark font-bold rounded-lg transition-all">Start Investing</button>
+</div>
+</div>
+</section>
+<!-- Comparison Table -->
+<section class="bg-white dark:bg-background-dark py-24 px-6 border-y border-primary/10">
+<div class="max-w-6xl mx-auto">
+<div class="text-center mb-16">
+<h2 class="text-3xl font-bold mb-4">Compare Features</h2>
+<p class="text-slate-500">Dive deep into the technical specifications of each investment tier.</p>
+</div>
+<div class="overflow-hidden border border-slate-200 dark:border-slate-800 rounded-xl">
+<!-- Header -->
+<div class="comparison-grid bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-bold py-6 px-8 text-sm uppercase tracking-wider">
+<div class="text-slate-400">Feature</div>
+<div class="text-center">Starter</div>
+<div class="text-center text-primary">Growth</div>
+<div class="text-center">Premium</div>
+</div>
+<!-- Rows -->
+<div class="comparison-grid border-b border-slate-100 dark:border-slate-800/50 py-6 px-8 text-sm items-center">
+<div class="font-medium">Withdrawal Rules</div>
+<div class="text-center text-slate-500">Every 7 Days</div>
+<div class="text-center text-slate-900 dark:text-white font-semibold">Every 3 Days</div>
+<div class="text-center text-slate-500">Instant (Anytime)</div>
+</div>
+<div class="comparison-grid bg-slate-50/30 dark:bg-slate-800/20 border-b border-slate-100 dark:border-slate-800/50 py-6 px-8 text-sm items-center">
+<div class="font-medium">Auto-Compounding</div>
+<div class="text-center text-slate-500"><span class="material-icons text-sm">remove</span></div>
+<div class="text-center"><span class="material-icons text-primary">check</span></div>
+<div class="text-center"><span class="material-icons text-primary">check</span></div>
+</div>
+<div class="comparison-grid border-b border-slate-100 dark:border-slate-800/50 py-6 px-8 text-sm items-center">
+<div class="font-medium">Risk Management</div>
+<div class="text-center text-slate-500 text-xs">Standard SL/TP</div>
+<div class="text-center text-slate-900 dark:text-white font-semibold text-xs">Dynamic Hedging</div>
+<div class="text-center text-slate-500 text-xs">Tail-Risk Insurance</div>
+</div>
+<div class="comparison-grid bg-slate-50/30 dark:bg-slate-800/20 border-b border-slate-100 dark:border-slate-800/50 py-6 px-8 text-sm items-center">
+<div class="font-medium">Portfolio Insights</div>
+<div class="text-center text-slate-500">Monthly PDF</div>
+<div class="text-center text-slate-900 dark:text-white font-semibold">Real-time Dashboard</div>
+<div class="text-center text-slate-500">Custom Reports</div>
+</div>
+<div class="comparison-grid border-b border-slate-100 dark:border-slate-800/50 py-6 px-8 text-sm items-center">
+<div class="font-medium">Capital Insurance</div>
+<div class="text-center text-slate-500">50% Coverage</div>
+<div class="text-center text-slate-900 dark:text-white font-semibold">85% Coverage</div>
+<div class="text-center text-slate-500">100% Coverage</div>
+</div>
+</div>
+<!-- Trust Badges -->
+<div class="mt-12 flex flex-wrap justify-center items-center gap-12 opacity-40 grayscale">
+<div class="flex items-center gap-2">
+<span class="material-icons text-2xl">verified_user</span>
+<span class="font-bold">SECURED BY SSL</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-icons text-2xl">account_balance</span>
+<span class="font-bold">FCA REGULATED</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-icons text-2xl">security</span>
+<span class="font-bold">PCI COMPLIANT</span>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQ Section -->
+<section class="py-24 px-6 bg-background-light dark:bg-background-dark">
+<div class="max-w-3xl mx-auto">
+<h2 class="text-4xl font-bold mb-12 text-center">Frequently Asked Questions</h2>
+<div class="space-y-4">
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+<button class="w-full px-6 py-5 flex items-center justify-between text-left font-semibold">
+<span>How are the daily yields generated?</span>
+<span class="material-icons text-primary">add</span>
+</button>
+<div class="px-6 pb-5 text-sm text-slate-500 leading-relaxed border-t border-slate-50 dark:border-slate-800 pt-4">
+                        Our AI algorithms execute thousands of micro-trades across multiple liquidity pools, arbitrage opportunities, and trend-following strategies 24/7. The yield reflects the collective performance of these automated strategies minus a small platform fee.
+                    </div>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+<button class="w-full px-6 py-5 flex items-center justify-between text-left font-semibold">
+<span>Is my initial capital insured?</span>
+<span class="material-icons text-primary">add</span>
+</button>
+<div class="hidden px-6 pb-5 text-sm text-slate-500 leading-relaxed">
+                        Yes, depending on your plan tier, we maintain a Reserve Fund that covers between 50% and 100% of the initial principal against catastrophic market events.
+                    </div>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+<button class="w-full px-6 py-5 flex items-center justify-between text-left font-semibold">
+<span>What is the minimum lock-up period?</span>
+<span class="material-icons text-primary">add</span>
+</button>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+<button class="w-full px-6 py-5 flex items-center justify-between text-left font-semibold">
+<span>Can I upgrade my plan later?</span>
+<span class="material-icons text-primary">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="py-24 px-6 relative overflow-hidden">
+<div class="absolute inset-0 bg-primary opacity-5"></div>
+<div class="max-w-4xl mx-auto relative text-center">
+<h2 class="text-4xl font-bold mb-6">Ready to grow your wealth?</h2>
+<p class="text-slate-500 mb-10 text-lg">Join 45,000+ investors using Bloombit to automate their crypto growth.</p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button class="bg-primary text-background-dark px-10 py-4 rounded-lg font-bold text-lg hover:shadow-xl hover:shadow-primary/20 transition-all">Create Account</button>
+<button class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-10 py-4 rounded-lg font-bold text-lg hover:border-primary transition-all">Contact Sales</button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-900 py-16 px-6">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="col-span-1 md:col-span-1">
+<div class="flex items-center gap-2 mb-6">
+<div class="w-8 h-8 bg-primary flex items-center justify-center rounded-lg">
+<span class="material-icons text-background-dark text-sm">bolt</span>
+</div>
+<span class="text-xl font-bold tracking-tight">Bloom<span class="text-primary">bit</span></span>
+</div>
+<p class="text-slate-400 text-sm leading-relaxed">
+                    AI-powered crypto trading for the modern investor. Secure, transparent, and profitable.
+                </p>
+</div>
+<div>
+<h4 class="font-bold mb-6">Product</h4>
+<ul class="space-y-4 text-sm text-slate-500">
+<li><a class="hover:text-primary" href="#">Investment Plans</a></li>
+<li><a class="hover:text-primary" href="#">AI Strategy Guide</a></li>
+<li><a class="hover:text-primary" href="#">Trading Bot</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Company</h4>
+<ul class="space-y-4 text-sm text-slate-500">
+<li><a class="hover:text-primary" href="#">About Us</a></li>
+<li><a class="hover:text-primary" href="#">Security</a></li>
+<li><a class="hover:text-primary" href="#">Legal &amp; Privacy</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Newsletter</h4>
+<div class="flex gap-2">
+<input class="bg-slate-50 dark:bg-slate-900 border-none rounded-lg text-sm px-4 flex-grow focus:ring-1 focus:ring-primary" placeholder="Enter email" type="email"/>
+<button class="bg-primary text-background-dark p-2 rounded-lg">
+<span class="material-icons">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto mt-16 pt-8 border-t border-slate-50 dark:border-slate-900 flex flex-col md:row justify-between items-center gap-4">
+<p class="text-xs text-slate-400">© 2024 Bloombit Technologies Ltd. All rights reserved.</p>
+<div class="flex gap-6 text-slate-400">
+<span class="material-icons text-xl hover:text-primary cursor-pointer">facebook</span>
+<span class="material-icons text-xl hover:text-primary cursor-pointer">language</span>
+<span class="material-icons text-xl hover:text-primary cursor-pointer">public</span>
+</div>
+</div>
+</footer>
+</body></html>
