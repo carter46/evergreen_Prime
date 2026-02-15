@@ -1,7 +1,8 @@
--- Bloombit - Complete Database
--- 1. In phpMyAdmin, select your database (e.g. u502532383_bloombit) from the left sidebar
--- 2. Click the Import tab and choose this file
--- 3. Execute
+-- Bloombit - Migration (Update Existing Database)
+-- Use this to update your server database with the latest schema and defaults.
+-- Safe to run on existing databases - creates missing tables, updates defaults, does not delete data.
+--
+-- In phpMyAdmin: Select your database → Import → Choose this file → Execute
 
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
@@ -115,7 +116,6 @@ INSERT INTO site_settings (`key`, value) VALUES
 ON DUPLICATE KEY UPDATE value = VALUES(value);
 
 -- Default admin user (email: admin@mail.com)
--- Visit /scripts/create-admin.php to set the correct password for login
 INSERT INTO users (email, password_hash, name, role, email_verified, active) VALUES
   ('admin@mail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', 'admin', 1, 1)
 ON DUPLICATE KEY UPDATE role = 'admin', email_verified = 1, active = 1;
