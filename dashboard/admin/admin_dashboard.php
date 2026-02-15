@@ -1,10 +1,51 @@
-<?php require_once __DIR__ . '/../../includes/auth-check.php'; ?>
-<!DOCTYPE html>
+<?php
+require_once __DIR__ . '/../../includes/admin-check.php';
+require_once __DIR__ . '/../../includes/helpers.php';
+$currentPage = 'dashboard';
+$siteName = get_site_name();
 
+$totalUsers = 0;
+$totalEarnings = 0;
+$activeInv = 0;
+$pendingDepositsCount = 0;
+$pendingDepositsSum = 0;
+$totalDeposits = 0;
+$planDist = [];
+$pendingList = [];
+
+try {
+    $pdo = require __DIR__ . '/../../includes/db.php';
+    $r = $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+    $totalUsers = (int) $r;
+    $r = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'payout' AND status = 'completed'")->fetchColumn();
+    $totalEarnings = (float) $r;
+    $r = $pdo->query("SELECT COUNT(*) FROM user_investments WHERE status = 'active'")->fetchColumn();
+    $activeInv = (int) $r;
+    $stmt = $pdo->query("SELECT COUNT(*), COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'deposit' AND status = 'pending'");
+    $row = $stmt->fetch(PDO::FETCH_NUM);
+    $pendingDepositsCount = (int) $row[0];
+    $pendingDepositsSum = (float) $row[1];
+    $r = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'deposit' AND status = 'completed'")->fetchColumn();
+    $totalDeposits = (float) $r;
+    $stmt = $pdo->query('SELECT p.name, ui.plan_id, COUNT(*) AS cnt, COALESCE(SUM(ui.amount), 0) AS cap FROM user_investments ui JOIN plans p ON p.id = ui.plan_id GROUP BY ui.plan_id, p.name');
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $planDist[] = $row;
+    }
+    $stmt = $pdo->query("SELECT t.id, t.amount, t.currency, t.status, u.name, u.id AS user_id FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'deposit' AND t.status = 'pending' ORDER BY t.created_at DESC LIMIT 10");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $pendingList[] = $row;
+    }
+} catch (Throwable $e) {
+    // DB unavailable - use defaults
+}
+$planMax = 1;
+foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['cnt']; }
+?>
+<!DOCTYPE html>
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit Admin Command Center</title>
+<title><?php echo htmlspecialchars($siteName); ?> Admin Command Center</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -33,78 +74,12 @@
         }
     </script>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
-<!-- Wrapper -->
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
 <div class="flex min-h-screen">
-<!-- Sidebar Navigation -->
-<aside class="w-64 bg-white dark:bg-black/20 border-r border-primary/10 flex flex-col shrink-0">
-<a class="p-6 flex items-center gap-3" href="/">
-<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-<span class="material-icons text-white">bolt</span>
-</div>
-<h1 class="font-bold text-xl tracking-tight">Bloom<span class="text-primary">bit</span></h1>
-</a>
-<nav class="flex-1 px-4 py-4 space-y-1">
-<a class="flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-lg shadow-sm" href="/dashboard/admin">
-<span class="material-icons text-[20px]">dashboard</span>
-<span class="font-medium">Command Center</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-colors rounded-lg" href="/dashboard/admin/users">
-<span class="material-icons text-[20px]">people</span>
-<span class="font-medium">User Management</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-colors rounded-lg" href="/dashboard/admin/plans">
-<span class="material-icons text-[20px]">account_balance_wallet</span>
-<span class="font-medium">Plan Management</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-colors rounded-lg" href="/dashboard/admin">
-<span class="material-icons text-[20px]">receipt_long</span>
-<span class="font-medium">Transactions</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-colors rounded-lg" href="/dashboard/admin">
-<span class="material-icons text-[20px]">smart_toy</span>
-<span class="font-medium">AI Bot Config</span>
-</a>
-</nav>
-<div class="p-4 border-t border-primary/10">
-<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-colors rounded-lg" href="/dashboard/admin/communication">
-<span class="material-icons text-[20px]">settings</span>
-<span class="font-medium">Communication Hub</span>
-</a>
-</div>
-</aside>
-<!-- Main Content -->
-<main class="flex-1 overflow-y-auto">
-<!-- Top Bar -->
-<header class="h-16 bg-white/80 dark:bg-black/10 backdrop-blur-md border-b border-primary/10 flex items-center justify-between px-8 sticky top-0 z-10">
-<div class="flex items-center gap-4">
-<div class="relative">
-<input class="w-64 pl-10 pr-4 py-2 bg-background-light dark:bg-white/5 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/50" placeholder="Search data..." type="text"/>
-<span class="material-icons absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
-</div>
-</div>
-<div class="flex items-center gap-6">
-<!-- Date Picker Placeholder -->
-<div class="flex items-center gap-2 px-3 py-1.5 bg-background-light dark:bg-white/5 border border-primary/10 rounded-lg text-xs font-medium cursor-pointer">
-<span class="material-icons text-sm">calendar_today</span>
-<span>Oct 01, 2023 - Oct 31, 2023</span>
-</div>
-<button class="relative text-slate-500 hover:text-primary">
-<span class="material-icons">notifications</span>
-<span class="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white dark:border-background-dark font-bold">12</span>
-</button>
-<div class="flex items-center gap-3 pl-6 border-l border-primary/10">
-<div class="text-right">
-<p class="text-xs font-bold leading-none">Admin Bloombit</p>
-<p class="text-[10px] text-slate-500">Super Admin</p>
-</div>
-<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
-<img alt="Admin Profile" class="w-full h-full object-cover" data-alt="Close up portrait of a male professional admin" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAllv2arw4CT5sh5se3HKMFVKyYXOAW1324wKxujkeuffmY1DhhhTUb1llYzAk_sM7va9f_KPJb5zWOKBQD2TJHPAWkHyzECqLiN2iLHvU_rfybow80K5_hH3w4qrMTwioK102J1bJ8_1J9XyNSbcvlSvwXKmpwg-zMnGWXlKkHWg2SGjXf8kRz78h-7YwhWISO8lzfSxTK5-jedWr5c7-8zqU8QckddM_pMegUm6540ceVN0QEQqbK05hVdzt1j25SMveouqEJl9k"/>
-</div>
-</div>
-</div>
-</header>
-<div class="p-8">
+<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
+<main class="flex-1 overflow-y-auto min-w-0">
+<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
+<div class="p-4 sm:p-6 lg:p-8">
 <!-- Top Stats Row -->
 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
 <!-- Card 1 -->
@@ -113,15 +88,15 @@
 <span class="text-slate-500 text-xs font-medium uppercase tracking-wider">Total Users</span>
 <span class="text-emerald-500 text-[10px] font-bold flex items-center">+12% <span class="material-icons text-[12px]">trending_up</span></span>
 </div>
-<p class="text-2xl font-bold">14,290</p>
+<p class="text-2xl font-bold"><?php echo number_format($totalUsers); ?></p>
 </div>
 <!-- Card 2 -->
 <div class="bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
 <div class="flex items-center justify-between mb-2">
 <span class="text-slate-500 text-xs font-medium uppercase tracking-wider">Total Earnings</span>
-<span class="text-emerald-500 text-[10px] font-bold flex items-center">+8.4% <span class="material-icons text-[12px]">trending_up</span></span>
+<span class="text-emerald-500 text-[10px] font-bold flex items-center"><span class="material-icons text-[12px]">trending_up</span></span>
 </div>
-<p class="text-2xl font-bold">$1.2M</p>
+<p class="text-2xl font-bold">$<?php echo number_format($totalEarnings); ?></p>
 </div>
 <!-- Card 3 -->
 <div class="bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
@@ -129,7 +104,7 @@
 <span class="text-slate-500 text-xs font-medium uppercase tracking-wider">Active Inv.</span>
 <span class="text-slate-400 text-[10px] font-bold">Stable</span>
 </div>
-<p class="text-2xl font-bold">3,842</p>
+<p class="text-2xl font-bold"><?php echo number_format($activeInv); ?></p>
 </div>
 <!-- Card 4 -->
 <div class="bg-primary/5 dark:bg-primary/10 p-6 rounded-xl border border-primary/20 shadow-sm">
@@ -137,15 +112,15 @@
 <span class="text-primary font-bold text-xs uppercase tracking-wider">Pending Deposits</span>
 <span class="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">ACTION</span>
 </div>
-<p class="text-2xl font-bold text-primary">$42,910</p>
+<p class="text-2xl font-bold text-primary">$<?php echo number_format($pendingDepositsSum); ?></p>
 </div>
 <!-- Card 5 -->
 <div class="bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
 <div class="flex items-center justify-between mb-2">
 <span class="text-slate-500 text-xs font-medium uppercase tracking-wider">Total Deposits</span>
-<span class="text-emerald-500 text-[10px] font-bold flex items-center">+22% <span class="material-icons text-[12px]">trending_up</span></span>
+<span class="text-emerald-500 text-[10px] font-bold flex items-center"><span class="material-icons text-[12px]">trending_up</span></span>
 </div>
-<p class="text-2xl font-bold">$4.8M</p>
+<p class="text-2xl font-bold">$<?php echo number_format($totalDeposits); ?></p>
 </div>
 </div>
 <!-- Mid Section - Analytics -->
@@ -212,33 +187,18 @@
 <div class="bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
 <h3 class="font-bold text-lg mb-6">Investments per Plan</h3>
 <div class="space-y-6">
+<?php foreach ($planDist as $p): $pct = $planMax > 0 ? (int)((int)$p['cnt'] / $planMax * 100) : 0; ?>
 <div>
 <div class="flex justify-between items-center mb-2">
-<span class="text-sm font-medium">Starter Plan</span>
-<span class="text-sm font-bold">1,240</span>
+<span class="text-sm font-medium"><?php echo htmlspecialchars($p['name']); ?> Plan</span>
+<span class="text-sm font-bold"><?php echo number_format((int)$p['cnt']); ?></span>
 </div>
 <div class="w-full bg-primary/10 h-2 rounded-full">
-<div class="bg-primary w-[65%] h-full rounded-full"></div>
+<div class="bg-primary h-full rounded-full" style="width:<?php echo $pct; ?>%"></div>
 </div>
 </div>
-<div>
-<div class="flex justify-between items-center mb-2">
-<span class="text-sm font-medium">Growth Plan</span>
-<span class="text-sm font-bold">852</span>
-</div>
-<div class="w-full bg-primary/10 h-2 rounded-full">
-<div class="bg-primary w-[45%] h-full rounded-full"></div>
-</div>
-</div>
-<div>
-<div class="flex justify-between items-center mb-2">
-<span class="text-sm font-medium">Premium Plan</span>
-<span class="text-sm font-bold">1,750</span>
-</div>
-<div class="w-full bg-primary/10 h-2 rounded-full">
-<div class="bg-primary w-[80%] h-full rounded-full"></div>
-</div>
-</div>
+<?php endforeach; ?>
+<?php if (empty($planDist)): ?><p class="text-sm text-slate-500">No investments yet.</p><?php endif; ?>
 </div>
 <!-- Bot Widget -->
 <div class="mt-10 p-4 bg-primary rounded-xl text-white">
@@ -273,27 +233,31 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-primary/5">
+<?php
+$coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png'];
+foreach ($pendingList as $tx):
+  $cu = strtoupper($tx['currency']);
+  $logo = $coinLogos[$cu] ?? null;
+?>
 <tr class="hover:bg-primary/5 transition-colors">
 <td class="px-6 py-4">
 <div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
-<img alt="User" class="w-full h-full object-cover" data-alt="Portrait of a male crypto investor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqIPv-31uhDj7Xw9biLYUl8x5WuYZFp6-8QIv8AEnJzVWlwPvfCnfaoFT8HYl-6e4X9QVgAzvQCSxM9epQcAs9fPAlGwdhU59c4sZmhFE-5lUaIVRWiDrj5T3Hd5_kG_PirkdCQzz4KV2lgtnON8-7pRzYhkFw786oV0thf3TjITk9PLs8lvX12WdDVyyUV8E6JWzpIdXEnkdy-N_n5WQ9B2sot24HpNYANQcfUp_8UMKW6l3AZlT3GTHQsb9xHRrWST0xZTM0x0s"/>
-</div>
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-slate-500 font-bold text-xs"><?php echo strtoupper(substr($tx['name'] ?: 'U', 0, 1)); ?></div>
 <div>
-<p class="text-sm font-bold">Alex Thompson</p>
-<p class="text-[10px] text-slate-500">ID: #BT-8821</p>
+<p class="text-sm font-bold"><?php echo htmlspecialchars($tx['name'] ?: 'User'); ?></p>
+<p class="text-[10px] text-slate-500">ID: BB-<?php echo (int)$tx['user_id']; ?></p>
 </div>
 </div>
 </td>
-<td class="px-6 py-4 text-sm font-bold">$12,400.00</td>
+<td class="px-6 py-4 text-sm font-bold">$<?php echo number_format((float)$tx['amount'], 2); ?></td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-1.5">
-<img alt="BTC" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png"/>
-<span class="text-xs font-medium">BTC</span>
+<?php if ($logo): ?><img alt="<?php echo $cu; ?>" class="w-5 h-5" src="<?php echo htmlspecialchars($logo); ?>"/><?php endif; ?>
+<span class="text-xs font-medium"><?php echo htmlspecialchars($tx['currency']); ?></span>
 </div>
 </td>
 <td class="px-6 py-4">
-<span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] font-bold rounded-full uppercase">Reviewing</span>
+<span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>
 <td class="px-6 py-4 text-right">
 <div class="flex justify-end gap-2">
@@ -302,64 +266,10 @@
 </div>
 </td>
 </tr>
-<tr class="hover:bg-primary/5 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
-<img alt="User" class="w-full h-full object-cover" data-alt="Portrait of a female executive investor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQ45I909e3ZRtdife0fdrQYylz6AmXDJHJ58q2It8gwl69PKfNpJu3dvTfjqCuSebbpuRXJvjed6L9Gpy4-cXY4akVVrm5Sh_r20FjHcBfiS3Tvo9biNjnzDrXSYImE1JPPqSoqXzg2ZcsZjH5RdKjYDbx8zebCK-upTu1xp1aiVmFKL6-ZrwQOiRVQALziTWO9JIZt_tz-38ea34NwRHmgYBTVmsTk0bG9FRBD3qfl-apGJlMZdDmpT9rk3N3pVcAwFrPBZ9Nk3I"/>
-</div>
-<div>
-<p class="text-sm font-bold">Sarah Jenkins</p>
-<p class="text-[10px] text-slate-500">ID: #BT-4211</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 text-sm font-bold">$5,000.00</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-1.5">
-<img alt="USDT" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/325/large/Tether.png"/>
-<span class="text-xs font-medium">USDT</span>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] font-bold rounded-full uppercase">Reviewing</span>
-</td>
-<td class="px-6 py-4 text-right">
-<div class="flex justify-end gap-2">
-<button class="px-3 py-1.5 bg-primary text-white text-[10px] font-bold rounded-lg hover:bg-primary/90">APPROVE</button>
-<button class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors">REJECT</button>
-</div>
-</td>
-</tr>
-<tr class="hover:bg-primary/5 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
-<img alt="User" class="w-full h-full object-cover" data-alt="Portrait of a businessman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRiiOOd2RmMDbiYP1n_VlmlWJ5wSBGb-mLkyY08oDMjwFo3BPW99zgsuHO8vUiiNA3Rml9f8CGoC6kyOzHlsHdQg5v7c13vV5Qh8m41sqLqJc3OGsb8g8TeAz5CU0MFicmgBvaHrWnSuMbwTUVnPSKNccnTqGrQbF62yQZqw8PJ4Jas-ghaYLDw-aTk6It8mohWxe1z7yZwDA6c5XFIxhBy71w89nzpVe4ZH7demwLbIKO2E1PJGqRHHgfgwK5_YALMC2FAJljl2Y"/>
-</div>
-<div>
-<p class="text-sm font-bold">Marcus Vane</p>
-<p class="text-[10px] text-slate-500">ID: #BT-0912</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 text-sm font-bold">$1,250.00</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-1.5">
-<span class="material-icons text-primary text-sm">account_balance</span>
-<span class="text-xs font-medium">Bank</span>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] font-bold rounded-full uppercase">Reviewing</span>
-</td>
-<td class="px-6 py-4 text-right">
-<div class="flex justify-end gap-2">
-<button class="px-3 py-1.5 bg-primary text-white text-[10px] font-bold rounded-lg hover:bg-primary/90">APPROVE</button>
-<button class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors">REJECT</button>
-</div>
-</td>
-</tr>
+<?php endforeach; ?>
+<?php if (empty($pendingList)): ?>
+<tr><td class="px-6 py-8 text-center text-slate-500" colspan="5">No pending deposits.</td></tr>
+<?php endif; ?>
 </tbody>
 </table>
 </div>

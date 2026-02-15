@@ -1,9 +1,31 @@
+<?php
+require_once __DIR__ . '/includes/helpers.php';
+$siteName = get_site_name();
+$heroBadge = get_site_setting('hero_badge', 'AI ENGINE V4.0 NOW LIVE');
+$statsAssets = get_site_setting('stats_assets', '$4.2B+');
+$statsBots = get_site_setting('stats_bots', '85k+');
+$statsUptime = get_site_setting('stats_uptime', '99.9%');
+$statsRoi = get_site_setting('stats_roi', '12.4%');
+$marketCap = get_site_setting('market_cap', '$2.45T');
+$volume24h = get_site_setting('volume_24h', '$84.2B');
+$btcDominance = get_site_setting('btc_dominance', '52.4%');
+$activeTraders = get_site_setting('active_traders', '12.8M+');
+$indexPlans = [];
+try {
+    $pdo = require __DIR__ . '/includes/db.php';
+    $stmt = $pdo->query('SELECT name, slug, min_deposit, max_deposit, yield_min, yield_max, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id LIMIT 3');
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $row['features'] = $row['features_json'] ? json_decode($row['features_json'], true) : [];
+        $indexPlans[] = $row;
+    }
+} catch (Throwable $e) { }
+?>
 <!DOCTYPE html>
 
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit - AI Crypto Trading</title>
+<title><?php echo htmlspecialchars($siteName); ?> - AI Crypto Trading</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -64,48 +86,28 @@
         width: max-content;
     }
 </style></head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 transition-colors duration-300">
-<!-- Navigation -->
-<nav class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
-<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-<a class="flex items-center gap-2" href="/">
-<div class="w-10 h-10 bg-primary rounded flex items-center justify-center">
-<span class="material-icons text-white">auto_awesome</span>
-</div>
-<span class="text-2xl font-bold tracking-tight">Bloom<span class="text-primary">bit</span></span>
-</a>
-<div class="hidden md:flex items-center gap-10 font-medium">
-<a class="hover:text-primary transition-colors" href="/#technology">Technology</a>
-<a class="hover:text-primary transition-colors" href="/#how-it-works">How It Works</a>
-<a class="hover:text-primary transition-colors" href="/plans">Pricing</a>
-<a class="hover:text-primary transition-colors" href="/about_us">Company</a>
-</div>
-<div class="flex items-center gap-4">
-<a class="px-6 py-2.5 font-semibold hover:text-primary transition-colors" href="/login">Login</a>
-<a class="px-6 py-2.5 bg-primary text-black font-bold rounded hover:shadow-lg hover:shadow-primary/20 transition-all" href="/register">Get Started</a>
-</div>
-</div>
-</nav>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden">
+<?php $currentPage = 'home'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 <!-- Hero Section -->
-<section class="relative overflow-hidden pt-20 pb-32 neural-bg">
-<div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+<section class="relative overflow-hidden pt-16 sm:pt-20 pb-24 sm:pb-32 neural-bg px-4 sm:px-6">
+<div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
 <div>
 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold mb-6">
 <span class="relative flex h-2 w-2">
 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
 <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
 </span>
-                    AI ENGINE V4.0 NOW LIVE
+                    <?php echo htmlspecialchars($heroBadge); ?>
                 </div>
-<h1 class="text-6xl lg:text-7xl font-bold leading-[1.1] mb-8">
+<h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6 sm:mb-8">
                     Smarter Crypto Investing Powered by <span class="text-primary">Advanced AI</span>
 </h1>
-<p class="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-lg leading-relaxed">
+<p class="text-base sm:text-lg lg:text-xl text-slate-500 dark:text-slate-400 mb-8 sm:mb-10 max-w-lg leading-relaxed">
                     Automate your wealth with institutional-grade machine learning algorithms. Deploy sophisticated bots that trade 24/7 while you sleep.
                 </p>
 <div class="flex flex-col sm:flex-row gap-4">
-<button class="px-8 py-4 bg-primary text-black font-bold text-lg rounded-lg shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all">Start Your Free Trial</button>
-<button class="px-8 py-4 bg-white dark:bg-slate-800 border border-primary/20 font-bold text-lg rounded-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+<button class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-primary text-black font-bold text-base sm:text-lg rounded-lg shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all min-h-[44px]">Start Your Free Trial</button>
+<button class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white dark:bg-slate-800 border border-primary/20 font-bold text-base sm:text-lg rounded-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2 min-h-[44px]">
 <span class="material-icons">play_circle</span> Watch Demo
                     </button>
 </div>
@@ -120,19 +122,19 @@
 <section class="bg-primary py-12">
 <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
 <div class="text-center">
-<div class="text-4xl font-bold text-black">$4.2B+</div>
+<div class="text-4xl font-bold text-black"><?php echo htmlspecialchars($statsAssets); ?></div>
 <div class="text-black/70 font-medium">Assets Managed</div>
 </div>
 <div class="text-center border-l border-black/10">
-<div class="text-4xl font-bold text-black">85k+</div>
+<div class="text-4xl font-bold text-black"><?php echo htmlspecialchars($statsBots); ?></div>
 <div class="text-black/70 font-medium">Active AI Bots</div>
 </div>
 <div class="text-center border-l border-black/10">
-<div class="text-4xl font-bold text-black">99.9%</div>
+<div class="text-4xl font-bold text-black"><?php echo htmlspecialchars($statsUptime); ?></div>
 <div class="text-black/70 font-medium">Uptime Guarantee</div>
 </div>
 <div class="text-center border-l border-black/10">
-<div class="text-4xl font-bold text-black">12.4%</div>
+<div class="text-4xl font-bold text-black"><?php echo htmlspecialchars($statsRoi); ?></div>
 <div class="text-black/70 font-medium">Avg. Monthly ROI</div>
 </div>
 </div>
@@ -141,19 +143,19 @@
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
 <div class="flex flex-col items-center border-r border-slate-100 dark:border-slate-800 last:border-0">
 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Market Cap</span>
-<span class="text-xl font-bold">$2.45T <span class="text-green-500 text-xs">+1.2%</span></span>
+<span class="text-xl font-bold"><?php echo htmlspecialchars($marketCap); ?> <span class="text-green-500 text-xs">+1.2%</span></span>
 </div>
 <div class="flex flex-col items-center border-r border-slate-100 dark:border-slate-800 lg:last:border-0">
 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">24h Volume</span>
-<span class="text-xl font-bold">$84.2B</span>
+<span class="text-xl font-bold"><?php echo htmlspecialchars($volume24h); ?></span>
 </div>
 <div class="flex flex-col items-center border-r border-slate-100 dark:border-slate-800 last:border-0">
 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">BTC Dominance</span>
-<span class="text-xl font-bold">52.4%</span>
+<span class="text-xl font-bold"><?php echo htmlspecialchars($btcDominance); ?></span>
 </div>
 <div class="flex flex-col items-center last:border-0">
 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Active Traders</span>
-<span class="text-xl font-bold">12.8M+</span>
+<span class="text-xl font-bold"><?php echo htmlspecialchars($activeTraders); ?></span>
 </div>
 </div>
 </div>
@@ -251,87 +253,87 @@
 <table class="w-full text-left border-collapse crypto-table">
 <thead>
 <tr class="bg-slate-50 dark:bg-slate-900/50">
-<th class="p-6 font-bold text-sm text-slate-400 uppercase">Rank</th>
-<th class="p-6 font-bold text-sm text-slate-400 uppercase">Coin</th>
-<th class="p-6 font-bold text-sm text-slate-400 uppercase">Price</th>
-<th class="p-6 font-bold text-sm text-slate-400 uppercase">24h Change</th>
-<th class="p-6 font-bold text-sm text-slate-400 uppercase">Market Cap</th>
-<th class="p-6 font-bold text-sm text-slate-400 uppercase">Last 7 Days</th>
+<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase">Rank</th>
+<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase">Coin</th>
+<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase">Price</th>
+<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase">24h Change</th>
+<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase hidden sm:table-cell">Market Cap</th>
+<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase hidden md:table-cell">Last 7 Days</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group" data-coin="bitcoin">
-<td class="p-6 font-bold">1</td>
-<td class="p-6">
+<td class="p-4 sm:p-6 font-bold">1</td>
+<td class="p-4 sm:p-6">
 <div class="flex items-center gap-3">
 <div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="Bitcoin"/></div>
 <div><div class="font-bold">Bitcoin</div><div class="text-xs text-slate-400">BTC</div></div>
 </div>
 </td>
-<td class="p-6 font-medium font-mono crypto-price">--</td>
-<td class="p-6 crypto-change text-green-500">--</td>
-<td class="p-6 font-medium font-mono">$1.26T</td>
-<td class="p-6">
+<td class="p-4 sm:p-6 font-medium font-mono crypto-price">--</td>
+<td class="p-4 sm:p-6 crypto-change text-green-500">--</td>
+<td class="p-4 sm:p-6 font-medium font-mono hidden sm:table-cell">$1.26T</td>
+<td class="p-4 sm:p-6 hidden md:table-cell">
 <div class="w-24 h-8 bg-green-500/10 rounded overflow-hidden">
 <div class="h-full w-2/3 bg-green-500/20 animate-pulse"></div>
 </div>
 </td>
 </tr>
 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="ethereum">
-<td class="p-6 font-bold">2</td>
-<td class="p-6">
+<td class="p-4 sm:p-6 font-bold">2</td>
+<td class="p-4 sm:p-6">
 <div class="flex items-center gap-3">
 <div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png" alt="Ethereum"/></div>
 <div><div class="font-bold">Ethereum</div><div class="text-xs text-slate-400">ETH</div></div>
 </div>
 </td>
-<td class="p-6 font-medium font-mono crypto-price">--</td>
-<td class="p-6 crypto-change text-red-500">--</td>
-<td class="p-6 font-medium font-mono">$411.2B</td>
-<td class="p-6">
+<td class="p-4 sm:p-6 font-medium font-mono crypto-price">--</td>
+<td class="p-4 sm:p-6 crypto-change text-red-500">--</td>
+<td class="p-4 sm:p-6 font-medium font-mono hidden sm:table-cell">$411.2B</td>
+<td class="p-4 sm:p-6 hidden md:table-cell">
 <div class="w-24 h-8 bg-red-500/10 rounded overflow-hidden">
 <div class="h-full w-1/2 bg-red-500/20 animate-pulse"></div>
 </div>
 </td>
 </tr>
 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="tether">
-<td class="p-6 font-bold">3</td>
-<td class="p-6">
+<td class="p-4 sm:p-6 font-bold">3</td>
+<td class="p-4 sm:p-6">
 <div class="flex items-center gap-3">
 <div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/325/large/Tether.png" alt="Tether"/></div>
 <div><div class="font-bold">Tether</div><div class="text-xs text-slate-400">USDT</div></div>
 </div>
 </td>
-<td class="p-6 font-medium font-mono crypto-price">--</td>
-<td class="p-6 crypto-change text-green-500">--</td>
-<td class="p-6 font-medium font-mono">--</td>
-<td class="p-6"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
+<td class="p-4 sm:p-6 font-medium font-mono crypto-price">--</td>
+<td class="p-4 sm:p-6 crypto-change text-green-500">--</td>
+<td class="p-4 sm:p-6 font-medium font-mono hidden sm:table-cell">--</td>
+<td class="p-4 sm:p-6 hidden md:table-cell"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
 </tr>
 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="binancecoin">
-<td class="p-6 font-bold">4</td>
-<td class="p-6">
+<td class="p-4 sm:p-6 font-bold">4</td>
+<td class="p-4 sm:p-6">
 <div class="flex items-center gap-3">
 <div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png" alt="BNB"/></div>
 <div><div class="font-bold">BNB</div><div class="text-xs text-slate-400">BNB</div></div>
 </div>
 </td>
-<td class="p-6 font-medium font-mono crypto-price">--</td>
-<td class="p-6 crypto-change text-green-500">--</td>
-<td class="p-6 font-medium font-mono">--</td>
-<td class="p-6"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
+<td class="p-4 sm:p-6 font-medium font-mono crypto-price">--</td>
+<td class="p-4 sm:p-6 crypto-change text-green-500">--</td>
+<td class="p-4 sm:p-6 font-medium font-mono hidden sm:table-cell">--</td>
+<td class="p-4 sm:p-6 hidden md:table-cell"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
 </tr>
 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="solana">
-<td class="p-6 font-bold">5</td>
-<td class="p-6">
+<td class="p-4 sm:p-6 font-bold">5</td>
+<td class="p-4 sm:p-6">
 <div class="flex items-center gap-3">
 <div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/4128/large/solana.png" alt="Solana"/></div>
 <div><div class="font-bold">Solana</div><div class="text-xs text-slate-400">SOL</div></div>
 </div>
 </td>
-<td class="p-6 font-medium font-mono crypto-price">--</td>
-<td class="p-6 crypto-change text-green-500">--</td>
-<td class="p-6 font-medium font-mono">--</td>
-<td class="p-6"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
+<td class="p-4 sm:p-6 font-medium font-mono crypto-price">--</td>
+<td class="p-4 sm:p-6 crypto-change text-green-500">--</td>
+<td class="p-4 sm:p-6 font-medium font-mono hidden sm:table-cell">--</td>
+<td class="p-4 sm:p-6 hidden md:table-cell"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
 </tr>
 </tbody>
 </table>
@@ -435,20 +437,20 @@
 <div>
 <div class="flex justify-between mb-4 font-bold">
 <span>Investment Amount</span>
-<span class="text-primary">$25,000</span>
+<span class="text-primary" id="calc-amount-display">$25,000</span>
 </div>
-<input class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer custom-slider" max="100000" min="100" step="500" type="range" value="25000"/>
+<input id="calc-amount" class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer custom-slider" max="100000" min="100" step="500" type="range" value="25000"/>
 <div class="flex justify-between text-xs text-slate-400 mt-2">
-<span>$100</span>
-<span>$100,000</span>
+<span id="calc-amount-min">$100</span>
+<span id="calc-amount-max">$100,000</span>
 </div>
 </div>
 <div>
 <div class="flex justify-between mb-4 font-bold">
 <span>Duration</span>
-<span class="text-primary">12 Months</span>
+<span class="text-primary" id="calc-duration-display">12 Months</span>
 </div>
-<input class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer custom-slider" max="24" min="1" step="1" type="range" value="12"/>
+<input id="calc-duration" class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer custom-slider" max="24" min="1" step="1" type="range" value="12"/>
 <div class="flex justify-between text-xs text-slate-400 mt-2">
 <span>1 Month</span>
 <span>24 Months</span>
@@ -457,8 +459,8 @@
 </div>
 <div class="bg-primary/5 rounded-2xl p-8 flex flex-col justify-center items-center border border-primary/20">
 <div class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">Projected Return</div>
-<div class="text-5xl font-bold text-black mb-1">$43,250</div>
-<div class="text-primary font-bold">+73% Profit</div>
+<div class="text-5xl font-bold text-black mb-1" id="calc-projected">$43,250</div>
+<div class="text-primary font-bold" id="calc-profit">+73% Profit</div>
 <div class="mt-8 w-full">
 <button class="w-full py-4 bg-black text-white font-bold rounded-lg hover:bg-slate-800 transition-all">Open Account Now</button>
 </div>
@@ -474,78 +476,33 @@
 <p class="text-slate-500">Flexible plans tailored to your investment goals.</p>
 </div>
 <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-8">
-<!-- Starter -->
-<div class="bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:-translate-y-2 transition-transform duration-300">
-<div class="text-primary font-bold mb-2">Starter</div>
-<div class="text-4xl font-bold mb-6">$0<span class="text-lg text-slate-400 font-normal">/mo</span></div>
-<p class="text-slate-500 mb-8 text-sm">Perfect for beginners testing the waters of AI trading.</p>
+<?php
+$planIndex = 0;
+foreach ($indexPlans as $p):
+    $popular = ($planIndex === 1);
+    $priceLabel = '$' . number_format((float)$p['min_deposit']);
+    if (!empty($p['max_deposit'])) $priceLabel .= ' - $' . number_format((float)$p['max_deposit']);
+    else $priceLabel .= '+';
+?>
+<div class="bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-lg border <?php echo $popular ? 'border-2 border-primary shadow-2xl' : 'border-slate-100 dark:border-slate-700'; ?> hover:-translate-y-2 transition-transform duration-300 relative">
+<?php if ($popular): ?><div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-black text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div><?php endif; ?>
+<div class="text-primary font-bold mb-2"><?php echo htmlspecialchars($p['name']); ?></div>
+<div class="text-4xl font-bold mb-6"><?php echo $priceLabel; ?><span class="text-lg text-slate-400 font-normal"> deposit</span></div>
+<p class="text-slate-500 mb-8 text-sm"><?php echo number_format(($p['yield_min'] + $p['yield_max']) / 2, 1); ?>% avg. monthly ROI • <?php echo (int)$p['duration_days']; ?> days</p>
 <ul class="space-y-4 mb-10 text-left">
+<?php foreach (array_slice($p['features'] ?? [], 0, 4) as $f): ?>
 <li class="flex items-center gap-3 text-sm">
 <span class="material-icons text-primary text-lg">check</span>
-                        2 Active Trading Bots
-                    </li>
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-                        Standard Execution Speed
-                    </li>
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-                        Email Support
-                    </li>
+<?php echo htmlspecialchars($f); ?>
+</li>
+<?php endforeach; ?>
 </ul>
-<button class="w-full py-3 border-2 border-primary text-black dark:text-white font-bold rounded-lg hover:bg-primary hover:text-black transition-all">Get Started</button>
+<a href="/register" class="block w-full py-3 <?php echo $popular ? 'bg-primary text-black' : 'border-2 border-primary text-black dark:text-white'; ?> font-bold rounded-lg hover:bg-primary hover:text-black text-center transition-all"><?php echo $popular ? 'Choose ' . htmlspecialchars($p['name']) : 'Get Started'; ?></a>
 </div>
-<!-- Growth -->
-<div class="bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-2xl border-2 border-primary relative hover:-translate-y-2 transition-transform duration-300">
-<div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-black text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div>
-<div class="text-primary font-bold mb-2">Growth</div>
-<div class="text-4xl font-bold mb-6">$49<span class="text-lg text-slate-400 font-normal">/mo</span></div>
-<p class="text-slate-500 mb-8 text-sm">Scaling your portfolio with advanced machine learning.</p>
-<ul class="space-y-4 mb-10 text-left">
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-                        10 Active Trading Bots
-                    </li>
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-                        Priority AI Sentiment Core
-                    </li>
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-                        Advanced Analytics Pro
-                    </li>
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-                        24/7 Live Chat Support
-                    </li>
-</ul>
-<button class="w-full py-3 bg-primary text-black font-bold rounded-lg shadow-xl shadow-primary/20 hover:shadow-2xl transition-all">Choose Growth</button>
-</div>
-<!-- Premium -->
-<div class="bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:-translate-y-2 transition-transform duration-300">
-<div class="text-primary font-bold mb-2">Premium</div>
-<div class="text-4xl font-bold mb-6">$199<span class="text-lg text-slate-400 font-normal">/mo</span></div>
-<p class="text-slate-500 mb-8 text-sm">Institutional features for professional investors.</p>
-<ul class="space-y-4 mb-10 text-left">
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-                        Unlimited Trading Bots
-                    </li>
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-                        Custom Strategy API Access
-                    </li>
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-                        Dedicated Account Manager
-                    </li>
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-                        Low-Latency Node Direct
-                    </li>
-</ul>
-<button class="w-full py-3 border-2 border-primary text-black dark:text-white font-bold rounded-lg hover:bg-primary hover:text-black transition-all">Contact Sales</button>
-</div>
+<?php $planIndex++; endforeach; ?>
+<?php if (empty($indexPlans)): ?>
+<div class="col-span-3 text-center py-12 text-slate-500">No plans available. <a href="/plans" class="text-primary font-bold hover:underline">View plans</a></div>
+<?php endif; ?>
 </div>
 </section>
 <!-- Footer -->
@@ -588,70 +545,63 @@
 </div>
 </div>
 </div>
-</section><footer class="bg-white dark:bg-background-dark border-t border-primary/10 pt-20 pb-10">
-<div class="max-w-7xl mx-auto px-6">
-<div class="grid md:grid-cols-4 gap-12 mb-16">
-<div class="col-span-1 md:col-span-1">
-<div class="flex items-center gap-2 mb-6">
-<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
-<span class="material-icons text-white text-sm">auto_awesome</span>
-</div>
-<span class="text-xl font-bold tracking-tight">Bloombit</span>
-</div>
-<p class="text-slate-500 text-sm mb-6 leading-relaxed">
-                        Leading the future of decentralized finance with advanced artificial intelligence and machine learning technologies.
-                    </p>
-<div class="flex gap-4">
-<a class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center hover:bg-primary transition-colors" href="#">
-<img alt="Twitter" data-alt="Twitter social icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMC7qfpVjZIEX6NYqoW9ucKEzVVp40d1E4YKXYzidDaack9iQAveHA-_B-0CBi7zu0Rf8vv146jVVfx6CUttJCETvtVx-oogvWuqIGJa_T3vQS-0HaQJuUa9-ptULfT-N1rpr9aFjNfBsC_LwplGZMRJ8FL8rxxuRpIiJTyY-mDGAAZrIPw68NoVqsRp1k3bF9V8L14H-eLa2k9mH7qL-JUOnQS54dSoaFXu5l-Ab--ir8KSyREoEllbvWuQg-fy8-Bs_anz-XvVU"/>
-</a>
-<a class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center hover:bg-primary transition-colors" href="#">
-<img alt="LinkedIn" data-alt="LinkedIn social icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbojB6-NKa0gltn4xztyzeDs3kjjTduzZX8Yta91AmMH2k4Fap8nooCwysp9Ef3Re5dY-AuuV7__SXDgXVjIHwF4EXxW3rpeFDJwAzffcz6mBW_He5h5dwA74z456BjWOsiL1QrQN4dL_BFJn-7ASCRqBzAKv5AhOF4eJMfDdoPasNZjC_r_m4XZqRq_kHucXKF2lqWuxia4EuF5SKA66n8XskCe2wzZx5TpUepXo6hUAxDl6FrjVDRmc6EQXZ1Q5w5_46HOOArYM"/>
-</a>
-<a class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center hover:bg-primary transition-colors" href="#">
-<img alt="Github" data-alt="Github social icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6VOCH9ZJeV7lhUw3qw5Wt9ZCORCRqJ5q3Qg_2DSva9nSm-FIJtzFu789QRCDGPGn3vHWg_jxKlO0kf79A8IOrRaRVG523RX00dKVZd-RVclcFve0Zp64KSis61Br2kaX9FMuP7vir_iAFdGnAjh4nJHXoy6byX812tfcZLFxMkbZjMK_ll1Rr5G1KPoAzQUdviAl9mkgzpmf5qXMZirxUctQudqfhIZr6g8pKL0QfUWzRZZVfcu30drKQY-eumvp-pLe_XU-iWsY"/>
-</a>
-</div>
-</div>
-<div>
-<h4 class="font-bold mb-6">Product</h4>
-<ul class="space-y-4 text-sm text-slate-500">
-<li><a class="hover:text-primary transition-colors" href="#">AI Strategies</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Trading Bots</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Risk Management</a></li>
-<li><a class="hover:text-primary transition-colors" href="/plans">Pricing</a></li>
-</ul>
-</div>
-<div>
-<h4 class="font-bold mb-6">Company</h4>
-<ul class="space-y-4 text-sm text-slate-500">
-<li><a class="hover:text-primary transition-colors" href="/about_us">About Us</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Careers</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Security</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Partners</a></li>
-</ul>
-</div>
-<div>
-<h4 class="font-bold mb-6">Resources</h4>
-<ul class="space-y-4 text-sm text-slate-500">
-<li><a class="hover:text-primary transition-colors" href="#">Documentation</a></li>
-<li><a class="hover:text-primary transition-colors" href="/help_centre">Help Center</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">API Reference</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
-</ul>
-</div>
-</div>
-<div class="pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:row items-center justify-between gap-4">
-<div class="text-sm text-slate-400">© 2024 Bloombit AI. All rights reserved.</div>
-<div class="flex gap-6 text-sm text-slate-400">
-<a class="hover:text-primary" href="/legal_centre">Terms of Service</a>
-<a class="hover:text-primary" href="/legal_centre">Cookies Policy</a>
-</div>
-</div>
-</div>
-</footer>
+</section>
+<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/crypto-config.js"></script>
 <script src="/js/crypto-prices.js"></script>
+<script>
+(function(){
+  var plans = [];
+  var amountEl = document.getElementById('calc-amount');
+  var durationEl = document.getElementById('calc-duration');
+  if (!amountEl || !durationEl) return;
+
+  function findPlan(amount) {
+    for (var i = 0; i < plans.length; i++) {
+      var p = plans[i];
+      if (amount >= p.min && (p.max === null || amount <= p.max)) return p;
+    }
+    return plans[plans.length - 1] || null;
+  }
+
+  function updateCalc() {
+    var amount = parseFloat(amountEl.value) || 0;
+    var months = parseInt(durationEl.value, 10) || 12;
+    document.getElementById('calc-amount-display').textContent = '$' + amount.toLocaleString();
+    document.getElementById('calc-duration-display').textContent = months + ' Month' + (months !== 1 ? 's' : '');
+    var plan = findPlan(amount);
+    var projected = amount;
+    var profitPct = 0;
+    if (plan) {
+      var avgYield = (plan.yield_min + plan.yield_max) / 2;
+      projected = amount * Math.pow(1 + avgYield / 100, months);
+      profitPct = ((projected - amount) / amount * 100).toFixed(1);
+    }
+    document.getElementById('calc-projected').textContent = '$' + Math.round(projected).toLocaleString();
+    document.getElementById('calc-profit').textContent = '+' + profitPct + '% Profit';
+  }
+
+  fetch('/api/plans/list.php').then(function(r){ return r.json(); }).then(function(res){
+    if (res.success && res.data && res.data.length) {
+      plans = res.data;
+      var first = plans[0], last = plans[plans.length - 1];
+      var minVal = first ? first.min : 100;
+      var maxVal = last && last.max ? last.max : 100000;
+      amountEl.min = minVal;
+      amountEl.max = maxVal;
+      amountEl.step = Math.max(1, Math.floor((maxVal - minVal) / 200));
+      if (parseFloat(amountEl.value) < minVal) amountEl.value = minVal;
+      if (parseFloat(amountEl.value) > maxVal) amountEl.value = maxVal;
+      document.getElementById('calc-amount-min').textContent = '$' + minVal.toLocaleString();
+      document.getElementById('calc-amount-max').textContent = (maxVal >= 1000000 ? '$' + (maxVal/1000000) + 'M' : '$' + maxVal.toLocaleString());
+    }
+    updateCalc();
+  }).catch(function(){ updateCalc(); });
+
+  amountEl.addEventListener('input', updateCalc);
+  durationEl.addEventListener('input', updateCalc);
+})();
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (window.BloombitCryptoPrices) {

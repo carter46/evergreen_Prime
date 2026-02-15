@@ -20,11 +20,11 @@ Options -Indexes
     RewriteRule ^api/ - [L]
     RewriteRule ^vendor/ - [L]
 
-    # Root -> index.html
-    RewriteRule ^$ index.html [L]
+    # Root -> index.php
+    RewriteRule ^$ index.php [L]
 
-    # Dashboard - explicit mappings (clean URL -> PHP)
-    RewriteRule ^dashboard$ dashboard/user/dashboard.php [L]
+    # Dashboard - router redirects by role; explicit mappings (clean URL -> PHP)
+    RewriteRule ^dashboard/?$ dashboard/index.php [L]
     RewriteRule ^dashboard/user/dashboard$ dashboard/user/dashboard.php [L]
     RewriteRule ^dashboard/user/wallet$ dashboard/user/user_wallet.php [L]
     RewriteRule ^dashboard/user/profile$ dashboard/user/user_profile.php [L]
@@ -34,6 +34,12 @@ Options -Indexes
     RewriteRule ^dashboard/admin/users$ dashboard/admin/user_management.php [L]
     RewriteRule ^dashboard/admin/plans$ dashboard/admin/plan_management.php [L]
     RewriteRule ^dashboard/admin/communication$ dashboard/admin/communication_hub.php [L]
+
+    # Auth pages (clean URL -> PHP)
+    RewriteRule ^login$ login.php [L]
+    RewriteRule ^register$ register.php [L]
+    RewriteRule ^forgot-password$ forgot-password.php [L]
+    RewriteRule ^reset-password$ reset-password.php [L]
 
     # Skip rewrite for existing files and directories (static assets: js, css, images)
     RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -48,4 +54,4 @@ Options -Indexes
 </IfModule>
 
 # Default index
-DirectoryIndex index.html
+DirectoryIndex index.php index.html

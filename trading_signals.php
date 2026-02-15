@@ -1,9 +1,10 @@
+<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
 <!DOCTYPE html>
 
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit | AI Trading Signals</title>
+<title><?php echo htmlspecialchars($siteName); ?> | AI Trading Signals</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -47,34 +48,8 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #f9bd0b; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 min-h-screen">
-<!-- Header / Navigation -->
-<nav class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex justify-between h-16 items-center">
-<a class="flex items-center gap-2" href="/">
-<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
-<span class="material-icons text-background-dark text-lg font-bold">bolt</span>
-</div>
-<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white uppercase">Bloombit</span>
-</a>
-<div class="hidden md:flex items-center gap-8 font-medium text-sm">
-<a class="text-primary border-b-2 border-primary py-5" href="/trading_signals">Signals Feed</a>
-<a class="hover:text-primary transition-colors" href="/trading_signals">Markets</a>
-<a class="hover:text-primary transition-colors" href="/dashboard">Portfolio</a>
-<a class="hover:text-primary transition-colors" href="/">Academy</a>
-</div>
-<div class="flex items-center gap-4">
-<button class="bg-primary hover:bg-primary/90 text-background-dark px-4 py-2 rounded font-bold text-sm transition-all">
-                        Upgrade to Premium
-                    </button>
-<div class="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-<span class="material-icons text-primary">person</span>
-</div>
-</div>
-</div>
-</div>
-</nav>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 min-h-screen overflow-x-hidden">
+<?php $currentPage = 'trading_signals'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 <div class="grid grid-cols-12 gap-8">
 <!-- Main Content Area: Signals Feed -->
@@ -460,25 +435,7 @@
 </svg>
 </div>
 </div>
-<footer class="mt-20 py-12 border-t border-slate-200 dark:border-white/5">
-<div class="flex flex-col md:flex-row justify-between items-center gap-8">
-<div class="flex items-center gap-2 grayscale opacity-50">
-<div class="w-6 h-6 bg-slate-400 rounded flex items-center justify-center">
-<span class="material-icons text-white text-[10px]">bolt</span>
-</div>
-<span class="text-sm font-bold tracking-tight text-slate-500 uppercase">Bloombit</span>
-</div>
-<div class="flex gap-8 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-<a class="hover:text-primary" href="#">Disclaimer</a>
-<a class="hover:text-primary" href="#">Privacy Policy</a>
-<a class="hover:text-primary" href="#">Contact Support</a>
-<a class="hover:text-primary" href="#">API Docs</a>
-</div>
-<div class="text-xs text-slate-400">
-                    © 2024 Bloombit AI. All trading involves risk.
-                </div>
-</div>
-</footer>
+<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 </main>
 <script src="/js/crypto-config.js"></script>
 <script src="/js/crypto-prices.js"></script>

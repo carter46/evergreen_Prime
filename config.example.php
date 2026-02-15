@@ -32,4 +32,7 @@ return [
         'user' => 'db_username',
         'pass' => 'db_password',
     ],
+    'admin' => [
+        'user_ids' => [1],
+    ],
 ];

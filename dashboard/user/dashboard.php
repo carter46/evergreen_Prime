@@ -1,10 +1,32 @@
-<?php require_once __DIR__ . '/../../includes/auth-check.php'; ?>
+<?php
+require_once __DIR__ . '/../../includes/auth-check.php';
+require_once __DIR__ . '/../../includes/helpers.php';
+$currentPage = 'dashboard';
+$siteName = get_site_name();
+$userBalance = 0;
+$activeInvestments = [];
+try {
+    $pdo = require __DIR__ . '/../../includes/db.php';
+    $userId = $_SESSION['user_id'];
+    $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
+    $stmt->execute([$userId]);
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $amt = (float)$row['amount'];
+        if (in_array(strtoupper($row['currency']), ['USDT','USDC','USD','BUSD'], true)) $userBalance += $amt;
+        elseif (strtoupper($row['currency']) === 'BTC') $userBalance += $amt * 65000;
+        elseif (strtoupper($row['currency']) === 'ETH') $userBalance += $amt * 3500;
+        else $userBalance += $amt;
+    }
+    $stmt = $pdo->prepare('SELECT ui.*, p.name as plan_name FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC LIMIT 5');
+    $stmt->execute([$userId, 'active']);
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) $activeInvestments[] = $row;
+} catch (Throwable $e) { }
+?>
 <!DOCTYPE html>
-
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit | AI Trading Dashboard</title>
+<title><?php echo htmlspecialchars($siteName); ?> | AI Trading Dashboard</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
@@ -39,98 +61,19 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 193, 5, 0.1);
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #ffc10544;
-            border-radius: 10px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #ffc10544; border-radius: 10px; }
         .trading-graph-bg {
             background: linear-gradient(180deg, rgba(255,193,5,0.1) 0%, rgba(255,193,5,0) 100%);
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 overflow-x-hidden">
 <div class="flex min-h-screen">
-<!-- Sidebar -->
-<aside class="w-64 border-r border-primary/10 bg-white/50 dark:bg-background-dark/50 flex flex-col fixed h-full z-50">
-<a class="p-6 flex items-center gap-3" href="/">
-<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-<span class="material-icons-round text-white">bolt</span>
-</div>
-<span class="text-2xl font-bold tracking-tight">Bloombit</span>
-</a>
-<nav class="flex-1 px-4 py-4 space-y-2">
-<a class="flex items-center gap-3 px-4 py-3 bg-primary text-black font-semibold rounded-xl transition-all" href="/dashboard/user/dashboard">
-<span class="material-icons-round text-[20px]">grid_view</span>
-                    Dashboard
-                </a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-primary/10 hover:text-primary rounded-xl transition-all" href="/dashboard/user/wallet">
-<span class="material-icons-round text-[20px]">account_balance_wallet</span>
-                    Wallet
-                </a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-primary/10 hover:text-primary rounded-xl transition-all" href="/dashboard/user/analytics">
-<span class="material-icons-round text-[20px]">insights</span>
-                    My Investments
-                </a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-primary/10 hover:text-primary rounded-xl transition-all" href="/dashboard/user/analytics">
-<span class="material-icons-round text-[20px]">history</span>
-                    Trade History
-                </a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-primary/10 hover:text-primary rounded-xl transition-all" href="/dashboard/user/profile">
-<span class="material-icons-round text-[20px]">settings</span>
-                    Settings
-                </a>
-</nav>
-<div class="p-6">
-<div class="bg-primary/10 rounded-2xl p-4 border border-primary/20">
-<p class="text-xs font-medium text-primary mb-1 uppercase tracking-wider">Plan Status</p>
-<p class="text-sm font-bold" data-plan-status>Pro Trader AI active</p>
-<div class="mt-3 w-full bg-primary/20 h-1.5 rounded-full">
-<div class="bg-primary h-1.5 rounded-full w-[85%] shadow-[0_0_8px_rgba(255,193,5,0.6)]"></div>
-</div>
-</div>
-<button data-logout class="mt-6 flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all w-full">
-<span class="material-icons-round text-[20px]">logout</span>
-                    Sign Out
-                </button>
-</div>
-</aside>
-<!-- Main Content Area -->
-<main class="flex-1 ml-64 p-8">
-<!-- Top Bar -->
-<header class="flex items-center justify-between mb-8">
-<div>
-<h1 class="text-3xl font-bold">Good morning, Alex</h1>
-<p class="text-slate-500">System status: <span class="text-emerald-500 font-medium">AI Core Online</span></p>
-</div>
-<div class="flex items-center gap-6">
-<div class="flex gap-4">
-<div class="bg-white dark:bg-white/5 border border-primary/10 px-4 py-2 rounded-xl flex items-center gap-3 shadow-sm">
-<span class="text-xs text-slate-400 uppercase font-bold">BTC/USD</span>
-<span class="font-bold" data-coin="bitcoin" data-price="">--</span>
-<span class="text-xs font-bold crypto-change text-emerald-500" data-coin="bitcoin" data-change="">--</span>
-</div>
-</div>
-<div class="flex items-center gap-4 border-l border-slate-200 dark:border-white/10 pl-6">
-<button class="relative w-10 h-10 flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
-<span class="material-icons-round">notifications</span>
-<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
-</button>
-<div class="flex items-center gap-3">
-<div class="text-right">
-<p class="text-sm font-bold leading-none">Alex Rivera</p>
-<p class="text-xs text-slate-500">Verified User</p>
-</div>
-<img alt="User" class="w-10 h-10 rounded-full border-2 border-primary" data-alt="Professional headshot of a male user" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOC4BkOfAIELCclJ8x7GDF7rJChGJelN25tkIftuO8Gvct9ZmJ7X284HMhELI2rEIOdft7rKTJeJPNEnX6pzMWQuZtPSEMqN5QLBmtq0Kn46y11RrclC4mNabZ-Y5wcp9xD-qcIKBcdpMAku3Yt47oHbk_JPCzHGPN8ciroIDnk7K_kpqPqUfr1GoqxIyhofa4pjGCcfmbzW0pBKoVf9fQVgJKjxLN7ZMdX3BJCTAowB9oTO_kbTEY5jR5C-_TRlPtCGhsTnPsHFw"/>
-</div>
-</div>
-</div>
-</header>
+<?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
+<main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
+<?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
 <!-- Dashboard Grid -->
 <div class="grid grid-cols-12 gap-6">
 <!-- Wallet Balance Card (Glassmorphism) -->
@@ -141,7 +84,7 @@
 <p class="text-slate-500 font-medium">Total Balance</p>
 <span class="material-icons-round text-primary">account_balance_wallet</span>
 </div>
-<h2 class="text-4xl font-bold mt-2">$42,050.84</h2>
+<h2 class="text-4xl font-bold mt-2">$<?php echo number_format($userBalance, 2); ?></h2>
 <p class="text-emerald-500 font-medium flex items-center gap-1 mt-1">
 <span class="material-icons-round text-sm">trending_up</span>
                             +$1,240.20 (24h)

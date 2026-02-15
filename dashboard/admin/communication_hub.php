@@ -1,13 +1,14 @@
-<?php require_once __DIR__ . '/../../includes/auth-check.php'; ?>
+<?php require_once __DIR__ . '/../../includes/admin-check.php'; require_once __DIR__ . '/../../includes/helpers.php'; $siteName = get_site_name();
+$currentPage = 'communication';
+?>
 <!DOCTYPE html>
-
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit | Admin Broadcast Hub</title>
+<title><?php echo htmlspecialchars($siteName); ?> | Admin Broadcast Hub</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -15,12 +16,12 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#f2df0d",
+                        "primary": "#f9bd0b",
                         "background-light": "#f8f8f5",
-                        "background-dark": "#222110",
+                        "background-dark": "#231e0f",
                     },
                     fontFamily: {
-                        "display": ["Inter"]
+                        "display": ["Inter", "sans-serif"]
                     },
                     borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
                 },
@@ -29,50 +30,18 @@
     </script>
 <style>
         body { font-family: 'Inter', sans-serif; }
-        .editor-toolbar button:hover { background-color: rgba(242, 223, 13, 0.2); }
+        .editor-toolbar button:hover { background-color: rgba(249, 189, 11, 0.2); }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 transition-colors duration-300">
-<!-- Sidebar Navigation (Static) -->
-<aside class="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 hidden lg:flex flex-col">
-<a class="p-6 flex items-center gap-3" href="/">
-<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-<span class="material-icons-outlined text-slate-900 font-bold">account_balance_wallet</span>
-</div>
-<span class="text-xl font-bold tracking-tight">Bloombit</span>
-</a>
-<nav class="flex-1 px-4 py-4 space-y-1">
-<a class="flex items-center gap-3 px-4 py-2.5 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors" href="/dashboard/admin">
-<span class="material-icons-outlined text-sm">dashboard</span> Dashboard
-            </a>
-<a class="flex items-center gap-3 px-4 py-2.5 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors" href="/dashboard/admin/users">
-<span class="material-icons-outlined text-sm">people</span> Users
-            </a>
-<a class="flex items-center gap-3 px-4 py-2.5 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors" href="/dashboard/admin/plans">
-<span class="material-icons-outlined text-sm">account_balance</span> Investments
-            </a>
-<a class="flex items-center gap-3 px-4 py-2.5 bg-primary/20 text-slate-900 font-semibold rounded-lg" href="/dashboard/admin/communication">
-<span class="material-icons-outlined text-sm">campaign</span> Communications
-            </a>
-<a class="flex items-center gap-3 px-4 py-2.5 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors" href="#">
-<span class="material-icons-outlined text-sm">settings</span> Settings
-            </a>
-</nav>
-<div class="p-4 border-t border-slate-100">
-<div class="flex items-center gap-3 p-2">
-<img class="w-10 h-10 rounded-full object-cover" data-alt="Admin user profile picture portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNRkkunVUkkFHc_pxCKD0XsJ7mzNBkGHiP6Q32VqLJgxUieyxwyGx3J0ZQZXiMz0XBXw2cxwVzp-fHPX1wlYjWeVIbhYrEBSY45VGjxnSb-tRvwFlQwDNrxR2WtIdLgotmPxrSyDYXIvn-vfTES0vbO8bFlSZAyetPZf6Arc-KxnemMqc3IJUijB6RlZxtw4M4WWVrBb1kJz9ftkDd2nEvtMJ8VxA39a3a--WRi0JRWOqAfiWubK70VbYyFsVfFWjLWKM1io9dr9k"/>
-<div>
-<p class="text-sm font-semibold">Alex Rivera</p>
-<p class="text-xs text-slate-400">System Admin</p>
-</div>
-</div>
-</div>
-</aside>
-<!-- Main Content -->
-<main class="lg:ml-64 p-8 min-h-screen">
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden">
+<div class="flex min-h-screen">
+<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
+<main class="flex-1 overflow-y-auto min-w-0">
+<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
+<div class="p-4 sm:p-6 lg:p-8 min-h-screen">
 <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
 <div>
 <nav class="flex text-xs text-slate-400 gap-2 mb-1">

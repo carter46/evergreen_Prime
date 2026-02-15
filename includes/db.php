@@ -11,6 +11,20 @@ if (!file_exists($configPath)) {
 $config = include $configPath;
 $dbConfig = $config['db'] ?? [];
 
-// Stub: Returns null until DB is configured
-// In production: return new PDO(...)
-return null;
+$host = $dbConfig['host'] ?? 'localhost';
+$name = $dbConfig['name'] ?? 'bloombit';
+$user = $dbConfig['user'] ?? '';
+$pass = $dbConfig['pass'] ?? '';
+
+if (empty($user) || empty($pass)) {
+    throw new RuntimeException('Database credentials not configured. Set DB_USER and DB_PASS in config or environment.');
+}
+
+$dsn = "mysql:host={$host};dbname={$name};charset=utf8mb4";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+
+return new PDO($dsn, $user, $pass, $options);

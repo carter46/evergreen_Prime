@@ -1,9 +1,10 @@
+<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
 <!DOCTYPE html>
 
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>About Bloombit - Our Mission &amp; Vision</title>
+<title>About <?php echo htmlspecialchars($siteName); ?> - Our Mission &amp; Vision</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -44,27 +45,8 @@
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
-<!-- Global Navigation -->
-<nav class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
-<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-<a class="flex items-center gap-2" href="/">
-<div class="w-10 h-10 bg-primary rounded flex items-center justify-center">
-<span class="material-icons text-background-dark">token</span>
-</div>
-<span class="text-2xl font-bold tracking-tight">Bloombit</span>
-</a>
-<div class="hidden md:flex items-center gap-8 font-medium">
-<a class="hover:text-primary transition-colors" href="/">Platform</a>
-<a class="text-primary underline underline-offset-8 decoration-2" href="/about_us">About Us</a>
-<a class="hover:text-primary transition-colors" href="/">Security</a>
-<a class="hover:text-primary transition-colors" href="/plans">Pricing</a>
-</div>
-<div class="flex items-center gap-4">
-<a class="px-6 py-2.5 bg-primary text-background-dark font-bold rounded hover:opacity-90 transition-all" href="/login">Start Trading</a>
-</div>
-</div>
-</nav>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300 overflow-x-hidden">
+<?php $currentPage = 'about_us'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 <!-- Hero Section: Who We Are -->
 <header class="relative pt-20 pb-32 overflow-hidden">
 <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -299,58 +281,6 @@
 </div>
 </div>
 </section>
-<!-- Footer -->
-<footer class="bg-background-light dark:bg-background-dark pt-20 pb-10 border-t border-slate-200 dark:border-slate-800">
-<div class="max-w-7xl mx-auto px-6">
-<div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-<div class="col-span-1 md:col-span-1">
-<div class="flex items-center gap-2 mb-6">
-<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
-<span class="material-icons text-background-dark text-lg">token</span>
-</div>
-<span class="text-xl font-bold">Bloombit</span>
-</div>
-<p class="text-slate-500 text-sm leading-relaxed mb-6">
-                        Leading the evolution of decentralized finance with artificial intelligence and high-fidelity algorithms.
-                    </p>
-</div>
-<div>
-<h6 class="font-bold mb-6">Platform</h6>
-<ul class="space-y-4 text-sm text-slate-500">
-<li><a class="hover:text-primary transition-colors" href="#">Trade</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Yield Farming</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">API Access</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Security Protocols</a></li>
-</ul>
-</div>
-<div>
-<h6 class="font-bold mb-6">Company</h6>
-<ul class="space-y-4 text-sm text-slate-500">
-<li><a class="hover:text-primary transition-colors" href="#">About Us</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Careers</a></li>
-<li><a class="hover:text-primary transition-colors" href="/legal_centre">Legal &amp; Privacy</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Media Kit</a></li>
-</ul>
-</div>
-<div>
-<h6 class="font-bold mb-6">Stay Updated</h6>
-<form id="newsletter-form" class="flex gap-2">
-<input name="email" class="bg-white dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded px-4 py-2 text-sm w-full outline-none focus:border-primary" placeholder="Your email" type="email" required/>
-<button type="submit" class="bg-primary p-2 rounded text-background-dark"><span class="material-icons text-sm">send</span></button>
-</form>
-<div id="newsletter-message" class="text-sm mt-2 hidden"></div>
-</div>
-</div>
-<div class="flex flex-col md:row items-center justify-between pt-8 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400">
-<p>© 2024 Bloombit Technologies Inc. All rights reserved.</p>
-<div class="flex gap-6 mt-4 md:mt-0">
-<a class="hover:text-primary" href="#">Twitter</a>
-<a class="hover:text-primary" href="#">LinkedIn</a>
-<a class="hover:text-primary" href="#">Github</a>
-<a class="hover:text-primary" href="#">Discord</a>
-</div>
-</div>
-</div>
-</footer>
+<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
 </body></html>

@@ -1,10 +1,26 @@
-<?php require_once __DIR__ . '/../../includes/auth-check.php'; ?>
+<?php
+require_once __DIR__ . '/../../includes/auth-check.php';
+require_once __DIR__ . '/../../includes/helpers.php';
+$currentPage = 'analytics';
+$siteName = get_site_name();
+$totalProfit = 0;
+$analyticsTx = [];
+try {
+    $pdo = require __DIR__ . '/../../includes/db.php';
+    $userId = $_SESSION['user_id'];
+    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
+    $r->execute([$userId]);
+    $totalProfit = (float)$r->fetchColumn();
+    $stmt = $pdo->prepare('SELECT type, amount, currency, status, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50');
+    $stmt->execute([$userId]);
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) $analyticsTx[] = $row;
+} catch (Throwable $e) { }
+?>
 <!DOCTYPE html>
-
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit | Earnings Analytics &amp; History</title>
+<title><?php echo htmlspecialchars($siteName); ?> | Earnings Analytics &amp; History</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
@@ -33,74 +49,27 @@
         }
     </script>
 <style>
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-            background-color: #f8f8f5;
-        }
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #f8f8f5; }
         .glass-card {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(249, 189, 11, 0.1);
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #e2e2e2;
-            border-radius: 10px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e2e2; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display min-h-screen">
-<!-- Navigation Sidebar (Partial for context) -->
-<aside class="fixed left-0 top-0 h-full w-64 bg-white dark:bg-zinc-900 border-r border-primary/10 hidden lg:flex flex-col z-50">
-<div class="p-6">
-<a class="p-6 flex items-center gap-2" href="/">
-<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
-<span class="material-icons-round text-white">bolt</span>
-</div>
-<span class="text-xl font-bold tracking-tight">Bloombit</span>
-</a>
-</div>
-<nav class="flex-1 px-4 space-y-1 mt-4">
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 hover:bg-primary/5 transition-colors" href="/dashboard/user/dashboard">
-<span class="material-icons-round">dashboard</span>
-<span class="font-medium">Dashboard</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary border border-primary/20" href="/dashboard/user/analytics">
-<span class="material-icons-round">analytics</span>
-<span class="font-medium">Earnings History</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 hover:bg-primary/5 transition-colors" href="/dashboard/user/wallet">
-<span class="material-icons-round">account_balance_wallet</span>
-<span class="font-medium">Wallet</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 hover:bg-primary/5 transition-colors" href="/dashboard/user/profile">
-<span class="material-icons-round">security</span>
-<span class="font-medium">AI Bot Center</span>
-</a>
-</nav>
-<div class="p-6 border-t border-primary/5">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-primary/20 overflow-hidden">
-<img alt="User Avatar" data-alt="User profile avatar placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhSX3_pnwMHWyowiCEQI5bis1r8ds6r3lMJh8xQAAuN8e44PWiIk1W08k6FfcOWPy9QVmiEWDxOHSFuhFbeZKdUl7XcjtFqkL9n_f1bXqXSjXXWP3c6c_fSNS11g3BGDiwpIXnRYiPu-SF7IEWGuQrW6BdBLdB1l81aHbp74WeMLSezdesLRiJjGEeRbBL5iqyYZeutPh_0ntKfLnvL3k4R5Pg4RLl5D5tcxcIbBVZeOtizozCR6njiJDGd33Vb6-ehbuidI-i1jw"/>
-</div>
-<div class="flex-1 min-w-0">
-<p class="text-sm font-semibold truncate">Alex Chen</p>
-<p class="text-xs text-slate-400">Pro Tier</p>
-</div>
-</div>
-</div>
-</aside>
-<!-- Main Content -->
-<main class="lg:ml-64 p-8">
-<!-- Header -->
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display min-h-screen overflow-x-hidden">
+<div class="flex min-h-screen">
+<?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
+<main class="flex-1 min-w-0 overflow-y-auto">
+<?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
+<div class="p-4 sm:p-6 lg:p-8">
+<!-- Page Header -->
 <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
 <div>
-<h1 class="text-3xl font-bold">Earnings Analytics</h1>
+<h1 class="text-2xl sm:text-3xl font-bold">Earnings Analytics</h1>
 <p class="text-slate-500 mt-1">Detailed performance tracking and profit distribution history.</p>
 </div>
 <div class="flex items-center gap-3">
@@ -125,7 +94,7 @@
 </div>
 <h3 class="text-slate-400 text-sm font-medium">Total Profit</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$42,912.80</span>
+<span class="text-2xl font-bold tracking-tight">$<?php echo number_format($totalProfit, 2); ?></span>
 </div>
 <div class="mt-4 h-8 w-full">
 <div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">

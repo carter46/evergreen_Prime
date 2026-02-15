@@ -33,6 +33,9 @@ $config = [
         'user' => getenv('DB_USER') ?: '',
         'pass' => getenv('DB_PASS') ?: '',
     ],
+    'admin' => [
+        'user_ids' => array_map('intval', array_filter(explode(',', getenv('ADMIN_USER_IDS') ?: '1'))),
+    ],
 ];
 
 return $config;

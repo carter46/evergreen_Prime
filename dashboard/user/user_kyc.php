@@ -1,13 +1,14 @@
-<?php require_once __DIR__ . '/../../includes/auth-check.php'; ?>
+<?php require_once __DIR__ . '/../../includes/auth-check.php'; require_once __DIR__ . '/../../includes/helpers.php'; $siteName = get_site_name();
+$currentPage = 'kyc';
+?>
 <!DOCTYPE html>
-
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit | KYC Verification Review Center</title>
+<title><?php echo htmlspecialchars($siteName); ?> | KYC Verification</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -15,12 +16,12 @@
           theme: {
             extend: {
               colors: {
-                "primary": "#f2df0d",
+                "primary": "#f9bd0b",
                 "background-light": "#f8f8f5",
-                "background-dark": "#222110",
+                "background-dark": "#231e0f",
               },
               fontFamily: {
-                "display": ["Inter"]
+                "display": ["Space Grotesk"]
               },
               borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
             },
@@ -28,44 +29,18 @@
         }
     </script>
 <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Space Grotesk', sans-serif; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e2d5; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 antialiased">
-<!-- Global Navigation -->
-<nav class="sticky top-0 z-50 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-6 py-3 flex items-center justify-between">
-<div class="flex items-center gap-8">
-<a class="flex items-center gap-2" href="/">
-<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
-<span class="material-icons text-zinc-900 text-xl font-bold">bolt</span>
-</div>
-<span class="font-bold text-xl tracking-tight">BLOOM<span class="text-primary/80">BIT</span></span>
-</a>
-<div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-<a class="hover:text-primary transition-colors" href="/trading_signals">Market</a>
-<a class="hover:text-primary transition-colors" href="/dashboard/admin/users">Users</a>
-<a class="text-zinc-900 dark:text-white border-b-2 border-primary pb-1" href="/dashboard/user/kyc">Compliance</a>
-<a class="hover:text-primary transition-colors" href="/dashboard/user/profile">Settings</a>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<button class="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full relative">
-<span class="material-icons text-zinc-600 dark:text-zinc-300">notifications</span>
-<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-zinc-900"></span>
-</button>
-<div class="flex items-center gap-3 pl-4 border-l border-zinc-200 dark:border-zinc-800">
-<div class="text-right hidden sm:block">
-<p class="text-xs font-semibold">Admin Panel</p>
-<p class="text-[10px] text-zinc-500 uppercase tracking-widest">Supervisor</p>
-</div>
-<img class="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700" data-alt="Admin professional profile headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiqb4m8PlIuIu41Lg2mkm6FfPeWgdVKU-MNMGG8WdVwI_V1388qlT6yd1VhtBV7jTJTBuFpFtyw8_dv7x25zDybE5cw-r-QTmUNsyyU8N-FTglGwDSauEC2Cyz_3ZASWOWhldlleHR5U2jBf3n_9VLhgsF_ZcoVh_Dwujr9dta3SdBTMvkqiNvMV8FrR3oACX1uwt0TeoBE5EGsxW6krYul9DWKPE7VdvOBUiaUO3jkpufnfccxEZegqO9NidcQOwFxgJ25l8gid4"/>
-</div>
-</div>
-</nav>
-<main class="p-6 max-w-[1600px] mx-auto grid grid-cols-12 gap-6">
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 antialiased overflow-x-hidden">
+<div class="flex min-h-screen">
+<?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
+<main class="flex-1 min-w-0 overflow-y-auto">
+<?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
+<div class="p-4 sm:p-6 max-w-[1600px] mx-auto grid grid-cols-12 gap-6">
 <!-- Header & Top Controls -->
 <div class="col-span-12 flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>

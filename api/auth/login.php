@@ -23,17 +23,34 @@ if (empty($email) || empty($password)) {
     exit;
 }
 
-// Stub: In production, validate against database and create session
-// For now return mock success for development
+try {
+    $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Database unavailable']);
+    exit;
+}
+
+$stmt = $pdo->prepare('SELECT id, email, password_hash, role FROM users WHERE email = ? AND active = 1');
+$stmt->execute([$email]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user || !password_verify($password, $user['password_hash'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Invalid email or password']);
+    exit;
+}
+
 session_start();
-$_SESSION['user_id'] = 1;
-$_SESSION['email'] = $email;
+$_SESSION['user_id'] = (int) $user['id'];
+$_SESSION['email'] = $user['email'];
+$_SESSION['role'] = $user['role'];
 
 echo json_encode([
     'success' => true,
     'data' => [
-        'user_id' => 1,
-        'email' => $email,
+        'user_id' => $_SESSION['user_id'],
+        'email' => $_SESSION['email'],
         'redirect' => '/dashboard'
     ]
 ]);

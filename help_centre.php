@@ -1,11 +1,13 @@
+<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); $contactEmail = get_site_setting('contact_email', 'support@bloombit.com'); ?>
 <!DOCTYPE html>
 
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Contact &amp; Support | Bloombit AI</title>
+<title>Contact &amp; Support | <?php echo htmlspecialchars($siteName); ?></title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
@@ -41,30 +43,8 @@
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
-<!-- Header / Navigation -->
-<nav class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex justify-between h-20 items-center">
-<a class="flex items-center gap-2" href="/">
-<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-<span class="material-icons-outlined text-white text-2xl">auto_graph</span>
-</div>
-<span class="text-2xl font-bold tracking-tight">Bloom<span class="text-primary">bit</span></span>
-</a>
-<div class="hidden md:flex items-center space-x-8 font-medium">
-<a class="hover:text-primary transition-colors" href="/">Platform</a>
-<a class="hover:text-primary transition-colors" href="/trading_signals">Markets</a>
-<a class="hover:text-primary transition-colors" href="/">Security</a>
-<a class="text-primary border-b-2 border-primary" href="/help_centre">Support</a>
-</div>
-<div class="flex items-center gap-4">
-<a class="px-5 py-2 rounded-lg font-medium hover:bg-primary/10 transition-colors" href="/login">Login</a>
-<a class="px-5 py-2 bg-primary text-white font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform" href="/register">Get Started</a>
-</div>
-</div>
-</div>
-</nav>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300 overflow-x-hidden">
+<?php $currentPage = 'help_centre'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 <!-- Hero Section -->
 <header class="pt-16 pb-12 text-center bg-mesh">
 <div class="max-w-3xl mx-auto px-4">
@@ -258,27 +238,6 @@
 </div>
 </section>
 </main>
-<!-- Footer -->
-<footer class="bg-white dark:bg-zinc-950 border-t border-slate-100 dark:border-white/5 py-12">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex flex-col md:flex-row justify-between items-center gap-8">
-<div class="flex items-center gap-2">
-<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
-<span class="material-icons-outlined text-white text-lg">auto_graph</span>
-</div>
-<span class="text-xl font-bold tracking-tight">Bloom<span class="text-primary">bit</span></span>
-</div>
-<div class="flex gap-8 text-sm text-slate-500 dark:text-slate-400 font-medium">
-<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
-<a class="hover:text-primary transition-colors" href="#">Risk Disclosure</a>
-<a class="hover:text-primary transition-colors" href="#">Cookie Policy</a>
-</div>
-<div class="text-sm text-slate-400">
-                    © 2024 Bloombit AI. All rights reserved.
-                </div>
-</div>
-</div>
-</footer>
+<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
 </body></html>

@@ -1,13 +1,14 @@
-<?php require_once __DIR__ . '/../../includes/auth-check.php'; ?>
+<?php require_once __DIR__ . '/../../includes/auth-check.php'; require_once __DIR__ . '/../../includes/helpers.php'; $siteName = get_site_name();
+$currentPage = 'profile';
+?>
 <!DOCTYPE html>
-
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit | Profile and Security Settings</title>
+<title><?php echo htmlspecialchars($siteName); ?> | Profile and Security Settings</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -33,43 +34,16 @@
         }
     </script>
 <style>
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        .tab-active {
-            border-bottom: 2px solid #f9bd0b;
-            color: #f9bd0b;
-        }
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .tab-active { border-bottom: 2px solid #f9bd0b; color: #f9bd0b; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen">
-<!-- Navigation Header -->
-<nav class="border-b border-primary/10 bg-white dark:bg-background-dark/50 sticky top-0 z-40">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex justify-between h-16 items-center">
-<a class="flex items-center gap-2" href="/">
-<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
-<span class="material-icons text-white text-xl">token</span>
-</div>
-<span class="text-xl font-bold tracking-tight">BLOOMBIT</span>
-</a>
-<div class="flex items-center gap-6">
-<div class="hidden md:flex gap-8 text-sm font-medium">
-<a class="hover:text-primary transition-colors" href="/trading_signals">Market</a>
-<a class="hover:text-primary transition-colors" href="/dashboard">Trade</a>
-<a class="hover:text-primary transition-colors" href="/dashboard/user/analytics">Earn</a>
-</div>
-<div class="flex items-center gap-4 border-l border-primary/10 pl-6">
-<span class="material-icons text-gray-400 cursor-pointer">notifications</span>
-<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/50">
-<span class="text-xs font-bold text-primary">JD</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-</nav>
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen overflow-x-hidden">
+<div class="flex min-h-screen">
+<?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
+<main class="flex-1 min-w-0 overflow-y-auto">
+<?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
 <!-- Profile Header Section -->
 <div class="bg-white dark:bg-background-dark/40 rounded-xl border border-primary/10 p-6 mb-8 shadow-sm">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">

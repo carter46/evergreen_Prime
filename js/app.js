@@ -100,7 +100,11 @@
             const btn = form.querySelector('button[type="submit"]');
             if (btn) btn.disabled = true;
             apiFetch('/admin/plans.php', { method: 'POST', body: JSON.stringify(Object.fromEntries(fd)) })
-                .then(() => alert('Plan saved successfully'))
+                .then(() => {
+                    const drawer = document.getElementById('plan-drawer');
+                    if (drawer) drawer.classList.add('hidden');
+                    window.location.reload();
+                })
                 .catch(err => alert(err.message))
                 .finally(() => { if (btn) btn.disabled = false; });
         });

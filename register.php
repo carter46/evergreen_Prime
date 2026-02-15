@@ -1,9 +1,10 @@
+<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
 <!DOCTYPE html>
 
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Register | Bloombit</title>
+<title>Register | <?php echo htmlspecialchars($siteName); ?></title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -37,7 +38,7 @@
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark min-h-screen flex items-center justify-center p-4">
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex items-center justify-center p-4 overflow-x-hidden">
 <div class="max-w-4xl w-full flex flex-col md:flex-row bg-white dark:bg-zinc-900 rounded-xl shadow-2xl overflow-hidden border border-zinc-200/50 dark:border-zinc-800/50">
 <!-- Left Side: Branding/Visual -->
 <div class="hidden md:flex md:w-5/12 bg-primary p-12 flex-col justify-between relative overflow-hidden">
@@ -54,10 +55,7 @@
 </div>
 <div class="relative z-10">
 <div class="flex items-center gap-2 mb-12">
-<div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-<span class="material-icons text-primary text-2xl font-bold">bolt</span>
-</div>
-<span class="text-2xl font-bold text-black tracking-tight">Bloombit</span>
+<?php $authHeaderVariant = 'on-primary'; require_once __DIR__ . '/includes/auth-header.php'; ?>
 </div>
 <h1 class="text-4xl font-bold text-black leading-tight mb-6">
                     Start your <br/>journey with <br/>Bloombit.
@@ -82,10 +80,8 @@
 <h2 class="text-2xl font-bold text-zinc-900 dark:text-white">Create Account</h2>
 <p class="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Get started with your free account today.</p>
 </div>
-<div class="md:hidden">
-<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-<span class="material-icons text-black text-xl">bolt</span>
-</div>
+<div class="md:hidden shrink-0">
+<?php unset($authHeaderVariant); require_once __DIR__ . '/includes/auth-header.php'; ?>
 </div>
 </div>
 <form id="register-form" class="space-y-5">
@@ -180,5 +176,6 @@
 </form>
 </div>
 </div>
+<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
 </body></html>

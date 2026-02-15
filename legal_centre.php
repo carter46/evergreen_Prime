@@ -1,9 +1,10 @@
+<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); $contactEmail = get_site_setting('contact_email', 'legal@bloombit.com'); ?>
 <!DOCTYPE html>
 
 <html class="scroll-smooth" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit Legal Center | Terms &amp; Privacy</title>
+<title><?php echo htmlspecialchars($siteName); ?> Legal Center | Terms &amp; Privacy</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -27,30 +28,14 @@
         }
     </script>
 </head>
-<body class="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 antialiased">
-<!-- Header Navigation -->
-<header class="sticky top-0 z-50 w-full border-b border-primary/10 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex justify-between items-center h-16">
-<a class="flex items-center gap-2" href="/">
-<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-<span class="material-icons text-white text-xl">account_balance</span>
-</div>
-<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Bloombit <span class="text-primary font-normal">Legal</span></span>
-</a>
-<div class="flex items-center gap-4">
-<button class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors">
-<span class="material-icons text-lg">print</span>
-                        Print
-                    </button>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 antialiased overflow-x-hidden">
+<?php $currentPage = 'legal_centre'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex justify-end gap-2 border-b border-primary/10 bg-white/80 dark:bg-background-dark/80">
+<button class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors" onclick="window.print()">
+<span class="material-icons text-lg">print</span>Print</button>
 <button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-slate-900 text-sm font-bold rounded-lg hover:bg-opacity-90 transition-all shadow-sm">
-<span class="material-icons text-lg">download</span>
-                        Download PDF
-                    </button>
+<span class="material-icons text-lg">download</span>Download PDF</button>
 </div>
-</div>
-</div>
-</header>
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 <div class="flex flex-col lg:flex-row gap-12">
 <!-- Sidebar Navigation -->
@@ -78,8 +63,8 @@
 <div class="pt-6 border-t border-slate-200 dark:border-slate-800">
 <div class="p-4 bg-primary/10 rounded-xl">
 <p class="text-xs text-slate-600 dark:text-slate-400 mb-2 font-medium">Need legal assistance?</p>
-<a class="text-sm font-bold text-slate-900 dark:text-white hover:underline flex items-center gap-1" href="mailto:legal@bloombit.com">
-                                legal@bloombit.com
+<a class="text-sm font-bold text-slate-900 dark:text-white hover:underline flex items-center gap-1" href="mailto:<?php echo htmlspecialchars($contactEmail); ?>">
+                                <?php echo htmlspecialchars($contactEmail); ?>
                                 <span class="material-icons text-xs">arrow_forward</span>
 </a>
 </div>
@@ -223,28 +208,22 @@
 </div>
 </section>
 <!-- Footer Summary -->
-<footer class="mt-20 pt-8 border-t border-slate-100 dark:border-slate-800">
+<div class="mt-20 pt-8 border-t border-slate-100 dark:border-slate-800">
 <div class="bg-slate-50 dark:bg-slate-900/30 p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
 <div>
 <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Still have questions?</h4>
 <p class="text-slate-500 text-sm">Our legal team is here to help you understand your rights and obligations.</p>
 </div>
 <div class="flex gap-4">
-<button class="px-6 py-2.5 border border-slate-200 dark:border-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                Help Center
-                            </button>
-<button class="px-6 py-2.5 bg-primary text-slate-900 text-sm font-bold rounded-lg hover:shadow-lg transition-all">
-                                Contact Legal
-                            </button>
+<a href="/help_centre" class="px-6 py-2.5 border border-slate-200 dark:border-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Help Center</a>
+<a href="/help_centre" class="px-6 py-2.5 bg-primary text-slate-900 text-sm font-bold rounded-lg hover:shadow-lg transition-all">Contact Legal</a>
 </div>
 </div>
-<div class="mt-12 text-center">
-<p class="text-xs text-slate-400">© 2024 Bloombit Global Ltd. All rights reserved. Bloombit is a registered trademark.</p>
 </div>
-</footer>
 </article>
 </div>
 </main>
+<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <!-- Floating Back to Top -->
 <a class="fixed bottom-8 right-8 w-12 h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center shadow-lg text-slate-500 hover:text-primary transition-all z-40 group" href="#">
 <span class="material-icons group-hover:-translate-y-1 transition-transform">expand_less</span>

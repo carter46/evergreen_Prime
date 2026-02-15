@@ -1,13 +1,43 @@
-<?php require_once __DIR__ . '/../../includes/auth-check.php'; ?>
+<?php
+require_once __DIR__ . '/../../includes/auth-check.php';
+require_once __DIR__ . '/../../includes/helpers.php';
+$currentPage = 'wallet';
+$siteName = get_site_name();
+$walletBalances = [];
+$walletTotalUsd = 0;
+$walletTransactions = [];
+$btcAmount = 0;
+try {
+    $pdo = require __DIR__ . '/../../includes/db.php';
+    $userId = $_SESSION['user_id'];
+    $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
+    $stmt->execute([$userId]);
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $amt = (float) $row['amount'];
+        $usd = $amt;
+        if (in_array(strtoupper($row['currency']), ['USDT','USDC','BUSD','USD'], true)) $usd = $amt;
+        elseif (strtoupper($row['currency']) === 'BTC') { $usd = $amt * 65000; $btcAmount = $amt; }
+        elseif (strtoupper($row['currency']) === 'ETH') $usd = $amt * 3500;
+        $walletBalances[] = ['currency' => $row['currency'], 'amount' => $amt, 'usd_value' => round($usd, 2)];
+        $walletTotalUsd += $usd;
+    }
+    $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 20');
+    $stmt->execute([$userId]);
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $walletTransactions[] = $row;
+    }
+} catch (Throwable $e) { }
+$coinNames = ['BTC'=>'Bitcoin','ETH'=>'Ethereum','USDT'=>'Tether','USD'=>'US Dollar'];
+$coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png'];
+?>
 <!DOCTYPE html>
-
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit | Wallet &amp; Withdrawals</title>
+<title><?php echo htmlspecialchars($siteName); ?> | Wallet &amp; Withdrawals</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -34,51 +64,17 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
-            border-radius: 10px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
-<!-- Navigation Header -->
-<nav class="border-b border-primary/10 bg-white/50 dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-50">
-<div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
-<div class="flex items-center gap-8">
-<a class="flex items-center gap-2" href="/">
-<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
-<span class="material-icons text-white text-xl">bolt</span>
-</div>
-<span class="text-xl font-bold tracking-tight">BLOOMBIT</span>
-</a>
-<div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-500 dark:text-slate-400">
-<a class="hover:text-primary transition-colors" href="/dashboard/user/dashboard">Dashboard</a>
-<a class="hover:text-primary transition-colors" href="/trading_signals">Market</a>
-<a class="text-primary border-b-2 border-primary py-5" href="/dashboard/user/wallet">Wallet</a>
-<a class="hover:text-primary transition-colors" href="/dashboard/user/analytics">Staking</a>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<button class="p-2 hover:bg-primary/10 rounded-full transition-colors">
-<span class="material-icons text-slate-600 dark:text-slate-300">notifications</span>
-</button>
-<div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
-<div class="text-right hidden sm:block">
-<p class="text-xs font-semibold">Alex Thompson</p>
-<p class="text-[10px] text-slate-500">Pro Account</p>
-</div>
-<img alt="User" class="w-8 h-8 rounded-full border border-primary/20" data-alt="User profile avatar circle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMhH9uPeV0AalZXkL6cgWaAKiPFdTaP5U6xLyRtOAidR0wXTr1ko_gzrMDr4dXOk0uy93hqAbpSfrw4z3fbJqDFf-oQzuOkefItwcoYHJ0VeKPMXJAfk3q9JurgKkQoLx6UJZgH3GOLyluRwGgaHl3aA5Nqz2vbBkKZTe3ZlARV-6MaP6mf1-L7Y6UP2_7tqbLvym2u3yYErycJuK5pxsZWO4NlyHT0KT_aT8Z8NP_Vuez2fSwKOfhC1YhzDT7jUHjVomCYqQ2hww"/>
-</div>
-</div>
-</div>
-</nav>
-<main class="max-w-[1440px] mx-auto px-6 py-8">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display overflow-x-hidden">
+<div class="flex min-h-screen">
+<?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
+<main class="flex-1 min-w-0 overflow-y-auto">
+<?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
+<div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
 <div class="grid grid-cols-12 gap-8">
 <!-- Left Column: Balances & Assets -->
 <div class="col-span-12 lg:col-span-8 space-y-8">
@@ -89,10 +85,10 @@
 <div class="flex justify-between items-start">
 <div>
 <p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
-<h1 class="text-4xl font-bold tracking-tight">$124,592.84 <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
+<h1 class="text-4xl font-bold tracking-tight">$<?php echo number_format($walletTotalUsd, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1">
 <img class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="BTC"/>
-                                    2.41829043 BTC
+                                    <?php echo number_format($btcAmount, 8); ?> BTC
                                 </p>
 </div>
 <div class="flex gap-3">
@@ -142,60 +138,32 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800 wallet-assets-table">
-<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="bitcoin" data-balance="1.45028">
+<?php foreach ($walletBalances as $b):
+  $cu = strtoupper($b['currency']);
+  $coinId = strtolower($b['currency']) === 'usdt' ? 'tether' : strtolower($b['currency']);
+  $logo = $coinLogos[$cu] ?? null;
+  $name = $coinNames[$cu] ?? $b['currency'];
+?>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="<?php echo $coinId; ?>" data-balance="<?php echo $b['amount']; ?>">
 <td class="px-6 py-5">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
-<img alt="BTC" class="w-6 h-6 crypto-logo" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png"/>
-</div>
+<?php if ($logo): ?><div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"><img alt="<?php echo $cu; ?>" class="w-6 h-6 crypto-logo" src="<?php echo htmlspecialchars($logo); ?>"/></div><?php endif; ?>
 <div>
-<p class="font-bold text-sm">Bitcoin</p>
-<p class="text-xs text-slate-500">BTC</p>
+<p class="font-bold text-sm"><?php echo htmlspecialchars($name); ?></p>
+<p class="text-xs text-slate-500"><?php echo $cu; ?></p>
 </div>
 </div>
 </td>
-<td class="px-6 py-5 text-right font-medium text-sm">1.45028 BTC</td>
-<td class="px-6 py-5 text-right font-bold text-sm wallet-value" data-coin="bitcoin">--</td>
+<td class="px-6 py-5 text-right font-medium text-sm"><?php echo number_format($b['amount'], 8); ?> <?php echo $cu; ?></td>
+<td class="px-6 py-5 text-right font-bold text-sm wallet-value" data-coin="<?php echo $coinId; ?>">$<?php echo number_format($b['usd_value'], 2); ?></td>
 <td class="px-6 py-5 text-right">
 <button class="text-xs font-bold px-4 py-1.5 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
 </td>
 </tr>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="ethereum" data-balance="12.84">
-<td class="px-6 py-5">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
-<img alt="ETH" class="w-6 h-6 crypto-logo" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png"/>
-</div>
-<div>
-<p class="font-bold text-sm">Ethereum</p>
-<p class="text-xs text-slate-500">ETH</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-5 text-right font-medium text-sm">12.8400 ETH</td>
-<td class="px-6 py-5 text-right font-bold text-sm wallet-value" data-coin="ethereum">--</td>
-<td class="px-6 py-5 text-right">
-<button class="text-xs font-bold px-4 py-1.5 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
-</td>
-</tr>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="tether" data-balance="18500">
-<td class="px-6 py-5">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
-<img alt="USDT" class="w-6 h-6 crypto-logo" src="https://assets.coingecko.com/coins/images/325/large/Tether.png"/>
-</div>
-<div>
-<p class="font-bold text-sm">Tether</p>
-<p class="text-xs text-slate-500">USDT</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-5 text-right font-medium text-sm">18,500.00 USDT</td>
-<td class="px-6 py-5 text-right font-bold text-sm wallet-value" data-coin="tether">--</td>
-<td class="px-6 py-5 text-right">
-<button class="text-xs font-bold px-4 py-1.5 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
-</td>
-</tr>
+<?php endforeach; ?>
+<?php if (empty($walletBalances)): ?>
+<tr><td class="px-6 py-8 text-center text-slate-500" colspan="4">No balances yet.</td></tr>
+<?php endif; ?>
 </tbody>
 </table>
 </div>
@@ -218,40 +186,31 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
+<?php foreach ($walletTransactions as $tx):
+  $isDeposit = in_array($tx['type'], ['deposit','payout']);
+  $date = !empty($tx['created_at']) ? date('M j, Y H:i', strtotime($tx['created_at'])) : '';
+?>
 <tr>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
-<span class="material-icons text-emerald-500 text-lg">arrow_downward</span>
+<span class="material-icons <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?> text-lg"><?php echo $isDeposit ? 'arrow_downward' : 'arrow_upward'; ?></span>
 <div>
-<p class="text-sm font-bold">Deposit</p>
-<p class="text-[10px] text-slate-400">Oct 24, 2023 14:20</p>
+<p class="text-sm font-bold"><?php echo htmlspecialchars(ucfirst($tx['type'])); ?></p>
+<p class="text-[10px] text-slate-400"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></p>
 </div>
 </div>
 </td>
-<td class="px-6 py-4 text-sm font-medium">BTC</td>
-<td class="px-6 py-4 text-right text-sm font-bold text-emerald-500">+0.0500</td>
+<td class="px-6 py-4 text-sm font-medium"><?php echo htmlspecialchars($tx['currency']); ?></td>
+<td class="px-6 py-4 text-right text-sm font-bold <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo number_format((float)$tx['amount'], 4); ?></td>
 <td class="px-6 py-4 text-center">
-<span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">COMPLETED</span>
+<span class="px-2 py-1 <?php echo $tx['status'] === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>
-<td class="px-6 py-4 text-right font-mono text-[10px] text-slate-400">0x4a9...e2f3</td>
+<td class="px-6 py-4 text-right font-mono text-[10px] text-slate-400"><?php echo $tx['reference'] ? substr($tx['reference'], 0, 6) . '...' . substr($tx['reference'], -4) : '—'; ?></td>
 </tr>
-<tr>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<span class="material-icons text-red-500 text-lg">arrow_upward</span>
-<div>
-<p class="text-sm font-bold">Withdraw</p>
-<p class="text-[10px] text-slate-400">Oct 22, 2023 09:15</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 text-sm font-medium">USDT</td>
-<td class="px-6 py-4 text-right text-sm font-bold text-red-500">-2,500.00</td>
-<td class="px-6 py-4 text-center">
-<span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-tighter">Pending</span>
-</td>
-<td class="px-6 py-4 text-right font-mono text-[10px] text-slate-400">0x8b2...c10d</td>
-</tr>
+<?php endforeach; ?>
+<?php if (empty($walletTransactions)): ?>
+<tr><td class="px-6 py-8 text-center text-slate-500" colspan="5">No transactions yet.</td></tr>
+<?php endif; ?>
 </tbody>
 </table>
 </div>

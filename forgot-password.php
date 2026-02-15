@@ -1,11 +1,13 @@
+<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit | Forgot Password</title>
+<title><?php echo htmlspecialchars($siteName); ?> | Forgot Password</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
   tailwind.config = {
@@ -24,14 +26,11 @@
   }
 </script>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex items-center justify-center p-6">
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex items-center justify-center p-4 sm:p-6 overflow-x-hidden">
 <div class="w-full max-w-[440px]">
-<a class="flex items-center gap-2 mb-8 text-[#1d180c] dark:text-primary" href="/">
-<div class="size-8 text-primary">
-<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"></path></svg>
+<div class="mb-8">
+<?php require_once __DIR__ . '/includes/auth-header.php'; ?>
 </div>
-<h1 class="text-xl font-bold tracking-tight dark:text-white">Bloombit</h1>
-</a>
 <div class="bg-white dark:bg-[#2d2716] p-8 md:p-10 rounded-xl border border-[#eae2cd] dark:border-[#423b26] shadow-sm">
 <div class="flex flex-col gap-2 mb-8">
 <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-2">
@@ -61,6 +60,7 @@
 </p>
 </div>
 </div>
+<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
 </body>
 </html>

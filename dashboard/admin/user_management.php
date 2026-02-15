@@ -1,10 +1,11 @@
-<?php require_once __DIR__ . '/../../includes/auth-check.php'; ?>
+<?php require_once __DIR__ . '/../../includes/admin-check.php'; require_once __DIR__ . '/../../includes/helpers.php'; $siteName = get_site_name();
+$currentPage = 'users';
+?>
 <!DOCTYPE html>
-
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bloombit | Admin User Directory</title>
+<title><?php echo htmlspecialchars($siteName); ?> | Admin User Directory</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -15,12 +16,12 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#f2df0d",
+                        "primary": "#f9bd0b",
                         "background-light": "#f8f8f5",
-                        "background-dark": "#222110",
+                        "background-dark": "#231e0f",
                     },
                     fontFamily: {
-                        "display": ["Inter"]
+                        "display": ["Inter", "sans-serif"]
                     },
                     borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
                 },
@@ -28,37 +29,12 @@
         }
     </script>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
-<!-- Navigation Bar -->
-<nav class="sticky top-0 z-40 w-full bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 px-6 py-3 flex items-center justify-between">
-<div class="flex items-center gap-8">
-<a class="flex items-center gap-2" href="/">
-<div class="bg-primary w-8 h-8 rounded-lg flex items-center justify-center">
-<span class="material-icons text-background-dark text-xl font-bold">bolt</span>
-</div>
-<span class="text-xl font-bold tracking-tight">Bloombit<span class="text-primary">.</span></span>
-</a>
-<div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-500">
-<a class="hover:text-primary transition-colors" href="/dashboard/admin">Dashboard</a>
-<a class="text-slate-900 dark:text-white border-b-2 border-primary pb-1" href="/dashboard/admin/users">User Directory</a>
-<a class="hover:text-primary transition-colors" href="/dashboard/admin">Transactions</a>
-<a class="hover:text-primary transition-colors" href="/dashboard/admin/plans">Investment Plans</a>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<div class="flex items-center gap-2 bg-slate-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full text-xs font-semibold">
-<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                System Stable
-            </div>
-<button class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
-<span class="material-icons text-slate-600 dark:text-zinc-400">notifications_none</span>
-</button>
-<div class="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
-<img alt="Admin" data-alt="Admin user profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSI9T_TvL9hQvT1tZ9Zv3TlSZBwGfNxngTKPEAcjyYTN-CX-_3axQ2zBYISU6lVdlCipBhPlCm0ELEJMVHR-rPYKktnN1HMp26i5LcylJLDttJ5DODj1CXUeZJT_0WnCu7wwH7_06WQ3KGXtXIJvuykvfERIseWopujTGGte4_PVuNEoGm3d3ijWyGR25n03TcU2ogyPjSK_Sd9Z2oRn7M7fcon-nTBwojPHKll3wRXBDhQ3DQaXBr5OPtjINE0lXrjk6gjW9bjl0"/>
-</div>
-</div>
-</nav>
-<main class="p-6 max-w-7xl mx-auto">
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
+<div class="flex min-h-screen">
+<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
+<main class="flex-1 overflow-y-auto min-w-0">
+<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
+<div class="p-4 sm:p-6 max-w-7xl mx-auto">
 <!-- Header & Search -->
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
 <div>
