@@ -3,7 +3,7 @@
  * Bloombit - Contact Form Notification Email (to support team)
  */
 $config = $config ?? [];
-$site_url = $config['site']['url'] ?? 'https://bloombit.com';
+$site_url = $site_url ?? '/';
 $name = $name ?? '';
 $email = $email ?? '';
 $subject = $subject ?? '';

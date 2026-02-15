@@ -3,7 +3,7 @@
  * Bloombit - Email Verification Template
  */
 $config = $config ?? [];
-$site_url = $config['site']['url'] ?? 'https://bloombit.com';
+$site_url = $site_url ?? '/';
 $verify_url = $verify_url ?? $site_url . '/login';
 $name = $name ?? 'User';
 ?>

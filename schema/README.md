@@ -9,8 +9,9 @@
    - `DB_PASS`
 
 2. Import the database via phpMyAdmin:
+   - Select your database from the left sidebar (e.g. u502532383_bloombit on shared hosting)
    - Go to phpMyAdmin → Import
-   - Choose `database.sql` (creates database, all tables, and default site settings + plans)
+   - Choose `database.sql` (creates all tables and default site settings + plans)
    - Execute
 
 3. Create the admin account:

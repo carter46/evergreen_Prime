@@ -9,7 +9,9 @@
  */
 function renderEmailTemplate($template, array $vars = []) {
     $config = include dirname(__DIR__, 2) . '/config.php';
+    require_once dirname(__DIR__) . '/helpers.php';
     $vars['config'] = $config;
+    $vars['site_url'] = $vars['site_url'] ?? get_base_url();
     extract($vars, EXTR_SKIP);
     ob_start();
     include dirname(__DIR__) . '/email-templates/' . $template;

@@ -1,13 +1,10 @@
 -- Bloombit - Complete Database
--- Import this single file via phpMyAdmin to create all tables and default data
+-- 1. In phpMyAdmin, select your database (e.g. u502532383_bloombit) from the left sidebar
+-- 2. Click the Import tab and choose this file
+-- 3. Execute
 
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
-
-CREATE DATABASE IF NOT EXISTS bloombit
-  DEFAULT CHARACTER SET utf8mb4
-  DEFAULT COLLATE utf8mb4_unicode_ci;
-USE bloombit;
 
 -- Users
 CREATE TABLE IF NOT EXISTS users (

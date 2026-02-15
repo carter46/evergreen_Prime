@@ -4,7 +4,7 @@
  * Based on the provided password reset design.
  */
 $config = $config ?? [];
-$site_url = $config['site']['url'] ?? 'https://bloombit.com';
+$site_url = $site_url ?? '/';
 $reset_url = $reset_url ?? $site_url . '/login';
 $name = $name ?? 'User';
 $expiry_minutes = $expiry_minutes ?? 60;

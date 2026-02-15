@@ -30,9 +30,10 @@ try {
     require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
     $mail = require dirname(__DIR__, 2) . '/includes/mailer.php';
     $config = include dirname(__DIR__, 2) . '/config.php';
+    require_once dirname(__DIR__, 2) . '/includes/helpers.php';
     $replyTo = $config['mail']['reply_to'] ?? 'support@bloombit.com';
     $siteName = $config['site']['name'] ?? 'Bloombit';
-    $siteUrl = $config['site']['url'] ?? 'https://bloombit.com';
+    $siteUrl = get_base_url();
     $date = date('Y-m-d H:i:s') . ' UTC';
 
     // Email to admin: new signup notification

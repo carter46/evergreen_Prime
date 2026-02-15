@@ -27,8 +27,9 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
+require_once dirname(__DIR__, 2) . '/includes/helpers.php';
 $config = include dirname(__DIR__, 2) . '/config.php';
-$siteUrl = $config['site']['url'] ?? 'https://bloombit.com';
+$siteUrl = get_base_url();
 $expiryMinutes = $config['email_verification']['password_reset_expiry_minutes'] ?? 60;
 
 // Generate reset token (stub: in production, store in DB and validate on reset)

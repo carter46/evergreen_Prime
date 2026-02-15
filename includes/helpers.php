@@ -30,3 +30,19 @@ function get_site_name(): string {
     $config = include dirname(__DIR__) . '/config.php';
     return get_site_setting('site_name') ?? $config['site']['name'] ?? 'Bloombit';
 }
+
+/**
+ * Get base site URL (protocol + host) - dynamic from current request.
+ * Use getenv('SITE_URL') to override when needed (e.g. behind proxy).
+ */
+function get_base_url(): string {
+    if ($url = getenv('SITE_URL')) {
+        return rtrim($url, '/');
+    }
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+        || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+    $protocol = $https ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
+    return $protocol . '://' . $host;
+}

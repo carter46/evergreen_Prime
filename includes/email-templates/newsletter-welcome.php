@@ -3,7 +3,7 @@
  * Bloombit - Newsletter Welcome Email (to subscriber)
  */
 $config = $config ?? [];
-$site_url = $config['site']['url'] ?? 'https://bloombit.com';
+$site_url = $site_url ?? '/';
 $email = $email ?? '';
 ?>
 <!DOCTYPE html>

@@ -9,7 +9,7 @@ $heading = $heading ?? 'Your Bloombit update';
 $content_html = $content_html ?? '<p>Your message content here.</p>';
 $cta_text = $cta_text ?? null;
 $cta_url = $cta_url ?? '#';
-$site_url = $config['site']['url'] ?? 'https://bloombit.com';
+$site_url = $site_url ?? '/';
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -16,8 +16,6 @@ if (empty($token)) {
 }
 
 // Stub: In production, validate token against DB and mark email verified
-$config = include dirname(__DIR__, 2) . '/config.php';
-$baseUrl = $config['site']['url'] ?? '/';
-
-header('Location: ' . rtrim($baseUrl, '/') . '/dashboard?verified=1');
+require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+header('Location: ' . get_base_url() . '/dashboard?verified=1');
 exit;

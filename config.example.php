@@ -17,11 +17,9 @@ return [
     'email_verification' => [
         'expiry_hours' => 24,
         'secret' => 'generate-a-random-secret-key-here',
-        'base_url' => 'https://bloombit.com',
         'password_reset_expiry_minutes' => 60,
     ],
     'site' => [
-        'url' => 'https://bloombit.com',
         'name' => 'Bloombit',
         'debug' => false,
         'timezone' => 'UTC',
