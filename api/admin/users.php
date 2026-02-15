@@ -78,6 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'amount' => (float) $row['amount'],
             ];
         }
+        require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+        $user['total_balance_usd'] = wallet_balances_to_usd($user['wallet_balances']);
 
         // Active investments with plan names
         $stmt = $pdo->prepare('
@@ -353,16 +355,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Throwable $e) {
                 // Columns may not exist yet
             }
-            if (!empty($input['wallet_balances']) && is_array($input['wallet_balances'])) {
-                foreach ($input['wallet_balances'] as $wb) {
-                    $cur = strtoupper(trim($wb['currency'] ?? ''));
-                    $amt = (float) ($wb['amount'] ?? 0);
-                    if ($cur !== '' && in_array($cur, ['BTC', 'ETH', 'USDT', 'USD'], true)) {
-                        $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = VALUES(amount)')
-                            ->execute([$userId, $cur, $amt]);
-                    }
-                }
-            }
             echo json_encode(['success' => true, 'data' => ['message' => 'Profile updated']]);
             exit;
 
@@ -388,15 +380,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
 
         case 'adjust_balance':
+            $type = strtolower(trim($input['type'] ?? ''));
             $currency = strtoupper(trim($input['currency'] ?? ''));
             $amount = (float) ($input['amount'] ?? 0);
+            if ($type !== 'credit' && $type !== 'debit') {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Type must be credit or debit']);
+                exit;
+            }
+            if ($amount <= 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Amount must be greater than 0']);
+                exit;
+            }
             if ($currency === '' || !in_array($currency, ['BTC', 'ETH', 'USDT', 'USD'], true)) {
+                http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Invalid currency']);
                 exit;
             }
-            $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = VALUES(amount)')
-                ->execute([$userId, $currency, $amount]);
-            echo json_encode(['success' => true, 'data' => ['message' => 'Balance updated']]);
+            if ($type === 'credit') {
+                $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
+                    ->execute([$userId, $currency, $amount]);
+                echo json_encode(['success' => true, 'data' => ['message' => 'Balance credited']]);
+            } else {
+                $stmt = $pdo->prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ?');
+                $stmt->execute([$userId, $currency]);
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                $current = $row ? (float) $row['amount'] : 0;
+                if ($current < $amount) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Insufficient balance']);
+                    exit;
+                }
+                $pdo->prepare('UPDATE wallet_balances SET amount = amount - ? WHERE user_id = ? AND currency = ?')
+                    ->execute([$amount, $userId, $currency]);
+                echo json_encode(['success' => true, 'data' => ['message' => 'Balance debited']]);
+            }
             exit;
 
         case 'delete':

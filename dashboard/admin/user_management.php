@@ -338,10 +338,35 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Email</label><input type="email" id="drawer-edit-email" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" /></div>
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">New Password</label><div class="relative"><input type="password" id="drawer-edit-password" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 pr-10 text-sm" placeholder="Leave blank to keep current" autocomplete="new-password" /><button type="button" data-password-toggle class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"><span class="material-icons text-lg">visibility</span></button></div></div>
 </form>
-<!-- Wallet Breakdown -->
+<!-- User Wallet -->
 <div>
-<div class="flex items-center justify-between mb-4"><h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Wallet Breakdown</h4></div>
-<div id="drawer-wallet" class="grid grid-cols-1 gap-3"></div>
+  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">User Wallet</h4>
+  <div id="drawer-total-balance" class="text-2xl font-bold text-primary mb-4">$0.00</div>
+  <button type="button" id="drawer-adjust-balance-btn" class="text-sm text-primary font-medium hover:underline">Adjust balance</button>
+  <div id="drawer-adjust-panel" class="hidden mt-3 p-4 bg-slate-50 dark:bg-zinc-800 rounded-lg space-y-3">
+    <div>
+      <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Type</label>
+      <select id="drawer-adjust-type" class="w-full bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 text-sm">
+        <option value="credit">Credit</option>
+        <option value="debit">Debit</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Currency</label>
+      <select id="drawer-adjust-currency" class="w-full bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 text-sm">
+        <option value="BTC">BTC</option>
+        <option value="ETH">ETH</option>
+        <option value="USDT">USDT</option>
+        <option value="USD">USD</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Amount</label>
+      <input type="number" id="drawer-adjust-amount" step="any" min="0" class="w-full bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 text-sm" placeholder="0"/>
+    </div>
+    <div id="drawer-adjust-error" class="text-sm text-red-500 hidden"></div>
+    <button type="button" id="drawer-adjust-go" class="w-full py-2 bg-primary text-zinc-900 font-bold rounded-lg text-sm">Go</button>
+  </div>
 </div>
 <!-- Active Investments -->
 <div>
@@ -403,19 +428,14 @@ function loadUser(id) {
     document.getElementById('drawer-edit-email').value = u.email || '';
     document.getElementById('drawer-edit-password').value = '';
 
-    var w = document.getElementById('drawer-wallet');
-    w.innerHTML = '';
-    var coinClasses = { BTC: 'bg-orange-100 text-orange-600', ETH: 'bg-blue-100 text-blue-600', USDT: 'bg-emerald-100 text-emerald-600' };
-    var coinNames = { BTC: 'Bitcoin', ETH: 'Ethereum', USDT: 'Tether' };
-    var coinIcons = { BTC: 'currency_bitcoin', ETH: 'diamond', USDT: 'attach_money' };
-    (u.wallet_balances || []).forEach(function(b){
-      var cls = coinClasses[b.currency] || 'bg-slate-100 text-slate-600';
-      var nm = coinNames[b.currency] || b.currency;
-      var ic = coinIcons[b.currency] || 'payments';
-      var amt = parseFloat(b.amount).toFixed(8);
-      w.innerHTML += '<div class="wallet-row p-3 bg-slate-50 dark:bg-zinc-800 rounded-xl flex items-center justify-between gap-2"><div class="flex items-center gap-3 min-w-0"><div class="'+cls+' p-2 rounded-lg shrink-0"><span class="material-icons text-lg">'+ic+'</span></div><div class="min-w-0"><div class="text-xs font-bold">'+nm+'</div><div class="text-[10px] text-slate-500">'+b.currency+'</div></div></div><div class="flex items-center gap-2 shrink-0"><input type="number" step="any" data-currency="'+b.currency+'" class="wallet-amount-input w-24 px-2 py-1 text-sm font-bold bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded text-right" value="'+amt+'"/><span class="wallet-edit-label text-[10px] text-primary font-medium cursor-pointer hover:underline">Edit</span></div></div>';
-    });
-    if (!u.wallet_balances || u.wallet_balances.length === 0) w.innerHTML = '<p class="text-sm text-slate-500">No balances</p>';
+    var totalBal = document.getElementById('drawer-total-balance');
+    if (totalBal) totalBal.textContent = '$' + (parseFloat(u.total_balance_usd || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    var adjustPanel = document.getElementById('drawer-adjust-panel');
+    if (adjustPanel) adjustPanel.classList.add('hidden');
+    var amountInput = document.getElementById('drawer-adjust-amount');
+    if (amountInput) amountInput.value = '';
+    var errEl = document.getElementById('drawer-adjust-error');
+    if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
 
     var inv = document.getElementById('drawer-investments');
     inv.innerHTML = '';
@@ -436,6 +456,35 @@ function loadUser(id) {
 
 document.getElementById('drawer-close-btn').addEventListener('click', closeDrawer);
 if (backdrop) backdrop.addEventListener('click', function(){ closeDrawer(); closeAddUserDrawer(); });
+
+document.getElementById('drawer-adjust-balance-btn').addEventListener('click', function(){
+  var panel = document.getElementById('drawer-adjust-panel');
+  var err = document.getElementById('drawer-adjust-error');
+  if (err) { err.classList.add('hidden'); err.textContent = ''; }
+  if (panel) panel.classList.toggle('hidden');
+});
+document.getElementById('drawer-adjust-go').addEventListener('click', function(){
+  var id = document.getElementById('drawer-user-id').value;
+  if (!id) return;
+  var type = document.getElementById('drawer-adjust-type').value;
+  var currency = document.getElementById('drawer-adjust-currency').value;
+  var amt = parseFloat(document.getElementById('drawer-adjust-amount').value) || 0;
+  var errEl = document.getElementById('drawer-adjust-error');
+  if (amt <= 0) { if (errEl) { errEl.textContent = 'Amount must be greater than 0'; errEl.classList.remove('hidden'); } return; }
+  if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+  fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'adjust_balance', user_id: parseInt(id, 10), type: type, currency: currency, amount: amt }) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (res.success) {
+        document.getElementById('drawer-adjust-amount').value = '';
+        document.getElementById('drawer-adjust-panel').classList.add('hidden');
+        var toast = document.getElementById('user-toast');
+        if (toast) { toast.textContent = res.data && res.data.message ? res.data.message : 'Balance updated'; toast.classList.remove('hidden'); setTimeout(function(){ toast.classList.add('hidden'); }, 2000); }
+        loadUser(parseInt(id, 10));
+      } else { if (errEl) { errEl.textContent = res.error || 'Failed'; errEl.classList.remove('hidden'); } }
+    })
+    .catch(function(){ if (errEl) { errEl.textContent = 'Request failed'; errEl.classList.remove('hidden'); } });
+});
 
 var addUserDrawer = document.getElementById('add-user-drawer');
 function openAddUserDrawer() { closeDrawer(); addUserDrawer.style.transform = 'translateX(0)'; if (backdrop) backdrop.classList.remove('hidden'); }
@@ -512,11 +561,6 @@ document.getElementById('drawer-update-profile').addEventListener('click', funct
   var payload = { action: 'update', user_id: id, name: document.getElementById('drawer-edit-name').value, email: document.getElementById('drawer-edit-email').value };
   var pw = document.getElementById('drawer-edit-password').value.trim();
   if (pw.length >= 8) payload.password = pw;
-  var walletInputs = document.querySelectorAll('.wallet-amount-input');
-  if (walletInputs.length) {
-    payload.wallet_balances = [];
-    walletInputs.forEach(function(inp){ payload.wallet_balances.push({ currency: inp.getAttribute('data-currency'), amount: parseFloat(inp.value) || 0 }); });
-  }
   fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     .then(function(r){ return r.json(); }).then(function(res){
       if (res.success) {
@@ -558,8 +602,6 @@ document.getElementById('drawer-delete-user').addEventListener('click', function
   fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', user_id: id }) })
     .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { closeDrawer(); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
 });
-
-document.getElementById('drawer-wallet').addEventListener('click', function(e){ if (e.target.classList.contains('wallet-edit-label')) { var row = e.target.closest('.wallet-row'); var inp = row && row.querySelector('.wallet-amount-input'); if (inp) inp.focus(); } });
 
 document.getElementById('drawer-avatar-wrap').addEventListener('click', function(){ document.getElementById('drawer-avatar-input').click(); });
 document.getElementById('drawer-avatar-input').addEventListener('change', function(){
