@@ -54,9 +54,10 @@
 </svg>
 </div>
 <div class="relative z-10">
-<div class="flex items-center gap-2 mb-12">
-<?php $authHeaderVariant = 'on-primary'; require_once __DIR__ . '/includes/auth-header.php'; ?>
-</div>
+<a href="/" class="inline-flex items-center gap-2 text-black/70 hover:text-black transition-colors mb-12 group" aria-label="Back to home">
+<span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="text-sm font-semibold">Back to home</span>
+</a>
 <h1 class="text-4xl font-bold text-black leading-tight mb-6">
                     Start your <br/>journey with <br/>Bloombit.
                 </h1>
@@ -81,7 +82,7 @@
 <p class="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Get started with your free account today.</p>
 </div>
 <div class="md:hidden shrink-0">
-<?php unset($authHeaderVariant); require_once __DIR__ . '/includes/auth-header.php'; ?>
+<a href="/" class="inline-flex items-center gap-2 text-zinc-500 hover:text-primary transition-colors p-2" aria-label="Back to home"><span class="material-symbols-outlined">arrow_back</span></a>
 </div>
 </div>
 <form id="register-form" class="space-y-5">
@@ -177,6 +178,5 @@
 </form>
 </div>
 </div>
-<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
 </body></html>

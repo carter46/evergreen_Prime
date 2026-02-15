@@ -28,9 +28,10 @@
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex items-center justify-center p-4 sm:p-6 overflow-x-hidden">
 <div class="w-full max-w-[440px]">
-<div class="mb-8">
-<?php require_once __DIR__ . '/includes/auth-header.php'; ?>
-</div>
+<a href="/" class="inline-flex items-center gap-2 text-[#a18a45] hover:text-primary transition-colors mb-8 group" aria-label="Back to home">
+<span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="text-sm font-semibold">Back to home</span>
+</a>
 <div class="bg-white dark:bg-[#2d2716] p-8 md:p-10 rounded-xl border border-[#eae2cd] dark:border-[#423b26] shadow-sm">
 <div class="flex flex-col gap-2 mb-8">
 <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-2">
@@ -60,7 +61,6 @@
 </p>
 </div>
 </div>
-<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
 </body>
 </html>

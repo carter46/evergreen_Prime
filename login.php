@@ -52,10 +52,11 @@
 <div class="flex flex-col lg:flex-row min-h-screen w-full">
 <!-- Left Section: Login Form -->
 <div class="w-full lg:w-[45%] xl:w-[40%] flex flex-col bg-white dark:bg-background-dark px-6 py-8 md:px-12 lg:px-20">
-<!-- Header/Logo -->
-<header class="flex items-center gap-2 mb-16 lg:mb-24">
-<?php require_once __DIR__ . '/includes/auth-header.php'; ?>
-</header>
+<!-- Back to Home -->
+<a href="/" class="inline-flex items-center gap-2 text-text-muted hover:text-primary transition-colors mb-16 lg:mb-24 group" aria-label="Back to home">
+<span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="text-sm font-semibold">Back to home</span>
+</a>
 <div class="max-w-md w-full mx-auto lg:mx-0">
 <div class="mb-10">
 <h1 class="text-text-main dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] mb-3">Welcome back</h1>
@@ -166,6 +167,5 @@
 <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#fff 1px, transparent 0); background-size: 40px 40px;"></div>
 </div>
 </div>
-<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
 </body></html>

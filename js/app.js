@@ -242,9 +242,9 @@
             if (!btn) return;
             e.preventDefault();
             const wrap = btn.closest('.relative') || btn.parentElement;
-            const inp = wrap ? wrap.querySelector('input[type="password"], input[type="text"]') : null;
+            const inp = wrap ? (wrap.querySelector('input[type="password"]') || wrap.querySelector('input[type="text"]') || wrap.querySelector('input')) : null;
             if (!inp) return;
-            const icon = btn.querySelector('.material-icons, .material-symbols-outlined');
+            const icon = btn.querySelector('.material-icons, .material-symbols-outlined, [class*="material"]');
             if (inp.type === 'password') {
                 inp.type = 'text';
                 if (icon) icon.textContent = 'visibility_off';
@@ -252,7 +252,7 @@
                 inp.type = 'password';
                 if (icon) icon.textContent = 'visibility';
             }
-        });
+        }, true);
     }
 
     function initLogoutButtons() {

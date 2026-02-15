@@ -28,9 +28,10 @@
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex items-center justify-center p-4 sm:p-6 overflow-x-hidden">
 <div class="w-full max-w-[440px]">
-<div class="mb-8">
-<?php require_once __DIR__ . '/includes/auth-header.php'; ?>
-</div>
+<a href="/" class="inline-flex items-center gap-2 text-[#a18a45] hover:text-primary transition-colors mb-8 group" aria-label="Back to home">
+<span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="text-sm font-semibold">Back to home</span>
+</a>
 <div id="invalid-token" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
 <p class="text-red-700 dark:text-red-400 font-medium">Invalid or expired reset link.</p>
 <a class="inline-block mt-4 text-sm font-semibold text-primary hover:underline" href="/forgot-password">Request a new link</a>
@@ -71,7 +72,6 @@
 </div>
 </div>
 </div>
-<?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
 </body>
 </html>
