@@ -35,6 +35,7 @@ $siteName = get_site_name();
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -71,6 +72,9 @@ $siteName = get_site_name();
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .material-icons-round { font-size: 24px; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
+        .plan-card-icon { width: 48px; height: 48px; min-width: 48px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .plan-drawer-icon-btn { width: 40px; height: 40px; min-width: 40px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
@@ -120,7 +124,7 @@ $siteName = get_site_name();
 </div>
 </div>
 <!-- Plan Grid -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-12">
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-12 min-w-0">
 <?php 
 $icons = ['rocket_launch', 'trending_up', 'diamond'];
 $tiers = ['Low', 'Medium', 'High'];
@@ -129,13 +133,13 @@ foreach ($adminPlans as $idx => $p):
     $enabled = (bool)$p['enabled'];
     $avgYield = (floatval($p['yield_min']) + floatval($p['yield_max'])) / 2;
 ?>
-<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 hover:border-primary/50 transition-colors group relative overflow-hidden">
+<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 hover:border-primary/50 transition-colors group relative overflow-hidden min-w-0">
 <div class="p-6">
-<div class="flex justify-between items-start mb-4">
-<div class="w-12 h-12 bg-slate-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center text-slate-600 dark:text-zinc-400 group-hover:bg-primary transition-colors group-hover:text-zinc-900">
-<span class="material-icons-round"><?php echo $icons[$idx % 3]; ?></span>
+<div class="flex justify-between items-start gap-4 mb-4">
+<div class="plan-card-icon bg-slate-100 dark:bg-zinc-800 rounded-lg text-slate-600 dark:text-zinc-400 group-hover:bg-primary transition-colors group-hover:text-zinc-900">
+<span class="material-icons-round text-xl"><?php echo $icons[$idx % 3]; ?></span>
 </div>
-<div class="flex flex-col items-end">
+<div class="flex flex-col items-end shrink-0">
 <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full <?php echo $enabled ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'; ?> text-xs font-medium">
 <span class="w-1.5 h-1.5 rounded-full <?php echo $enabled ? 'bg-green-600' : 'bg-slate-400'; ?>"></span> <?php echo $enabled ? 'Enabled' : 'Disabled'; ?>
 </span>
@@ -232,7 +236,7 @@ foreach ($adminPlans as $idx => $p):
 <span class="material-icons-round">close</span>
 </button>
 </div>
-<div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 custom-scrollbar">
 <form id="admin-plan-form" class="space-y-8 min-w-0">
 <input type="hidden" name="id" id="plan-form-id" value=""/>
 <input type="hidden" name="enabled" value="1"/>
@@ -247,21 +251,21 @@ foreach ($adminPlans as $idx => $p):
 </div>
 <div class="col-span-2">
 <label class="block text-sm font-medium mb-2">Icon Selection</label>
-<div class="flex flex-wrap gap-3">
-<div class="w-10 h-10 border-2 border-primary bg-primary/10 rounded flex items-center justify-center cursor-pointer">
-<span class="material-icons-round">trending_up</span>
+<div class="flex flex-wrap gap-3 min-w-0">
+<div class="plan-drawer-icon-btn border-2 border-primary bg-primary/10 rounded cursor-pointer shrink-0">
+<span class="material-icons-round text-xl">trending_up</span>
 </div>
-<div class="w-10 h-10 border-2 border-slate-100 dark:border-zinc-800 rounded flex items-center justify-center text-slate-400 cursor-pointer hover:border-primary/50">
-<span class="material-icons-round">rocket_launch</span>
+<div class="plan-drawer-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0">
+<span class="material-icons-round text-xl">rocket_launch</span>
 </div>
-<div class="w-10 h-10 border-2 border-slate-100 dark:border-zinc-800 rounded flex items-center justify-center text-slate-400 cursor-pointer hover:border-primary/50">
-<span class="material-icons-round">diamond</span>
+<div class="plan-drawer-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0">
+<span class="material-icons-round text-xl">diamond</span>
 </div>
-<div class="w-10 h-10 border-2 border-slate-100 dark:border-zinc-800 rounded flex items-center justify-center text-slate-400 cursor-pointer hover:border-primary/50">
-<span class="material-icons-round">currency_bitcoin</span>
+<div class="plan-drawer-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0">
+<span class="material-icons-round text-xl">currency_bitcoin</span>
 </div>
-<div class="w-10 h-10 border-2 border-slate-100 dark:border-zinc-800 rounded flex items-center justify-center text-slate-400 cursor-pointer hover:border-primary/50">
-<span class="material-icons-round">token</span>
+<div class="plan-drawer-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0">
+<span class="material-icons-round text-xl">token</span>
 </div>
 </div>
 </div>
