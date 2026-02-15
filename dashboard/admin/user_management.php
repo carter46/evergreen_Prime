@@ -38,13 +38,14 @@ try {
     $offset = ($page - 1) * $perPage;
 
     $sql = "SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol},
-            COALESCE((SELECT SUM(amount) FROM wallet_balances WHERE user_id = u.id AND currency = 'BTC'), 0) AS total_btc,
             (SELECT COUNT(*) FROM user_investments WHERE user_id = u.id AND status = 'active') AS active_plans_count
             FROM users u WHERE {$whereClause} ORDER BY u.created_at DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
+    $userIds = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $kyc = !$row['active'] ? 'suspended' : ($row['email_verified'] ? 'verified' : 'pending');
+        $userIds[] = (int)$row['id'];
         $users[] = [
             'id' => (int)$row['id'],
             'email' => $row['email'],
@@ -52,10 +53,27 @@ try {
             'active' => (bool)$row['active'],
             'created_at' => $row['created_at'],
             'avatar_url' => $row['avatar_url'] ?? null,
-            'total_btc' => (float)$row['total_btc'],
+            'total_balance_usd' => 0.0,
             'active_plans_count' => (int)$row['active_plans_count'],
             'kyc_status' => $kyc,
         ];
+    }
+    // Fetch all wallet balances for these users and convert to USD via CoinGecko
+    if (!empty($userIds)) {
+        $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+        $wbStmt = $pdo->prepare("SELECT user_id, currency, amount FROM wallet_balances WHERE user_id IN ($placeholders)");
+        $wbStmt->execute($userIds);
+        $balancesByUser = [];
+        while ($r = $wbStmt->fetch(PDO::FETCH_ASSOC)) {
+            $uid = (int)$r['user_id'];
+            if (!isset($balancesByUser[$uid])) $balancesByUser[$uid] = [];
+            $balancesByUser[$uid][] = ['currency' => $r['currency'], 'amount' => (float)$r['amount']];
+        }
+        $prices = get_coingecko_prices_usd();
+        foreach ($users as &$u) {
+            $u['total_balance_usd'] = wallet_balances_to_usd($balancesByUser[$u['id']] ?? [], $prices);
+        }
+        unset($u);
     }
     $pagination = ['page' => $page, 'per_page' => $perPage, 'total' => $total, 'total_pages' => $total > 0 ? (int)ceil($total / $perPage) : 1];
 } catch (Throwable $e) {}
@@ -162,7 +180,7 @@ foreach ($users as $i => $u):
 </div>
 </td>
 <td class="px-6 py-4">
-<div class="font-bold text-slate-900 dark:text-white"><?php echo number_format($u['total_btc'], 4); ?> BTC</div>
+<div class="font-bold text-slate-900 dark:text-white">$<?php echo number_format($u['total_balance_usd'], 2); ?></div>
 </td>
 <td class="px-6 py-4">
 <span class="<?php echo $u['active_plans_count'] > 0 ? 'bg-primary/20 text-slate-900 dark:text-primary' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'; ?> px-2 py-0.5 rounded-full text-xs font-bold"><?php echo $u['active_plans_count']; ?> Plan<?php echo $u['active_plans_count'] !== 1 ? 's' : ''; ?></span>
@@ -222,7 +240,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <span class="material-icons text-slate-400 user-mobile-chevron transition-transform shrink-0">expand_more</span>
 </button>
 <div class="user-mobile-expand hidden border-t border-slate-100 dark:border-zinc-800 px-4 py-4 space-y-3">
-<div class="flex justify-between items-center"><span class="text-xs text-slate-500">Total Balance</span><span class="font-bold text-sm"><?php echo number_format($u['total_btc'], 4); ?> BTC</span></div>
+<div class="flex justify-between items-center"><span class="text-xs text-slate-500">Total Balance</span><span class="font-bold text-sm">$<?php echo number_format($u['total_balance_usd'], 2); ?></span></div>
 <div class="flex justify-between items-center"><span class="text-xs text-slate-500">Active Plans</span><span class="<?php echo $u['active_plans_count'] > 0 ? 'bg-primary/20 text-primary' : 'text-slate-500'; ?> text-xs font-bold"><?php echo $u['active_plans_count']; ?> Plan<?php echo $u['active_plans_count'] !== 1 ? 's' : ''; ?></span></div>
 <button type="button" class="user-edit-btn w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-zinc-900 font-bold rounded-lg text-sm" data-user-id="<?php echo $u['id']; ?>"><span class="material-icons text-lg">edit</span>Edit User</button>
 </div>

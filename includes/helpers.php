@@ -76,6 +76,68 @@ function get_current_user_data(): ?array {
 }
 
 /**
+ * Fetch crypto prices in USD from CoinGecko API.
+ * Returns map: 'bitcoin' => price, 'ethereum' => price, 'tether' => price.
+ * Caches per-request to avoid repeated API calls.
+ */
+function get_coingecko_prices_usd(): array {
+    static $cache = null;
+    if ($cache !== null) return $cache;
+    $url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether&vs_currencies=usd';
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 10,
+        CURLOPT_HTTPHEADER => ['Accept: application/json', 'User-Agent: bloombit-server'],
+    ]);
+    $json = curl_exec($ch);
+    curl_close($ch);
+    if (!$json) {
+        $cache = [];
+        return $cache;
+    }
+    $data = json_decode($json, true);
+    if (!is_array($data)) {
+        $cache = [];
+        return $cache;
+    }
+    $cache = [
+        'bitcoin' => (float) ($data['bitcoin']['usd'] ?? 0),
+        'ethereum' => (float) ($data['ethereum']['usd'] ?? 0),
+        'tether' => (float) ($data['tether']['usd'] ?? 1),
+    ];
+    return $cache;
+}
+
+/**
+ * Map wallet currency code to CoinGecko price key.
+ */
+function currency_to_coingecko(string $currency): ?string {
+    $map = ['BTC' => 'bitcoin', 'ETH' => 'ethereum', 'USDT' => 'tether'];
+    return $map[strtoupper($currency)] ?? null;
+}
+
+/**
+ * Convert wallet balances to total USD using CoinGecko prices.
+ * $balances: array of ['currency' => 'BTC', 'amount' => 1.5], ...
+ */
+function wallet_balances_to_usd(array $balances, array $prices = null): float {
+    $prices = $prices ?? get_coingecko_prices_usd();
+    $total = 0.0;
+    foreach ($balances as $b) {
+        $cur = strtoupper($b['currency'] ?? '');
+        $amt = (float) ($b['amount'] ?? 0);
+        if ($amt <= 0) continue;
+        if ($cur === 'USD') {
+            $total += $amt;
+        } elseif ($key = currency_to_coingecko($cur)) {
+            $total += $amt * ($prices[$key] ?? 0);
+        }
+    }
+    return $total;
+}
+
+/**
  * Get base site URL (protocol + host) - dynamic from current request.
  * Use getenv('SITE_URL') to override when needed (e.g. behind proxy).
  */

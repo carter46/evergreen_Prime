@@ -160,18 +160,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $avatarCol = $hasAvatarCol ? ', u.avatar_url' : '';
     $sql = "
         SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol},
-               COALESCE(SUM(wb.amount), 0) AS total_btc,
                (SELECT COUNT(*) FROM user_investments WHERE user_id = u.id AND status = 'active') AS active_plans_count
         FROM users u
-        LEFT JOIN wallet_balances wb ON wb.user_id = u.id AND wb.currency = 'BTC'
         WHERE {$whereClause}
-        GROUP BY u.id
         ORDER BY u.created_at DESC
         LIMIT " . (int) $perPage . " OFFSET " . (int) $offset;
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $users = [];
+    $userIds = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $kyc = 'pending';
         if (!$row['active']) {
@@ -179,6 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         } elseif ($row['email_verified']) {
             $kyc = 'verified';
         }
+        $userIds[] = (int) $row['id'];
         $users[] = [
             'id' => (int) $row['id'],
             'email' => $row['email'],
@@ -188,10 +187,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
             'avatar_url' => $row['avatar_url'] ?? null,
-            'total_balance_btc' => (float) $row['total_btc'],
+            'total_balance_usd' => 0.0,
             'active_plans_count' => (int) $row['active_plans_count'],
             'kyc_status' => $kyc,
         ];
+    }
+    if (!empty($userIds)) {
+        require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+        $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+        $wbStmt = $pdo->prepare("SELECT user_id, currency, amount FROM wallet_balances WHERE user_id IN ($placeholders)");
+        $wbStmt->execute($userIds);
+        $balancesByUser = [];
+        while ($r = $wbStmt->fetch(PDO::FETCH_ASSOC)) {
+            $uid = (int) $r['user_id'];
+            if (!isset($balancesByUser[$uid])) $balancesByUser[$uid] = [];
+            $balancesByUser[$uid][] = ['currency' => $r['currency'], 'amount' => (float) $r['amount']];
+        }
+        $prices = get_coingecko_prices_usd();
+        foreach ($users as &$u) {
+            $u['total_balance_usd'] = wallet_balances_to_usd($balancesByUser[$u['id']] ?? [], $prices);
+        }
+        unset($u);
     }
 
     echo json_encode([
