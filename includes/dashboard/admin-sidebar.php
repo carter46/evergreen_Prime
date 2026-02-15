@@ -12,8 +12,8 @@ $navClass = function ($page) use ($current) {
 ?>
 <!-- Mobile overlay -->
 <div id="admin-sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" aria-hidden="true"></div>
-<!-- Sidebar: hidden on mobile, shown via toggle; fixed on lg -->
-<aside id="admin-sidebar" class="fixed lg:static inset-y-0 left-0 w-64 bg-white dark:bg-black/20 border-r border-primary/10 flex flex-col shrink-0 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
+<!-- Sidebar: fixed so it stays visible when scrolling -->
+<aside id="admin-sidebar" class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-black/20 border-r border-primary/10 flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out h-screen">
     <a class="p-6 flex items-center gap-3" href="/">
         <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
             <span class="material-icons text-white">bolt</span>
@@ -49,6 +49,7 @@ $navClass = function ($page) use ($current) {
         </a>
     </div>
 </aside>
+<div class="hidden lg:block w-64 shrink-0 flex-none" aria-hidden="true"></div>
 <script>
 (function(){
     var overlay=document.getElementById('admin-sidebar-overlay');

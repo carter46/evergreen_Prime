@@ -224,6 +224,8 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <span class="material-icons text-sm">close</span>
 </button>
 </div>
+<!-- Drawer backdrop - click to close -->
+<div id="user-drawer-backdrop" class="fixed inset-0 bg-black/20 z-40 hidden transition-opacity" aria-hidden="true"></div>
 <!-- Right Side Profile Drawer (hidden by default) -->
 <div id="user-profile-drawer" class="fixed inset-y-0 right-0 w-[420px] bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300" style="transform: translateX(100%);">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
@@ -279,15 +281,17 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <button type="button" id="drawer-update-profile" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary text-background-dark hover:brightness-105 col-span-2">Update Profile</button>
 <button type="button" id="drawer-block-btn" class="px-3 py-1.5 text-xs font-bold rounded-lg"></button>
 <button type="button" id="drawer-adjust-balance" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700">Adjust Balance</button>
+<button type="button" id="drawer-delete-user" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 col-span-2">Delete User</button>
 </div>
 <script src="/js/app.js"></script>
 <script>
 (function(){
 var drawer = document.getElementById('user-profile-drawer');
+var backdrop = document.getElementById('user-drawer-backdrop');
 if (!drawer) return;
 
-function openDrawer() { drawer.style.transform = 'translateX(0)'; }
-function closeDrawer() { drawer.style.transform = 'translateX(100%)'; }
+function openDrawer() { drawer.style.transform = 'translateX(0)'; if (backdrop) backdrop.classList.remove('hidden'); }
+function closeDrawer() { drawer.style.transform = 'translateX(100%)'; if (backdrop) backdrop.classList.add('hidden'); }
 
 function loadUser(id) {
   fetch('/api/admin/users.php?id=' + id).then(function(r){ return r.json(); }).then(function(res){
@@ -337,6 +341,7 @@ function loadUser(id) {
 }
 
 document.getElementById('drawer-close-btn').addEventListener('click', closeDrawer);
+if (backdrop) backdrop.addEventListener('click', closeDrawer);
 
 document.querySelectorAll('.user-row, .user-edit-btn').forEach(function(el){
   el.addEventListener('click', function(e){
@@ -374,6 +379,14 @@ document.getElementById('drawer-2fa-toggle').addEventListener('click', function(
   if (!id) return;
   fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'toggle_2fa', user_id: id }) })
     .then(function(r){ return r.json(); }).then(function(res){ if (res.success) loadUser(id); else alert(res.error || '2FA not supported'); }).catch(function(){});
+});
+
+document.getElementById('drawer-delete-user').addEventListener('click', function(){
+  var id = document.getElementById('drawer-user-id').value;
+  if (!id) return;
+  if (!confirm('Permanently delete this user? This cannot be undone.')) return;
+  fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', user_id: id }) })
+    .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { closeDrawer(); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
 });
 
 document.getElementById('drawer-adjust-balance').addEventListener('click', function(){

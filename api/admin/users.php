@@ -281,6 +281,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => true, 'data' => ['message' => 'Balance updated']]);
             exit;
 
+        case 'delete':
+            $pdo->prepare('DELETE FROM users WHERE id = ?')->execute([$userId]);
+            echo json_encode(['success' => true, 'data' => ['message' => 'User deleted']]);
+            exit;
+
         case 'toggle_2fa':
             try {
                 $colStmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'two_factor_enabled'");
