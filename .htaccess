@@ -12,14 +12,16 @@ Options -Indexes
         Require all denied
     </FilesMatch>
 
-    # Redirect .html and .php URLs to clean URLs (301 permanent)
-    RewriteCond %{REQUEST_URI} \.(html|php)$
-    RewriteRule ^(.*)\.(html|php)$ /$1 [R=301,L]
-
-    # Skip rewrite for API and vendor
+    # Skip rewrite for API and vendor (must be before .php redirect)
     RewriteRule ^api/ - [L]
     RewriteRule ^vendor/ - [L]
+    RewriteRule ^scripts/ - [L]
 
+    # Redirect .html and .php URLs to clean URLs (301 permanent) - exclude api, scripts, vendor
+    RewriteCond %{REQUEST_URI} \.(html|php)$
+    RewriteCond %{REQUEST_URI} !^/api/
+    RewriteCond %{REQUEST_URI} !^/scripts/
+    RewriteRule ^(.*)\.(html|php)$ /$1 [R=301,L]
     # Root -> index.php
     RewriteRule ^$ index.php [L]
 
