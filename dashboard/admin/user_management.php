@@ -37,7 +37,7 @@ try {
     $total = (int) $countStmt->fetchColumn();
     $offset = ($page - 1) * $perPage;
 
-    $sql = "SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol}
+    $sql = "SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol},
             COALESCE((SELECT SUM(amount) FROM wallet_balances WHERE user_id = u.id AND currency = 'BTC'), 0) AS total_btc,
             (SELECT COUNT(*) FROM user_investments WHERE user_id = u.id AND status = 'active') AS active_plans_count
             FROM users u WHERE {$whereClause} ORDER BY u.created_at DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
