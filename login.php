@@ -74,9 +74,7 @@
 </div>
 <div class="relative flex items-center group">
 <input name="password" class="w-full rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary h-14 px-4 pr-12 text-text-main dark:text-white placeholder:text-text-muted transition-all" placeholder="Enter your password" type="password" required/>
-<button class="absolute right-4 text-text-muted hover:text-primary transition-colors" type="button">
-<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
-</button>
+<button type="button" data-password-toggle class="absolute right-4 text-text-muted hover:text-primary transition-colors p-1" aria-label="Toggle password visibility"><span class="material-symbols-outlined" data-icon="visibility">visibility</span></button>
 </div>
 </div>
 <!-- Utilities -->

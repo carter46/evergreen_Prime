@@ -113,14 +113,15 @@
 <div class="relative">
 <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">lock</span>
 <input name="password" class="w-full pl-10 pr-10 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="password" placeholder="••••••••" type="password" required/>
-<span class="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg cursor-pointer hover:text-primary">visibility</span>
+<button type="button" data-password-toggle class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-primary p-1" aria-label="Toggle password visibility"><span class="material-icons text-lg">visibility</span></button>
 </div>
 </div>
 <div>
 <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="confirm-password">Confirm Password</label>
 <div class="relative">
 <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">lock_reset</span>
-<input name="confirm_password" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="confirm-password" placeholder="••••••••" type="password" required/>
+<input name="confirm_password" class="w-full pl-10 pr-10 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="confirm-password" placeholder="••••••••" type="password" required/>
+<button type="button" data-password-toggle class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-primary p-1" aria-label="Toggle password visibility"><span class="material-icons text-lg">visibility</span></button>
 </div>
 </div>
 </div>

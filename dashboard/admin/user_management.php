@@ -230,7 +230,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <div id="user-profile-drawer" class="fixed inset-y-0 right-0 w-[420px] bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300" style="transform: translateX(100%);">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">User Profile</h2>
-<button id="drawer-close-btn" type="button" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-slate-400"><span class="material-icons">close</span></button>
+<button id="drawer-close-btn" type="button" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors" aria-label="Close"><span class="material-icons text-lg">close</span></button>
 </div>
 <div class="flex-1 overflow-y-auto p-6 space-y-8">
 <input type="hidden" id="drawer-user-id" value=""/>
@@ -250,7 +250,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <form id="profile-update-form" class="space-y-4">
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Name</label><input type="text" id="drawer-edit-name" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" /></div>
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Email</label><input type="email" id="drawer-edit-email" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" /></div>
-<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">New Password</label><input type="password" id="drawer-edit-password" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="Leave blank to keep current" autocomplete="new-password" /></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">New Password</label><div class="relative"><input type="password" id="drawer-edit-password" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 pr-10 text-sm" placeholder="Leave blank to keep current" autocomplete="new-password" /><button type="button" data-password-toggle class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"><span class="material-icons text-lg">visibility</span></button></div></div>
 </form>
 <!-- Wallet Breakdown -->
 <div>
@@ -278,11 +278,10 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 </div>
 <!-- Drawer Actions -->
 <div class="p-4 border-t border-slate-200 dark:border-zinc-800 grid grid-cols-2 gap-2">
-<button type="button" id="drawer-update-profile" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary text-background-dark hover:brightness-105 col-span-2">Update Profile</button>
-<button type="button" id="drawer-login-as-user" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary/20 text-primary hover:bg-primary/30 col-span-2">Login as User</button>
+<button type="button" id="drawer-update-profile" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary text-zinc-900 hover:brightness-105 col-span-2">Update Profile</button>
+<button type="button" id="drawer-login-as-user" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-green-600 text-white hover:bg-green-700">Login as User</button>
 <button type="button" id="drawer-block-btn" class="px-3 py-1.5 text-xs font-bold rounded-lg"></button>
-<button type="button" id="drawer-adjust-balance" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700">Adjust Balance</button>
-<button type="button" id="drawer-delete-user" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 col-span-2">Delete User</button>
+<button type="button" id="drawer-delete-user" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 col-span-2">Delete User</button>
 </div>
 <script src="/js/app.js"></script>
 <script>
@@ -320,7 +319,8 @@ function loadUser(id) {
       var cls = coinClasses[b.currency] || 'bg-slate-100 text-slate-600';
       var nm = coinNames[b.currency] || b.currency;
       var ic = coinIcons[b.currency] || 'payments';
-      w.innerHTML += '<div class="p-3 bg-slate-50 dark:bg-zinc-800 rounded-xl flex items-center justify-between"><div class="flex items-center gap-3"><div class="'+cls+' p-2 rounded-lg"><span class="material-icons">'+ic+'</span></div><div><div class="text-xs font-bold">'+nm+'</div><div class="text-[10px] text-slate-500">'+b.currency+'</div></div></div><div class="text-right"><div class="text-sm font-bold">'+parseFloat(b.amount).toFixed(8)+'</div></div></div>';
+      var amt = parseFloat(b.amount).toFixed(8);
+      w.innerHTML += '<div class="wallet-row p-3 bg-slate-50 dark:bg-zinc-800 rounded-xl flex items-center justify-between gap-2"><div class="flex items-center gap-3 min-w-0"><div class="'+cls+' p-2 rounded-lg shrink-0"><span class="material-icons text-lg">'+ic+'</span></div><div class="min-w-0"><div class="text-xs font-bold">'+nm+'</div><div class="text-[10px] text-slate-500">'+b.currency+'</div></div></div><div class="flex items-center gap-2 shrink-0"><input type="number" step="any" data-currency="'+b.currency+'" class="wallet-amount-input w-24 px-2 py-1 text-sm font-bold bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded text-right" value="'+amt+'"/><span class="wallet-edit-label text-[10px] text-primary font-medium cursor-pointer hover:underline">Edit</span></div></div>';
     });
     if (!u.wallet_balances || u.wallet_balances.length === 0) w.innerHTML = '<p class="text-sm text-slate-500">No balances</p>';
 
@@ -336,7 +336,7 @@ function loadUser(id) {
     document.getElementById('drawer-2fa-toggle').className = 'text-xs font-bold px-2 py-1 rounded ' + (u.two_factor_enabled ? 'text-green-600 bg-green-100' : 'text-slate-500 bg-slate-100');
     var blockBtn = document.getElementById('drawer-block-btn');
     blockBtn.textContent = u.active ? 'Block User' : 'Unblock User';
-    blockBtn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg ' + (u.active ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200');
+    blockBtn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg ' + (u.active ? 'bg-red-500 text-black hover:bg-red-600' : 'bg-green-600 text-white hover:bg-green-700');
     openDrawer();
   }).catch(function(){});
 }
@@ -362,6 +362,11 @@ document.getElementById('drawer-update-profile').addEventListener('click', funct
   var payload = { action: 'update', user_id: id, name: document.getElementById('drawer-edit-name').value, email: document.getElementById('drawer-edit-email').value, admin_notes: document.getElementById('drawer-notes').value };
   var pw = document.getElementById('drawer-edit-password').value.trim();
   if (pw.length >= 8) payload.password = pw;
+  var walletInputs = document.querySelectorAll('.wallet-amount-input');
+  if (walletInputs.length) {
+    payload.wallet_balances = [];
+    walletInputs.forEach(function(inp){ payload.wallet_balances.push({ currency: inp.getAttribute('data-currency'), amount: parseFloat(inp.value) || 0 }); });
+  }
   fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { document.getElementById('drawer-edit-password').value = ''; loadUser(id); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
 });
@@ -395,14 +400,7 @@ document.getElementById('drawer-delete-user').addEventListener('click', function
     .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { closeDrawer(); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
 });
 
-document.getElementById('drawer-adjust-balance').addEventListener('click', function(){
-  var id = document.getElementById('drawer-user-id').value;
-  var currency = prompt('Currency (BTC, ETH, USDT, USD):', 'BTC');
-  var amount = prompt('New amount:');
-  if (!id || !currency || amount === null) return;
-  fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'adjust_balance', user_id: id, currency: currency.toUpperCase(), amount: parseFloat(amount) || 0 }) })
-    .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { alert('Balance updated'); loadUser(id); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
-});
+document.getElementById('drawer-wallet').addEventListener('click', function(e){ if (e.target.classList.contains('wallet-edit-label')) { var row = e.target.closest('.wallet-row'); var inp = row && row.querySelector('.wallet-amount-input'); if (inp) inp.focus(); } });
 })();
 </script>
 </body></html>

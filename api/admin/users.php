@@ -245,6 +245,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Throwable $e) {
                 // Columns may not exist yet
             }
+            if (!empty($input['wallet_balances']) && is_array($input['wallet_balances'])) {
+                foreach ($input['wallet_balances'] as $wb) {
+                    $cur = strtoupper(trim($wb['currency'] ?? ''));
+                    $amt = (float) ($wb['amount'] ?? 0);
+                    if ($cur !== '' && in_array($cur, ['BTC', 'ETH', 'USDT', 'USD'], true)) {
+                        $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = VALUES(amount)')
+                            ->execute([$userId, $cur, $amt]);
+                    }
+                }
+            }
             echo json_encode(['success' => true, 'data' => ['message' => 'Profile updated']]);
             exit;
 

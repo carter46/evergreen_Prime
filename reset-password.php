@@ -48,11 +48,17 @@
 <input type="hidden" name="email" id="reset-email"/>
 <div class="flex flex-col gap-2">
 <label class="text-sm font-semibold text-[#1d180c] dark:text-[#eae2cd]">New Password</label>
-<input name="password" class="w-full pl-10 pr-4 py-3 bg-background-light dark:bg-[#1d180c] border border-[#eae2cd] dark:border-[#423b26] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white" placeholder="••••••••" type="password" required minlength="8"/>
+<div class="relative">
+<input name="password" class="w-full pl-4 pr-10 py-3 bg-background-light dark:bg-[#1d180c] border border-[#eae2cd] dark:border-[#423b26] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white" placeholder="••••••••" type="password" required minlength="8"/>
+<button type="button" data-password-toggle class="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a8a7d] hover:text-primary p-1" aria-label="Toggle password visibility"><span class="material-icons text-lg">visibility</span></button>
+</div>
 </div>
 <div class="flex flex-col gap-2">
 <label class="text-sm font-semibold text-[#1d180c] dark:text-[#eae2cd]">Confirm Password</label>
-<input name="confirm_password" class="w-full pl-10 pr-4 py-3 bg-background-light dark:bg-[#1d180c] border border-[#eae2cd] dark:border-[#423b26] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white" placeholder="••••••••" type="password" required/>
+<div class="relative">
+<input name="confirm_password" class="w-full pl-4 pr-10 py-3 bg-background-light dark:bg-[#1d180c] border border-[#eae2cd] dark:border-[#423b26] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white" placeholder="••••••••" type="password" required/>
+<button type="button" data-password-toggle class="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a8a7d] hover:text-primary p-1" aria-label="Toggle password visibility"><span class="material-icons text-lg">visibility</span></button>
+</div>
 </div>
 <div id="reset-password-message" class="text-sm hidden"></div>
 <button type="submit" class="w-full mt-2 py-3.5 bg-primary hover:bg-[#e6ae00] text-[#1d180c] font-bold rounded-lg transition-all shadow-lg shadow-primary/10 flex items-center justify-center gap-2">

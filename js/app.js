@@ -236,6 +236,25 @@
         });
     }
 
+    function initPasswordToggle() {
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-password-toggle]');
+            if (!btn) return;
+            e.preventDefault();
+            const wrap = btn.closest('.relative') || btn.parentElement;
+            const inp = wrap ? wrap.querySelector('input[type="password"], input[type="text"]') : null;
+            if (!inp) return;
+            const icon = btn.querySelector('.material-icons, .material-symbols-outlined');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                if (icon) icon.textContent = 'visibility_off';
+            } else {
+                inp.type = 'password';
+                if (icon) icon.textContent = 'visibility';
+            }
+        });
+    }
+
     function initLogoutButtons() {
         document.querySelectorAll('[data-logout]').forEach(btn => {
             btn.addEventListener('click', function (e) {
@@ -290,6 +309,7 @@
 
     function init() {
         requireAuth();
+        initPasswordToggle();
         initLogoutButtons();
         initLoginForm();
         initRegisterForm();
