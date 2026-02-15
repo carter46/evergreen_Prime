@@ -7,7 +7,7 @@
 
 header('Content-Type: application/json');
 
-session_start();
+require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 $userId = $_SESSION['user_id'] ?? null;
 if (!$userId) {
     http_response_code(401);

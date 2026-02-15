@@ -2,7 +2,12 @@
 $plans = [];
 try {
     $pdo = require __DIR__ . '/includes/db.php';
-    $stmt = $pdo->query('SELECT id, name, slug, min_deposit, max_deposit, yield_min, yield_max, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
+    $cols = 'id, name, slug, min_deposit, max_deposit, yield_min, yield_max, withdrawal_days, features_json';
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM plans LIKE 'description'");
+        if ($chk && $chk->rowCount() > 0) $cols .= ', description, icon';
+    } catch (Throwable $e) {}
+    $stmt = $pdo->query("SELECT {$cols} FROM plans WHERE enabled = 1 ORDER BY sort_order, id");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $row['features'] = $row['features_json'] ? json_decode($row['features_json'], true) : [];
         $plans[] = $row;
@@ -69,21 +74,28 @@ $siteName = get_site_name();
 <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
 <?php
 $planIndex = 0;
-$descriptions = ['Ideal for crypto newcomers', 'Accelerated portfolio scaling', 'Institutional grade performance'];
 foreach ($plans as $plan):
     $isHighlight = ($planIndex === 1 && count($plans) >= 2);
     $planIndex++;
     $minFmt = number_format((float)$plan['min_deposit']);
     $maxFmt = $plan['max_deposit'] ? number_format((float)$plan['max_deposit']) : null;
     $rangeStr = $maxFmt ? "\${$minFmt} - \${$maxFmt}" : "\${$minFmt}+";
-    $desc = $descriptions[$planIndex - 1] ?? '';
+    $desc = $plan['description'] ?? '';
 ?>
 <div class="bg-white dark:bg-slate-900/50 border <?php echo $isHighlight ? 'border-2 border-primary dark:bg-slate-900' : 'border-slate-200 dark:border-slate-800'; ?> p-8 rounded-xl hover:border-primary/50 transition-all group flex flex-col <?php echo $isHighlight ? 'md:scale-105 z-10 shadow-xl shadow-primary/5 relative' : ''; ?>">
 <?php if ($isHighlight): ?>
 <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-background-dark text-[10px] font-bold uppercase tracking-widest px-4 py-1 rounded-full">Most Popular</div>
 <?php endif; ?>
 <div class="mb-8">
-<h3 class="text-xl font-bold mb-2"><?php echo htmlspecialchars($plan['name']); ?></h3>
+<div class="flex items-center gap-2 mb-2">
+<?php
+$planIcon = $plan['icon'] ?? 'trending_up';
+$allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 'token'];
+if (!in_array($planIcon, $allowedIcons, true)) $planIcon = 'trending_up';
+?>
+<span class="material-icons text-primary text-xl"><?php echo htmlspecialchars($planIcon); ?></span>
+<h3 class="text-xl font-bold"><?php echo htmlspecialchars($plan['name']); ?></h3>
+</div>
 <p class="text-slate-500 text-sm"><?php echo htmlspecialchars($desc); ?></p>
 </div>
 <div class="mb-8">

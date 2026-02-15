@@ -12,7 +12,7 @@ if (!($config['site']['debug'] ?? false)) {
         'samesite' => 'Lax'
     ]);
 }
-session_start();
+require_once __DIR__ . '/session-bootstrap.php';
 if (!isset($_SESSION['user_id'])) {
     $redirect = '/login?redirect=' . urlencode($_SERVER['REQUEST_URI'] ?? '/dashboard');
     header('Location: ' . $redirect);

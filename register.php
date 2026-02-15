@@ -1,4 +1,13 @@
-<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
+<?php
+require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/session-bootstrap.php';
+if (isset($_SESSION['user_id'])) {
+    $role = $_SESSION['role'] ?? 'user';
+    header('Location: ' . ($role === 'admin' ? '/dashboard/admin' : '/dashboard'));
+    exit;
+}
+$siteName = get_site_name();
+?>
 <!DOCTYPE html>
 
 <html class="light" lang="en"><head>

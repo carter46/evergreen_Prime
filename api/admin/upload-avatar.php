@@ -7,7 +7,7 @@
  */
 header('Content-Type: application/json');
 
-session_start();
+require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);

@@ -5,7 +5,7 @@
  * Restores admin session after impersonating a user.
  */
 
-session_start();
+require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 if (!isset($_SESSION['impersonate_admin_id'])) {
     header('Location: /dashboard');
     exit;

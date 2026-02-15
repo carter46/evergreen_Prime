@@ -7,7 +7,7 @@
 
 header('Content-Type: application/json');
 
-session_start();
+require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -31,12 +31,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'id' => (int) $r['id'],
             'name' => $r['name'],
             'slug' => $r['slug'],
+            'description' => $r['description'] ?? null,
+            'icon' => $r['icon'] ?? null,
             'min_deposit' => (float) $r['min_deposit'],
             'max_deposit' => $r['max_deposit'] !== null ? (float) $r['max_deposit'] : null,
             'yield_min' => (float) $r['yield_min'],
             'yield_max' => (float) $r['yield_max'],
             'duration_days' => (int) $r['duration_days'],
             'withdrawal_days' => (int) $r['withdrawal_days'],
+            'min_duration_months' => isset($r['min_duration_months']) && $r['min_duration_months'] !== null ? (int) $r['min_duration_months'] : null,
+            'max_duration_months' => isset($r['max_duration_months']) && $r['max_duration_months'] !== null ? (int) $r['max_duration_months'] : null,
             'features_json' => $r['features_json'],
             'features' => $r['features_json'] ? json_decode($r['features_json'], true) : [],
             'enabled' => (bool) $r['enabled'],
@@ -59,7 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $durationDays = (int) ($input['duration_days'] ?? 30);
     $withdrawalDays = (int) ($input['withdrawal_days'] ?? 7);
     $features = $input['features'] ?? [];
-    $featuresJson = is_array($features) ? json_encode($features) : (is_string($features) ? $features : '[]');
+    if (is_string($features)) {
+        $features = array_values(array_filter(array_map('trim', explode("\n", $features))));
+    }
+    $featuresJson = is_array($features) ? json_encode($features) : '[]';
+    $description = trim($input['description'] ?? '') ?: null;
+    $allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 'token'];
+    $icon = trim($input['icon'] ?? '') ?: null;
+    if ($icon && !in_array($icon, $allowedIcons, true)) $icon = 'trending_up';
+    $minDurationMonths = isset($input['min_duration_months']) && $input['min_duration_months'] !== '' ? (int) $input['min_duration_months'] : null;
+    $maxDurationMonths = isset($input['max_duration_months']) && $input['max_duration_months'] !== '' ? (int) $input['max_duration_months'] : null;
     $enabled = isset($input['enabled']) ? (bool) $input['enabled'] : true;
     $sortOrder = (int) ($input['sort_order'] ?? 0);
 
@@ -77,11 +90,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($id > 0) {
-        $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, features_json=?, enabled=?, sort_order=? WHERE id=?');
-        $stmt->execute([$name, $slug, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $featuresJson, $enabled ? 1 : 0, $sortOrder, $id]);
+        $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, description=?, icon=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, min_duration_months=?, max_duration_months=?, features_json=?, enabled=?, sort_order=? WHERE id=?');
+        $stmt->execute([$name, $slug, $description, $icon, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationMonths, $maxDurationMonths, $featuresJson, $enabled ? 1 : 0, $sortOrder, $id]);
     } else {
-        $stmt = $pdo->prepare('INSERT INTO plans (name, slug, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, features_json, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$name, $slug, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $featuresJson, $enabled ? 1 : 0, $sortOrder]);
+        $stmt = $pdo->prepare('INSERT INTO plans (name, slug, description, icon, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, min_duration_months, max_duration_months, features_json, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$name, $slug, $description, $icon, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationMonths, $maxDurationMonths, $featuresJson, $enabled ? 1 : 0, $sortOrder]);
     }
     echo json_encode(['success' => true, 'data' => ['message' => 'Plan saved successfully']]);
     exit;

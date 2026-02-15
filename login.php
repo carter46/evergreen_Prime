@@ -1,4 +1,13 @@
-<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
+<?php
+require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/session-bootstrap.php';
+if (isset($_SESSION['user_id'])) {
+    $role = $_SESSION['role'] ?? 'user';
+    header('Location: ' . ($role === 'admin' ? '/dashboard/admin' : '/dashboard'));
+    exit;
+}
+$siteName = get_site_name();
+?>
 <!DOCTYPE html>
 
 <html class="light" lang="en"><head>
@@ -86,6 +95,9 @@
 </label>
 <a class="text-sm font-semibold text-text-main dark:text-neutral-300 hover:text-primary transition-colors decoration-primary underline-offset-4 decoration-2" href="/forgot-password">Forgot password?</a>
 </div>
+<?php if (!empty($_GET['timeout'])): ?>
+<div class="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 rounded-lg mb-4">You were logged out due to inactivity. Please sign in again.</div>
+<?php endif; ?>
 <div id="login-form-message" class="text-sm hidden"></div>
 <!-- Sign In Button -->
 <button class="w-full bg-primary hover:brightness-105 active:scale-[0.98] text-text-main font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group" type="submit">

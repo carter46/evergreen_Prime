@@ -126,18 +126,21 @@ $siteName = get_site_name();
 <!-- Plan Grid -->
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-12 min-w-0">
 <?php 
-$icons = ['rocket_launch', 'trending_up', 'diamond'];
+$iconFallbacks = ['rocket_launch', 'trending_up', 'diamond'];
+$allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 'token'];
 $tiers = ['Low', 'Medium', 'High'];
 foreach ($adminPlans as $idx => $p):
     $ps = $planStatsById[(int)$p['id']] ?? ['users' => 0, 'capital' => 0];
     $enabled = (bool)$p['enabled'];
     $avgYield = (floatval($p['yield_min']) + floatval($p['yield_max'])) / 2;
+    $planIcon = $p['icon'] ?? $iconFallbacks[$idx % 3];
+    if (!in_array($planIcon, $allowedIcons, true)) $planIcon = $iconFallbacks[$idx % 3];
 ?>
 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 hover:border-primary/50 transition-colors group relative overflow-hidden min-w-0">
 <div class="p-6">
 <div class="flex justify-between items-start gap-4 mb-4">
 <div class="plan-card-icon bg-slate-100 dark:bg-zinc-800 rounded-lg text-slate-600 dark:text-zinc-400 group-hover:bg-primary transition-colors group-hover:text-zinc-900">
-<span class="material-icons-round text-xl"><?php echo $icons[$idx % 3]; ?></span>
+<span class="material-icons-round text-xl"><?php echo htmlspecialchars($planIcon); ?></span>
 </div>
 <div class="flex flex-col items-end shrink-0">
 <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full <?php echo $enabled ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'; ?> text-xs font-medium">
@@ -241,6 +244,7 @@ foreach ($adminPlans as $idx => $p):
 <input type="hidden" name="id" id="plan-form-id" value=""/>
 <input type="hidden" name="enabled" value="1"/>
 <input type="hidden" name="sort_order" value="0"/>
+<input type="hidden" name="icon" id="plan-form-icon" value="trending_up"/>
 <!-- Basic Info -->
 <div class="space-y-4">
 <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Basic Information</p>
@@ -250,21 +254,25 @@ foreach ($adminPlans as $idx => $p):
 <input name="name" id="plan-form-name" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary" type="text" placeholder="Plan Name"/>
 </div>
 <div class="col-span-2">
+<label class="block text-sm font-medium mb-1.5">Description</label>
+<textarea name="description" id="plan-form-description" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 text-sm" rows="2" placeholder="e.g. Ideal for crypto newcomers"></textarea>
+</div>
+<div class="col-span-2">
 <label class="block text-sm font-medium mb-2">Icon Selection</label>
-<div class="flex flex-wrap gap-3 min-w-0">
-<div class="plan-drawer-icon-btn border-2 border-primary bg-primary/10 rounded cursor-pointer shrink-0">
+<div class="flex flex-wrap gap-3 min-w-0" id="plan-form-icon-btns">
+<div class="plan-drawer-icon-btn plan-icon-btn border-2 border-primary bg-primary/10 rounded cursor-pointer shrink-0" data-icon="trending_up">
 <span class="material-icons-round text-xl">trending_up</span>
 </div>
-<div class="plan-drawer-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0">
+<div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="rocket_launch">
 <span class="material-icons-round text-xl">rocket_launch</span>
 </div>
-<div class="plan-drawer-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0">
+<div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="diamond">
 <span class="material-icons-round text-xl">diamond</span>
 </div>
-<div class="plan-drawer-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0">
+<div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="currency_bitcoin">
 <span class="material-icons-round text-xl">currency_bitcoin</span>
 </div>
-<div class="plan-drawer-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0">
+<div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="token">
 <span class="material-icons-round text-xl">token</span>
 </div>
 </div>
@@ -296,6 +304,14 @@ foreach ($adminPlans as $idx => $p):
 <input name="duration_days" id="plan-form-duration" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" value="30"/>
 </div>
 <div>
+<label class="block text-sm font-medium mb-1.5">Min. Duration (Months)</label>
+<input name="min_duration_months" id="plan-form-min-months" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" placeholder="Optional"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1.5">Max. Duration (Months)</label>
+<input name="max_duration_months" id="plan-form-max-months" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" placeholder="Optional"/>
+</div>
+<div>
 <label class="block text-sm font-medium mb-1.5">Withdrawal (Days)</label>
 <input name="withdrawal_days" id="plan-form-withdrawal" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" value="7"/>
 </div>
@@ -304,6 +320,12 @@ foreach ($adminPlans as $idx => $p):
 <input class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" value="5"/>
 </div>
 </div>
+</div>
+<!-- Features (one per line) -->
+<div class="space-y-4">
+<p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Features</p>
+<label class="block text-sm font-medium mb-1.5">Features (one per line)</label>
+<textarea name="features_text" id="plan-form-features" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 text-sm" rows="6" placeholder="e.g.&#10;$100 - $2,500 Deposit Range&#10;Basic AI Trading Strategy&#10;Weekly Withdrawals"></textarea>
 </div>
 <!-- AI Strategy Selection -->
 <div class="space-y-4">
@@ -344,17 +366,38 @@ foreach ($adminPlans as $idx => $p):
 <script>
 (function(){
 var drawer = document.getElementById('plan-drawer');
-var addBtn = document.querySelector('button:has(.material-icons-round)');
+function setIconSelection(icon) {
+  var inp = document.getElementById('plan-form-icon');
+  if (inp) inp.value = icon || 'trending_up';
+  document.querySelectorAll('.plan-icon-btn').forEach(function(b){
+    var ic = b.getAttribute('data-icon');
+    if (ic === (icon || 'trending_up')) {
+      b.classList.remove('border-slate-100', 'dark:border-zinc-800', 'text-slate-400');
+      b.classList.add('border-primary', 'bg-primary/10');
+    } else {
+      b.classList.remove('border-primary', 'bg-primary/10');
+      b.classList.add('border-slate-100', 'dark:border-zinc-800', 'text-slate-400');
+    }
+  });
+}
 if (drawer) {
+  document.querySelectorAll('.plan-icon-btn').forEach(function(b){
+    b.addEventListener('click', function(){ setIconSelection(b.getAttribute('data-icon')); });
+  });
   document.getElementById('add-plan-btn')?.addEventListener('click', function(){ 
     document.getElementById('plan-form-id').value = ''; 
     document.getElementById('plan-form-name').value = ''; 
+    document.getElementById('plan-form-description').value = ''; 
+    setIconSelection('trending_up');
     document.getElementById('plan-form-min').value = '100'; 
     document.getElementById('plan-form-max').value = ''; 
     document.getElementById('plan-form-yield-min').value = '1'; 
     document.getElementById('plan-form-yield-max').value = '2.5'; 
     document.getElementById('plan-form-duration').value = '30'; 
+    document.getElementById('plan-form-min-months').value = ''; 
+    document.getElementById('plan-form-max-months').value = ''; 
     document.getElementById('plan-form-withdrawal').value = '7'; 
+    document.getElementById('plan-form-features').value = ''; 
     document.getElementById('plan-drawer-title').textContent = 'Add New Plan';
     document.getElementById('plan-drawer-subtitle').textContent = '';
     drawer.classList.remove('hidden'); 
@@ -371,12 +414,17 @@ if (drawer) {
           if (p) {
             document.getElementById('plan-form-id').value = p.id;
             document.getElementById('plan-form-name').value = p.name;
+            document.getElementById('plan-form-description').value = p.description || '';
+            setIconSelection(p.icon || 'trending_up');
             document.getElementById('plan-form-min').value = p.min_deposit;
             document.getElementById('plan-form-max').value = p.max_deposit || '';
             document.getElementById('plan-form-yield-min').value = p.yield_min;
             document.getElementById('plan-form-yield-max').value = p.yield_max;
             document.getElementById('plan-form-duration').value = p.duration_days;
+            document.getElementById('plan-form-min-months').value = p.min_duration_months ?? '';
+            document.getElementById('plan-form-max-months').value = p.max_duration_months ?? '';
             document.getElementById('plan-form-withdrawal').value = p.withdrawal_days;
+            document.getElementById('plan-form-features').value = (p.features || []).join('\n');
             document.getElementById('plan-drawer-title').textContent = 'Edit Plan: ' + p.name;
             document.getElementById('plan-drawer-subtitle').textContent = 'PLAN ID: ' + p.id;
             drawer.classList.remove('hidden');
@@ -401,7 +449,9 @@ if (drawer) {
   document.getElementById('admin-plan-form')?.addEventListener('submit', function(e){
     e.preventDefault();
     var id = document.getElementById('plan-form-id').value;
-    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield_min: parseFloat(document.getElementById('plan-form-yield-min').value) || 0, yield_max: parseFloat(document.getElementById('plan-form-yield-max').value) || 0, duration_days: parseInt(document.getElementById('plan-form-duration').value) || 30, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7 };
+    var featuresText = document.getElementById('plan-form-features').value || '';
+    var features = featuresText.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, description: document.getElementById('plan-form-description').value.trim(), icon: document.getElementById('plan-form-icon').value, min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield_min: parseFloat(document.getElementById('plan-form-yield-min').value) || 0, yield_max: parseFloat(document.getElementById('plan-form-yield-max').value) || 0, duration_days: parseInt(document.getElementById('plan-form-duration').value) || 30, min_duration_months: document.getElementById('plan-form-min-months').value ? parseInt(document.getElementById('plan-form-min-months').value) : null, max_duration_months: document.getElementById('plan-form-max-months').value ? parseInt(document.getElementById('plan-form-max-months').value) : null, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7, features: features };
     fetch('/api/admin/plans.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
       .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { drawer.classList.add('hidden'); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
   });

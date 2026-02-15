@@ -42,6 +42,7 @@ Options -Indexes
     RewriteRule ^register$ register.php [L]
     RewriteRule ^forgot-password$ forgot-password.php [L]
     RewriteRule ^reset-password$ reset-password.php [L]
+    RewriteRule ^logout$ logout.php [L]
 
     # Skip rewrite for existing files and directories (static assets: js, css, images)
     RewriteCond %{REQUEST_FILENAME} -f [OR]

@@ -127,6 +127,12 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL AFTER ad
 ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50) NULL AFTER avatar_url;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(100) NULL AFTER phone_number;
 
+-- Add plan fields: description, icon, min_duration_months, max_duration_months
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS description TEXT NULL AFTER slug;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS icon VARCHAR(50) NULL AFTER description;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS min_duration_months INT UNSIGNED NULL AFTER withdrawal_days;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS max_duration_months INT UNSIGNED NULL AFTER min_duration_months;
+
 -- Demo users (password: password - same as Laravel default hash)
 INSERT INTO users (email, password_hash, name, role, email_verified, active, two_factor_enabled) VALUES
   ('j.donovan@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'James Donovan', 'user', 1, 1, 1),

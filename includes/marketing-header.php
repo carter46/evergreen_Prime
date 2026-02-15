@@ -4,7 +4,10 @@
  * Use on all front marketing pages: index, about_us, plans, help_centre, trading_signals, legal_centre
  */
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/session-bootstrap.php';
 $siteName = get_site_name();
+$currentUser = get_current_user_data();
+$isLoggedIn = !empty($currentUser);
 $current = $currentPage ?? '';
 $navLinkClass = function ($page) use ($current) {
     return ($current === $page) ? 'text-primary border-b-2 border-primary pb-0.5' : 'hover:text-primary transition-colors';
@@ -31,8 +34,13 @@ if ($parts[1]) echo '<span class="text-primary">' . htmlspecialchars($parts[1]) 
 <a class="<?php echo $navLinkClass('legal_centre'); ?>" href="/legal_centre">Legal</a>
 </div>
 <div class="flex items-center gap-2 sm:gap-4">
+<?php if ($isLoggedIn): ?>
+<a class="hidden sm:inline-flex px-4 sm:px-6 py-2.5 font-semibold hover:text-primary transition-colors min-h-[44px] items-center" href="/logout">Logout</a>
+<a class="px-4 sm:px-6 py-2.5 bg-primary text-black font-bold rounded hover:shadow-lg hover:shadow-primary/20 transition-all min-h-[44px] flex items-center justify-center" href="/dashboard">Dashboard</a>
+<?php else: ?>
 <a class="hidden sm:inline-flex px-4 sm:px-6 py-2.5 font-semibold hover:text-primary transition-colors min-h-[44px] items-center" href="/login">Login</a>
 <a class="px-4 sm:px-6 py-2.5 bg-primary text-black font-bold rounded hover:shadow-lg hover:shadow-primary/20 transition-all min-h-[44px] flex items-center justify-center" href="/register">Get Started</a>
+<?php endif; ?>
 <button type="button" id="mobile-menu-btn" class="md:hidden w-11 h-11 flex items-center justify-center rounded-lg hover:bg-primary/10 transition-colors min-h-[44px] min-w-[44px]" aria-label="Open menu" aria-expanded="false">
 <span class="material-icons">menu</span>
 </button>
@@ -46,7 +54,12 @@ if ($parts[1]) echo '<span class="text-primary">' . htmlspecialchars($parts[1]) 
 <a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('help_centre'); ?>" href="/help_centre">Help Center</a>
 <a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('trading_signals'); ?>" href="/trading_signals">Trading Signals</a>
 <a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('legal_centre'); ?>" href="/legal_centre">Legal</a>
+<?php if ($isLoggedIn): ?>
+<a class="py-3 px-4 mt-2 border-t border-slate-200 dark:border-slate-700 pt-4 font-medium" href="/dashboard">Dashboard</a>
+<a class="py-3 px-4 font-medium" href="/logout">Logout</a>
+<?php else: ?>
 <a class="py-3 px-4 mt-2 border-t border-slate-200 dark:border-slate-700 pt-4 font-medium" href="/login">Login</a>
+<?php endif; ?>
 </div>
 </div>
 </nav>

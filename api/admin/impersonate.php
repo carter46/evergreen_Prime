@@ -5,7 +5,7 @@
  * Switches session to act as the target user. Admin can then view the user dashboard.
  */
 
-session_start();
+require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     header('Location: /login');
     exit;
