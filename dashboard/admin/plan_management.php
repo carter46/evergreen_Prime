@@ -280,11 +280,11 @@ foreach ($adminPlans as $idx => $p):
 <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Financial Parameters</p>
 <div class="grid grid-cols-2 gap-4">
 <div>
-<label class="block text-sm font-medium mb-1.5">Min. Deposit ($)</label>
+<label class="block text-sm font-medium mb-1.5">Min. Investment ($)</label>
 <input name="min_deposit" id="plan-form-min" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" value="100"/>
 </div>
 <div>
-<label class="block text-sm font-medium mb-1.5">Max. Deposit ($)</label>
+<label class="block text-sm font-medium mb-1.5">Max. Investment ($)</label>
 <input name="max_deposit" id="plan-form-max" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" placeholder="Leave empty for no max"/>
 </div>
 <div class="col-span-2">
@@ -313,7 +313,7 @@ foreach ($adminPlans as $idx => $p):
 <div class="space-y-4">
 <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Features</p>
 <label class="block text-sm font-medium mb-1.5">Features (one per line)</label>
-<textarea name="features_text" id="plan-form-features" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 text-sm" rows="6" placeholder="e.g.&#10;$100 - $2,500 Deposit Range&#10;Basic AI Trading Strategy&#10;Weekly Withdrawals"></textarea>
+<textarea name="features_text" id="plan-form-features" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 text-sm" rows="6" placeholder="e.g.&#10;$100 - $2,500 Investment Range&#10;Basic AI Trading Strategy&#10;Weekly Withdrawals"></textarea>
 </div>
 <!-- AI Strategy Selection -->
 <div class="space-y-4">

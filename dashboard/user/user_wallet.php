@@ -92,7 +92,7 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
                                 </p>
 </div>
 <div class="flex gap-3">
-<button class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
+<button type="button" id="deposit-btn" class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
 <span class="material-icons text-sm">add</span> Deposit
                                 </button>
 <button class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all backdrop-blur-sm">
@@ -322,6 +322,21 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 </div>
 </div>
 </div>
+
+<!-- Deposit Modal (shows wallet addresses to send crypto to) -->
+<div id="deposit-modal" class="fixed inset-0 z-50 hidden">
+<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="deposit-modal-backdrop"></div>
+<div class="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto">
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-zinc-800 my-8">
+<div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+<h2 class="text-xl font-bold">Deposit Crypto</h2>
+<button type="button" id="deposit-modal-close" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full"><span class="material-icons-round">close</span></button>
+</div>
+<div id="deposit-addresses-container" class="p-6"><div class="text-center py-8 text-slate-500">Loading addresses...</div></div>
+</div>
+</div>
+</div>
+
 </main>
 <footer class="mt-20 border-t border-slate-200 dark:border-slate-800 py-12 bg-white dark:bg-background-dark/20">
 <div class="max-w-[1440px] mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
@@ -370,6 +385,40 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <script src="/js/crypto-prices.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    var depositModal = document.getElementById('deposit-modal');
+    var depositContainer = document.getElementById('deposit-addresses-container');
+    function esc(s){ if (!s) return ''; var d=document.createElement('div'); d.textContent=String(s); return d.innerHTML; }
+    function escAttr(s){ if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function openDeposit() {
+        depositModal.classList.remove('hidden');
+        fetch('/api/addresses.php').then(function(r){ return r.json(); }).then(function(d){
+            if (d.success && d.addresses && d.addresses.length > 0) {
+                depositContainer.innerHTML = '<p class="text-sm text-slate-500 mb-4">Send only the supported network for each coin. Wrong network may result in loss.</p>' +
+                    d.addresses.map(function(a){
+                        var logo = (a.logo && /^https?:\/\//i.test(a.logo)) ? '<img src="' + escAttr(a.logo) + '" alt="" class="w-8 h-8 rounded-full flex-shrink-0"/>' : '';
+                        return '<div class="flex items-center justify-between gap-4 py-3 border-b border-slate-100 dark:border-zinc-800 last:border-0">' +
+                            '<div class="flex items-center gap-3 min-w-0">' + logo +
+                            '<div class="min-w-0"><p class="font-semibold text-sm">' + esc(a.display_name || a.symbol) + ' (' + esc(a.symbol) + ')</p>' +
+                            '<p class="font-mono text-xs text-slate-500 truncate">' + esc(a.address) + '</p></div></div>' +
+                            '<button type="button" class="copy-addr flex-shrink-0 px-3 py-1.5 bg-primary/20 text-primary rounded-lg text-xs font-bold hover:bg-primary hover:text-black transition-colors" data-addr="' + escAttr(a.address) + '">Copy</button>' +
+                        '</div>';
+                    }).join('');
+                depositContainer.querySelectorAll('.copy-addr').forEach(function(btn){
+                    btn.addEventListener('click', function(){
+                        var addr = btn.getAttribute('data-addr');
+                        if (addr && navigator.clipboard) navigator.clipboard.writeText(addr).then(function(){ btn.textContent = 'Copied!'; setTimeout(function(){ btn.textContent = 'Copy'; }, 1500); });
+                    });
+                });
+            } else {
+                depositContainer.innerHTML = '<div class="text-center py-8 text-slate-500">No deposit addresses configured. Please contact support.</div>';
+            }
+        }).catch(function(){ depositContainer.innerHTML = '<div class="text-center py-8 text-red-500">Failed to load addresses.</div>'; });
+    }
+    function closeDeposit() { depositModal.classList.add('hidden'); }
+    document.getElementById('deposit-btn').addEventListener('click', openDeposit);
+    document.getElementById('deposit-modal-backdrop').addEventListener('click', closeDeposit);
+    document.getElementById('deposit-modal-close').addEventListener('click', closeDeposit);
+
     if (!window.BloombitCryptoPrices) return;
     var coinIds = ['bitcoin','ethereum','tether'];
     function updateWalletValues(prices) {

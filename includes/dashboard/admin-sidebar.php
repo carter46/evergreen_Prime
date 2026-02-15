@@ -33,6 +33,10 @@ $navClass = function ($page) use ($current) {
             <span class="material-icons text-[20px]">account_balance_wallet</span>
             <span class="font-medium">Plan Management</span>
         </a>
+        <a class="<?php echo $navClass('addresses'); ?>" href="/dashboard/admin/addresses">
+            <span class="material-icons text-[20px]">wallet</span>
+            <span class="font-medium">Wallet Addresses</span>
+        </a>
         <a class="<?php echo $navClass('transactions'); ?>" href="/dashboard/admin">
             <span class="material-icons text-[20px]">receipt_long</span>
             <span class="font-medium">Transactions</span>

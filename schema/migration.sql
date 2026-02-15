@@ -130,6 +130,40 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL AFTER ad
 ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50) NULL AFTER avatar_url;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(100) NULL AFTER phone_number;
 
+-- Create coins table (if not exists)
+CREATE TABLE IF NOT EXISTS coins (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  coin_key VARCHAR(50) NOT NULL UNIQUE,
+  display_name VARCHAR(100) NOT NULL,
+  symbol VARCHAR(20) NOT NULL,
+  logo VARCHAR(500) DEFAULT NULL,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_coins_enabled (enabled),
+  INDEX idx_coins_sort (sort_order)
+) ENGINE=InnoDB;
+
+-- Create wallet_addresses table (if not exists)
+CREATE TABLE IF NOT EXISTS wallet_addresses (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  coin_id INT UNSIGNED NOT NULL,
+  address VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_wallet_addresses_coin (coin_id),
+  FOREIGN KEY (coin_id) REFERENCES coins(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Seed default coins
+INSERT INTO coins (coin_key, display_name, symbol, logo, enabled, sort_order) VALUES
+  ('bitcoin', 'Bitcoin', 'BTC', 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png', 1, 1),
+  ('ethereum', 'Ethereum', 'ETH', 'https://assets.coingecko.com/coins/images/279/large/ethereum.png', 1, 2),
+  ('tether', 'Tether', 'USDT', 'https://assets.coingecko.com/coins/images/325/large/Tether.png', 1, 3),
+  ('solana', 'Solana', 'SOL', 'https://assets.coingecko.com/coins/images/4128/large/solana.png', 1, 4),
+  ('bnb', 'BNB', 'BNB', 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png', 1, 5)
+ON DUPLICATE KEY UPDATE display_name = VALUES(display_name), symbol = VALUES(symbol), logo = VALUES(logo), enabled = VALUES(enabled), sort_order = VALUES(sort_order);
+
 -- Add plan fields: description, icon, min_duration_months, max_duration_months
 ALTER TABLE plans ADD COLUMN IF NOT EXISTS description TEXT NULL AFTER slug;
 ALTER TABLE plans ADD COLUMN IF NOT EXISTS icon VARCHAR(50) NULL AFTER description;
