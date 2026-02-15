@@ -231,6 +231,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
             $pdo->prepare('UPDATE users SET name = ?, email = ? WHERE id = ?')->execute([$name, $email, $userId]);
+            if (!empty($input['password']) && strlen(trim($input['password'])) >= 8) {
+                $hash = password_hash(trim($input['password']), PASSWORD_DEFAULT);
+                $pdo->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([$hash, $userId]);
+            }
             try {
                 if (isset($input['two_factor_enabled'])) {
                     $pdo->prepare('UPDATE users SET two_factor_enabled = ? WHERE id = ?')->execute([$input['two_factor_enabled'] ? 1 : 0, $userId]);

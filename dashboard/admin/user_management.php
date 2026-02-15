@@ -170,7 +170,6 @@ foreach ($users as $i => $u):
 <td class="px-6 py-4 text-right" onclick="event.stopPropagation()">
 <div class="flex items-center justify-end gap-1">
 <button class="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-md text-slate-500 user-edit-btn" title="Edit" data-user-id="<?php echo $u['id']; ?>"><span class="material-icons text-lg">edit</span></button>
-<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-md text-slate-500 user-reset-btn" title="Reset Password" data-user-id="<?php echo $u['id']; ?>"><span class="material-icons text-lg">lock_reset</span></button>
 <button class="p-1.5 <?php echo $u['active'] ? 'hover:bg-red-50 text-red-400' : 'bg-green-100 text-green-600'; ?> rounded-md user-block-btn" title="<?php echo $u['active'] ? 'Suspend' : 'Unblock'; ?>" data-user-id="<?php echo $u['id']; ?>" data-active="<?php echo $u['active'] ? '1' : '0'; ?>"><span class="material-icons text-lg"><?php echo $u['active'] ? 'block' : 'lock_open'; ?></span></button>
 </div>
 </td>
@@ -249,12 +248,12 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <form id="profile-update-form" class="space-y-4">
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Name</label><input type="text" id="drawer-edit-name" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" /></div>
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Email</label><input type="email" id="drawer-edit-email" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" /></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">New Password</label><input type="password" id="drawer-edit-password" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="Leave blank to keep current" autocomplete="new-password" /></div>
 </form>
 <!-- Wallet Breakdown -->
 <div>
 <div class="flex items-center justify-between mb-4"><h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Wallet Breakdown</h4></div>
 <div id="drawer-wallet" class="grid grid-cols-1 gap-3"></div>
-<button type="button" id="drawer-adjust-balance" class="mt-2 text-primary text-xs font-bold hover:underline">Adjust Balance</button>
 </div>
 <!-- Active Investments -->
 <div>
@@ -276,10 +275,10 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 </div>
 </div>
 <!-- Drawer Actions -->
-<div class="p-6 border-t border-slate-200 dark:border-zinc-800 space-y-3">
-<button type="button" id="drawer-update-profile" class="w-full px-4 py-2 bg-primary text-background-dark font-bold rounded-lg hover:brightness-105">Update Profile</button>
-<button type="button" id="drawer-reset-password" class="w-full px-4 py-2 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-700">Reset Password</button>
-<button type="button" id="drawer-block-btn" class="w-full px-4 py-2 font-bold rounded-lg"></button>
+<div class="p-4 border-t border-slate-200 dark:border-zinc-800 grid grid-cols-2 gap-2">
+<button type="button" id="drawer-update-profile" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary text-background-dark hover:brightness-105 col-span-2">Update Profile</button>
+<button type="button" id="drawer-block-btn" class="px-3 py-1.5 text-xs font-bold rounded-lg"></button>
+<button type="button" id="drawer-adjust-balance" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700">Adjust Balance</button>
 </div>
 <script src="/js/app.js"></script>
 <script>
@@ -304,6 +303,7 @@ function loadUser(id) {
     document.getElementById('drawer-last-active').textContent = u.updated_at ? 'Last: ' + u.updated_at.substring(0, 10) : '';
     document.getElementById('drawer-edit-name').value = u.name || '';
     document.getElementById('drawer-edit-email').value = u.email || '';
+    document.getElementById('drawer-edit-password').value = '';
     document.getElementById('drawer-notes').value = u.admin_notes || '';
 
     var w = document.getElementById('drawer-wallet');
@@ -331,7 +331,7 @@ function loadUser(id) {
     document.getElementById('drawer-2fa-toggle').className = 'text-xs font-bold px-2 py-1 rounded ' + (u.two_factor_enabled ? 'text-green-600 bg-green-100' : 'text-slate-500 bg-slate-100');
     var blockBtn = document.getElementById('drawer-block-btn');
     blockBtn.textContent = u.active ? 'Block User' : 'Unblock User';
-    blockBtn.className = 'w-full px-4 py-2 font-bold rounded-lg ' + (u.active ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200');
+    blockBtn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg ' + (u.active ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200');
     openDrawer();
   }).catch(function(){});
 }
@@ -340,7 +340,7 @@ document.getElementById('drawer-close-btn').addEventListener('click', closeDrawe
 
 document.querySelectorAll('.user-row, .user-edit-btn').forEach(function(el){
   el.addEventListener('click', function(e){
-    if (e.target.closest('.user-block-btn') || e.target.closest('.user-reset-btn')) return;
+    if (e.target.closest('.user-block-btn')) return;
     var id = el.getAttribute('data-user-id') || el.closest('[data-user-id]')?.getAttribute('data-user-id');
     if (id) loadUser(id);
   });
@@ -350,23 +350,14 @@ document.querySelectorAll('.user-block-btn').forEach(function(btn){
   btn.addEventListener('click', function(e){ e.stopPropagation(); var id = btn.getAttribute('data-user-id'); if (id) loadUser(id); });
 });
 
-document.querySelectorAll('.user-reset-btn').forEach(function(btn){
-  btn.addEventListener('click', function(e){ e.stopPropagation(); var id = btn.getAttribute('data-user-id'); if (id) loadUser(id); });
-});
-
 document.getElementById('drawer-update-profile').addEventListener('click', function(){
   var id = document.getElementById('drawer-user-id').value;
   if (!id) return;
-  fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update', user_id: id, name: document.getElementById('drawer-edit-name').value, email: document.getElementById('drawer-edit-email').value, admin_notes: document.getElementById('drawer-notes').value }) })
-    .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { alert('Profile updated'); loadUser(id); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
-});
-
-document.getElementById('drawer-reset-password').addEventListener('click', function(){
-  var id = document.getElementById('drawer-user-id').value;
-  var pw = prompt('Enter new password (min 8 chars):');
-  if (!id || !pw || pw.length < 8) return;
-  fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reset_password', user_id: id, password: pw }) })
-    .then(function(r){ return r.json(); }).then(function(res){ if (res.success) alert('Password reset'); else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
+  var payload = { action: 'update', user_id: id, name: document.getElementById('drawer-edit-name').value, email: document.getElementById('drawer-edit-email').value, admin_notes: document.getElementById('drawer-notes').value };
+  var pw = document.getElementById('drawer-edit-password').value.trim();
+  if (pw.length >= 8) payload.password = pw;
+  fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { document.getElementById('drawer-edit-password').value = ''; loadUser(id); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
 });
 
 document.getElementById('drawer-block-btn').addEventListener('click', function(){
