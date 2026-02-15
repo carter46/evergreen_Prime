@@ -32,10 +32,3 @@ To sync schema and defaults on an existing database:
 1. In phpMyAdmin, select your database
 2. Import **migration.sql**
 3. Visit `/scripts/create-admin.php` if you need to reset the admin password
-
-## Update Existing Server
-
-To sync schema and defaults on an existing database:
-1. In phpMyAdmin, select your database
-2. Import **migration.sql**
-3. Visit `/scripts/create-admin.php` if you need to reset the admin password

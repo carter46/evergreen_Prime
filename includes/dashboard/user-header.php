@@ -3,6 +3,11 @@
  * Bloombit - Shared User Header (Top Bar)
  * Use on all user dashboard pages. Renders greeting, crypto ticker, notifications, profile.
  */
+$u = get_current_user_data() ?? [];
+$userName = $u['name'] ?? 'User';
+$userEmail = $u['email'] ?? '';
+$avatarUrl = $u['avatar_url'] ?? null;
+$initials = strtoupper(substr($userName ?: 'U', 0, 2));
 ?>
 <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
     <div class="flex items-center gap-3 sm:gap-4 min-w-0">
@@ -10,7 +15,7 @@
             <span class="material-icons-round">menu</span>
         </button>
         <div class="min-w-0">
-            <h1 class="text-2xl sm:text-3xl font-bold truncate">Good morning, Alex</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold truncate">Good morning, <?php echo htmlspecialchars($userName); ?></h1>
             <p class="text-slate-500 text-sm">System status: <span class="text-emerald-500 font-medium">AI Core Online</span></p>
         </div>
     </div>
@@ -29,10 +34,10 @@
             </button>
             <div class="flex items-center gap-2 sm:gap-3">
                 <div class="text-right hidden sm:block">
-                    <p class="text-sm font-bold leading-none">Alex Rivera</p>
-                    <p class="text-xs text-slate-500">Verified User</p>
+                    <p class="text-sm font-bold leading-none"><?php echo htmlspecialchars($userName); ?></p>
+                    <p class="text-xs text-slate-500"><?php echo !empty($u['verified']) ? 'Verified User' : 'User'; ?></p>
                 </div>
-                <img alt="User" class="w-10 h-10 rounded-full border-2 border-primary shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOC4BkOfAIELCclJ8x7GDF7rJChGJelN25tkIftuO8Gvct9ZmJ7X284HMhELI2rEIOdft7rKTJeJPNEnX6pzMWQuZtPSEMqN5QLBmtq0Kn46y11RrclC4mNabZ-Y5wcp9xD-qcIKBcdpMAku3Yt47oHbk_JPCzHGPN8ciroIDnk7K_kpqPqUfr1GoqxIyhofa4pjGCcfmbzW0pBKoVf9fQVgJKjxLN7ZMdX3BJCTAowB9oTO_kbTEY5jR5C-_TRlPtCGhsTnPsHFw"/>
+                <?php if ($avatarUrl): ?><img alt="User" class="w-10 h-10 rounded-full border-2 border-primary shrink-0 object-cover" src="<?php echo htmlspecialchars($avatarUrl); ?>"/><?php else: ?><div class="w-10 h-10 rounded-full border-2 border-primary bg-primary/20 flex items-center justify-center text-primary font-bold text-sm shrink-0"><?php echo htmlspecialchars($initials); ?></div><?php endif; ?>
             </div>
         </div>
     </div>

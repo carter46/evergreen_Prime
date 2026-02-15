@@ -25,12 +25,19 @@ try {
     elseif ($statusFilter === 'suspended') $where[] = 'u.active = 0';
     $whereClause = implode(' AND ', $where);
 
+    $hasAvatar = false;
+    try {
+        $ac = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
+        $hasAvatar = $ac && $ac->rowCount() > 0;
+    } catch (Throwable $e) {}
+    $avatarCol = $hasAvatar ? ', u.avatar_url' : '';
+
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM users u WHERE {$whereClause}");
     $countStmt->execute($params);
     $total = (int) $countStmt->fetchColumn();
     $offset = ($page - 1) * $perPage;
 
-    $sql = "SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at,
+    $sql = "SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol}
             COALESCE((SELECT SUM(amount) FROM wallet_balances WHERE user_id = u.id AND currency = 'BTC'), 0) AS total_btc,
             (SELECT COUNT(*) FROM user_investments WHERE user_id = u.id AND status = 'active') AS active_plans_count
             FROM users u WHERE {$whereClause} ORDER BY u.created_at DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
@@ -44,6 +51,7 @@ try {
             'name' => $row['name'] ?: 'User #' . $row['id'],
             'active' => (bool)$row['active'],
             'created_at' => $row['created_at'],
+            'avatar_url' => $row['avatar_url'] ?? null,
             'total_btc' => (float)$row['total_btc'],
             'active_plans_count' => (int)$row['active_plans_count'],
             'kyc_status' => $kyc,
@@ -95,12 +103,12 @@ try {
 <div class="flex items-center gap-3">
 <button class="flex items-center gap-2 px-4 py-2 bg-primary text-background-dark font-semibold rounded-lg hover:brightness-105 transition-all shadow-sm">
 <span class="material-icons text-sm">person_add</span>
-                    Manual Add User
+                    Add User
                 </button>
 </div>
 </div>
 <!-- Filters -->
-<form method="get" class="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex flex-wrap items-center gap-4 mb-6 shadow-sm">
+<form method="get" action="/dashboard/admin/users" class="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex flex-wrap items-center gap-4 mb-6 shadow-sm">
 <div class="flex-1 min-w-[300px] relative">
 <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
 <input name="search" value="<?php echo htmlspecialchars($search); ?>" class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-zinc-800 border-none rounded-lg focus:ring-2 focus:ring-primary text-sm" placeholder="Search by name or email..." type="text"/>
@@ -115,12 +123,10 @@ try {
 </div>
 <div class="flex items-center gap-2 border-l border-slate-200 dark:border-zinc-700 pl-4">
 <button type="submit" class="px-4 py-2 bg-primary text-background-dark font-semibold rounded-lg text-sm">Filter</button>
-<button type="button" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg text-slate-600 transition-colors"><span class="material-icons">filter_list</span></button>
-<button type="button" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg text-slate-600 transition-colors"><span class="material-icons">download</span></button>
 </div>
 </form>
-<!-- User Table -->
-<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden relative">
+<!-- User Table (Desktop) -->
+<div class="hidden md:block bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden relative">
 <div class="overflow-x-auto">
 <table class="w-full text-left text-sm">
 <thead class="bg-slate-50 dark:bg-zinc-800/50 border-b border-slate-200 dark:border-zinc-800">
@@ -131,7 +137,6 @@ try {
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Name</th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Total Balance</th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Active Plans</th>
-<th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Registration</th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">KYC Status</th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400 text-right">Actions</th>
 </tr>
@@ -149,7 +154,7 @@ foreach ($users as $i => $u):
 <td class="px-6 py-4" onclick="event.stopPropagation()"><input class="rounded border-slate-300 text-primary focus:ring-primary user-checkbox" type="checkbox"/></td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs <?php echo $avClass; ?>"><?php echo htmlspecialchars($initials); ?></div>
+<?php if (!empty($u['avatar_url'])): ?><img src="<?php echo htmlspecialchars($u['avatar_url']); ?>" alt="" class="w-9 h-9 rounded-full object-cover shrink-0"/><?php else: ?><div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs <?php echo $avClass; ?> shrink-0"><?php echo htmlspecialchars($initials); ?></div><?php endif; ?>
 <div>
 <div class="font-semibold text-slate-900 dark:text-white"><?php echo htmlspecialchars($u['name']); ?></div>
 <div class="text-xs text-slate-500"><?php echo htmlspecialchars($u['email']); ?></div>
@@ -162,31 +167,29 @@ foreach ($users as $i => $u):
 <td class="px-6 py-4">
 <span class="<?php echo $u['active_plans_count'] > 0 ? 'bg-primary/20 text-slate-900 dark:text-primary' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'; ?> px-2 py-0.5 rounded-full text-xs font-bold"><?php echo $u['active_plans_count']; ?> Plan<?php echo $u['active_plans_count'] !== 1 ? 's' : ''; ?></span>
 </td>
-<td class="px-6 py-4 text-slate-500"><?php echo date('M j, Y', strtotime($u['created_at'])); ?></td>
 <td class="px-6 py-4">
 <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full <?php echo $kc; ?> text-xs font-bold uppercase tracking-wider">
 <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span><?php echo ucfirst($u['kyc_status']); ?></span>
 </td>
-<td class="px-6 py-4 text-right" onclick="event.stopPropagation()">
-<div class="flex items-center justify-end gap-1">
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end">
 <button class="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-md text-slate-500 user-edit-btn" title="Edit" data-user-id="<?php echo $u['id']; ?>"><span class="material-icons text-lg">edit</span></button>
-<button class="p-1.5 <?php echo $u['active'] ? 'hover:bg-red-50 text-red-400' : 'bg-green-100 text-green-600'; ?> rounded-md user-block-btn" title="<?php echo $u['active'] ? 'Suspend' : 'Unblock'; ?>" data-user-id="<?php echo $u['id']; ?>" data-active="<?php echo $u['active'] ? '1' : '0'; ?>"><span class="material-icons text-lg"><?php echo $u['active'] ? 'block' : 'lock_open'; ?></span></button>
 </div>
 </td>
 </tr>
 <?php endforeach; ?>
 <?php if (empty($users)): ?>
-<tr><td colspan="7" class="px-6 py-12 text-center text-slate-500">No users found.</td></tr>
+<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">No users found.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>
 </div>
-<!-- Pagination -->
+<!-- Pagination (Desktop) -->
 <div class="px-6 py-4 border-t border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <?php
 $start = $pagination['total'] > 0 ? (($pagination['page'] - 1) * $pagination['per_page']) + 1 : 0;
 $end = min($pagination['page'] * $pagination['per_page'], $pagination['total']);
-$q = http_build_query(array_filter(['search' => $search, 'status' => $statusFilter !== 'all' ? $statusFilter : null]));
+$q = http_build_query(array_filter(['search' => $search ?: null, 'status' => $statusFilter !== 'all' ? $statusFilter : null]));
 $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 ?>
 <span class="text-xs text-slate-500">Showing <?php echo $start; ?>-<?php echo $end; ?> of <?php echo number_format($pagination['total']); ?> users</span>
@@ -196,6 +199,44 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <a href="<?php echo $baseUrl; ?>page=<?php echo $p; ?>" class="px-3 py-1 <?php echo $p === $pagination['page'] ? 'bg-primary text-background-dark font-bold' : 'hover:bg-slate-100 dark:hover:bg-zinc-800'; ?> text-xs rounded"><?php echo $p; ?></a>
 <?php endfor; ?>
 <?php if ($pagination['page'] < $pagination['total_pages']): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] + 1; ?>" class="p-1 border border-slate-200 dark:border-zinc-800 rounded hover:bg-slate-50 text-slate-400"><span class="material-icons text-sm">chevron_right</span></a><?php endif; ?>
+</div>
+</div>
+</div>
+<!-- Mobile User Cards -->
+<div class="block md:hidden space-y-3">
+<?php foreach ($users as $i => $u):
+    $initials = strtoupper(substr($u['name'], 0, 2)) ?: 'U';
+    $avClass = ['bg-blue-100 text-blue-600', 'bg-emerald-100 text-emerald-600', 'bg-purple-100 text-purple-600', 'bg-amber-100 text-amber-600'][$i % 4];
+    $kc = ['verified' => 'bg-green-100 text-green-700', 'pending' => 'bg-yellow-100 text-yellow-700', 'suspended' => 'bg-red-100 text-red-700'][$u['kyc_status']] ?? 'bg-slate-100 text-slate-500';
+?>
+<div class="user-mobile-card bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden" data-user-id="<?php echo $u['id']; ?>">
+<button type="button" class="user-mobile-toggle w-full px-4 py-4 flex items-center justify-between gap-3 text-left">
+<div class="flex items-center gap-3 min-w-0 flex-1">
+<?php if (!empty($u['avatar_url'])): ?><img src="<?php echo htmlspecialchars($u['avatar_url']); ?>" alt="" class="w-10 h-10 rounded-full object-cover shrink-0"/><?php else: ?><div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm <?php echo $avClass; ?> shrink-0"><?php echo htmlspecialchars($initials); ?></div><?php endif; ?>
+<div class="min-w-0">
+<div class="font-semibold text-slate-900 dark:text-white truncate"><?php echo htmlspecialchars($u['name']); ?></div>
+<div class="text-xs text-slate-500 truncate"><?php echo htmlspecialchars($u['email']); ?></div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full <?php echo $kc; ?> text-[10px] font-bold uppercase mt-1"><?php echo ucfirst($u['kyc_status']); ?></span>
+</div>
+</div>
+<span class="material-icons text-slate-400 user-mobile-chevron transition-transform shrink-0">expand_more</span>
+</button>
+<div class="user-mobile-expand hidden border-t border-slate-100 dark:border-zinc-800 px-4 py-4 space-y-3">
+<div class="flex justify-between items-center"><span class="text-xs text-slate-500">Total Balance</span><span class="font-bold text-sm"><?php echo number_format($u['total_btc'], 4); ?> BTC</span></div>
+<div class="flex justify-between items-center"><span class="text-xs text-slate-500">Active Plans</span><span class="<?php echo $u['active_plans_count'] > 0 ? 'bg-primary/20 text-primary' : 'text-slate-500'; ?> text-xs font-bold"><?php echo $u['active_plans_count']; ?> Plan<?php echo $u['active_plans_count'] !== 1 ? 's' : ''; ?></span></div>
+<button type="button" class="user-edit-btn w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-zinc-900 font-bold rounded-lg text-sm" data-user-id="<?php echo $u['id']; ?>"><span class="material-icons text-lg">edit</span>Edit User</button>
+</div>
+</div>
+<?php endforeach; ?>
+<?php if (empty($users)): ?>
+<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-8 text-center text-slate-500">No users found.</div>
+<?php endif; ?>
+<div class="flex items-center justify-between px-2 py-4">
+<span class="text-xs text-slate-500"><?php echo $start; ?>-<?php echo $end; ?> of <?php echo number_format($pagination['total']); ?></span>
+<div class="flex items-center gap-2">
+<?php if ($pagination['page'] > 1): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] - 1; ?>" class="p-1.5 border rounded"><span class="material-icons text-sm">chevron_left</span></a><?php endif; ?>
+<?php for ($p = 1; $p <= min(5, $pagination['total_pages']); $p++): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $p; ?>" class="px-2 py-1 text-xs <?php echo $p === $pagination['page'] ? 'bg-primary font-bold' : 'hover:bg-slate-100'; ?> rounded"><?php echo $p; ?></a><?php endfor; ?>
+<?php if ($pagination['page'] < $pagination['total_pages']): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] + 1; ?>" class="p-1.5 border rounded"><span class="material-icons text-sm">chevron_right</span></a><?php endif; ?>
 </div>
 </div>
 </div>
@@ -224,10 +265,12 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <span class="material-icons text-sm">close</span>
 </button>
 </div>
+<!-- Toast for success messages -->
+<div id="user-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-[60] hidden transition-opacity duration-300">Profile updated successfully</div>
 <!-- Drawer backdrop - click to close -->
 <div id="user-drawer-backdrop" class="fixed inset-0 bg-black/20 z-40 hidden transition-opacity" aria-hidden="true"></div>
 <!-- Right Side Profile Drawer (hidden by default) -->
-<div id="user-profile-drawer" class="fixed inset-y-0 right-0 w-[420px] bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300" style="transform: translateX(100%);">
+<div id="user-profile-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[420px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300" style="transform: translateX(100%);">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">User Profile</h2>
 <button id="drawer-close-btn" type="button" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors" aria-label="Close"><span class="material-icons text-lg">close</span></button>
@@ -236,10 +279,15 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <input type="hidden" id="drawer-user-id" value=""/>
 <!-- Profile Header -->
 <div class="flex items-center gap-4">
-<div id="drawer-avatar" class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-background-dark text-2xl font-bold"></div>
+<div class="relative group cursor-pointer" id="drawer-avatar-wrap" title="Click to update profile picture">
+<div id="drawer-avatar" class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-background-dark text-2xl font-bold overflow-hidden shrink-0"></div>
+<span class="absolute bottom-0 right-0 w-5 h-5 bg-slate-700 text-white rounded-full flex items-center justify-center"><span class="material-icons text-xs">photo_camera</span></span>
+<input type="file" id="drawer-avatar-input" accept="image/png,image/jpeg,image/webp" class="hidden" />
+</div>
 <div>
 <h3 id="drawer-name" class="text-xl font-bold"></h3>
 <p id="drawer-uid" class="text-slate-500 text-sm"></p>
+<p id="drawer-registration" class="text-[10px] text-slate-400 mt-0.5"></p>
 <div class="flex items-center gap-2 mt-1">
 <span id="drawer-status" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-widest"></span>
 <span id="drawer-last-active" class="text-[10px] text-slate-400"></span>
@@ -267,21 +315,21 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Security Settings</h4>
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3"><span class="material-icons">verified_user</span><span class="text-sm font-medium">Two-Factor Auth (2FA)</span></div>
-<button type="button" id="drawer-2fa-toggle" class="text-xs font-bold px-2 py-1 rounded"></button>
+<label class="relative inline-flex items-center cursor-pointer">
+<input type="checkbox" id="drawer-2fa-toggle" class="sr-only peer" />
+<div class="w-11 h-6 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
 </div>
-</div>
-<!-- Internal Notes -->
-<div>
-<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Internal Admin Notes</h4>
-<textarea id="drawer-notes" class="w-full h-24 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl text-sm p-4 focus:ring-1 focus:ring-primary resize-none" placeholder="Add a note about this user..."></textarea>
 </div>
 </div>
 <!-- Drawer Actions -->
-<div class="p-4 border-t border-slate-200 dark:border-zinc-800 grid grid-cols-2 gap-2">
-<button type="button" id="drawer-update-profile" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary text-zinc-900 hover:brightness-105 col-span-2">Update Profile</button>
-<button type="button" id="drawer-login-as-user" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-green-600 text-white hover:bg-green-700">Login as User</button>
-<button type="button" id="drawer-block-btn" class="px-3 py-1.5 text-xs font-bold rounded-lg"></button>
-<button type="button" id="drawer-delete-user" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 col-span-2">Delete User</button>
+<div class="p-4 border-t border-slate-200 dark:border-zinc-800 space-y-2">
+<button type="button" id="drawer-update-profile" class="w-full px-3 py-2 text-xs font-bold rounded-lg bg-primary text-zinc-900 hover:brightness-105">Update Profile</button>
+<div class="grid grid-cols-3 gap-2">
+<button type="button" id="drawer-login-as-user" class="px-2 py-2 text-xs font-bold rounded-lg bg-green-600 text-white hover:bg-green-700">Login as User</button>
+<button type="button" id="drawer-block-btn" class="px-2 py-2 text-xs font-bold rounded-lg"></button>
+<button type="button" id="drawer-delete-user" class="px-2 py-2 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700">Delete</button>
+</div>
 </div>
 <script src="/js/app.js"></script>
 <script>
@@ -298,17 +346,24 @@ function loadUser(id) {
     if (!res.success || !res.data) return;
     var u = res.data;
     document.getElementById('drawer-user-id').value = u.id;
+    var avEl = document.getElementById('drawer-avatar');
     var initials = (u.name || 'U').substring(0, 2).toUpperCase();
-    document.getElementById('drawer-avatar').textContent = initials;
+    if (u.avatar_url) {
+      avEl.innerHTML = '<img src="' + u.avatar_url + '" alt="" class="w-full h-full object-cover" />';
+    } else {
+      avEl.textContent = initials;
+      avEl.className = 'w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-background-dark text-2xl font-bold overflow-hidden shrink-0';
+    }
     document.getElementById('drawer-name').textContent = u.name || 'User #' + u.id;
     document.getElementById('drawer-uid').textContent = 'UID: #' + u.id;
+    var regEl = document.getElementById('drawer-registration');
+    if (regEl) regEl.textContent = u.created_at ? 'Registered: ' + u.created_at.substring(0, 10) : '';
     document.getElementById('drawer-status').textContent = u.active ? 'Active' : 'Suspended';
     document.getElementById('drawer-status').className = 'text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-widest ' + (u.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700');
     document.getElementById('drawer-last-active').textContent = u.updated_at ? 'Last: ' + u.updated_at.substring(0, 10) : '';
     document.getElementById('drawer-edit-name').value = u.name || '';
     document.getElementById('drawer-edit-email').value = u.email || '';
     document.getElementById('drawer-edit-password').value = '';
-    document.getElementById('drawer-notes').value = u.admin_notes || '';
 
     var w = document.getElementById('drawer-wallet');
     w.innerHTML = '';
@@ -332,11 +387,11 @@ function loadUser(id) {
     });
     if (!u.investments || u.investments.length === 0) inv.innerHTML = '<p class="text-sm text-slate-500">No active investments</p>';
 
-    document.getElementById('drawer-2fa-toggle').textContent = u.two_factor_enabled ? 'ENABLED' : 'Disabled';
-    document.getElementById('drawer-2fa-toggle').className = 'text-xs font-bold px-2 py-1 rounded ' + (u.two_factor_enabled ? 'text-green-600 bg-green-100' : 'text-slate-500 bg-slate-100');
+    var tfaToggle = document.getElementById('drawer-2fa-toggle');
+    if (tfaToggle) tfaToggle.checked = !!u.two_factor_enabled;
     var blockBtn = document.getElementById('drawer-block-btn');
     blockBtn.textContent = u.active ? 'Block User' : 'Unblock User';
-    blockBtn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg ' + (u.active ? 'bg-red-500 text-black hover:bg-red-600' : 'bg-green-600 text-white hover:bg-green-700');
+    blockBtn.className = 'px-2 py-2 text-xs font-bold rounded-lg ' + (u.active ? 'bg-red-500 text-black hover:bg-red-600' : 'bg-green-600 text-white hover:bg-green-700');
     openDrawer();
   }).catch(function(){});
 }
@@ -344,22 +399,30 @@ function loadUser(id) {
 document.getElementById('drawer-close-btn').addEventListener('click', closeDrawer);
 if (backdrop) backdrop.addEventListener('click', closeDrawer);
 
-document.querySelectorAll('.user-row, .user-edit-btn').forEach(function(el){
-  el.addEventListener('click', function(e){
-    if (e.target.closest('.user-block-btn')) return;
-    var id = el.getAttribute('data-user-id') || el.closest('[data-user-id]')?.getAttribute('data-user-id');
-    if (id) loadUser(id);
-  });
-});
-
-document.querySelectorAll('.user-block-btn').forEach(function(btn){
+document.querySelectorAll('.user-edit-btn').forEach(function(btn){
   btn.addEventListener('click', function(e){ e.stopPropagation(); var id = btn.getAttribute('data-user-id'); if (id) loadUser(id); });
+});
+document.querySelectorAll('.user-mobile-toggle').forEach(function(btn){
+  btn.addEventListener('click', function(e){
+    e.stopPropagation();
+    var card = btn.closest('.user-mobile-card');
+    if (!card) return;
+    var expand = card.querySelector('.user-mobile-expand');
+    var chevron = card.querySelector('.user-mobile-chevron');
+    if (expand && expand.classList.contains('hidden')) {
+      expand.classList.remove('hidden');
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else if (expand) {
+      expand.classList.add('hidden');
+      if (chevron) chevron.style.transform = '';
+    }
+  });
 });
 
 document.getElementById('drawer-update-profile').addEventListener('click', function(){
   var id = document.getElementById('drawer-user-id').value;
   if (!id) return;
-  var payload = { action: 'update', user_id: id, name: document.getElementById('drawer-edit-name').value, email: document.getElementById('drawer-edit-email').value, admin_notes: document.getElementById('drawer-notes').value };
+  var payload = { action: 'update', user_id: id, name: document.getElementById('drawer-edit-name').value, email: document.getElementById('drawer-edit-email').value };
   var pw = document.getElementById('drawer-edit-password').value.trim();
   if (pw.length >= 8) payload.password = pw;
   var walletInputs = document.querySelectorAll('.wallet-amount-input');
@@ -368,7 +431,14 @@ document.getElementById('drawer-update-profile').addEventListener('click', funct
     walletInputs.forEach(function(inp){ payload.wallet_balances.push({ currency: inp.getAttribute('data-currency'), amount: parseFloat(inp.value) || 0 }); });
   }
   fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { document.getElementById('drawer-edit-password').value = ''; loadUser(id); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
+    .then(function(r){ return r.json(); }).then(function(res){
+      if (res.success) {
+        document.getElementById('drawer-edit-password').value = '';
+        var toast = document.getElementById('user-toast');
+        if (toast) { toast.classList.remove('hidden'); toast.textContent = 'Profile updated successfully'; }
+        setTimeout(function(){ closeDrawer(); if (toast) toast.classList.add('hidden'); }, 1500);
+      } else { alert(res.error || 'Failed'); }
+    }).catch(function(){ alert('Error'); });
 });
 
 document.getElementById('drawer-block-btn').addEventListener('click', function(){
@@ -380,11 +450,13 @@ document.getElementById('drawer-block-btn').addEventListener('click', function()
     .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { loadUser(id); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
 });
 
-document.getElementById('drawer-2fa-toggle').addEventListener('click', function(){
+document.getElementById('drawer-2fa-toggle').addEventListener('change', function(){
   var id = document.getElementById('drawer-user-id').value;
   if (!id) return;
+  var cb = this;
+  var desired = cb.checked;
   fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'toggle_2fa', user_id: id }) })
-    .then(function(r){ return r.json(); }).then(function(res){ if (res.success) loadUser(id); else alert(res.error || '2FA not supported'); }).catch(function(){});
+    .then(function(r){ return r.json(); }).then(function(res){ if (res.success) cb.checked = desired; else { cb.checked = !desired; alert(res.error || '2FA not supported'); } }).catch(function(){ cb.checked = !desired; });
 });
 
 document.getElementById('drawer-login-as-user').addEventListener('click', function(){
@@ -401,6 +473,25 @@ document.getElementById('drawer-delete-user').addEventListener('click', function
 });
 
 document.getElementById('drawer-wallet').addEventListener('click', function(e){ if (e.target.classList.contains('wallet-edit-label')) { var row = e.target.closest('.wallet-row'); var inp = row && row.querySelector('.wallet-amount-input'); if (inp) inp.focus(); } });
+
+document.getElementById('drawer-avatar-wrap').addEventListener('click', function(){ document.getElementById('drawer-avatar-input').click(); });
+document.getElementById('drawer-avatar-input').addEventListener('change', function(){
+  var file = this.files[0];
+  if (!file) return;
+  var id = document.getElementById('drawer-user-id').value;
+  if (!id) return;
+  var fd = new FormData();
+  fd.append('user_id', id);
+  fd.append('avatar', file);
+  fetch('/api/admin/upload-avatar.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+    .then(function(r){ return r.json(); }).then(function(res){
+      if (res.success && res.data && res.data.avatar_url) {
+        var avEl = document.getElementById('drawer-avatar');
+        avEl.innerHTML = '<img src="' + res.data.avatar_url + '" alt="" class="w-full h-full object-cover" />';
+      } else { alert(res.error || 'Upload failed'); }
+    }).catch(function(){ alert('Upload failed'); });
+  this.value = '';
+});
 })();
 </script>
 </body></html>

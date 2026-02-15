@@ -45,6 +45,37 @@ function time_ago(string $datetime): string {
 }
 
 /**
+ * Get current logged-in user (name, email, avatar_url) - for dashboard pages.
+ * Returns null if not logged in or user not found.
+ */
+function get_current_user_data(): ?array {
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    if (!isset($_SESSION['user_id'])) return null;
+    static $cache = null;
+    if ($cache !== null) return $cache;
+    try {
+        $pdo = require __DIR__ . '/db.php';
+        $cols = 'name, email, email_verified';
+        try {
+            $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
+            if ($chk && $chk->rowCount() > 0) $cols .= ', avatar_url';
+        } catch (Throwable $e) {}
+        $stmt = $pdo->prepare("SELECT {$cols} FROM users WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $cache = $row ? [
+            'name' => $row['name'] ?? '',
+            'email' => $row['email'] ?? '',
+            'avatar_url' => $row['avatar_url'] ?? null,
+            'verified' => (bool) ($row['email_verified'] ?? false),
+        ] : null;
+        return $cache;
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
+/**
  * Get base site URL (protocol + host) - dynamic from current request.
  * Use getenv('SITE_URL') to override when needed (e.g. behind proxy).
  */

@@ -25,7 +25,12 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $stmt = $pdo->prepare('SELECT id, name, email, email_verified FROM users WHERE id = ?');
+    $cols = 'id, name, email, email_verified';
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
+        if ($chk && $chk->rowCount() > 0) $cols .= ', avatar_url';
+    } catch (Throwable $e) {}
+    $stmt = $pdo->prepare("SELECT {$cols} FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$row) {
@@ -38,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'email' => $row['email'],
         'user_id' => 'BB-' . $row['id'],
         'verified' => (bool) $row['email_verified'],
-        'avatar' => null,
+        'avatar' => $row['avatar_url'] ?? null,
     ];
     echo json_encode(['success' => true, 'data' => $profile]);
     exit;
@@ -51,7 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $stmt = $pdo->prepare('UPDATE users SET name = ? WHERE id = ?');
         $stmt->execute([$name, $userId]);
     }
-    $stmt = $pdo->prepare('SELECT id, name, email, email_verified FROM users WHERE id = ?');
+    $cols = 'id, name, email, email_verified';
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
+        if ($chk && $chk->rowCount() > 0) $cols .= ', avatar_url';
+    } catch (Throwable $e) {}
+    $stmt = $pdo->prepare("SELECT {$cols} FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $profile = [
@@ -59,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         'email' => $row['email'],
         'user_id' => 'BB-' . $row['id'],
         'verified' => (bool) $row['email_verified'],
-        'avatar' => null,
+        'avatar' => $row['avatar_url'] ?? null,
     ];
     echo json_encode(['success' => true, 'data' => $profile]);
     exit;

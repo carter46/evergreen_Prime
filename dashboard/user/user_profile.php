@@ -1,5 +1,11 @@
 <?php require_once __DIR__ . '/../../includes/auth-check.php'; require_once __DIR__ . '/../../includes/helpers.php'; $siteName = get_site_name();
 $currentPage = 'profile';
+$profileUser = get_current_user_data() ?? [];
+$profileName = $profileUser['name'] ?? 'User';
+$profileEmail = $profileUser['email'] ?? '';
+$profileAvatar = $profileUser['avatar_url'] ?? null;
+$profileInitials = strtoupper(substr($profileName ?: 'U', 0, 2));
+$profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="en"><head>
@@ -49,21 +55,21 @@ $currentPage = 'profile';
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
 <div class="flex items-center gap-6">
 <div class="relative group">
-<img alt="Profile" class="w-24 h-24 rounded-full object-cover border-4 border-primary/10" data-alt="Professional male user profile headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0V1KNxirQ4k-ZBH4oUo_y-ZIqdVGTjORpfvgPNsVOBuP8gQ_TG0LFks9wcSal_dYOTwVziz1TR9TecZ_aMz9bjecO_R2cMLbM0GudC2PqrzPOMtQ5ZF0vFoTwfLhCnBasDuWUfRU4qka6vVjddJS57cuZXKXzxjNGDlYZK4B6TrZaLo3RLJHTDiRdqZ8qbiLcbEgzXNX9qG2OrXXOFgwaaEdrtOh79g5v5P_dEglwEnR48b0yyucTEsiJnp8m00H98mBqkjr1oWc"/>
+<?php if ($profileAvatar): ?><img alt="Profile" class="w-24 h-24 rounded-full object-cover border-4 border-primary/10" src="<?php echo htmlspecialchars($profileAvatar); ?>"/><?php else: ?><div class="w-24 h-24 rounded-full bg-primary/20 border-4 border-primary/10 flex items-center justify-center text-primary text-3xl font-bold"><?php echo htmlspecialchars($profileInitials); ?></div><?php endif; ?>
 <button class="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full shadow-lg hover:scale-105 transition-transform">
 <span class="material-icons text-sm">edit</span>
 </button>
 </div>
 <div>
 <div class="flex items-center gap-3">
-<h1 class="text-2xl font-bold" data-profile-name>John Doe</h1>
+<h1 class="text-2xl font-bold" data-profile-name><?php echo htmlspecialchars($profileName); ?></h1>
 <span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
 <span class="material-icons text-[14px]">verified</span>
                                 Verified
                             </span>
 </div>
-<p class="text-slate-500 dark:text-slate-400" data-profile-email>john.doe@bloombit.io</p>
-<p class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">User ID: <span data-user-id>BB-9823412</span></p>
+<p class="text-slate-500 dark:text-slate-400" data-profile-email><?php echo htmlspecialchars($profileEmail); ?></p>
+<p class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">User ID: <span data-user-id><?php echo htmlspecialchars($profileUserId); ?></span></p>
 </div>
 </div>
 <div class="flex gap-3">

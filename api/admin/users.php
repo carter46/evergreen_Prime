@@ -27,8 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
     if ($id > 0) {
-        // Single user detail
-        $stmt = $pdo->prepare('SELECT id, email, name, role, email_verified, active, created_at, updated_at FROM users WHERE id = ?');
+        // Single user detail (avatar_url optional - added in migration)
+        $hasAvatar = false;
+        try {
+            $colCheck = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
+            $hasAvatar = $colCheck && $colCheck->rowCount() > 0;
+        } catch (Throwable $e) {}
+        $cols = 'id, email, name, role, email_verified, active, created_at, updated_at';
+        if ($hasAvatar) $cols .= ', avatar_url';
+        $stmt = $pdo->prepare("SELECT {$cols} FROM users WHERE id = ?");
         $stmt->execute([$id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$user) {
@@ -41,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $user['active'] = (bool) $user['active'];
         $user['email_verified'] = (bool) $user['email_verified'];
         $user['two_factor_enabled'] = (bool) (isset($user['two_factor_enabled']) ? $user['two_factor_enabled'] : 0);
+        if (!isset($user['avatar_url'])) $user['avatar_url'] = null;
 
         // Check if two_factor_enabled column exists
         try {
@@ -138,13 +146,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $whereClause = implode(' AND ', $where);
 
+    $hasAvatarCol = false;
+    try {
+        $ac = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
+        $hasAvatarCol = $ac && $ac->rowCount() > 0;
+    } catch (Throwable $e) {}
+
     $countSql = "SELECT COUNT(*) FROM users u WHERE {$whereClause}";
     $countStmt = $pdo->prepare($countSql);
     $countStmt->execute($params);
     $total = (int) $countStmt->fetchColumn();
 
+    $avatarCol = $hasAvatarCol ? ', u.avatar_url' : '';
     $sql = "
-        SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at,
+        SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol},
                COALESCE(SUM(wb.amount), 0) AS total_btc,
                (SELECT COUNT(*) FROM user_investments WHERE user_id = u.id AND status = 'active') AS active_plans_count
         FROM users u
@@ -172,6 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'email_verified' => (bool) $row['email_verified'],
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
+            'avatar_url' => $row['avatar_url'] ?? null,
             'total_balance_btc' => (float) $row['total_btc'],
             'active_plans_count' => (int) $row['active_plans_count'],
             'kyc_status' => $kyc,

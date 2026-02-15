@@ -123,7 +123,7 @@ ON DUPLICATE KEY UPDATE role = 'admin', email_verified = 1, active = 1;
 -- Add two_factor_enabled and admin_notes (MySQL 8.0.29+). For older MySQL, run manually: ALTER TABLE users ADD COLUMN two_factor_enabled TINYINT(1) NOT NULL DEFAULT 0 AFTER active; ALTER TABLE users ADD COLUMN admin_notes TEXT NULL AFTER updated_at; (ignore duplicate column errors)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled TINYINT(1) NOT NULL DEFAULT 0 AFTER active;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_notes TEXT NULL AFTER updated_at;
--- Run ALTER only if column doesn't exist - we use a procedure for compatibility
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL AFTER admin_notes;
 
 -- Demo users (password: password - same as Laravel default hash)
 INSERT INTO users (email, password_hash, name, role, email_verified, active, two_factor_enabled) VALUES
@@ -172,9 +172,6 @@ INSERT INTO transactions (user_id, type, amount, currency, status)
 SELECT id, 'withdrawal', 500, 'USD', 'pending' FROM users WHERE email = 'j.donovan@gmail.com' AND role = 'user' LIMIT 1;
 INSERT INTO transactions (user_id, type, amount, currency, status)
 SELECT id, 'deposit', 1200, 'USD', 'completed' FROM users WHERE email = 'sarah.j@outlook.com' AND role = 'user' LIMIT 1;
-
--- Remove the duplicate INSERTs above for user_investments (the ON DUPLICATE ones) - we'll keep INSERT IGNORE only
--- Actually I left duplicate logic - let me remove the ON DUPLICATE KEY UPDATE for user_investments since there's no unique key
 
 -- Default plans (admins can edit in plan management)
 INSERT INTO plans (name, slug, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, features_json, enabled, sort_order) VALUES
