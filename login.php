@@ -93,27 +93,6 @@
 <span class="material-symbols-outlined transition-transform group-hover:translate-x-1" data-icon="arrow_forward">arrow_forward</span>
 </button>
 </form>
-<!-- Social Login -->
-<div class="mt-10">
-<div class="relative mb-8">
-<div class="absolute inset-0 flex items-center">
-<div class="w-full border-t border-neutral-soft dark:border-neutral-800"></div>
-</div>
-<div class="relative flex justify-center text-xs uppercase">
-<span class="bg-white dark:bg-background-dark px-2 text-text-muted font-semibold tracking-widest">Or continue with</span>
-</div>
-</div>
-<div class="grid grid-cols-2 gap-4">
-<button class="flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-neutral-soft dark:border-neutral-800 hover:bg-neutral-soft/50 dark:hover:bg-neutral-800 transition-colors">
-<img alt="Google" class="size-5" data-alt="Google colorful logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXYzb7hVR5q8r7fOnaSuj5SYQIjOrOodNS3mfccvpuH0Nr7cxSixnfczYAuhcKMYhigXqQlLpeX44OUYnJPaz70rX7pZdNzTxRTZfdN3v0JSdLIs4HlayNQs-dGQWXxLp1dr5MYCRVB0Np8p6-0jsl9v67RNzUfVLX4NSGOtaocEIa9jO2IsH5M0WH3MtOPQh_4cbh-IUaNTaoSjeDKgdCWRUlrL81Cm9ZyspLDvhiClGlPdufKQDC2-C7u7To_Xl9T-EtbMD1Y4w"/>
-<span class="text-sm font-semibold text-text-main dark:text-white">Google</span>
-</button>
-<button class="flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-neutral-soft dark:border-neutral-800 hover:bg-neutral-soft/50 dark:hover:bg-neutral-800 transition-colors">
-<img alt="Apple" class="size-5 dark:invert" data-alt="Apple minimalist logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUnt15Rez7KW550gA3BGWt4q0KBxa1s2WP8Ef4Kiuxkw5uX2M9tku__oixglWl5qq_mqvYDKICbbwb6ybzr9eDYjNwLV97wCU9rU_GiLXW_TY4DmF6msj3hN6CspQKDYuNZVT4cbwlrPpXkgr4OzHJiu9AF6U9TkYohrewtQD172SOIVyyC7ftqoZt_LsZamVZ5v1pAamoJkIy3PStRCupFK_8sQgvD52Tme33BTCCOgvJR26x_EtT4p735nebl-OYhoHcwY7U8FE"/>
-<span class="text-sm font-semibold text-text-main dark:text-white">Apple ID</span>
-</button>
-</div>
-</div>
 <!-- Footer Link -->
 <p class="mt-12 text-center text-text-muted text-sm">
                     Don't have an account? 

@@ -61,9 +61,16 @@ $siteName = get_site_name();
     </script>
 <style>
         body { font-family: 'Inter', sans-serif; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar {
+            scrollbar-gutter: stable;
+            padding-right: 0.5rem;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
@@ -215,7 +222,7 @@ foreach ($adminPlans as $idx => $p):
 <!-- Side Slide-out Panel (Configuration Drawer) - matches user management style -->
 <div id="plan-drawer" class="fixed inset-0 z-50 overflow-hidden hidden">
 <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="plan-drawer-backdrop"></div>
-<div class="absolute inset-y-0 right-0 w-[420px] bg-white dark:bg-zinc-900 shadow-2xl flex flex-col border-l border-slate-200 dark:border-zinc-800">
+<div class="absolute inset-y-0 right-0 w-full sm:w-[440px] max-w-[100vw] bg-white dark:bg-zinc-900 shadow-2xl flex flex-col border-l border-slate-200 dark:border-zinc-800">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <div>
 <h2 id="plan-drawer-title" class="text-xl font-bold">Edit Plan</h2>
@@ -226,7 +233,7 @@ foreach ($adminPlans as $idx => $p):
 </button>
 </div>
 <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
-<form id="admin-plan-form" class="space-y-8">
+<form id="admin-plan-form" class="space-y-8 min-w-0">
 <input type="hidden" name="id" id="plan-form-id" value=""/>
 <input type="hidden" name="enabled" value="1"/>
 <input type="hidden" name="sort_order" value="0"/>
@@ -236,11 +243,11 @@ foreach ($adminPlans as $idx => $p):
 <div class="grid grid-cols-2 gap-4">
 <div class="col-span-2">
 <label class="block text-sm font-medium mb-1.5">Plan Name</label>
-<input name="name" id="plan-form-name" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary" type="text" placeholder="Plan Name"/>
+<input name="name" id="plan-form-name" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary" type="text" placeholder="Plan Name"/>
 </div>
 <div class="col-span-2">
 <label class="block text-sm font-medium mb-2">Icon Selection</label>
-<div class="flex gap-3">
+<div class="flex flex-wrap gap-3">
 <div class="w-10 h-10 border-2 border-primary bg-primary/10 rounded flex items-center justify-center cursor-pointer">
 <span class="material-icons-round">trending_up</span>
 </div>

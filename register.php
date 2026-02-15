@@ -168,26 +168,6 @@
                         Create My Account
                     </button>
 </div>
-<!-- Divider -->
-<div class="relative my-8">
-<div class="absolute inset-0 flex items-center">
-<div class="w-full border-t border-zinc-200 dark:border-zinc-800"></div>
-</div>
-<div class="relative flex justify-center text-sm">
-<span class="px-3 bg-white dark:bg-zinc-900 text-zinc-500">Or register with</span>
-</div>
-</div>
-<!-- Social Sign-on -->
-<div class="grid grid-cols-2 gap-4">
-<button class="flex items-center justify-center gap-2 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" type="button">
-<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcIUFDK10ge7WEserb9VH9ArXVF0Es2wLTY01x0H7RVu315sgFazQ9CQd04lAhXSpVNflzIlJeRdCZ7BphRfM4Co5yv3Y6FY3VeoN0640U1TYNIRLOIuNsN-lS-sEToRxxj6X7XKT9TS3Hzk8sOo59eTC4Vpsd6S4XRm2_rWPBfOAtrHVVXaFKQGgzHgtZ-7qugj8g6uZ6JYZMIbL6yhfZFXCZiPR640g0d1ENUceVbMEA_dRWuuXPi_j66IiU__uhtq1EX2Hwv5o"/>
-<span class="text-sm font-medium dark:text-white">Google</span>
-</button>
-<button class="flex items-center justify-center gap-2 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" type="button">
-<img alt="Apple" class="w-5 h-5 dark:invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1ysG680Wxo700e2AHkJgOKv6HiiudjYEOwH5ZJK0AA55Q7VbdeWy9DXMzKHpUFG_QULFbdlWCRwN692_6yRjgAOkZ79WdJNjT-v3_JY70PCud7baptR735V4jTXYBGypz6niNVlYu8gdKtlpX532ePDhVe6C_93j9r7hp2SBGWBh39pxymZK6FzakEQbNlul-dETMIjNVYLaLh3kCECyZAYaDZV7M7EFzpkFNjJ40LtJ-2OSJ8Cx8_41ZKHWuva0WR9NSOCCABrc"/>
-<span class="text-sm font-medium dark:text-white">Apple</span>
-</button>
-</div>
 <p class="text-center text-sm text-zinc-600 dark:text-zinc-400 mt-8">
                     Already have an account? 
                     <a class="text-primary font-bold hover:underline" href="/login">Log in here</a>
