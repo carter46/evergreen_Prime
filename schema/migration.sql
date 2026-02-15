@@ -124,6 +124,8 @@ ON DUPLICATE KEY UPDATE role = 'admin', email_verified = 1, active = 1;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled TINYINT(1) NOT NULL DEFAULT 0 AFTER active;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_notes TEXT NULL AFTER updated_at;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL AFTER admin_notes;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50) NULL AFTER avatar_url;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(100) NULL AFTER phone_number;
 
 -- Demo users (password: password - same as Laravel default hash)
 INSERT INTO users (email, password_hash, name, role, email_verified, active, two_factor_enabled) VALUES

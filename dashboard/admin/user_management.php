@@ -119,7 +119,7 @@ try {
 <p class="text-slate-500 text-sm">Manage and monitor <?php echo number_format($pagination['total']); ?> platform users</p>
 </div>
 <div class="flex items-center gap-3">
-<button class="flex items-center gap-2 px-4 py-2 bg-primary text-background-dark font-semibold rounded-lg hover:brightness-105 transition-all shadow-sm">
+<button type="button" id="add-user-btn" class="flex items-center gap-2 px-4 py-2 bg-primary text-background-dark font-semibold rounded-lg hover:brightness-105 transition-all shadow-sm">
 <span class="material-icons text-sm">person_add</span>
                     Add User
                 </button>
@@ -287,6 +287,26 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <div id="user-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-[60] hidden transition-opacity duration-300">Profile updated successfully</div>
 <!-- Drawer backdrop - click to close -->
 <div id="user-drawer-backdrop" class="fixed inset-0 bg-black/20 z-40 hidden transition-opacity" aria-hidden="true"></div>
+<!-- Add User Sidebar (same fields as registration) -->
+<div id="add-user-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[420px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300" style="transform: translateX(100%);">
+<div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+<h2 class="text-lg font-bold">Add User</h2>
+<button type="button" id="add-user-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors" aria-label="Close"><span class="material-icons text-lg">close</span></button>
+</div>
+<div class="flex-1 overflow-y-auto p-6">
+<form id="add-user-form" class="space-y-4">
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Full Name</label><input type="text" name="name" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="John Doe"/></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Email <span class="text-red-400">*</span></label><input type="email" name="email" required class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="john@example.com"/></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Phone <span class="text-slate-400">(Optional)</span></label><input type="tel" name="phone" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="+1 234 567 8900"/></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Password <span class="text-red-400">*</span></label><div class="relative"><input type="password" name="password" required minlength="8" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 pr-10 text-sm" placeholder="••••••••" autocomplete="new-password"/><button type="button" data-password-toggle class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 p-1"><span class="material-icons text-lg">visibility</span></button></div></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Confirm Password <span class="text-red-400">*</span></label><div class="relative"><input type="password" name="confirm_password" required minlength="8" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 pr-10 text-sm" placeholder="••••••••"/><button type="button" data-password-toggle class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 p-1"><span class="material-icons text-lg">visibility</span></button></div></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Referral Code <span class="text-slate-400">(Optional)</span></label><input type="text" name="referral" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm uppercase tracking-widest" placeholder="CODE2024"/></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Profile Photo <span class="text-slate-400">(Optional)</span></label><div class="flex items-center gap-4"><div id="add-user-avatar-preview" class="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden"><span class="material-icons text-zinc-400">person</span></div><input type="file" name="avatar" accept="image/png,image/jpeg,image/webp" class="flex-1 text-sm text-zinc-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-primary file:text-black file:text-xs"/></div><p class="text-[10px] text-zinc-400 mt-1">PNG, JPEG or WEBP. Max 2MB.</p></div>
+<div id="add-user-message" class="text-sm hidden"></div>
+<button type="submit" class="w-full px-3 py-2.5 text-sm font-bold rounded-lg bg-primary text-zinc-900 hover:brightness-105">Create User</button>
+</form>
+</div>
+</div>
 <!-- Right Side Profile Drawer (hidden by default) -->
 <div id="user-profile-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[420px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300" style="transform: translateX(100%);">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
@@ -356,7 +376,7 @@ var drawer = document.getElementById('user-profile-drawer');
 var backdrop = document.getElementById('user-drawer-backdrop');
 if (!drawer) return;
 
-function openDrawer() { drawer.style.transform = 'translateX(0)'; if (backdrop) backdrop.classList.remove('hidden'); }
+function openDrawer() { closeAddUserDrawer(); drawer.style.transform = 'translateX(0)'; if (backdrop) backdrop.classList.remove('hidden'); }
 function closeDrawer() { drawer.style.transform = 'translateX(100%)'; if (backdrop) backdrop.classList.add('hidden'); }
 
 function loadUser(id) {
@@ -415,7 +435,56 @@ function loadUser(id) {
 }
 
 document.getElementById('drawer-close-btn').addEventListener('click', closeDrawer);
-if (backdrop) backdrop.addEventListener('click', closeDrawer);
+if (backdrop) backdrop.addEventListener('click', function(){ closeDrawer(); closeAddUserDrawer(); });
+
+var addUserDrawer = document.getElementById('add-user-drawer');
+function openAddUserDrawer() { closeDrawer(); addUserDrawer.style.transform = 'translateX(0)'; if (backdrop) backdrop.classList.remove('hidden'); }
+function closeAddUserDrawer() { addUserDrawer.style.transform = 'translateX(100%)'; if (backdrop) backdrop.classList.add('hidden'); }
+var addUserBtn = document.getElementById('add-user-btn');
+var addUserClose = document.getElementById('add-user-close');
+var addUserForm = document.getElementById('add-user-form');
+if (addUserBtn) addUserBtn.addEventListener('click', openAddUserDrawer);
+if (addUserClose) addUserClose.addEventListener('click', closeAddUserDrawer);
+
+if (addUserForm) addUserForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  var f = this;
+  var msgEl = document.getElementById('add-user-message');
+  var pw = f.querySelector('[name="password"]').value;
+  var cpw = f.querySelector('[name="confirm_password"]').value;
+  if (pw !== cpw) { if (msgEl) { msgEl.textContent = 'Passwords do not match.'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); } return; }
+  if (msgEl) { msgEl.classList.add('hidden'); msgEl.textContent = ''; }
+  var fd = new FormData(f);
+  fd.append('action', 'add_user');
+  fd.delete('confirm_password');
+  var btn = f.querySelector('button[type="submit"]');
+  if (btn) btn.disabled = true;
+  fetch('/api/admin/users.php', { method: 'POST', body: fd, credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (res.success) {
+        document.getElementById('user-toast').textContent = 'User added successfully';
+        document.getElementById('user-toast').classList.remove('hidden');
+        closeAddUserDrawer();
+        f.reset();
+        document.getElementById('add-user-avatar-preview').innerHTML = '<span class="material-icons text-zinc-400">person</span>';
+        window.location.reload();
+      } else { if (msgEl) { msgEl.textContent = res.error || 'Failed'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); } }
+    })
+    .catch(function(){ if (msgEl) { msgEl.textContent = 'Request failed.'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); } })
+    .finally(function(){ if (btn) btn.disabled = false; });
+});
+
+var addUserAvatarInput = document.querySelector('#add-user-form [name="avatar"]');
+if (addUserAvatarInput) addUserAvatarInput.addEventListener('change', function(){
+  var file = this.files[0];
+  var p = document.getElementById('add-user-avatar-preview');
+  if (file && /^image\/(png|jpeg|webp)$/.test(file.type)) {
+    var r = new FileReader();
+    r.onload = function(){ p.innerHTML = '<img src="'+r.result+'" alt="" class="w-full h-full object-cover"/>'; };
+    r.readAsDataURL(file);
+  } else { p.innerHTML = '<span class="material-icons text-zinc-400">person</span>'; }
+});
 
 document.querySelectorAll('.user-edit-btn').forEach(function(btn){
   btn.addEventListener('click', function(e){ e.stopPropagation(); var id = btn.getAttribute('data-user-id'); if (id) loadUser(id); });

@@ -107,6 +107,14 @@
 <input name="email" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="email" placeholder="john@example.com" type="email" required/>
 </div>
 </div>
+<!-- Phone Number -->
+<div>
+<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="phone">Phone Number <span class="text-zinc-400">(Optional)</span></label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">phone</span>
+<input name="phone" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="phone" placeholder="+1 234 567 8900" type="tel"/>
+</div>
+</div>
 <!-- Password Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 <div>
@@ -127,15 +135,24 @@
 </div>
 </div>
 <!-- Referral Code (Optional) -->
-<details class="group">
-<summary class="text-sm font-medium text-zinc-500 dark:text-zinc-400 cursor-pointer flex items-center gap-1 hover:text-primary transition-colors">
-<span class="material-icons text-sm transition-transform group-open:rotate-180">expand_more</span>
-                            Have a referral code? (Optional)
-                        </summary>
-<div class="mt-3">
-<input class="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white uppercase tracking-widest text-sm" id="referral" placeholder="CODE2024" type="text"/>
+<div>
+<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="referral">Referral Code <span class="text-zinc-400">(Optional)</span></label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">card_giftcard</span>
+<input name="referral" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white uppercase tracking-widest text-sm" id="referral" placeholder="CODE2024" type="text"/>
 </div>
-</details>
+</div>
+<!-- Profile Photo (Optional) -->
+<div>
+<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="avatar">Profile Photo <span class="text-zinc-400">(Optional)</span></label>
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0" id="avatar-preview">
+<span class="material-icons text-zinc-400 text-2xl">person</span>
+</div>
+<input name="avatar" id="avatar" class="flex-1 text-sm text-zinc-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-black file:font-medium file:cursor-pointer hover:file:bg-primary/90" accept="image/png,image/jpeg,image/webp" type="file"/>
+</div>
+<p class="text-xs text-zinc-400 mt-1">PNG, JPEG or WEBP. Max 2MB.</p>
+</div>
 <!-- Terms -->
 <div class="flex items-start gap-3 mt-2">
 <div class="flex items-center h-5">
@@ -179,4 +196,16 @@
 </div>
 </div>
 <script src="/js/app.js"></script>
+<script>
+document.getElementById('avatar')?.addEventListener('change', function(){
+  var f = this.files[0];
+  var p = document.getElementById('avatar-preview');
+  if (!p) return;
+  if (f && /^image\/(png|jpeg|webp)$/.test(f.type)) {
+    var r = new FileReader();
+    r.onload = function(){ p.innerHTML = '<img src="'+r.result+'" alt="" class="w-full h-full object-cover"/>'; };
+    r.readAsDataURL(f);
+  } else { p.innerHTML = '<span class="material-icons text-zinc-400 text-2xl">person</span>'; }
+});
+</script>
 </body></html>

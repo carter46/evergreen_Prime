@@ -219,20 +219,43 @@
             const email = form.querySelector('[name="email"]')?.value?.trim() || '';
             const password = form.querySelector('[name="password"]')?.value || '';
             const confirm = form.querySelector('[name="confirm_password"]')?.value || '';
+            const phone = form.querySelector('[name="phone"]')?.value?.trim() || '';
+            const referral = form.querySelector('[name="referral"]')?.value?.trim() || '';
+            const avatarInput = form.querySelector('[name="avatar"]');
+            const hasAvatar = avatarInput?.files?.length && avatarInput.files[0];
             if (password !== confirm) {
                 showMessage(msgEl, 'Passwords do not match.', true);
                 return;
             }
             const btn = form.querySelector('button[type="submit"]');
             if (btn) btn.disabled = true;
-            apiFetch('/auth/register.php', { method: 'POST', body: JSON.stringify({ name, email, password }) })
-                .then(data => {
-                    window.location.href = data.data?.redirect || '/dashboard';
-                })
-                .catch(err => {
-                    showMessage(msgEl, err.message || 'Registration failed. Try again.', true);
-                    if (btn) btn.disabled = false;
-                });
+            const doRequest = (body) => {
+                const opts = { method: 'POST' };
+                if (typeof body === 'string') {
+                    opts.headers = { 'Content-Type': 'application/json' };
+                    opts.body = body;
+                } else {
+                    opts.body = body;
+                    opts.headers = { 'Accept': 'application/json' };
+                }
+                return fetch('/api/auth/register.php', { ...opts, credentials: 'same-origin' })
+                    .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                    .then(({ ok, data }) => {
+                        if (!ok) throw new Error(data.error || 'Request failed');
+                        return data;
+                    });
+            };
+            if (hasAvatar) {
+                const fd = new FormData(form);
+                fd.delete('confirm_password');
+                fd.delete('terms');
+                doRequest(fd).then(data => { window.location.href = data.data?.redirect || '/dashboard'; })
+                    .catch(err => { showMessage(msgEl, err.message || 'Registration failed. Try again.', true); if (btn) btn.disabled = false; });
+            } else {
+                doRequest(JSON.stringify({ name, email, password, phone: phone || undefined, referral: referral || undefined }))
+                    .then(data => { window.location.href = data.data?.redirect || '/dashboard'; })
+                    .catch(err => { showMessage(msgEl, err.message || 'Registration failed. Try again.', true); if (btn) btn.disabled = false; });
+            }
         });
     }
 

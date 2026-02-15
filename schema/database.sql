@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   admin_notes TEXT NULL,
   avatar_url VARCHAR(500) NULL,
+  phone_number VARCHAR(50) NULL,
+  referral_code VARCHAR(100) NULL,
   INDEX idx_users_email (email),
   INDEX idx_users_role (role)
 ) ENGINE=InnoDB;

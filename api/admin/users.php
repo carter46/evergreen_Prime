@@ -224,10 +224,86 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $input = $_POST;
+    if (empty($input) || !isset($input['action'])) {
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+    }
     $action = trim($input['action'] ?? '');
-    $userId = isset($input['user_id']) ? (int) $input['user_id'] : 0;
 
+    if ($action === 'add_user') {
+        $name = trim($input['name'] ?? '');
+        $email = trim($input['email'] ?? '');
+        $password = $input['password'] ?? '';
+        $phone = trim($input['phone'] ?? '');
+        $referral = trim($input['referral'] ?? '');
+        if (empty($email) || empty($password)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Email and password are required']);
+            exit;
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Invalid email address']);
+            exit;
+        }
+        if (strlen($password) < 8) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Password must be at least 8 characters']);
+            exit;
+        }
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ?');
+        $stmt->execute([$email]);
+        if ($stmt->fetch()) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Email already registered']);
+            exit;
+        }
+        $avatarUrl = null;
+        if (!empty($_FILES['avatar']['tmp_name']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['avatar'];
+            $allowed = ['image/png' => 'png', 'image/jpeg' => 'jpg', 'image/jpg' => 'jpg', 'image/webp' => 'webp'];
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime = $finfo->file($file['tmp_name']);
+            if (isset($allowed[$mime]) && $file['size'] <= 2 * 1024 * 1024) {
+                $baseDir = dirname(__DIR__, 2) . '/uploads/avatars';
+                if (!is_dir($baseDir)) mkdir($baseDir, 0755, true);
+                $ext = $allowed[$mime];
+                $filename = 'admin_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                if (move_uploaded_file($file['tmp_name'], $baseDir . '/' . $filename)) {
+                    $avatarUrl = '/uploads/avatars/' . $filename;
+                }
+            }
+        }
+        $cols = ['email', 'password_hash', 'name', 'role', 'email_verified', 'active'];
+        $vals = [$email, password_hash($password, PASSWORD_DEFAULT), $name ?: '', 'user', 1, 1];
+        $ph = ['?', '?', '?', '?', '?', '?'];
+        try {
+            if ($pdo->query("SHOW COLUMNS FROM users LIKE 'phone_number'")->rowCount() > 0) {
+                $cols[] = 'phone_number';
+                $vals[] = $phone ?: null;
+                $ph[] = '?';
+            }
+        } catch (Throwable $e) {}
+        try {
+            if ($pdo->query("SHOW COLUMNS FROM users LIKE 'referral_code'")->rowCount() > 0) {
+                $cols[] = 'referral_code';
+                $vals[] = $referral ?: null;
+                $ph[] = '?';
+            }
+        } catch (Throwable $e) {}
+        if ($avatarUrl) {
+            $cols[] = 'avatar_url';
+            $vals[] = $avatarUrl;
+            $ph[] = '?';
+        }
+        $sql = 'INSERT INTO users (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $ph) . ')';
+        $pdo->prepare($sql)->execute($vals);
+        $newId = (int) $pdo->lastInsertId();
+        echo json_encode(['success' => true, 'data' => ['message' => 'User added', 'user_id' => $newId]]);
+        exit;
+    }
+
+    $userId = isset($input['user_id']) ? (int) $input['user_id'] : 0;
     if ($userId <= 0) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Invalid user ID']);
