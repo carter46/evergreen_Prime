@@ -99,8 +99,8 @@ if (!in_array($planIcon, $allowedIcons, true)) $planIcon = 'trending_up';
 <p class="text-slate-500 text-sm"><?php echo htmlspecialchars($desc); ?></p>
 </div>
 <div class="mb-8">
-<div class="text-4xl font-bold mb-1 <?php echo $isHighlight ? 'text-primary' : ''; ?>"><?php echo number_format((float)$plan['yield_min'], 1); ?>% - <?php echo number_format((float)$plan['yield_max'], 1); ?>%</div>
-<div class="text-sm font-medium <?php echo $isHighlight ? 'text-slate-400' : 'text-primary'; ?>">Daily Yield Range</div>
+<div class="text-4xl font-bold mb-1 <?php echo $isHighlight ? 'text-primary' : ''; ?>"><?php echo number_format((float)($plan['yield_min'] ?? 0), 1); ?>%</div>
+<div class="text-sm font-medium <?php echo $isHighlight ? 'text-slate-400' : 'text-primary'; ?>">Daily ROI</div>
 </div>
 <ul class="space-y-4 mb-10 flex-grow">
 <?php foreach (($plan['features'] ?? []) as $f): ?>

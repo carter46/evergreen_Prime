@@ -488,7 +488,7 @@ foreach ($indexPlans as $p):
 <?php if ($popular): ?><div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-black text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div><?php endif; ?>
 <div class="text-primary font-bold mb-2"><?php echo htmlspecialchars($p['name']); ?></div>
 <div class="text-4xl font-bold mb-6"><?php echo $priceLabel; ?><span class="text-lg text-slate-400 font-normal"> deposit</span></div>
-<p class="text-slate-500 mb-8 text-sm"><?php echo number_format(($p['yield_min'] + $p['yield_max']) / 2, 1); ?>% avg. monthly ROI • <?php echo (int)$p['duration_days']; ?> days</p>
+<p class="text-slate-500 mb-8 text-sm"><?php echo number_format((float)($p['yield_min'] ?? 0), 1); ?>% daily ROI</p>
 <ul class="space-y-4 mb-10 text-left">
 <?php foreach (array_slice($p['features'] ?? [], 0, 4) as $f): ?>
 <li class="flex items-center gap-3 text-sm">

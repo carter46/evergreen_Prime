@@ -58,9 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $slug = trim($input['slug'] ?? '') ?: strtolower(preg_replace('/[^a-z0-9]+/i', '-', $name));
     $minDeposit = (float) ($input['min_deposit'] ?? 0);
     $maxDeposit = isset($input['max_deposit']) && $input['max_deposit'] !== '' ? (float) $input['max_deposit'] : null;
-    $yieldMin = (float) ($input['yield_min'] ?? 0);
-    $yieldMax = (float) ($input['yield_max'] ?? 0);
-    $durationDays = (int) ($input['duration_days'] ?? 30);
+    $yield = (float) ($input['yield'] ?? $input['yield_min'] ?? 0);
+    $yieldMin = $yield;
+    $yieldMax = $yield;
     $withdrawalDays = (int) ($input['withdrawal_days'] ?? 7);
     $features = $input['features'] ?? [];
     if (is_string($features)) {
@@ -71,12 +71,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 'token'];
     $icon = trim($input['icon'] ?? '') ?: null;
     if ($icon && !in_array($icon, $allowedIcons, true)) $icon = 'trending_up';
-    $minDurationMonths = isset($input['min_duration_months']) && $input['min_duration_months'] !== '' ? (int) $input['min_duration_months'] : null;
-    $maxDurationMonths = isset($input['max_duration_months']) && $input['max_duration_months'] !== '' ? (int) $input['max_duration_months'] : null;
+    $minDurationMonths = isset($input['min_duration_months']) && $input['min_duration_months'] !== '' && $input['min_duration_months'] !== null ? (int) $input['min_duration_months'] : null;
+    $maxDurationMonths = isset($input['max_duration_months']) && $input['max_duration_months'] !== '' && $input['max_duration_months'] !== null ? (int) $input['max_duration_months'] : null;
     $enabled = isset($input['enabled']) ? (bool) $input['enabled'] : true;
     $sortOrder = (int) ($input['sort_order'] ?? 0);
 
     if ($id > 0 && $name === '' && array_key_exists('enabled', $input)) {
+        if (!$enabled) {
+            $cnt = $pdo->prepare('SELECT COUNT(*) FROM user_investments WHERE plan_id=? AND status=?');
+            $cnt->execute([$id, 'active']);
+            $activeCount = (int) $cnt->fetchColumn();
+            if ($activeCount > 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Cannot disable: plan has ' . $activeCount . ' active user(s)']);
+                exit;
+            }
+        }
         $stmt = $pdo->prepare('UPDATE plans SET enabled=? WHERE id=?');
         $stmt->execute([$enabled ? 1 : 0, $id]);
         echo json_encode(['success' => true, 'data' => ['message' => 'Plan updated']]);
@@ -88,6 +98,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['success' => false, 'error' => 'Plan name is required']);
         exit;
     }
+
+    if ($minDurationMonths === null || $maxDurationMonths === null) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Min. and Max. Duration (Months) are required']);
+        exit;
+    }
+
+    $durationDays = max(30, (int) round(($minDurationMonths + $maxDurationMonths) / 2 * 30));
 
     if ($id > 0) {
         $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, description=?, icon=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, min_duration_months=?, max_duration_months=?, features_json=?, enabled=?, sort_order=? WHERE id=?');

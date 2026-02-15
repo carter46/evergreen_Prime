@@ -120,7 +120,10 @@ INSERT INTO site_settings (`key`, value) VALUES
   ('support_email', 'support@bloombit.com'),
   ('footer_description', 'Leading the future of decentralized finance with advanced artificial intelligence and machine learning technologies.'),
   ('hero_title', 'Smarter Crypto Investing Powered by Advanced AI'),
-  ('hero_subtitle', 'Automate your wealth with institutional-grade machine learning algorithms. Deploy sophisticated bots that trade 24/7 while you sleep.')
+  ('hero_subtitle', 'Automate your wealth with institutional-grade machine learning algorithms. Deploy sophisticated bots that trade 24/7 while you sleep.'),
+  ('min_withdrawal_limit', '10'),
+  ('max_active_plans_per_user', '3'),
+  ('compounding_enabled', '0')
 ON DUPLICATE KEY UPDATE value = VALUES(value);
 
 -- Default admin user (email: admin@mail.com)

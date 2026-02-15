@@ -13,7 +13,7 @@ try {
     $planStats['total_users'] = (int)($row['cnt'] ?? 0);
     $planStats['total_capital'] = (float)($row['cap'] ?? 0);
     
-    $avgRow = $pdo->query('SELECT AVG((yield_min + yield_max)/2) AS avg_yield FROM plans WHERE enabled=1')->fetch(PDO::FETCH_ASSOC);
+    $avgRow = $pdo->query('SELECT AVG(yield_min) AS avg_yield FROM plans WHERE enabled=1')->fetch(PDO::FETCH_ASSOC);
     $planStats['avg_payout'] = $avgRow && $avgRow['avg_yield'] ? number_format((float)$avgRow['avg_yield'], 1) : '0';
     
     $planStatsById = [];
@@ -26,6 +26,11 @@ try {
 }
 require_once __DIR__ . '/../../includes/helpers.php';
 $siteName = get_site_name();
+$siteSettings = [
+    'min_withdrawal_limit' => get_site_setting('min_withdrawal_limit', '10'),
+    'max_active_plans_per_user' => get_site_setting('max_active_plans_per_user', '3'),
+    'compounding_enabled' => get_site_setting('compounding_enabled', '0'),
+];
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en"><head>
@@ -131,8 +136,9 @@ $allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 
 $tiers = ['Low', 'Medium', 'High'];
 foreach ($adminPlans as $idx => $p):
     $ps = $planStatsById[(int)$p['id']] ?? ['users' => 0, 'capital' => 0];
+    $activeUsers = (int)($ps['users'] ?? 0);
     $enabled = (bool)$p['enabled'];
-    $avgYield = (floatval($p['yield_min']) + floatval($p['yield_max'])) / 2;
+    $avgYield = (float) ($p['yield_min'] ?? 0);
     $planIcon = $p['icon'] ?? $iconFallbacks[$idx % 3];
     if (!in_array($planIcon, $allowedIcons, true)) $planIcon = $iconFallbacks[$idx % 3];
 ?>
@@ -164,22 +170,14 @@ foreach ($adminPlans as $idx => $p):
 <span class="font-semibold text-green-600"><?php echo number_format($avgYield, 1); ?>%</span>
 </div>
 </div>
-<div class="mb-6 <?php echo $enabled ? '' : 'opacity-40'; ?>">
-<p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-2">Payout-to-Deposit Ratio</p>
-<div class="h-10 w-full flex items-end gap-1">
-<?php for ($i = 0; $i < 7; $i++): $h = rand(30, 90); ?>
-<div class="<?php echo $enabled ? 'bg-primary/40' : 'bg-slate-300'; ?> w-full h-[<?php echo $h; ?>%] rounded-sm"></div>
-<?php endfor; ?>
-</div>
-</div>
 <div class="flex items-center justify-between gap-3 pt-6 border-t border-slate-100 dark:border-zinc-800">
 <div class="flex items-center gap-2">
 <button type="button" class="plan-edit-btn w-10 h-10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 transition-colors" data-plan-id="<?php echo (int)$p['id']; ?>">
 <span class="material-icons-round text-sm">edit</span>
 </button>
-<label class="relative inline-flex items-center cursor-pointer">
-<input class="sr-only peer plan-enabled-toggle" type="checkbox" data-plan-id="<?php echo (int)$p['id']; ?>" <?php echo $enabled ? 'checked' : ''; ?>/>
-<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+<label class="relative inline-flex items-center cursor-pointer" title="<?php echo $activeUsers > 0 ? 'Cannot disable: plan has ' . $activeUsers . ' active user(s)' : ''; ?>">
+<input class="sr-only peer plan-enabled-toggle" type="checkbox" data-plan-id="<?php echo (int)$p['id']; ?>" data-active-users="<?php echo $activeUsers; ?>" <?php echo $enabled ? 'checked' : ''; ?> <?php echo $activeUsers > 0 ? 'disabled' : ''; ?>/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
 </label>
 </div>
 <span class="text-xs text-slate-400 font-medium">AI Level: <?php echo $tiers[$idx % 3]; ?></span>
@@ -200,27 +198,25 @@ foreach ($adminPlans as $idx => $p):
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 <div>
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Min. Withdrawal Limit ($)</label>
-<input class="w-full bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" type="number" value="10.00"/>
+<input id="global-min-withdrawal" class="w-full bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" type="number" step="0.01" value="<?php echo htmlspecialchars($siteSettings['min_withdrawal_limit']); ?>"/>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Max. Active Plans / User</label>
-<input class="w-full bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" type="number" value="3"/>
+<input id="global-max-plans" class="w-full bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" type="number" min="1" value="<?php echo htmlspecialchars($siteSettings['max_active_plans_per_user']); ?>"/>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Compounding Availability</label>
 <div class="flex items-center gap-4 mt-2">
 <span class="text-xs text-slate-500">Disabled</span>
 <label class="relative inline-flex items-center cursor-pointer">
-<input checked="" class="sr-only peer" type="checkbox"/>
+<input id="global-compounding" class="sr-only peer" type="checkbox" <?php echo $siteSettings['compounding_enabled'] === '1' ? 'checked' : ''; ?>/>
 <div class="w-10 h-5 bg-slate-200 rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
 </label>
 <span class="text-xs text-slate-500">Enabled</span>
 </div>
 </div>
 <div class="flex items-end">
-<button class="w-full bg-primary/20 hover:bg-primary/30 text-zinc-900 font-semibold py-2.5 rounded-lg transition-colors">
-                            Update Global Settings
-                        </button>
+<button type="button" id="global-settings-save" class="w-full bg-primary/20 hover:bg-primary/30 text-zinc-900 font-semibold py-2.5 rounded-lg transition-colors">Update Global Settings</button>
 </div>
 </div>
 </div>
@@ -292,24 +288,16 @@ foreach ($adminPlans as $idx => $p):
 <input name="max_deposit" id="plan-form-max" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" placeholder="Leave empty for no max"/>
 </div>
 <div class="col-span-2">
-<label class="block text-sm font-medium mb-1.5">Daily ROI Min (%)</label>
-<input name="yield_min" id="plan-form-yield-min" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" step="0.1" value="1"/>
-</div>
-<div class="col-span-2">
-<label class="block text-sm font-medium mb-1.5">Daily ROI Max (%)</label>
-<input name="yield_max" id="plan-form-yield-max" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" step="0.1" value="2.5"/>
-</div>
-<div>
-<label class="block text-sm font-medium mb-1.5">Duration (Days)</label>
-<input name="duration_days" id="plan-form-duration" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" value="30"/>
+<label class="block text-sm font-medium mb-1.5">Daily ROI (%)</label>
+<input name="yield" id="plan-form-yield" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" step="0.1" value="1" required/>
 </div>
 <div>
 <label class="block text-sm font-medium mb-1.5">Min. Duration (Months)</label>
-<input name="min_duration_months" id="plan-form-min-months" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" placeholder="Optional"/>
+<input name="min_duration_months" id="plan-form-min-months" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" required placeholder="e.g. 1"/>
 </div>
 <div>
 <label class="block text-sm font-medium mb-1.5">Max. Duration (Months)</label>
-<input name="max_duration_months" id="plan-form-max-months" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" placeholder="Optional"/>
+<input name="max_duration_months" id="plan-form-max-months" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" required placeholder="e.g. 12"/>
 </div>
 <div>
 <label class="block text-sm font-medium mb-1.5">Withdrawal (Days)</label>
@@ -391,11 +379,9 @@ if (drawer) {
     setIconSelection('trending_up');
     document.getElementById('plan-form-min').value = '100'; 
     document.getElementById('plan-form-max').value = ''; 
-    document.getElementById('plan-form-yield-min').value = '1'; 
-    document.getElementById('plan-form-yield-max').value = '2.5'; 
-    document.getElementById('plan-form-duration').value = '30'; 
-    document.getElementById('plan-form-min-months').value = ''; 
-    document.getElementById('plan-form-max-months').value = ''; 
+    document.getElementById('plan-form-yield').value = '1'; 
+    document.getElementById('plan-form-min-months').value = '1'; 
+    document.getElementById('plan-form-max-months').value = '12'; 
     document.getElementById('plan-form-withdrawal').value = '7'; 
     document.getElementById('plan-form-features').value = ''; 
     document.getElementById('plan-drawer-title').textContent = 'Add New Plan';
@@ -418,9 +404,7 @@ if (drawer) {
             setIconSelection(p.icon || 'trending_up');
             document.getElementById('plan-form-min').value = p.min_deposit;
             document.getElementById('plan-form-max').value = p.max_deposit || '';
-            document.getElementById('plan-form-yield-min').value = p.yield_min;
-            document.getElementById('plan-form-yield-max').value = p.yield_max;
-            document.getElementById('plan-form-duration').value = p.duration_days;
+            document.getElementById('plan-form-yield').value = p.yield_min ?? p.yield;
             document.getElementById('plan-form-min-months').value = p.min_duration_months ?? '';
             document.getElementById('plan-form-max-months').value = p.max_duration_months ?? '';
             document.getElementById('plan-form-withdrawal').value = p.withdrawal_days;
@@ -435,15 +419,19 @@ if (drawer) {
   });
   document.querySelectorAll('.plan-enabled-toggle').forEach(function(cb){
     cb.addEventListener('change', function(){
+      if (cb.disabled) return;
       var id = cb.getAttribute('data-plan-id');
+      var activeUsers = parseInt(cb.getAttribute('data-active-users'), 10) || 0;
       var enabled = cb.checked;
+      if (!enabled && activeUsers > 0) { cb.checked = true; alert('Cannot disable: plan has ' + activeUsers + ' active user(s)'); return; }
       fetch('/api/admin/plans.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: id, enabled: enabled })
       }).then(function(r){ return r.json(); }).then(function(res){
-        if (!res.success) window.location.reload();
-      }).catch(function(){ window.location.reload(); });
+        if (!res.success) { cb.checked = !enabled; alert(res.error || 'Failed'); }
+        else window.location.reload();
+      }).catch(function(){ cb.checked = !enabled; alert('Error'); });
     });
   });
   document.getElementById('admin-plan-form')?.addEventListener('submit', function(e){
@@ -451,11 +439,25 @@ if (drawer) {
     var id = document.getElementById('plan-form-id').value;
     var featuresText = document.getElementById('plan-form-features').value || '';
     var features = featuresText.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
-    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, description: document.getElementById('plan-form-description').value.trim(), icon: document.getElementById('plan-form-icon').value, min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield_min: parseFloat(document.getElementById('plan-form-yield-min').value) || 0, yield_max: parseFloat(document.getElementById('plan-form-yield-max').value) || 0, duration_days: parseInt(document.getElementById('plan-form-duration').value) || 30, min_duration_months: document.getElementById('plan-form-min-months').value ? parseInt(document.getElementById('plan-form-min-months').value) : null, max_duration_months: document.getElementById('plan-form-max-months').value ? parseInt(document.getElementById('plan-form-max-months').value) : null, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7, features: features };
+    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, description: document.getElementById('plan-form-description').value.trim(), icon: document.getElementById('plan-form-icon').value, min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_months: parseInt(document.getElementById('plan-form-min-months').value, 10) || null, max_duration_months: parseInt(document.getElementById('plan-form-max-months').value, 10) || null, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7, features: features };
     fetch('/api/admin/plans.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
       .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { drawer.classList.add('hidden'); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
   });
   document.getElementById('plan-drawer-backdrop')?.addEventListener('click', function(){ drawer.classList.add('hidden'); });
+  document.getElementById('global-settings-save')?.addEventListener('click', function(){
+    var btn = this;
+    btn.disabled = true;
+    var data = {
+      min_withdrawal_limit: document.getElementById('global-min-withdrawal').value,
+      max_active_plans_per_user: document.getElementById('global-max-plans').value,
+      compounding_enabled: document.getElementById('global-compounding').checked ? '1' : '0'
+    };
+    fetch('/api/admin/site-settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+      .then(function(r){ return r.json(); })
+      .then(function(res){ if (res.success) alert('Settings updated'); else alert(res.error || 'Failed'); })
+      .catch(function(){ alert('Error'); })
+      .finally(function(){ btn.disabled = false; });
+  });
 }
 })();
 </script>
