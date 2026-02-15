@@ -212,14 +212,14 @@ foreach ($adminPlans as $idx => $p):
 </div>
 </section>
 </main>
-<!-- Side Slide-out Panel (Configuration Drawer) -->
+<!-- Side Slide-out Panel (Configuration Drawer) - matches user management style -->
 <div id="plan-drawer" class="fixed inset-0 z-50 overflow-hidden hidden">
-<div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
-<div class="absolute inset-y-0 right-0 max-w-lg w-full bg-white dark:bg-zinc-950 shadow-2xl flex flex-col">
-<div class="p-6 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+<div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="plan-drawer-backdrop"></div>
+<div class="absolute inset-y-0 right-0 w-[420px] bg-white dark:bg-zinc-900 shadow-2xl flex flex-col border-l border-slate-200 dark:border-zinc-800">
+<div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <div>
-<h2 class="text-xl font-bold">Edit Plan: Growth Plan</h2>
-<p class="text-xs text-slate-500 uppercase tracking-widest mt-1">PLAN ID: BLMB-GP-024</p>
+<h2 id="plan-drawer-title" class="text-xl font-bold">Edit Plan</h2>
+<p id="plan-drawer-subtitle" class="text-xs text-slate-500 uppercase tracking-widest mt-1"></p>
 </div>
 <button type="button" id="plan-drawer-x" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full">
 <span class="material-icons-round">close</span>
@@ -323,7 +323,7 @@ foreach ($adminPlans as $idx => $p):
 </div>
 </form>
 </div>
-<div class="p-6 border-t border-slate-100 dark:border-zinc-800 grid grid-cols-2 gap-4">
+<div class="p-6 border-t border-slate-200 dark:border-zinc-800 grid grid-cols-2 gap-4">
 <button type="button" id="plan-drawer-close" class="px-6 py-3 border border-slate-200 dark:border-zinc-700 rounded-lg font-semibold hover:bg-slate-50 transition-colors">Discard</button>
 <button type="submit" form="admin-plan-form" class="px-6 py-3 bg-primary text-zinc-900 rounded-lg font-bold shadow-lg shadow-primary/20">Save Changes</button>
 </div>
@@ -344,6 +344,8 @@ if (drawer) {
     document.getElementById('plan-form-yield-max').value = '2.5'; 
     document.getElementById('plan-form-duration').value = '30'; 
     document.getElementById('plan-form-withdrawal').value = '7'; 
+    document.getElementById('plan-drawer-title').textContent = 'Add New Plan';
+    document.getElementById('plan-drawer-subtitle').textContent = '';
     drawer.classList.remove('hidden'); 
   });
   drawer.querySelector('.absolute.inset-0')?.addEventListener('click', function(){ drawer.classList.add('hidden'); });
@@ -364,6 +366,8 @@ if (drawer) {
             document.getElementById('plan-form-yield-max').value = p.yield_max;
             document.getElementById('plan-form-duration').value = p.duration_days;
             document.getElementById('plan-form-withdrawal').value = p.withdrawal_days;
+            document.getElementById('plan-drawer-title').textContent = 'Edit Plan: ' + p.name;
+            document.getElementById('plan-drawer-subtitle').textContent = 'PLAN ID: ' + p.id;
             drawer.classList.remove('hidden');
           }
         }
@@ -383,6 +387,14 @@ if (drawer) {
       }).catch(function(){ window.location.reload(); });
     });
   });
+  document.getElementById('admin-plan-form')?.addEventListener('submit', function(e){
+    e.preventDefault();
+    var id = document.getElementById('plan-form-id').value;
+    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield_min: parseFloat(document.getElementById('plan-form-yield-min').value) || 0, yield_max: parseFloat(document.getElementById('plan-form-yield-max').value) || 0, duration_days: parseInt(document.getElementById('plan-form-duration').value) || 30, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7 };
+    fetch('/api/admin/plans.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+      .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { drawer.classList.add('hidden'); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
+  });
+  document.getElementById('plan-drawer-backdrop')?.addEventListener('click', function(){ drawer.classList.add('hidden'); });
 }
 })();
 </script>

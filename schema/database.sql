@@ -15,8 +15,10 @@ CREATE TABLE IF NOT EXISTS users (
   role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
   email_verified TINYINT(1) NOT NULL DEFAULT 0,
   active TINYINT(1) NOT NULL DEFAULT 1,
+  two_factor_enabled TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  admin_notes TEXT NULL,
   INDEX idx_users_email (email),
   INDEX idx_users_role (role)
 ) ENGINE=InnoDB;
@@ -119,6 +121,44 @@ ON DUPLICATE KEY UPDATE value = VALUES(value);
 INSERT INTO users (email, password_hash, name, role, email_verified, active) VALUES
   ('admin@mail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', 'admin', 1, 1)
 ON DUPLICATE KEY UPDATE role = 'admin', email_verified = 1, active = 1;
+
+-- Demo users (password: password)
+INSERT INTO users (email, password_hash, name, role, email_verified, active, two_factor_enabled) VALUES
+  ('j.donovan@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'James Donovan', 'user', 1, 1, 1),
+  ('sarah.j@outlook.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Sarah Jenkins', 'user', 0, 1, 0),
+  ('stoic.trader@proton.me', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Marcus Aurelius', 'user', 0, 0, 0),
+  ('dchen.finance@yahoo.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'David Chen', 'user', 1, 1, 0)
+ON DUPLICATE KEY UPDATE name = VALUES(name), active = VALUES(active);
+
+-- Demo wallet balances, investments, transactions (run after demo users exist)
+INSERT INTO wallet_balances (user_id, currency, amount)
+SELECT id, 'BTC', 1.2482 FROM users WHERE email = 'j.donovan@gmail.com' AND role = 'user' LIMIT 1
+ON DUPLICATE KEY UPDATE amount = VALUES(amount);
+INSERT INTO wallet_balances (user_id, currency, amount)
+SELECT id, 'ETH', 4.821 FROM users WHERE email = 'j.donovan@gmail.com' AND role = 'user' LIMIT 1
+ON DUPLICATE KEY UPDATE amount = VALUES(amount);
+INSERT INTO wallet_balances (user_id, currency, amount)
+SELECT id, 'BTC', 0.241 FROM users WHERE email = 'sarah.j@outlook.com' AND role = 'user' LIMIT 1
+ON DUPLICATE KEY UPDATE amount = VALUES(amount);
+INSERT INTO wallet_balances (user_id, currency, amount)
+SELECT id, 'BTC', 3.52 FROM users WHERE email = 'dchen.finance@yahoo.com' AND role = 'user' LIMIT 1
+ON DUPLICATE KEY UPDATE amount = VALUES(amount);
+
+INSERT INTO user_investments (user_id, plan_id, amount, start_date, status)
+SELECT u.id, 1, 1200, CURDATE() - INTERVAL 62 DAY, 'active' FROM users u WHERE u.email = 'j.donovan@gmail.com' AND u.role = 'user' LIMIT 1;
+INSERT INTO user_investments (user_id, plan_id, amount, start_date, status)
+SELECT u.id, 2, 25000, CURDATE() - INTERVAL 14 DAY, 'active' FROM users u WHERE u.email = 'j.donovan@gmail.com' AND u.role = 'user' LIMIT 1;
+INSERT INTO user_investments (user_id, plan_id, amount, start_date, status)
+SELECT u.id, 1, 5000, CURDATE() - INTERVAL 30 DAY, 'active' FROM users u WHERE u.email = 'sarah.j@outlook.com' AND u.role = 'user' LIMIT 1;
+INSERT INTO user_investments (user_id, plan_id, amount, start_date, status)
+SELECT u.id, 3, 50000, CURDATE() - INTERVAL 90 DAY, 'active' FROM users u WHERE u.email = 'dchen.finance@yahoo.com' AND u.role = 'user' LIMIT 1;
+
+INSERT INTO transactions (user_id, type, amount, currency, status)
+SELECT id, 'deposit', 500, 'USD', 'completed' FROM users WHERE email = 'j.donovan@gmail.com' AND role = 'user' LIMIT 1;
+INSERT INTO transactions (user_id, type, amount, currency, status)
+SELECT id, 'withdrawal', 500, 'USD', 'pending' FROM users WHERE email = 'j.donovan@gmail.com' AND role = 'user' LIMIT 1;
+INSERT INTO transactions (user_id, type, amount, currency, status)
+SELECT id, 'deposit', 1200, 'USD', 'completed' FROM users WHERE email = 'sarah.j@outlook.com' AND role = 'user' LIMIT 1;
 
 -- Default plans (admins can edit in plan management)
 INSERT INTO plans (name, slug, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, features_json, enabled, sort_order) VALUES

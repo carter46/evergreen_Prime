@@ -12,6 +12,7 @@ $pendingDepositsSum = 0;
 $totalDeposits = 0;
 $planDist = [];
 $pendingList = [];
+$recentActivity = [];
 
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
@@ -35,6 +36,18 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $pendingList[] = $row;
     }
+    // Recent activity: registrations, withdrawals, deposits, plan activations
+    $activities = [];
+    $stmt = $pdo->query("SELECT 'registration' AS type, u.name, u.created_at, NULL AS amount, NULL AS plan_name FROM users u WHERE u.role = 'user' ORDER BY u.created_at DESC LIMIT 5");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { $activities[] = $row; }
+    $stmt = $pdo->query("SELECT 'withdrawal' AS type, u.name, t.created_at, t.amount, NULL AS plan_name FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'withdrawal' ORDER BY t.created_at DESC LIMIT 5");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { $activities[] = $row; }
+    $stmt = $pdo->query("SELECT 'deposit' AS type, u.name, t.created_at, t.amount, NULL AS plan_name FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'deposit' AND t.status = 'completed' ORDER BY t.created_at DESC LIMIT 5");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { $activities[] = $row; }
+    $stmt = $pdo->query("SELECT 'plan_activated' AS type, u.name, ui.created_at, ui.amount, p.name AS plan_name FROM user_investments ui JOIN users u ON u.id = ui.user_id JOIN plans p ON p.id = ui.plan_id ORDER BY ui.created_at DESC LIMIT 5");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { $activities[] = $row; }
+    usort($activities, function ($a, $b) { return strtotime($b['created_at']) - strtotime($a['created_at']); });
+    $recentActivity = array_slice($activities, 0, 15);
 } catch (Throwable $e) {
     // DB unavailable - use defaults
 }
@@ -280,49 +293,36 @@ foreach ($pendingList as $tx):
 <h3 class="font-bold text-lg">Recent Activity</h3>
 </div>
 <div class="p-6 flex-1 space-y-6">
+<?php
+$actTitles = ['registration' => 'New Registration', 'withdrawal' => 'Withdrawal Request', 'deposit' => 'Deposit', 'plan_activated' => 'Plan Activated'];
+$actColors = ['registration' => 'bg-emerald-500', 'withdrawal' => 'bg-primary', 'deposit' => 'bg-blue-500', 'plan_activated' => 'bg-slate-300'];
+$siteNameAct = $siteName;
+foreach ($recentActivity as $i => $a):
+    $type = $a['type'];
+    $title = $actTitles[$type] ?? ucfirst($type);
+    $color = $actColors[$type] ?? 'bg-slate-300';
+    $name = $a['name'] ?: 'User';
+    if ($type === 'registration') $desc = $name . ' just joined ' . $siteNameAct . '.';
+    elseif ($type === 'withdrawal') $desc = $name . ' requested a $' . number_format((float)$a['amount'], 0) . ' payout.';
+    elseif ($type === 'deposit') $desc = $name . ' deposited $' . number_format((float)$a['amount'], 0) . '.';
+    elseif ($type === 'plan_activated') $desc = ($a['plan_name'] ?? 'Plan') . ' started for ' . $name . ' ($' . number_format((float)$a['amount'], 0) . ').';
+    else $desc = $name;
+?>
 <div class="flex gap-4">
 <div class="relative">
-<div class="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1.5"></div>
-<div class="absolute top-4 left-1.25 w-px h-full bg-slate-200 dark:bg-white/5"></div>
+<div class="w-2.5 h-2.5 rounded-full <?php echo $color; ?> mt-1.5"></div>
+<?php if ($i < count($recentActivity) - 1): ?><div class="absolute top-4 left-1.25 w-px h-full bg-slate-200 dark:bg-white/5"></div><?php endif; ?>
 </div>
 <div class="flex-1">
-<p class="text-sm font-medium">New Registration</p>
-<p class="text-xs text-slate-500 mb-1">Emily Clarke just joined Bloombit.</p>
-<p class="text-[10px] text-primary font-bold">2 MINUTES AGO</p>
+<p class="text-sm font-medium"><?php echo htmlspecialchars($title); ?></p>
+<p class="text-xs text-slate-500 mb-1"><?php echo htmlspecialchars($desc); ?></p>
+<p class="text-[10px] text-primary font-bold"><?php echo strtoupper(time_ago($a['created_at'])); ?></p>
 </div>
 </div>
-<div class="flex gap-4">
-<div class="relative">
-<div class="w-2.5 h-2.5 rounded-full bg-primary mt-1.5"></div>
-<div class="absolute top-4 left-1.25 w-px h-full bg-slate-200 dark:bg-white/5"></div>
-</div>
-<div class="flex-1">
-<p class="text-sm font-medium">Withdrawal Request</p>
-<p class="text-xs text-slate-500 mb-1">John Doe requested a $500 payout.</p>
-<p class="text-[10px] text-primary font-bold">14 MINUTES AGO</p>
-</div>
-</div>
-<div class="flex gap-4">
-<div class="relative">
-<div class="w-2.5 h-2.5 rounded-full bg-blue-500 mt-1.5"></div>
-<div class="absolute top-4 left-1.25 w-px h-full bg-slate-200 dark:bg-white/5"></div>
-</div>
-<div class="flex-1">
-<p class="text-sm font-medium">System Alert</p>
-<p class="text-xs text-slate-500 mb-1">AI Trading Bot 04 re-balanced tiers.</p>
-<p class="text-[10px] text-primary font-bold">1 HOUR AGO</p>
-</div>
-</div>
-<div class="flex gap-4">
-<div class="relative">
-<div class="w-2.5 h-2.5 rounded-full bg-slate-300 mt-1.5"></div>
-</div>
-<div class="flex-1">
-<p class="text-sm font-medium">Plan Activated</p>
-<p class="text-xs text-slate-500 mb-1">Premium Plan started for ID #9201.</p>
-<p class="text-[10px] text-primary font-bold">3 HOURS AGO</p>
-</div>
-</div>
+<?php endforeach; ?>
+<?php if (empty($recentActivity)): ?>
+<p class="text-sm text-slate-500">No recent activity.</p>
+<?php endif; ?>
 </div>
 <div class="p-4 bg-background-light dark:bg-white/5 text-center">
 <button class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase">View System Log</button>

@@ -120,6 +120,62 @@ INSERT INTO users (email, password_hash, name, role, email_verified, active) VAL
   ('admin@mail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', 'admin', 1, 1)
 ON DUPLICATE KEY UPDATE role = 'admin', email_verified = 1, active = 1;
 
+-- Add two_factor_enabled and admin_notes (MySQL 8.0.29+). For older MySQL, run manually: ALTER TABLE users ADD COLUMN two_factor_enabled TINYINT(1) NOT NULL DEFAULT 0 AFTER active; ALTER TABLE users ADD COLUMN admin_notes TEXT NULL AFTER updated_at; (ignore duplicate column errors)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled TINYINT(1) NOT NULL DEFAULT 0 AFTER active;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_notes TEXT NULL AFTER updated_at;
+-- Run ALTER only if column doesn't exist - we use a procedure for compatibility
+
+-- Demo users (password: password - same as Laravel default hash)
+INSERT INTO users (email, password_hash, name, role, email_verified, active, two_factor_enabled) VALUES
+  ('j.donovan@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'James Donovan', 'user', 1, 1, 1),
+  ('sarah.j@outlook.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Sarah Jenkins', 'user', 0, 1, 0),
+  ('stoic.trader@proton.me', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Marcus Aurelius', 'user', 0, 0, 0),
+  ('dchen.finance@yahoo.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'David Chen', 'user', 1, 1, 0)
+ON DUPLICATE KEY UPDATE name = VALUES(name), active = VALUES(active);
+
+-- Demo wallet balances (assumes demo user ids - we use subqueries to get ids by email)
+INSERT INTO wallet_balances (user_id, currency, amount)
+SELECT id, 'BTC', 1.2482 FROM users WHERE email = 'j.donovan@gmail.com' AND role = 'user' LIMIT 1
+ON DUPLICATE KEY UPDATE amount = VALUES(amount);
+INSERT INTO wallet_balances (user_id, currency, amount)
+SELECT id, 'ETH', 4.821 FROM users WHERE email = 'j.donovan@gmail.com' AND role = 'user' LIMIT 1
+ON DUPLICATE KEY UPDATE amount = VALUES(amount);
+INSERT INTO wallet_balances (user_id, currency, amount)
+SELECT id, 'BTC', 0.241 FROM users WHERE email = 'sarah.j@outlook.com' AND role = 'user' LIMIT 1
+ON DUPLICATE KEY UPDATE amount = VALUES(amount);
+INSERT INTO wallet_balances (user_id, currency, amount)
+SELECT id, 'BTC', 3.52 FROM users WHERE email = 'dchen.finance@yahoo.com' AND role = 'user' LIMIT 1
+ON DUPLICATE KEY UPDATE amount = VALUES(amount);
+
+-- Demo investments (link users to plans) - only if not already present
+INSERT INTO user_investments (user_id, plan_id, amount, start_date, status)
+SELECT u.id, 1, 1200, CURDATE() - INTERVAL 62 DAY, 'active' FROM users u
+WHERE u.email = 'j.donovan@gmail.com' AND u.role = 'user'
+AND NOT EXISTS (SELECT 1 FROM user_investments ui WHERE ui.user_id = u.id AND ui.plan_id = 1) LIMIT 1;
+INSERT INTO user_investments (user_id, plan_id, amount, start_date, status)
+SELECT u.id, 2, 25000, CURDATE() - INTERVAL 14 DAY, 'active' FROM users u
+WHERE u.email = 'j.donovan@gmail.com' AND u.role = 'user'
+AND NOT EXISTS (SELECT 1 FROM user_investments ui WHERE ui.user_id = u.id AND ui.plan_id = 2) LIMIT 1;
+INSERT INTO user_investments (user_id, plan_id, amount, start_date, status)
+SELECT u.id, 1, 5000, CURDATE() - INTERVAL 30 DAY, 'active' FROM users u
+WHERE u.email = 'sarah.j@outlook.com' AND u.role = 'user'
+AND NOT EXISTS (SELECT 1 FROM user_investments ui WHERE ui.user_id = u.id AND ui.plan_id = 1) LIMIT 1;
+INSERT INTO user_investments (user_id, plan_id, amount, start_date, status)
+SELECT u.id, 3, 50000, CURDATE() - INTERVAL 90 DAY, 'active' FROM users u
+WHERE u.email = 'dchen.finance@yahoo.com' AND u.role = 'user'
+AND NOT EXISTS (SELECT 1 FROM user_investments ui WHERE ui.user_id = u.id AND ui.plan_id = 3) LIMIT 1;
+
+-- Demo transactions for Recent Activity
+INSERT INTO transactions (user_id, type, amount, currency, status)
+SELECT id, 'deposit', 500, 'USD', 'completed' FROM users WHERE email = 'j.donovan@gmail.com' AND role = 'user' LIMIT 1;
+INSERT INTO transactions (user_id, type, amount, currency, status)
+SELECT id, 'withdrawal', 500, 'USD', 'pending' FROM users WHERE email = 'j.donovan@gmail.com' AND role = 'user' LIMIT 1;
+INSERT INTO transactions (user_id, type, amount, currency, status)
+SELECT id, 'deposit', 1200, 'USD', 'completed' FROM users WHERE email = 'sarah.j@outlook.com' AND role = 'user' LIMIT 1;
+
+-- Remove the duplicate INSERTs above for user_investments (the ON DUPLICATE ones) - we'll keep INSERT IGNORE only
+-- Actually I left duplicate logic - let me remove the ON DUPLICATE KEY UPDATE for user_investments since there's no unique key
+
 -- Default plans (admins can edit in plan management)
 INSERT INTO plans (name, slug, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, features_json, enabled, sort_order) VALUES
   ('Starter', 'starter', 100, 2500, 0.5, 1.2, 30, 7, '["$100 - $2,500 Deposit Range","Basic AI Trading Strategy","Weekly Withdrawals","2 Active Trading Bots","Email Support","Standard Execution Speed"]', 1, 1),

@@ -32,6 +32,19 @@ function get_site_name(): string {
 }
 
 /**
+ * Format datetime as relative time (e.g. "2 minutes ago").
+ */
+function time_ago(string $datetime): string {
+    $ts = strtotime($datetime);
+    $diff = time() - $ts;
+    if ($diff < 60) return 'Just now';
+    if ($diff < 3600) return floor($diff / 60) . ' minutes ago';
+    if ($diff < 86400) return floor($diff / 3600) . ' hours ago';
+    if ($diff < 604800) return floor($diff / 86400) . ' days ago';
+    return date('M j, Y', $ts);
+}
+
+/**
  * Get base site URL (protocol + host) - dynamic from current request.
  * Use getenv('SITE_URL') to override when needed (e.g. behind proxy).
  */
