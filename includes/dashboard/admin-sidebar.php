@@ -42,11 +42,15 @@ $navClass = function ($page) use ($current) {
             <span class="font-medium">AI Bot Config</span>
         </a>
     </nav>
-    <div class="p-4 border-t border-primary/10">
+    <div class="p-4 border-t border-primary/10 space-y-1">
         <a class="<?php echo $navClass('communication'); ?>" href="/dashboard/admin/communication">
             <span class="material-icons text-[20px]">campaign</span>
             <span class="font-medium">Communication Hub</span>
         </a>
+        <button type="button" data-logout class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors w-full mt-2">
+            <span class="material-icons text-[20px]">logout</span>
+            <span class="font-medium">Sign Out</span>
+        </button>
     </div>
 </aside>
 <div class="hidden lg:block w-64 shrink-0 flex-none" aria-hidden="true"></div>
@@ -59,6 +63,6 @@ $navClass = function ($page) use ($current) {
     function close(){ sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); document.body.style.overflow=''; }
     if(overlay) overlay.addEventListener('click',close);
     if(toggleBtn) toggleBtn.addEventListener('click',function(){ sidebar.classList.contains('-translate-x-full')?open():close(); });
-    document.querySelectorAll('#admin-sidebar a').forEach(function(a){ a.addEventListener('click',function(){ if(window.innerWidth<1024) close(); }); });
+    document.querySelectorAll('#admin-sidebar a, #admin-sidebar button').forEach(function(el){ el.addEventListener('click',function(){ if(window.innerWidth<1024) close(); }); });
 })();
 </script>

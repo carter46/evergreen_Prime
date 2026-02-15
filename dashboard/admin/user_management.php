@@ -279,6 +279,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <!-- Drawer Actions -->
 <div class="p-4 border-t border-slate-200 dark:border-zinc-800 grid grid-cols-2 gap-2">
 <button type="button" id="drawer-update-profile" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary text-background-dark hover:brightness-105 col-span-2">Update Profile</button>
+<button type="button" id="drawer-login-as-user" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary/20 text-primary hover:bg-primary/30 col-span-2">Login as User</button>
 <button type="button" id="drawer-block-btn" class="px-3 py-1.5 text-xs font-bold rounded-lg"></button>
 <button type="button" id="drawer-adjust-balance" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700">Adjust Balance</button>
 <button type="button" id="drawer-delete-user" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 col-span-2">Delete User</button>
@@ -379,6 +380,11 @@ document.getElementById('drawer-2fa-toggle').addEventListener('click', function(
   if (!id) return;
   fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'toggle_2fa', user_id: id }) })
     .then(function(r){ return r.json(); }).then(function(res){ if (res.success) loadUser(id); else alert(res.error || '2FA not supported'); }).catch(function(){});
+});
+
+document.getElementById('drawer-login-as-user').addEventListener('click', function(){
+  var id = document.getElementById('drawer-user-id').value;
+  if (id) { closeDrawer(); window.location.href = '/api/admin/impersonate.php?user_id=' + id; }
 });
 
 document.getElementById('drawer-delete-user').addEventListener('click', function(){

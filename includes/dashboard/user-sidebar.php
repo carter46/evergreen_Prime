@@ -4,6 +4,7 @@
  * Use on all user dashboard pages. Pass $currentPage to highlight active item.
  */
 $current = $currentPage ?? '';
+$impersonating = isset($_SESSION['impersonate_admin_id']);
 $navClass = function ($page) use ($current) {
     return ($current === $page)
         ? 'flex items-center gap-3 px-4 py-3 bg-primary text-black font-semibold rounded-xl transition-all'
@@ -20,6 +21,12 @@ $navClass = function ($page) use ($current) {
         </div>
         <span class="text-2xl font-bold tracking-tight">Bloombit</span>
     </a>
+    <?php if ($impersonating): ?>
+    <a href="/api/admin/stop-impersonate.php" class="mx-4 mb-4 flex items-center gap-2 px-3 py-2 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded-xl hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors text-sm font-semibold">
+        <span class="material-icons-round text-lg">admin_panel_settings</span>
+        Switch back to Admin
+    </a>
+    <?php endif; ?>
     <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
         <a class="<?php echo $navClass('dashboard'); ?>" href="/dashboard/user/dashboard">
             <span class="material-icons-round text-[20px]">grid_view</span>
