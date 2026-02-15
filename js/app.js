@@ -264,17 +264,17 @@
             const btn = e.target.closest('[data-password-toggle]');
             if (!btn) return;
             e.preventDefault();
+            e.stopPropagation();
             const wrap = btn.closest('.relative') || btn.parentElement;
-            const inp = wrap ? (wrap.querySelector('input[type="password"]') || wrap.querySelector('input[type="text"]') || wrap.querySelector('input')) : null;
-            if (!inp) return;
+            if (!wrap) return;
+            let inp = wrap.querySelector('input[type="password"]') || wrap.querySelector('input[type="text"]') || wrap.querySelector('input');
+            if (!inp) inp = btn.previousElementSibling;
+            if (!inp || inp.tagName !== 'INPUT') return;
             const icon = btn.querySelector('.material-icons, .material-symbols-outlined, [class*="material"]');
-            if (inp.type === 'password') {
-                inp.type = 'text';
-                if (icon) icon.textContent = 'visibility_off';
-            } else {
-                inp.type = 'password';
-                if (icon) icon.textContent = 'visibility';
-            }
+            const iconEl = icon || btn;
+            const isHidden = inp.type === 'password';
+            inp.type = isHidden ? 'text' : 'password';
+            iconEl.textContent = isHidden ? 'visibility_off' : 'visibility';
         }, true);
     }
 
