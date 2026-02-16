@@ -49,7 +49,7 @@ try {
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
     $r->execute([$userId]); $dailyEarning = (float)$r->fetchColumn();
-    $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? AND type IN (\'deposit\', \'withdrawal\') ORDER BY created_at DESC LIMIT 20');
+    $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 10');
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $walletTransactions[] = $row;
@@ -105,9 +105,8 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
 <div class="flex-1 max-w-[1440px] w-full mx-auto">
 <div class="grid grid-cols-12 gap-8">
-<!-- Left Column: Balances & Assets -->
-<div class="col-span-12 lg:col-span-8 space-y-8">
-<!-- Main Wallet Card -->
+<!-- Row 1: Full-width Total Estimated Balance -->
+<div class="col-span-12">
 <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
@@ -143,7 +142,11 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 </div>
 </div>
 </div>
-<!-- Asset Breakdown -->
+</div>
+
+<!-- Row 2: Assets (60%) + Security (20%) + Coming Soon (20%) -->
+<div class="col-span-12 grid grid-cols-1 lg:grid-cols-[3fr_1fr_1fr] gap-6">
+<!-- Your Assets -->
 <div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
 <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">Your Assets</h2>
@@ -193,11 +196,35 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 </table>
 </div>
 </div>
-<!-- Transaction History Table -->
+<!-- Security Checklist -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex gap-4">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center">
+<span class="material-icons text-primary">gpp_maybe</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white">Security Checklist</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                            Ensure 2FA is active before withdrawing. Double-check the recipient address; crypto transfers are irreversible.
+                        </p>
+</div>
+</div>
+<!-- Coming Soon -->
+<div class="rounded-xl overflow-hidden relative group w-full">
+<div class="bg-slate-900 p-6">
+<h5 class="text-primary text-xs font-bold uppercase mb-1">Coming Soon</h5>
+<h4 class="text-white font-bold mb-4">Earn up to 12% APY with Bloombit Staking</h4>
+<img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" src="/uploads/images/crypto-assets.jpg" onerror="this.src='/uploads/images/crypto-assets.png';this.onerror=null"/>
+<button class="w-full mt-4 py-2 border border-white/20 text-white text-xs font-bold rounded hover:bg-white/10 transition-colors">Join Waitlist</button>
+</div>
+</div>
+</div>
+
+<!-- Row 3: Full-width Recent History -->
+<div class="col-span-12">
 <div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
 <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">Recent History</h2>
-<a href="/dashboard/user/analytics" class="text-primary text-xs font-bold hover:underline">View All</a>
+<a href="/dashboard/user/transactions" class="text-primary text-xs font-bold hover:underline">View All</a>
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-left">
@@ -243,30 +270,6 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 <?php endif; ?>
 </tbody>
 </table>
-</div>
-</div>
-</div>
-<!-- Right Column: Safety & Staking -->
-<div class="col-span-12 lg:col-span-4 space-y-6 min-w-0">
-<!-- Security Hint -->
-<div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex gap-4">
-<div class="w-10 h-10 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center">
-<span class="material-icons text-primary">gpp_maybe</span>
-</div>
-<div>
-<h4 class="text-sm font-bold text-slate-900 dark:text-white">Security Checklist</h4>
-<p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                            Ensure 2FA is active before withdrawing. Double-check the recipient address; crypto transfers are irreversible.
-                        </p>
-</div>
-</div>
-<!-- Ad/Banner Area -->
-<div class="rounded-xl overflow-hidden relative group w-full">
-<div class="bg-slate-900 p-6">
-<h5 class="text-primary text-xs font-bold uppercase mb-1">Coming Soon</h5>
-<h4 class="text-white font-bold mb-4">Earn up to 12% APY with Bloombit Staking</h4>
-<img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" src="/uploads/images/crypto-assets.jpg" onerror="this.src='/uploads/images/crypto-assets.png';this.onerror=null"/>
-<button class="w-full mt-4 py-2 border border-white/20 text-white text-xs font-bold rounded hover:bg-white/10 transition-colors">Join Waitlist</button>
 </div>
 </div>
 </div>
