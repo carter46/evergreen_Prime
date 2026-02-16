@@ -30,7 +30,7 @@ function sanitizeAddress(string $s): string {
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $stmt = $pdo->query(
-        'SELECT wa.id, wa.address, wa.coin_id, wa.created_at, c.coin_key, c.display_name, c.symbol
+        'SELECT wa.id, wa.address, wa.coin_id, wa.created_at, c.coin_key, c.display_name, c.symbol, c.logo
          FROM wallet_addresses wa
          INNER JOIN coins c ON c.id = wa.coin_id
          ORDER BY c.display_name, wa.id'
@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'coin_key' => $r['coin_key'],
             'display_name' => $r['display_name'],
             'symbol' => $r['symbol'],
+            'logo' => $r['logo'] ?? null,
             'address' => $r['address'],
             'created_at' => $r['created_at'],
         ];

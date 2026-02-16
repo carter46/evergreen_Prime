@@ -61,7 +61,10 @@ body { font-family: 'Inter', sans-serif; }
 <form id="address-form" class="p-6 space-y-4">
 <div>
 <label class="block text-sm font-medium mb-2">Coin</label>
-<select id="address-coin-id" required class="w-full bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2"></select>
+<div class="flex items-center gap-3">
+<select id="address-coin-id" required class="flex-1 bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2"></select>
+<div id="address-coin-logo" class="w-10 h-10 rounded-full overflow-hidden bg-slate-100 dark:bg-zinc-800 shrink-0 hidden"></div>
+</div>
 </div>
 <div>
 <label class="block text-sm font-medium mb-2">Wallet Address</label>
@@ -123,10 +126,12 @@ function renderAddresses(addresses) {
     c.innerHTML = '<div class="text-center py-8 sm:py-10 text-slate-500">No wallet addresses yet. Add one to get started.</div>';
     return;
   }
+  function safeLogo(url) { return (url && /^https?:\/\//i.test(url)) ? '<img src="' + url.replace(/"/g,'&quot;') + '" alt="" class="w-8 h-8 rounded-full object-cover shrink-0"/>' : ''; }
   var rows = addresses.map(function(a){
+    var logo = safeLogo(a.logo);
     return '<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/50">' +
       '<td class="px-4 sm:px-6 py-3 text-sm">' + a.id + '</td>' +
-      '<td class="px-4 sm:px-6 py-3 text-sm"><span class="font-semibold">' + escapeHtml(a.display_name || a.coin_key) + '</span> <span class="text-slate-500">' + escapeHtml(a.symbol || '') + '</span></td>' +
+      '<td class="px-4 sm:px-6 py-3 text-sm"><div class="flex items-center gap-3">' + logo + '<span><span class="font-semibold">' + escapeHtml(a.display_name || a.coin_key) + '</span> <span class="text-slate-500">' + escapeHtml(a.symbol || '') + '</span></span></div></td>' +
       '<td class="px-4 sm:px-6 py-3 text-sm font-mono text-xs break-all max-w-xs">' + escapeHtml(a.address) + '</td>' +
       '<td class="px-4 sm:px-6 py-3 text-xs text-slate-500">' + (a.created_at ? new Date(a.created_at).toLocaleDateString() : '') + '</td>' +
       '<td class="px-4 sm:px-6 py-3"><button type="button" class="text-primary hover:underline text-sm mr-3" data-edit="' + a.id + '">Edit</button><button type="button" class="text-red-600 hover:underline text-sm" data-delete="' + a.id + '">Delete</button></td>' +
@@ -157,6 +162,20 @@ function openModal(title, addressId) {
   sel.innerHTML = '<option value="">Select a coin</option>' + options.join('');
   sel.required = options.length > 0;
   document.getElementById('address-value').value = addressId ? (currentAddr || {}).address || '' : '';
+  var logoEl = document.getElementById('address-coin-logo');
+  function updateLogo() {
+    var id = parseInt(sel.value, 10);
+    var coin = allCoins.find(function(c){ return c.id === id; });
+    if (coin && coin.logo && /^https?:\/\//i.test(coin.logo)) {
+      logoEl.innerHTML = '<img src="' + coin.logo.replace(/"/g,'&quot;') + '" alt="" class="w-full h-full object-cover"/>';
+      logoEl.classList.remove('hidden');
+    } else {
+      logoEl.innerHTML = '';
+      logoEl.classList.add('hidden');
+    }
+  }
+  sel.onchange = updateLogo;
+  updateLogo();
   modal.classList.remove('hidden');
 }
 
