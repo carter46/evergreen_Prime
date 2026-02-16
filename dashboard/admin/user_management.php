@@ -341,8 +341,8 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <!-- User Wallet -->
 <div>
   <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">User Wallet</h4>
-  <div id="drawer-total-balance" class="text-2xl font-bold text-primary mb-4">$0.00</div>
-  <button type="button" id="drawer-adjust-balance-btn" class="text-sm text-primary font-medium hover:underline">Adjust balance</button>
+  <div id="drawer-total-balance" class="text-2xl font-bold text-emerald-600 mb-4">$0.00</div>
+  <button type="button" id="drawer-adjust-balance-btn" class="text-sm text-black font-medium hover:underline">Adjust balance</button>
   <div id="drawer-adjust-panel" class="hidden mt-3 p-4 bg-slate-50 dark:bg-zinc-800 rounded-lg space-y-3">
     <div>
       <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Type</label>
@@ -354,10 +354,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
     <div>
       <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Currency</label>
       <select id="drawer-adjust-currency" class="w-full bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 text-sm">
-        <option value="BTC">BTC</option>
-        <option value="ETH">ETH</option>
-        <option value="USDT">USDT</option>
-        <option value="USD">USD</option>
+        <option value="">Loading...</option>
       </select>
     </div>
     <div>
@@ -400,6 +397,18 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 var drawer = document.getElementById('user-profile-drawer');
 var backdrop = document.getElementById('user-drawer-backdrop');
 if (!drawer) return;
+
+function populateCurrencySelect() {
+  var sel = document.getElementById('drawer-adjust-currency');
+  if (!sel) return;
+  fetch('/api/admin/coins.php').then(function(r){ return r.json(); }).then(function(d){
+    if (!d.success || !d.coins) { sel.innerHTML = '<option value="">No coins</option>'; return; }
+    var enabled = d.coins.filter(function(c){ return c.enabled; });
+    sel.innerHTML = enabled.map(function(c){ return '<option value="'+c.symbol+'">'+c.display_name+' ('+c.symbol+')</option>'; }).join('');
+    if (enabled.length === 0) sel.innerHTML = '<option value="">No coins</option>';
+  }).catch(function(){ sel.innerHTML = '<option value="">Failed to load</option>'; });
+}
+populateCurrencySelect();
 
 function openDrawer() { closeAddUserDrawer(); drawer.style.transform = 'translateX(0)'; if (backdrop) backdrop.classList.remove('hidden'); }
 function closeDrawer() { drawer.style.transform = 'translateX(100%)'; if (backdrop) backdrop.classList.add('hidden'); }

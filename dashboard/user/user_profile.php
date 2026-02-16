@@ -321,15 +321,5 @@ $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : ''
 </div>
 </div>
 </div>
-<footer class="mt-20 border-t border-primary/5 py-10 bg-white/50 dark:bg-background-dark/20">
-<div class="max-w-7xl mx-auto px-4 text-center">
-<p class="text-sm text-slate-500">© 2024 Bloombit Trading Ltd. All rights reserved.</p>
-<div class="flex justify-center gap-6 mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
-<a class="hover:text-primary transition-colors" href="/legal_centre">Terms of Service</a>
-<a class="hover:text-primary transition-colors" href="/legal_centre">Privacy Policy</a>
-<a class="hover:text-primary transition-colors" href="#">Compliance</a>
-</div>
-</div>
-</footer>
 <script src="/js/app.js"></script>
 </body></html>

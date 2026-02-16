@@ -312,8 +312,5 @@ $currentPage = 'kyc';
 </div>
 </div>
 </main>
-<footer class="mt-12 py-8 border-t border-zinc-200 dark:border-zinc-800 text-center">
-<p class="text-xs text-zinc-400 font-medium tracking-widest uppercase">© 2023 Bloombit Financial Compliance Systems • High-Security Environment</p>
-</footer>
 <script src="/js/app.js"></script>
 </body></html>

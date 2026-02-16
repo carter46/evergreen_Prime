@@ -265,37 +265,6 @@ try {
 </div>
 </div>
 </div>
-<!-- Footer Metrics -->
-<footer class="mt-12 pt-6 border-t border-slate-100 dark:border-white/5 grid grid-cols-4 gap-6">
-<div class="flex items-center gap-3">
-<span class="material-icons-round text-slate-400">history_toggle_off</span>
-<div>
-<p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Active Runtime</p>
-<p class="text-sm font-bold">142 Days 04:22:12</p>
-</div>
-</div>
-<div class="flex items-center gap-3">
-<span class="material-icons-round text-slate-400">psychology</span>
-<div>
-<p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">AI Accuracy</p>
-<p class="text-sm font-bold">94.8% Monthly Avg</p>
-</div>
-</div>
-<div class="flex items-center gap-3">
-<span class="material-icons-round text-slate-400">hub</span>
-<div>
-<p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Node Region</p>
-<p class="text-sm font-bold">Frankfurt-DE #4</p>
-</div>
-</div>
-<div class="flex items-center gap-3">
-<span class="material-icons-round text-slate-400">verified_user</span>
-<div>
-<p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Security Level</p>
-<p class="text-sm font-bold text-emerald-500">Tier 3 - Advanced</p>
-</div>
-</div>
-</footer>
 </main>
 </div>
 <script src="/js/app.js"></script>

@@ -70,11 +70,11 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display overflow-x-hidden">
-<div class="flex min-h-screen">
+<div class="flex min-h-screen overflow-x-hidden">
 <?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 overflow-y-auto">
+<main class="flex-1 min-w-0 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden">
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+<div class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
 <div class="grid grid-cols-12 gap-8">
 <!-- Left Column: Balances & Assets -->
 <div class="col-span-12 lg:col-span-8 space-y-8">
@@ -338,47 +338,6 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 </div>
 
 </main>
-<footer class="mt-20 border-t border-slate-200 dark:border-slate-800 py-12 bg-white dark:bg-background-dark/20">
-<div class="max-w-[1440px] mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
-<div class="col-span-1 md:col-span-2">
-<div class="flex items-center gap-2 mb-6">
-<div class="w-6 h-6 bg-primary rounded flex items-center justify-center">
-<span class="material-icons text-white text-sm">bolt</span>
-</div>
-<span class="text-lg font-bold tracking-tight">BLOOMBIT</span>
-</div>
-<p class="text-slate-500 text-sm max-w-sm leading-relaxed">
-                    Bloombit is a next-generation AI-powered investment platform for digital assets. Trade, invest, and manage your portfolio with professional-grade tools.
-                </p>
-</div>
-<div>
-<h5 class="font-bold text-sm mb-4">Platform</h5>
-<ul class="text-slate-500 text-sm space-y-2">
-<li><a class="hover:text-primary transition-colors" href="#">Spot Trading</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Institutional Services</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">API Documentation</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Security</a></li>
-</ul>
-</div>
-<div>
-<h5 class="font-bold text-sm mb-4">Support</h5>
-<ul class="text-slate-500 text-sm space-y-2">
-<li><a class="hover:text-primary transition-colors" href="/help_centre">Help Center</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Submit a Ticket</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Fees Schedule</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">Status</a></li>
-</ul>
-</div>
-</div>
-<div class="max-w-[1440px] mx-auto px-6 mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-<p class="text-xs text-slate-400">© 2023 Bloombit International. All rights reserved.</p>
-<div class="flex gap-6 text-xs text-slate-400">
-<a class="hover:text-primary" href="/legal_centre">Privacy Policy</a>
-<a class="hover:text-primary" href="/legal_centre">Terms of Service</a>
-<a class="hover:text-primary" href="#">Cookie Settings</a>
-</div>
-</div>
-</footer>
 <script src="/js/app.js"></script>
 <script>window.BLOOMBIT_API_BASE = '';</script>
 <script src="/js/crypto-config.js"></script>

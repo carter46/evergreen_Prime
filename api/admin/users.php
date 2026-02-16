@@ -393,9 +393,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => false, 'error' => 'Amount must be greater than 0']);
                 exit;
             }
-            if ($currency === '' || !in_array($currency, ['BTC', 'ETH', 'USDT', 'USD'], true)) {
+            $stmtCheck = $pdo->prepare('SELECT 1 FROM coins WHERE UPPER(symbol) = ? AND enabled = 1 LIMIT 1');
+            $stmtCheck->execute([strtoupper($currency)]);
+            if ($currency === '' || !$stmtCheck->fetch()) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Invalid currency']);
+                echo json_encode(['success' => false, 'error' => 'Invalid or disabled currency']);
                 exit;
             }
             if ($type === 'credit') {
