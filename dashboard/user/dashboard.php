@@ -86,6 +86,7 @@ try {
 <title><?php echo htmlspecialchars($siteName); ?> | AI Trading Dashboard</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
@@ -461,9 +462,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             this.classList.add('bg-white', 'dark:bg-white/10', 'shadow-sm', 'text-black', 'dark:text-white');
             this.classList.remove('text-slate-500');
-            fetch('/api/user/chart-data.php?period=' + period).then(function(r){ return r.json(); }).then(function(res){
+            fetch('/api/user/chart-data.php?period=' + period, { credentials: 'same-origin' }).then(function(r){ return r.json(); }).then(function(res){
                 if (res.success && res.data) updateChart(res.data);
-            });
+            }).catch(function(){ if (chartContainer) chartContainer.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">Failed to load chart</div>'; });
         });
     });
     

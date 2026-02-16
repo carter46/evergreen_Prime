@@ -271,7 +271,12 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 </div>
 </div>
 </div>
+</div>
+</div>
 
+<div id="wallet-drawer-backdrop" class="fixed inset-0 bg-black/50 z-[45] hidden" aria-hidden="true" style="backdrop-filter:blur(2px)"></div>
+<div id="deposit-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[480px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-[50] border-l border-slate-200 dark:border-zinc-800 flex flex-col transition-transform duration-300 ease-out" style="transform:translateX(100%)">
+<div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">Deposit Crypto</h2>
 <button type="button" id="deposit-drawer-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors"><span class="material-icons text-lg">close</span></button>
 </div>
@@ -350,7 +355,6 @@ Withdraw Now <span class="material-icons text-sm">arrow_forward</span>
 </form>
 </div>
 </div>
- class="fixed inset-0 bg-black/50 z-[45] hidden" aria-hidden="true" style="backdrop-filter:blur(2px)"></div>
 <script src="/js/app.js"></script>
 <script>window.BLOOMBIT_API_BASE = '';</script>
 <script src="/js/crypto-config.js"></script>
