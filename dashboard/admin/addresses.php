@@ -11,18 +11,26 @@ $siteName = get_site_name();
 <title><?php echo htmlspecialchars($siteName); ?> | Wallet Addresses</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <script id="tailwind-config">
-tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#f9bd0b", "background-light": "#f8f8f5", "background-dark": "#231e0f" }, fontFamily: { "display": ["Inter", "sans-serif"] } } } };
+tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#f9bd0b", "background-light": "#f8f8f5", "background-dark": "#231e0f" }, fontFamily: { "display": ["Inter", "sans-serif"] }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" } } } };
 </script>
-<style>body { font-family: 'Inter', sans-serif; }</style>
+<style>
+body { font-family: 'Inter', sans-serif; }
+.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+.material-icons-round { font-size: 24px; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
+</style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
-<div class="flex min-h-screen">
+<div class="flex min-h-screen w-full">
 <?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
-<main class="flex-1 overflow-y-auto min-w-0">
+<main class="flex-1 min-w-0 flex flex-col overflow-hidden">
 <?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
-<div class="p-4 sm:p-6 lg:p-8">
+<div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-8">
 <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
 <div>
 <h1 class="text-2xl font-bold">Wallet Addresses</h1>
@@ -129,14 +137,26 @@ function renderAddresses(addresses) {
   c.querySelectorAll('[data-delete]').forEach(function(b){ b.addEventListener('click', function(){ confirmDelete(parseInt(b.getAttribute('data-delete'), 10)); }); });
 }
 
+function getCoinsAlreadyUsed() {
+  return allAddresses.map(function(a){ return a.coin_id; });
+}
+
 function openModal(title, addressId) {
   editingId = addressId || null;
   document.getElementById('address-modal-title').textContent = title;
   var sel = document.getElementById('address-coin-id');
-  sel.innerHTML = '<option value="">Select a coin</option>' + allCoins.map(function(coin){
-    return '<option value="' + coin.id + '"' + (addressId && allAddresses.find(function(a){ return a.id === addressId; }) && allAddresses.find(function(a){ return a.id === addressId; }).coin_id === coin.id ? ' selected' : '') + '>' + escapeHtml(coin.display_name) + ' (' + escapeHtml(coin.symbol) + ')</option>';
-  }).join('');
-  document.getElementById('address-value').value = addressId ? (allAddresses.find(function(a){ return a.id === addressId; }) || {}).address || '' : '';
+  var usedCoinIds = getCoinsAlreadyUsed();
+  var currentAddr = addressId ? allAddresses.find(function(a){ return a.id === addressId; }) : null;
+  var currentCoinId = currentAddr ? currentAddr.coin_id : null;
+  var options = allCoins.map(function(coin){
+    var alreadyUsed = usedCoinIds.indexOf(coin.id) >= 0;
+    var isCurrent = currentCoinId === coin.id;
+    if (!addressId && alreadyUsed) return '';
+    return '<option value="' + coin.id + '"' + (isCurrent ? ' selected' : '') + (alreadyUsed && !isCurrent ? ' disabled' : '') + '>' + escapeHtml(coin.display_name) + ' (' + escapeHtml(coin.symbol) + ')' + (alreadyUsed && !isCurrent ? ' — already added' : '') + '</option>';
+  }).filter(function(o){ return o.length > 0; });
+  sel.innerHTML = '<option value="">Select a coin</option>' + options.join('');
+  sel.required = options.length > 0;
+  document.getElementById('address-value').value = addressId ? (currentAddr || {}).address || '' : '';
   modal.classList.remove('hidden');
 }
 
@@ -147,6 +167,11 @@ function closeModal() {
 
 function openAdd() {
   if (allCoins.length === 0) { showMessage('Loading coins...', 'error'); loadCoins().then(openAdd); return; }
+  var used = getCoinsAlreadyUsed();
+  if (allCoins.length > 0 && used.length >= allCoins.length) {
+    showMessage('All coins already have addresses. Delete one first to add a different coin.', 'error');
+    return;
+  }
   openModal('Add New Wallet Address');
 }
 

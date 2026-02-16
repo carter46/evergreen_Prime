@@ -13,47 +13,47 @@ $navClass = function ($page) use ($current) {
 <!-- Mobile overlay -->
 <div id="admin-sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" aria-hidden="true"></div>
 <!-- Sidebar: fixed so it stays visible when scrolling -->
-<aside id="admin-sidebar" class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-black/20 border-r border-primary/10 flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out h-screen">
-    <a class="p-6 flex items-center gap-3" href="/">
-        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+<aside id="admin-sidebar" class="fixed inset-y-0 left-0 w-64 min-w-[16rem] bg-white dark:bg-black/20 border-r border-primary/10 flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out h-screen overflow-x-hidden">
+    <a class="p-6 flex items-center gap-3 shrink-0" href="/">
+        <div class="w-10 h-10 shrink-0 bg-primary rounded-lg flex items-center justify-center">
             <span class="material-icons text-white">bolt</span>
         </div>
-        <h1 class="font-bold text-xl tracking-tight">Bloom<span class="text-primary">bit</span></h1>
+        <h1 class="font-bold text-xl tracking-tight truncate">Bloom<span class="text-primary">bit</span></h1>
     </a>
-    <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+    <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
         <a class="<?php echo $navClass('dashboard'); ?>" href="/dashboard/admin">
-            <span class="material-icons text-[20px]">dashboard</span>
-            <span class="font-medium">Command Center</span>
+            <span class="material-icons text-[20px] shrink-0">dashboard</span>
+            <span class="font-medium truncate">Command Center</span>
         </a>
         <a class="<?php echo $navClass('users'); ?>" href="/dashboard/admin/users">
-            <span class="material-icons text-[20px]">people</span>
-            <span class="font-medium">User Management</span>
+            <span class="material-icons text-[20px] shrink-0">people</span>
+            <span class="font-medium truncate">User Management</span>
         </a>
         <a class="<?php echo $navClass('plans'); ?>" href="/dashboard/admin/plans">
-            <span class="material-icons text-[20px]">account_balance_wallet</span>
-            <span class="font-medium">Plan Management</span>
+            <span class="material-icons text-[20px] shrink-0">account_balance_wallet</span>
+            <span class="font-medium truncate">Plan Management</span>
         </a>
         <a class="<?php echo $navClass('addresses'); ?>" href="/dashboard/admin/addresses">
-            <span class="material-icons text-[20px]">wallet</span>
-            <span class="font-medium">Wallet Addresses</span>
+            <span class="material-icons text-[20px] shrink-0">wallet</span>
+            <span class="font-medium truncate">Wallet Addresses</span>
         </a>
         <a class="<?php echo $navClass('transactions'); ?>" href="/dashboard/admin">
-            <span class="material-icons text-[20px]">receipt_long</span>
-            <span class="font-medium">Transactions</span>
+            <span class="material-icons text-[20px] shrink-0">receipt_long</span>
+            <span class="font-medium truncate">Transactions</span>
         </a>
         <a class="<?php echo $navClass('ai'); ?>" href="/dashboard/admin">
-            <span class="material-icons text-[20px]">smart_toy</span>
-            <span class="font-medium">AI Bot Config</span>
+            <span class="material-icons text-[20px] shrink-0">smart_toy</span>
+            <span class="font-medium truncate">AI Bot Config</span>
         </a>
     </nav>
     <div class="p-4 border-t border-primary/10 space-y-1">
         <a class="<?php echo $navClass('communication'); ?>" href="/dashboard/admin/communication">
-            <span class="material-icons text-[20px]">campaign</span>
-            <span class="font-medium">Communication Hub</span>
+            <span class="material-icons text-[20px] shrink-0">campaign</span>
+            <span class="font-medium truncate">Communication Hub</span>
         </a>
         <button type="button" data-logout class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors w-full mt-2">
-            <span class="material-icons text-[20px]">logout</span>
-            <span class="font-medium">Sign Out</span>
+            <span class="material-icons text-[20px] shrink-0">logout</span>
+            <span class="font-medium truncate">Sign Out</span>
         </button>
     </div>
 </aside>

@@ -4,20 +4,20 @@
  * Use on all admin dashboard pages. Renders search, notifications, profile.
  */
 ?>
-<header class="h-14 sm:h-16 bg-white/80 dark:bg-black/10 backdrop-blur-md border-b border-primary/10 flex items-center justify-between px-4 sm:px-6 lg:px-8 sticky top-0 z-30">
-    <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-        <button type="button" id="admin-sidebar-toggle" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-primary/10 transition-colors min-h-[44px] min-w-[44px]" aria-label="Toggle sidebar">
+<header class="h-14 sm:h-16 bg-white/80 dark:bg-black/10 backdrop-blur-md border-b border-primary/10 flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 sticky top-0 z-30 shrink-0">
+    <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+        <button type="button" id="admin-sidebar-toggle" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-primary/10 transition-colors shrink-0" aria-label="Toggle sidebar">
             <span class="material-icons">menu</span>
         </button>
-        <div class="relative hidden sm:block flex-1 max-w-xs">
-            <input class="w-full pl-9 pr-4 py-2 bg-background-light dark:bg-white/5 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/50" placeholder="Search data..." type="text"/>
-            <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+        <div class="relative hidden sm:block flex-1 min-w-0 max-w-[200px] lg:max-w-xs">
+            <input class="w-full pl-9 pr-3 py-2 bg-background-light dark:bg-white/5 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/50" placeholder="Search..." type="text"/>
+            <span class="material-icons absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">search</span>
         </div>
     </div>
-    <div class="flex items-center gap-2 sm:gap-4 lg:gap-6 shrink-0">
-        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-background-light dark:bg-white/5 border border-primary/10 rounded-lg text-xs font-medium cursor-pointer">
+    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-background-light dark:bg-white/5 border border-primary/10 rounded-lg text-xs font-medium cursor-pointer shrink-0">
             <span class="material-icons text-sm">calendar_today</span>
-            <span>Oct 01 - Oct 31, 2023</span>
+            <span class="truncate max-w-[140px]">Oct 01 - Oct 31, 2023</span>
         </div>
         <button class="relative w-10 h-10 flex items-center justify-center text-slate-500 hover:text-primary rounded-lg hover:bg-primary/10 transition-colors min-h-[44px] min-w-[44px]">
             <span class="material-icons">notifications</span>
