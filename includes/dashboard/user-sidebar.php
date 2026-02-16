@@ -40,6 +40,10 @@ $navClass = function ($page) use ($current) {
             <span class="material-icons-round text-[20px]">insights</span>
             My Investments
         </a>
+        <a class="<?php echo $navClass('investment-plans'); ?>" href="/dashboard/user/investment-plans">
+            <span class="material-icons-round text-[20px]">account_tree</span>
+            Investment Plans
+        </a>
         <a class="<?php echo $navClass('history'); ?>" href="/dashboard/user/analytics">
             <span class="material-icons-round text-[20px]">history</span>
             Trade History

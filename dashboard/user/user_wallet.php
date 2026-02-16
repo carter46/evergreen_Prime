@@ -75,7 +75,7 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
 <main class="flex-1 min-w-0 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden">
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<div class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+<div class="flex-1 max-w-[1440px] w-full mx-auto p-4 sm:p-6 lg:p-8">
 <div class="grid grid-cols-12 gap-8">
 <!-- Left Column: Balances & Assets -->
 <div class="col-span-12 lg:col-span-8 space-y-8">
@@ -356,14 +356,23 @@ document.addEventListener('DOMContentLoaded', function() {
     ?>;
 
     function openDrawer(drawer) {
-        if (drawer === depositDrawer) withdrawDrawer.style.transform = 'translateX(100%)';
-        else depositDrawer.style.transform = 'translateX(100%)';
+        if (!drawer || !backdrop) return;
+        // Close other drawer if open
+        if (drawer === depositDrawer && withdrawDrawer) {
+            withdrawDrawer.style.transform = 'translateX(100%)';
+        } else if (drawer === withdrawDrawer && depositDrawer) {
+            depositDrawer.style.transform = 'translateX(100%)';
+        }
+        // Open selected drawer
         drawer.style.transform = 'translateX(0)';
         backdrop.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     }
     function closeDrawer(drawer) {
+        if (!drawer || !backdrop) return;
         drawer.style.transform = 'translateX(100%)';
         backdrop.classList.add('hidden');
+        document.body.style.overflow = '';
     }
     function closeAllDrawers() {
         closeDrawer(depositDrawer);
@@ -381,6 +390,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }).join('');
             depositSelect.innerHTML = options;
             withdrawSelect.innerHTML = options;
+            // Attach change listener after options are loaded
+            if (withdrawSelect) {
+                withdrawSelect.addEventListener('change', updateWithdrawBalance);
+            }
         }
     });
 
@@ -431,9 +444,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Withdraw drawer handlers
-    document.getElementById('withdraw-btn').addEventListener('click', function(){ openDrawer(withdrawDrawer); updateWithdrawBalance(); });
-    document.getElementById('withdraw-drawer-close').addEventListener('click', function(){ closeDrawer(withdrawDrawer); });
-    document.getElementById('withdraw-currency').addEventListener('change', updateWithdrawBalance);
+    var withdrawBtn = document.getElementById('withdraw-btn');
+    var withdrawCloseBtn = document.getElementById('withdraw-drawer-close');
+    if (withdrawBtn && withdrawDrawer) {
+        withdrawBtn.addEventListener('click', function(){ 
+            if (withdrawDrawer) {
+                openDrawer(withdrawDrawer); 
+                updateWithdrawBalance(); 
+            }
+        });
+    }
+    if (withdrawCloseBtn && withdrawDrawer) {
+        withdrawCloseBtn.addEventListener('click', function(){ closeDrawer(withdrawDrawer); });
+    }
     function updateWithdrawBalance() {
         var currency = document.getElementById('withdraw-currency').value;
         document.getElementById('withdraw-currency-label').textContent = currency || '—';

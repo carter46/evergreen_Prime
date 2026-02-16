@@ -4,8 +4,17 @@ require_once __DIR__ . '/../../includes/helpers.php';
 $currentPage = 'dashboard';
 $siteName = get_site_name();
 $userBalance = 0;
+$btcAmount = 0;
 $activeInvestments = [];
 $chartData = [];
+$period = $_GET['period'] ?? '1M';
+$days = match($period) {
+    '1D' => 1,
+    '1W' => 7,
+    '1M' => 30,
+    '1Y' => 365,
+    default => 30
+};
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
@@ -14,7 +23,7 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $amt = (float)$row['amount'];
         if (in_array(strtoupper($row['currency']), ['USDT','USDC','USD','BUSD'], true)) $userBalance += $amt;
-        elseif (strtoupper($row['currency']) === 'BTC') $userBalance += $amt * 65000;
+        elseif (strtoupper($row['currency']) === 'BTC') { $userBalance += $amt * 65000; $btcAmount = $amt; }
         elseif (strtoupper($row['currency']) === 'ETH') $userBalance += $amt * 3500;
         else $userBalance += $amt;
     }
@@ -22,9 +31,9 @@ try {
     $stmt->execute([$userId, 'active']);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) $activeInvestments[] = $row;
     
-    // Fetch transaction data for chart (last 30 days)
-    $stmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal') AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
-    $stmt->execute([$userId]);
+    // Fetch transaction data for chart based on selected period
+    $stmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
+    $stmt->execute([$userId, $days]);
     $dailyData = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $date = $row['date'];
@@ -93,38 +102,55 @@ try {
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
 <!-- Dashboard Grid -->
 <div class="grid grid-cols-12 gap-6">
-<!-- Wallet Balance Card (Glassmorphism) -->
-<div class="col-span-4 glass-card rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col justify-between h-64 border-primary/20">
-<div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl"></div>
+<!-- Wallet Balance Card (Gradient Design) -->
+<div class="col-span-6 relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
 <div class="flex justify-between items-start">
-<p class="text-slate-500 font-medium">Total Balance</p>
-<span class="material-icons-round text-primary">account_balance_wallet</span>
+<div>
+<p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
+<h1 class="text-4xl font-bold tracking-tight">$<?php echo number_format($userBalance, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
+<p class="text-primary mt-2 flex items-center gap-1">
+<img class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="BTC"/>
+                                    <?php echo number_format($btcAmount, 8); ?> BTC
+                                </p>
 </div>
-<h2 class="text-4xl font-bold mt-2">$<?php echo number_format($userBalance, 2); ?></h2>
-<p class="text-emerald-500 font-medium flex items-center gap-1 mt-1">
-<span class="material-icons-round text-sm">trending_up</span>
-                            +$1,240.20 (24h)
-                        </p>
+<div class="flex gap-3">
+<button type="button" id="deposit-btn-dash" class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
+<span class="material-icons text-sm">add</span> Deposit
+                                </button>
+<button type="button" id="withdraw-btn-dash" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all backdrop-blur-sm">
+<span class="material-icons text-sm">file_upload</span> Withdraw
+                                </button>
 </div>
-<div class="flex gap-3 relative z-10">
-<button class="flex-1 bg-primary text-black font-bold py-3 rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all flex items-center justify-center gap-2">
-<span class="material-icons-round text-sm">add</span> Deposit
-                        </button>
-<button class="flex-1 bg-white/50 dark:bg-white/10 border border-primary/30 font-bold py-3 rounded-xl hover:bg-white transition-all flex items-center justify-center gap-2">
-<span class="material-icons-round text-sm">file_download</span> Withdraw
-                        </button>
+</div>
+<div class="mt-10 grid grid-cols-3 gap-6 border-t border-white/10 pt-8">
+<div>
+<p class="text-slate-400 text-xs mb-1">24h Change</p>
+<p class="text-emerald-400 font-bold flex items-center gap-1">
+<span class="material-icons text-xs">trending_up</span> +4.25%
+                                </p>
+</div>
+<div>
+<p class="text-slate-400 text-xs mb-1">Spot Wallet</p>
+<p class="font-bold">$<?php echo number_format($userBalance * 0.91, 2); ?></p>
+</div>
+<div>
+<p class="text-slate-400 text-xs mb-1">Staking Rewards</p>
+<p class="font-bold text-primary">$<?php echo number_format($userBalance * 0.0145, 2); ?></p>
+</div>
+</div>
 </div>
 </div>
 <!-- Performance Chart Section -->
-<div class="col-span-8 bg-white dark:bg-white/5 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-white/5">
+<div class="col-span-6 bg-white dark:bg-white/5 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-white/5">
 <div class="flex justify-between items-center mb-6">
 <h3 class="text-lg font-bold">Performance Growth</h3>
 <div class="flex bg-slate-100 dark:bg-white/5 p-1 rounded-lg">
-<button class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-500">1D</button>
-<button class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-500">1W</button>
-<button class="px-4 py-1.5 rounded-md text-xs font-bold bg-white dark:bg-white/10 shadow-sm text-black dark:text-white">1M</button>
-<button class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-500">1Y</button>
+<button type="button" data-period="1D" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1D' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1D</button>
+<button type="button" data-period="1W" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1W' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1W</button>
+<button type="button" data-period="1M" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1M' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1M</button>
+<button type="button" data-period="1Y" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1Y' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1Y</button>
 </div>
 </div>
 <div class="h-40 relative flex items-end gap-1" id="performance-chart">
@@ -235,9 +261,9 @@ if (!empty($chartData)) {
 <div class="col-span-8 bg-white dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5">
 <div class="flex justify-between items-center mb-6">
 <h3 class="text-lg font-bold">My Active Plans</h3>
-<button class="text-primary text-sm font-bold flex items-center gap-1">
+<a href="/dashboard/user/analytics" class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
                             View All <span class="material-icons-round text-sm">arrow_forward</span>
-</button>
+</a>
 </div>
 <div class="space-y-4">
 <?php foreach ($activeInvestments as $inv):
@@ -278,10 +304,10 @@ if (!empty($chartData)) {
 <div class="text-center py-8 text-slate-500 text-sm">No active investments</div>
 <?php endif; ?>
 <!-- Add New -->
-<button class="w-full py-4 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl text-slate-400 font-bold hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
+<a href="/dashboard/user/investment-plans" class="w-full py-4 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl text-slate-400 font-bold hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
 <span class="material-icons-round">add_circle_outline</span>
                             Subscribe to New Investment Plan
-                        </button>
+                        </a>
 </div>
 </div>
 </div>
@@ -356,6 +382,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         setInterval(function() { updateTrade(card); }, 8000 + (i * 1000));
     });
+    
+    // Chart filter buttons
+    var filterBtns = document.querySelectorAll('.chart-filter-btn');
+    var currentPeriod = '<?php echo htmlspecialchars($period); ?>';
+    filterBtns.forEach(function(btn) {
+        var period = btn.getAttribute('data-period');
+        if (period === currentPeriod) {
+            btn.classList.add('bg-white', 'dark:bg-white/10', 'shadow-sm', 'text-black', 'dark:text-white');
+            btn.classList.remove('text-slate-500');
+        }
+        btn.addEventListener('click', function() {
+            window.location.href = '?period=' + period;
+        });
+    });
+    
+    // Deposit/Withdraw buttons on dashboard
+    var depositBtnDash = document.getElementById('deposit-btn-dash');
+    var withdrawBtnDash = document.getElementById('withdraw-btn-dash');
+    if (depositBtnDash) {
+        depositBtnDash.addEventListener('click', function() {
+            window.location.href = '/dashboard/user/wallet';
+        });
+    }
+    if (withdrawBtnDash) {
+        withdrawBtnDash.addEventListener('click', function() {
+            window.location.href = '/dashboard/user/wallet';
+        });
+    }
 });
 </script>
 </body></html>

@@ -9,23 +9,45 @@ $dailyAvgReturn = 0;
 $activeCapital = 0;
 $estMonthlyEarnings = 0;
 $chartData = [];
+$period = $_GET['period'] ?? '1M';
+$days = match($period) {
+    '1D' => 1,
+    '1W' => 7,
+    '1M' => 30,
+    '1Y' => 365,
+    'ALL' => 9999,
+    default => 30
+};
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
-    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
-    $r->execute([$userId]);
-    $totalProfit = (float)$r->fetchColumn();
     
-    $stmt = $pdo->prepare('SELECT type, amount, currency, status, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50');
-    $stmt->execute([$userId]);
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) $analyticsTx[] = $row;
+    // Filter transactions based on period
+    if ($period === 'ALL') {
+        $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
+        $r->execute([$userId]);
+        $totalProfit = (float)$r->fetchColumn();
+        
+        $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
+        $r->execute([$userId]);
+        $dailyAvgReturn = (float)$r->fetchColumn();
+        
+        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal', 'payout') GROUP BY DATE(created_at), type ORDER BY date ASC");
+        $chartStmt->execute([$userId]);
+    } else {
+        $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)");
+        $r->execute([$userId, $days]);
+        $totalProfit = (float)$r->fetchColumn();
+        
+        $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)");
+        $r->execute([$userId, $days]);
+        $dailyAvgReturn = (float)$r->fetchColumn();
+        
+        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal', 'payout') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
+        $chartStmt->execute([$userId, $days]);
+    }
     
-    // Calculate daily avg return (from payouts over last 30 days)
-    $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
-    $r->execute([$userId]);
-    $dailyAvgReturn = (float)$r->fetchColumn();
-    
-    // Active capital (sum of active investments)
+    // Active capital (sum of active investments) - not filtered by period
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
     $r->execute([$userId]);
     $activeCapital = (float)$r->fetchColumn();
@@ -36,11 +58,9 @@ try {
     $avgYield = (float)$r->fetchColumn();
     $estMonthlyEarnings = $activeCapital * ($avgYield / 100);
     
-    // Chart data (cumulative performance from transactions)
-    $stmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal', 'payout') AND created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
-    $stmt->execute([$userId]);
+    // Chart data
     $dailyData = [];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    while ($row = $chartStmt->fetch(PDO::FETCH_ASSOC)) {
         $date = $row['date'];
         if (!isset($dailyData[$date])) $dailyData[$date] = ['deposit' => 0, 'withdrawal' => 0, 'payout' => 0];
         $dailyData[$date][$row['type']] = (float)$row['total'];
@@ -50,6 +70,12 @@ try {
         $cumulative += $amounts['deposit'] - $amounts['withdrawal'] + $amounts['payout'];
         $chartData[] = ['date' => $date, 'value' => $cumulative];
     }
+    
+    // Fetch all transactions for table (limit 50)
+    $txStmt = $pdo->prepare('SELECT type, amount, currency, status, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50');
+    $txStmt->execute([$userId]);
+    $analyticsTx = [];
+    while ($row = $txStmt->fetch(PDO::FETCH_ASSOC)) $analyticsTx[] = $row;
 } catch (Throwable $e) { }
 ?>
 <!DOCTYPE html>
@@ -186,11 +212,11 @@ try {
                         <span class="material-icons-round text-slate-400 text-base cursor-help" title="Visualizes your total earnings growth over time">info</span>
 </h2>
 <div class="flex bg-slate-100 dark:bg-zinc-800 p-1 rounded-lg">
-<button class="px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all">1D</button>
-<button class="px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all">1W</button>
-<button class="px-3 py-1 text-xs font-semibold rounded bg-white dark:bg-zinc-700 shadow-sm transition-all">1M</button>
-<button class="px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all">1Y</button>
-<button class="px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all">ALL</button>
+<button type="button" data-period="1D" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === '1D' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">1D</button>
+<button type="button" data-period="1W" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === '1W' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">1W</button>
+<button type="button" data-period="1M" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === '1M' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">1M</button>
+<button type="button" data-period="1Y" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === '1Y' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">1Y</button>
+<button type="button" data-period="ALL" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === 'ALL' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">ALL</button>
 </div>
 </div>
 <div class="relative h-[300px] w-full" id="analytics-chart">
@@ -407,6 +433,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         });
     }
+    
+    // Analytics filter buttons
+    var filterBtns = document.querySelectorAll('.analytics-filter-btn');
+    filterBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var period = this.getAttribute('data-period');
+            window.location.href = '?period=' + period;
+        });
+    });
 });
 </script>
 <style>
