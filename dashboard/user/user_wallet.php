@@ -7,6 +7,13 @@ $walletBalances = [];
 $walletTotalUsd = 0;
 $walletTransactions = [];
 $btcAmount = 0;
+$highestCoin = 'BTC';
+$highestAmount = 0;
+$highestCoinLogo = 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
+$totalProfit = 0;
+$activeCapital = 0;
+$dailyEarning = 0;
+$coinLogosMap = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png','USDC'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','XRP'=>'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png','SOL'=>'https://assets.coingecko.com/coins/images/4128/large/solana.png','BNB'=>'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png','USD'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png'];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
@@ -14,13 +21,34 @@ try {
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $amt = (float) $row['amount'];
+        $currency = strtoupper($row['currency']);
         $usd = $amt;
-        if (in_array(strtoupper($row['currency']), ['USDT','USDC','BUSD','USD'], true)) $usd = $amt;
-        elseif (strtoupper($row['currency']) === 'BTC') { $usd = $amt * 65000; $btcAmount = $amt; }
-        elseif (strtoupper($row['currency']) === 'ETH') $usd = $amt * 3500;
-        $walletBalances[] = ['currency' => $row['currency'], 'amount' => $amt, 'usd_value' => round($usd, 2)];
+        if (in_array($currency, ['USDT','USDC','BUSD','USD'], true)) $usd = $amt;
+        elseif ($currency === 'BTC') { $usd = $amt * 65000; $btcAmount = $amt; }
+        elseif ($currency === 'ETH') { $usd = $amt * 3500; }
+        elseif ($currency === 'XRP') { $usd = $amt * 0.55; }
+        elseif ($currency === 'SOL') { $usd = $amt * 100; }
+        elseif ($currency === 'BNB') { $usd = $amt * 582; }
+        else $usd = $amt;
+        $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => round($usd, 2)];
         $walletTotalUsd += $usd;
     }
+    $highestUsdValue = 0;
+    foreach ($walletBalances as $b) {
+        if ($b['usd_value'] > 0 && $b['usd_value'] > $highestUsdValue) {
+            $highestUsdValue = $b['usd_value'];
+            $highestCoin = $b['currency'];
+            $highestAmount = $b['amount'];
+            $highestCoinLogo = $coinLogosMap[$b['currency']] ?? 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
+        }
+    }
+    $highestDisplay = $highestAmount > 0 ? round($highestAmount) : 0;
+    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
+    $r->execute([$userId]); $totalProfit = (float)$r->fetchColumn();
+    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
+    $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
+    $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    $r->execute([$userId]); $dailyEarning = (float)$r->fetchColumn();
     $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? AND type IN (\'deposit\', \'withdrawal\') ORDER BY created_at DESC LIMIT 20');
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -73,9 +101,9 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display overflow-x-hidden">
 <div class="flex min-h-screen overflow-x-hidden">
 <?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden">
+<main class="flex-1 min-w-0 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<div class="flex-1 max-w-[1440px] w-full mx-auto p-4 sm:p-6 lg:p-8">
+<div class="flex-1 max-w-[1440px] w-full mx-auto">
 <div class="grid grid-cols-12 gap-8">
 <!-- Left Column: Balances & Assets -->
 <div class="col-span-12 lg:col-span-8 space-y-8">
@@ -83,38 +111,34 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
-<div class="flex justify-between items-start">
 <div>
 <p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
 <h1 class="text-4xl font-bold tracking-tight">$<?php echo number_format($walletTotalUsd, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1">
-<img class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="BTC"/>
-                                    <?php echo number_format($btcAmount, 8); ?> BTC
-                                </p>
-</div>
-<div class="flex gap-3">
+<img class="w-5 h-5" src="<?php echo htmlspecialchars($highestCoinLogo); ?>" alt="<?php echo htmlspecialchars($highestCoin); ?>"/>
+<?php echo isset($highestDisplay) ? $highestDisplay : 0; ?> <?php echo htmlspecialchars($highestCoin); ?>
+</p>
+<div class="flex gap-3 mt-4">
 <button type="button" id="deposit-btn" class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
 <span class="material-icons text-sm">add</span> Deposit
-                                </button>
+</button>
 <button type="button" id="withdraw-btn" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all backdrop-blur-sm">
 <span class="material-icons text-sm">file_upload</span> Withdraw
-                                </button>
+</button>
 </div>
 </div>
 <div class="mt-10 grid grid-cols-3 gap-6 border-t border-white/10 pt-8">
 <div>
-<p class="text-slate-400 text-xs mb-1">24h Change</p>
-<p class="text-emerald-400 font-bold flex items-center gap-1">
-<span class="material-icons text-xs">trending_up</span> +4.25%
-                                </p>
+<p class="text-slate-400 text-xs mb-1">Total Profit</p>
+<p class="font-bold text-emerald-400">$<?php echo number_format($totalProfit, 2); ?></p>
 </div>
 <div>
-<p class="text-slate-400 text-xs mb-1">Spot Wallet</p>
-<p class="font-bold">$89,201.12</p>
+<p class="text-slate-400 text-xs mb-1">Active Capital</p>
+<p class="font-bold">$<?php echo number_format($activeCapital, 2); ?></p>
 </div>
 <div>
-<p class="text-slate-400 text-xs mb-1">Staking Rewards</p>
-<p class="font-bold text-primary">$1,420.50</p>
+<p class="text-slate-400 text-xs mb-1">Daily Earning</p>
+<p class="font-bold text-primary">$<?php echo number_format($dailyEarning, 2); ?></p>
 </div>
 </div>
 </div>
@@ -241,19 +265,13 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 <div class="bg-slate-900 p-6">
 <h5 class="text-primary text-xs font-bold uppercase mb-1">Coming Soon</h5>
 <h4 class="text-white font-bold mb-4">Earn up to 12% APY with Bloombit Staking</h4>
-<img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" data-alt="Abstract 3D digital shapes with neon yellow lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHwE3RtjthIQUFIpsY37xhY3Ziz9_BghfRaF1Da-SKX8FIY0BxVEGSxFroAwi_MmV4rBeyjRAKJNJZ3RCacRRUXijjAg2qspHfiq9b7r_YWoqj4Uorszlk6d_gNBd-RUMIrQZ7wUkv41PQ8M8fythPyPmQQPGx1pytl-6tw3sJfeOhrh7jQbSQqVq1K_vISLkLjSRIEhhFZtWL6mPf-6OsvzjasHfzYOjNJIhio4U0Z2HEzzQ4psJuR9WbHB6q1-inYAn25jXo7Ys"/>
+<img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" src="/uploads/images/crypto-assets.jpg" onerror="this.src='/uploads/images/crypto-assets.png';this.onerror=null"/>
 <button class="w-full mt-4 py-2 border border-white/20 text-white text-xs font-bold rounded hover:bg-white/10 transition-colors">Join Waitlist</button>
 </div>
 </div>
 </div>
 </div>
 
-<!-- Drawer Backdrop -->
-<div id="wallet-drawer-backdrop" class="fixed inset-0 bg-black/20 z-40 hidden transition-opacity" aria-hidden="true"></div>
-
-<!-- Deposit Sidebar Drawer -->
-<div id="deposit-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[480px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300">
-<div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">Deposit Crypto</h2>
 <button type="button" id="deposit-drawer-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors"><span class="material-icons text-lg">close</span></button>
 </div>
@@ -300,8 +318,7 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 </div>
 </div>
 
-<!-- Withdraw Sidebar Drawer -->
-<div id="withdraw-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[480px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300">
+<div id="withdraw-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[480px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-[50] border-l border-slate-200 dark:border-zinc-800 flex flex-col transition-transform duration-300 ease-out" style="transform:translateX(100%)">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">Withdraw Funds</h2>
 <button type="button" id="withdraw-drawer-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors"><span class="material-icons text-lg">close</span></button>
@@ -333,8 +350,7 @@ Withdraw Now <span class="material-icons text-sm">arrow_forward</span>
 </form>
 </div>
 </div>
-
-</main>
+ class="fixed inset-0 bg-black/50 z-[45] hidden" aria-hidden="true" style="backdrop-filter:blur(2px)"></div>
 <script src="/js/app.js"></script>
 <script>window.BLOOMBIT_API_BASE = '';</script>
 <script src="/js/crypto-config.js"></script>
@@ -380,6 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Load addresses for both drawers
+    var urlAction = (function(){ var m = window.location.search.match(/[?&]action=([^&]+)/); return m ? m[1] : null; })();
     fetch('/api/addresses.php').then(function(r){ return r.json(); }).then(function(d){
         if (d.success && d.addresses && d.addresses.length > 0) {
             addressesData = d.addresses;
@@ -388,11 +405,23 @@ document.addEventListener('DOMContentLoaded', function() {
             var options = d.addresses.map(function(a){
                 return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ')</option>';
             }).join('');
-            depositSelect.innerHTML = options;
-            withdrawSelect.innerHTML = options;
-            // Attach change listener after options are loaded
+            if (depositSelect) depositSelect.innerHTML = options;
             if (withdrawSelect) {
+                withdrawSelect.innerHTML = options;
                 withdrawSelect.addEventListener('change', updateWithdrawBalance);
+            }
+            // Auto-open drawer if redirected from dashboard with action param
+            if (urlAction === 'deposit' && depositDrawer) {
+                depositStep1.classList.remove('hidden');
+                depositStep2.classList.add('hidden');
+                var errEl = document.getElementById('deposit-error');
+                if (errEl) errEl.classList.add('hidden');
+                openDrawer(depositDrawer);
+                history.replaceState({}, '', window.location.pathname);
+            } else if (urlAction === 'withdraw' && withdrawDrawer) {
+                updateWithdrawBalance();
+                openDrawer(withdrawDrawer);
+                history.replaceState({}, '', window.location.pathname);
             }
         }
     });
@@ -458,11 +487,15 @@ document.addEventListener('DOMContentLoaded', function() {
         withdrawCloseBtn.addEventListener('click', function(){ closeDrawer(withdrawDrawer); });
     }
     function updateWithdrawBalance() {
-        var currency = document.getElementById('withdraw-currency').value;
-        document.getElementById('withdraw-currency-label').textContent = currency || '—';
+        var sel = document.getElementById('withdraw-currency');
+        var lbl = document.getElementById('withdraw-currency-label');
+        var availEl = document.getElementById('withdraw-available');
+        if (!sel || !lbl || !availEl) return;
+        var currency = sel.value || '';
+        lbl.textContent = currency || '—';
         var balance = userBalances[currency];
         var avail = balance ? parseFloat(balance.amount) : 0;
-        document.getElementById('withdraw-available').textContent = avail.toFixed(8) + ' ' + (currency || '');
+        availEl.textContent = avail.toFixed(8) + ' ' + (currency || '');
     }
     document.getElementById('withdrawal-form').addEventListener('submit', function(e){
         e.preventDefault();

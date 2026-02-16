@@ -76,9 +76,9 @@ $siteName = get_site_name();
 </div>
 <div class="relative z-10">
 <div class="flex -space-x-3 mb-4">
-<img class="w-10 h-10 rounded-full border-2 border-primary object-cover" data-alt="User profile picture of a woman smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDojSM2HqTrpeC5VVY-cxL_QomPkUsMDHIdsfC-gVOLeHMDbSvGrcTMZYpX6y_Le4PIh8vI_g-gSPV7mugtxS1mYqq003HO4xE9JzlMLMBdaSMlc6tAoXq2MkBpCrH58La-Y9qJdE2vkcSJa96TZh-rIAr0IQ7ymoL0eCsVfyTlRRugx0yLJuDdpkocrFhePGnrvz1iK6NeXcKsKJt5eofVHqSdi5735q8TYsJNvakbVAENdPgv6injQaemvNjKjE5i7z6SMx54mhY"/>
-<img class="w-10 h-10 rounded-full border-2 border-primary object-cover" data-alt="User profile picture of a man smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAcI5lm5bMLx_M4d_pGzX-GTv2BhbPY4Ufch3WRB6GVm46E-oNjZkVGBqaV7Awyhz6kIyYZPoTeA0N0tfFzPg1Sha1Cfn0kDpXo-lBtKnhHZy1B3G4RY-yTQWLZTpD8A42VdpZ5JEsV-wtyzmrpmUKFuueTMDB6d2Zf1OgpRNb8_btkQX4TiIAOi1DbILvkwlhBNNXkkwIpAgSlXZs5U00jVzp_VRHWzVrwmpUlmqQLAAoa3ObYtWBWZ-j4F_uh9-dpMBDI0xhx2Q"/>
-<img class="w-10 h-10 rounded-full border-2 border-primary object-cover" data-alt="User profile picture of a young professional" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfM8rU9XLOpaM_s9EAWsTD8mFRtkoo3dfF8SRB9eAckaTe736OoO2-DM8YrRZFblHuL8qnoqPiPbE4JlYr2ZUOpF8ab4wWZFHYNICu79glSLTGtrZrc-9kxQdKMcKQIsbokqKBc4Yz6yz143l5FbhSYBLpy5nU5_8XolWypJIsspiTeo5y26I-x0eGtWG6UtDchKsoOl5xyPQ5F7UXQmg9w2gTpl1Wg4f8e9T8su3cJ8I7YAWb6-i1YYaubCfT6DPB9AxpVOnVkts"/>
+<img class="w-10 h-10 rounded-full border-2 border-primary object-cover" alt="User" src="/uploads/images/user1.jpg" onerror="this.style.display='none'"/>
+<img class="w-10 h-10 rounded-full border-2 border-primary object-cover" alt="User" src="/uploads/images/user2.jpg" onerror="this.style.display='none'"/>
+<img class="w-10 h-10 rounded-full border-2 border-primary object-cover" alt="User" src="/uploads/images/user3.jpg" onerror="this.style.display='none'"/>
 </div>
 <p class="text-black text-sm font-medium">Join 10k+ active users worldwide</p>
 </div>

@@ -5,6 +5,13 @@ $currentPage = 'dashboard';
 $siteName = get_site_name();
 $userBalance = 0;
 $btcAmount = 0;
+$walletBalances = [];
+$highestCoin = 'BTC';
+$highestAmount = 0;
+$highestCoinLogo = 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
+$totalProfit = 0;
+$activeCapital = 0;
+$dailyEarning = 0;
 $activeInvestments = [];
 $chartData = [];
 $period = $_GET['period'] ?? '1M';
@@ -18,15 +25,39 @@ $days = match($period) {
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
+    $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png','USDC'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','BUSD'=>'https://assets.coingecko.com/coins/images/9576/large/BUSD.png','XRP'=>'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png','SOL'=>'https://assets.coingecko.com/coins/images/4128/large/solana.png','BNB'=>'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png','USD'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png'];
     $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $amt = (float)$row['amount'];
-        if (in_array(strtoupper($row['currency']), ['USDT','USDC','USD','BUSD'], true)) $userBalance += $amt;
-        elseif (strtoupper($row['currency']) === 'BTC') { $userBalance += $amt * 65000; $btcAmount = $amt; }
-        elseif (strtoupper($row['currency']) === 'ETH') $userBalance += $amt * 3500;
-        else $userBalance += $amt;
+        $currency = strtoupper($row['currency']);
+        $usdVal = 0;
+        if (in_array($currency, ['USDT','USDC','USD','BUSD'], true)) { $usdVal = $amt; }
+        elseif ($currency === 'BTC') { $usdVal = $amt * 65000; $btcAmount = $amt; }
+        elseif ($currency === 'ETH') { $usdVal = $amt * 3500; }
+        elseif ($currency === 'XRP') { $usdVal = $amt * 0.55; }
+        elseif ($currency === 'SOL') { $usdVal = $amt * 100; }
+        elseif ($currency === 'BNB') { $usdVal = $amt * 582; }
+        else { $usdVal = $amt; }
+        $userBalance += $usdVal;
+        $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => $usdVal];
     }
+    $highestUsdValue = 0;
+    foreach ($walletBalances as $b) {
+        if ($b['usd_value'] > 0 && $b['usd_value'] > $highestUsdValue) {
+            $highestUsdValue = $b['usd_value'];
+            $highestCoin = $b['currency'];
+            $highestAmount = $b['amount'];
+            $highestCoinLogo = $coinLogos[$b['currency']] ?? 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
+        }
+    }
+    $highestDisplay = $highestAmount > 0 ? round($highestAmount) : 0;
+    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
+    $r->execute([$userId]); $totalProfit = (float)$r->fetchColumn();
+    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
+    $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
+    $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    $r->execute([$userId]); $dailyEarning = (float)$r->fetchColumn();
     $stmt = $pdo->prepare('SELECT ui.*, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC LIMIT 5');
     $stmt->execute([$userId, 'active']);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) $activeInvestments[] = $row;
@@ -106,38 +137,34 @@ try {
 <div class="col-span-6 relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
-<div class="flex justify-between items-start">
 <div>
 <p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
 <h1 class="text-4xl font-bold tracking-tight">$<?php echo number_format($userBalance, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1">
-<img class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="BTC"/>
-                                    <?php echo number_format($btcAmount, 8); ?> BTC
-                                </p>
-</div>
-<div class="flex gap-3">
+<img class="w-5 h-5" src="<?php echo htmlspecialchars($highestCoinLogo); ?>" alt="<?php echo htmlspecialchars($highestCoin); ?>"/>
+<?php echo $highestDisplay; ?> <?php echo htmlspecialchars($highestCoin); ?>
+</p>
+<div class="flex gap-3 mt-4">
 <button type="button" id="deposit-btn-dash" class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
 <span class="material-icons text-sm">add</span> Deposit
-                                </button>
+</button>
 <button type="button" id="withdraw-btn-dash" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all backdrop-blur-sm">
 <span class="material-icons text-sm">file_upload</span> Withdraw
-                                </button>
+</button>
 </div>
 </div>
 <div class="mt-10 grid grid-cols-3 gap-6 border-t border-white/10 pt-8">
 <div>
-<p class="text-slate-400 text-xs mb-1">24h Change</p>
-<p class="text-emerald-400 font-bold flex items-center gap-1">
-<span class="material-icons text-xs">trending_up</span> +4.25%
-                                </p>
+<p class="text-slate-400 text-xs mb-1">Total Profit</p>
+<p class="font-bold text-emerald-400">$<?php echo number_format($totalProfit, 2); ?></p>
 </div>
 <div>
-<p class="text-slate-400 text-xs mb-1">Spot Wallet</p>
-<p class="font-bold">$<?php echo number_format($userBalance * 0.91, 2); ?></p>
+<p class="text-slate-400 text-xs mb-1">Active Capital</p>
+<p class="font-bold">$<?php echo number_format($activeCapital, 2); ?></p>
 </div>
 <div>
-<p class="text-slate-400 text-xs mb-1">Staking Rewards</p>
-<p class="font-bold text-primary">$<?php echo number_format($userBalance * 0.0145, 2); ?></p>
+<p class="text-slate-400 text-xs mb-1">Daily Earning</p>
+<p class="font-bold text-primary">$<?php echo number_format($dailyEarning, 2); ?></p>
 </div>
 </div>
 </div>
@@ -153,8 +180,10 @@ try {
 <button type="button" data-period="1Y" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1Y' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1Y</button>
 </div>
 </div>
-<div class="h-40 relative flex items-end gap-1" id="performance-chart">
+<div class="h-40 relative flex flex-col" id="performance-chart-wrapper">
+<div class="flex-1 relative min-h-0" id="performance-chart">
 <?php
+$dates = [];
 if (!empty($chartData)) {
     $maxVal = max(array_column($chartData, 'value'));
     $minVal = min(array_column($chartData, 'value'));
@@ -185,12 +214,13 @@ if (!empty($chartData)) {
 <path d="<?php echo htmlspecialchars($areaD); ?>" fill="url(#chartGradient)"></path>
 <path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#ffc105" stroke-width="2"></path>
 </svg>
-<div class="flex justify-between mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-<?php foreach ($dates as $d): ?><span><?php echo htmlspecialchars($d); ?></span><?php endforeach; ?>
-</div>
 <?php } else { ?>
 <div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>
 <?php } ?>
+</div>
+<div class="flex justify-between mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest" id="chart-dates">
+<?php if (!empty($chartData) && isset($dates)) { foreach ($dates as $d): ?><span><?php echo htmlspecialchars($d); ?></span><?php endforeach; } ?>
+</div>
 </div>
 </div>
 <!-- Active AI Bots Feed -->
@@ -383,31 +413,71 @@ document.addEventListener('DOMContentLoaded', function() {
         setInterval(function() { updateTrade(card); }, 8000 + (i * 1000));
     });
     
-    // Chart filter buttons
-    var filterBtns = document.querySelectorAll('.chart-filter-btn');
+    // Chart filter buttons - AJAX
+    var chartContainer = document.getElementById('performance-chart');
+    var chartDates = document.getElementById('chart-dates');
     var currentPeriod = '<?php echo htmlspecialchars($period); ?>';
-    filterBtns.forEach(function(btn) {
-        var period = btn.getAttribute('data-period');
-        if (period === currentPeriod) {
+    
+    function updateChart(data) {
+        if (!chartContainer) return;
+        if (!data || data.length === 0) {
+            chartContainer.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>';
+            if (chartDates) chartDates.innerHTML = '';
+            return;
+        }
+        var maxVal = Math.max.apply(null, data.map(function(d){ return d.value; }));
+        var minVal = Math.min.apply(null, data.map(function(d){ return d.value; }));
+        var range = maxVal - minVal;
+        if (range === 0) range = 1;
+        var count = data.length;
+        var points = [];
+        var dates = [];
+        data.forEach(function(point, i) {
+            var x = count > 1 ? (i / (count - 1)) * 100 : 50;
+            var y = 100 - ((point.value - minVal) / range) * 80;
+            points.push(x + ',' + y);
+            if (i === 0 || i === Math.floor(count / 4) || i === Math.floor(count / 2) || i === Math.floor(count * 3 / 4) || i === count - 1) {
+                dates.push(new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            }
+        });
+        var pathD = 'M' + points.join(' L');
+        var areaD = pathD + ' L' + (count > 1 ? 100 : 50) + ',100 L0,100 Z';
+        chartContainer.innerHTML = '<div class="absolute inset-0 trading-graph-bg rounded-lg"></div><svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100"><defs><linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" style="stop-color:#ffc105;stop-opacity:0.2"></stop><stop offset="100%" style="stop-color:#ffc105;stop-opacity:0"></stop></linearGradient></defs><path d="' + areaD + '" fill="url(#chartGradient)"></path><path d="' + pathD + '" fill="none" stroke="#ffc105" stroke-width="2"></path></svg>';
+        if (chartDates) chartDates.innerHTML = dates.map(function(d){ return '<span>' + d + '</span>'; }).join('');
+    }
+    
+    document.querySelectorAll('.chart-filter-btn').forEach(function(btn) {
+        var p = btn.getAttribute('data-period');
+        if (p === currentPeriod) {
             btn.classList.add('bg-white', 'dark:bg-white/10', 'shadow-sm', 'text-black', 'dark:text-white');
             btn.classList.remove('text-slate-500');
         }
-        btn.addEventListener('click', function() {
-            window.location.href = '?period=' + period;
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var period = this.getAttribute('data-period');
+            document.querySelectorAll('.chart-filter-btn').forEach(function(b) {
+                b.classList.remove('bg-white', 'dark:bg-white/10', 'shadow-sm', 'text-black', 'dark:text-white');
+                b.classList.add('text-slate-500');
+            });
+            this.classList.add('bg-white', 'dark:bg-white/10', 'shadow-sm', 'text-black', 'dark:text-white');
+            this.classList.remove('text-slate-500');
+            fetch('/api/user/chart-data.php?period=' + period).then(function(r){ return r.json(); }).then(function(res){
+                if (res.success && res.data) updateChart(res.data);
+            });
         });
     });
     
-    // Deposit/Withdraw buttons on dashboard
+    // Deposit/Withdraw buttons - redirect with action param
     var depositBtnDash = document.getElementById('deposit-btn-dash');
     var withdrawBtnDash = document.getElementById('withdraw-btn-dash');
     if (depositBtnDash) {
         depositBtnDash.addEventListener('click', function() {
-            window.location.href = '/dashboard/user/wallet';
+            window.location.href = '/dashboard/user/wallet?action=deposit';
         });
     }
     if (withdrawBtnDash) {
         withdrawBtnDash.addEventListener('click', function() {
-            window.location.href = '/dashboard/user/wallet';
+            window.location.href = '/dashboard/user/wallet?action=withdraw';
         });
     }
 });
