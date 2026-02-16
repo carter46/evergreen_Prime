@@ -37,6 +37,7 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <title><?php echo htmlspecialchars($siteName); ?> | Wallet &amp; Withdrawals</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
@@ -217,7 +218,7 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 </div>
 </div>
 <!-- Right Column: Withdrawal Form & Safety -->
-<div class="col-span-12 lg:col-span-4 space-y-6">
+<div class="col-span-12 lg:col-span-4 space-y-6 min-w-0">
 <!-- Security Hint -->
 <div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex gap-4">
 <div class="w-10 h-10 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center">
@@ -312,8 +313,8 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 </div>
 </div>
 <!-- Ad/Banner Area -->
-<div class="rounded-xl overflow-hidden relative group">
-<div class="bg-slate-900 p-6">
+<div class="rounded-xl overflow-hidden relative group w-full min-w-0">
+<div class="bg-slate-900 p-6 w-full">
 <h5 class="text-primary text-xs font-bold uppercase mb-1">Coming Soon</h5>
 <h4 class="text-white font-bold mb-4">Earn up to 12% APY with Bloombit Staking</h4>
 <img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" data-alt="Abstract 3D digital shapes with neon yellow lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHwE3RtjthIQUFIpsY37xhY3Ziz9_BghfRaF1Da-SKX8FIY0BxVEGSxFroAwi_MmV4rBeyjRAKJNJZ3RCacRRUXijjAg2qspHfiq9b7r_YWoqj4Uorszlk6d_gNBd-RUMIrQZ7wUkv41PQ8M8fythPyPmQQPGx1pytl-6tw3sJfeOhrh7jQbSQqVq1K_vISLkLjSRIEhhFZtWL6mPf-6OsvzjasHfzYOjNJIhio4U0Z2HEzzQ4psJuR9WbHB6q1-inYAn25jXo7Ys"/>
