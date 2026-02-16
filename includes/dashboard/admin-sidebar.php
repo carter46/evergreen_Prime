@@ -37,7 +37,7 @@ $navClass = function ($page) use ($current) {
             <span class="material-icons text-[20px] shrink-0">wallet</span>
             <span class="font-medium truncate">Wallet Addresses</span>
         </a>
-        <a class="<?php echo $navClass('transactions'); ?>" href="/dashboard/admin">
+        <a class="<?php echo $navClass('transactions'); ?>" href="/dashboard/admin/transactions">
             <span class="material-icons text-[20px] shrink-0">receipt_long</span>
             <span class="font-medium truncate">Transactions</span>
         </a>

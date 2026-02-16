@@ -21,7 +21,7 @@ try {
         $walletBalances[] = ['currency' => $row['currency'], 'amount' => $amt, 'usd_value' => round($usd, 2)];
         $walletTotalUsd += $usd;
     }
-    $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 20');
+    $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? AND type IN (\'deposit\', \'withdrawal\') ORDER BY created_at DESC LIMIT 20');
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $walletTransactions[] = $row;
@@ -96,7 +96,7 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <button type="button" id="deposit-btn" class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
 <span class="material-icons text-sm">add</span> Deposit
                                 </button>
-<button class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all backdrop-blur-sm">
+<button type="button" id="withdraw-btn" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all backdrop-blur-sm">
 <span class="material-icons text-sm">file_upload</span> Withdraw
                                 </button>
 </div>
@@ -173,7 +173,7 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
 <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">Recent History</h2>
-<button class="text-primary text-xs font-bold hover:underline">View All</button>
+<a href="/dashboard/user/analytics" class="text-primary text-xs font-bold hover:underline">View All</a>
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-left">
@@ -204,7 +204,12 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <td class="px-6 py-4 text-sm font-medium"><?php echo htmlspecialchars($tx['currency']); ?></td>
 <td class="px-6 py-4 text-right text-sm font-bold <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo number_format((float)$tx['amount'], 4); ?></td>
 <td class="px-6 py-4 text-center">
-<span class="px-2 py-1 <?php echo $tx['status'] === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
+<?php
+$statusClass = 'bg-amber-100 text-amber-700';
+if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700';
+elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
+?>
+<span class="px-2 py-1 <?php echo $statusClass; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>
 <td class="px-6 py-4 text-right font-mono text-[10px] text-slate-400"><?php echo $tx['reference'] ? substr($tx['reference'], 0, 6) . '...' . substr($tx['reference'], -4) : '—'; ?></td>
 </tr>
@@ -217,7 +222,7 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 </div>
 </div>
 </div>
-<!-- Right Column: Withdrawal Form & Safety -->
+<!-- Right Column: Safety & Staking -->
 <div class="col-span-12 lg:col-span-4 space-y-6 min-w-0">
 <!-- Security Hint -->
 <div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex gap-4">
@@ -231,90 +236,9 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
                         </p>
 </div>
 </div>
-<!-- Withdrawal Form -->
-<div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg sticky top-24 overflow-hidden">
-<div class="bg-primary p-4">
-<h3 class="font-bold flex items-center gap-2">
-<span class="material-icons text-xl">payments</span> Withdraw Funds
-                        </h3>
-</div>
-<form id="withdrawal-form" class="p-6 space-y-6">
-<!-- Step 1: Currency Selection -->
-<div class="space-y-2">
-<label class="text-xs font-bold uppercase tracking-wide text-slate-500">1. Select Currency</label>
-<div class="relative">
-<select name="currency" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-lg py-3 px-4 appearance-none text-sm font-medium focus:ring-primary focus:border-primary">
-<option value="BTC">Bitcoin (BTC)</option>
-<option value="ETH">Ethereum (ETH)</option>
-<option value="USDT">Tether (USDT)</option>
-<option value="SOL">Solana (SOL)</option>
-</select>
-<span class="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
-</div>
-</div>
-<!-- Step 2: Address -->
-<div class="space-y-2">
-<label class="text-xs font-bold uppercase tracking-wide text-slate-500">2. Recipient Address</label>
-<div class="relative">
-<input name="address" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-lg py-3 px-4 text-sm focus:ring-primary focus:border-primary" placeholder="Paste external wallet address" type="text" required/>
-<button class="absolute right-3 top-1/2 -translate-y-1/2 text-primary font-bold text-xs uppercase hover:underline">Paste</button>
-</div>
-</div>
-<!-- Step 3: Network -->
-<div class="space-y-2">
-<label class="text-xs font-bold uppercase tracking-wide text-slate-500">3. Network</label>
-<div class="grid grid-cols-2 gap-2">
-<button class="p-3 border-2 border-primary bg-primary/5 rounded-lg text-left">
-<p class="text-[10px] font-bold">BTC</p>
-<p class="text-xs font-medium">Bitcoin Mainnet</p>
-</button>
-<button class="p-3 border border-slate-200 dark:border-slate-800 rounded-lg text-left opacity-50">
-<p class="text-[10px] font-bold">BEP20</p>
-<p class="text-xs font-medium">BSC Network</p>
-</button>
-</div>
-</div>
-<!-- Step 4: Amount -->
-<div class="space-y-2">
-<div class="flex justify-between items-center">
-<label class="text-xs font-bold uppercase tracking-wide text-slate-500">4. Amount</label>
-<span class="text-[10px] text-slate-400">Available: 1.45028 BTC</span>
-</div>
-<div class="relative">
-<input name="amount" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-lg py-3 px-4 text-sm font-bold focus:ring-primary focus:border-primary" placeholder="0.00" step="any" type="number" required/>
-<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-<button class="text-[10px] font-bold bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">MAX</button>
-<span class="text-xs font-bold text-slate-400">BTC</span>
-</div>
-</div>
-</div>
-<!-- Transaction Summary -->
-<div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 space-y-2">
-<div class="flex justify-between text-xs">
-<span class="text-slate-500">Network Fee</span>
-<span class="font-medium">0.0002 BTC (~$9.00)</span>
-</div>
-<div class="flex justify-between text-xs">
-<span class="text-slate-500">Service Fee</span>
-<span class="font-medium text-emerald-500">FREE</span>
-</div>
-<div class="pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between items-end">
-<span class="text-xs font-bold">You will receive</span>
-<div class="text-right">
-<p class="text-lg font-bold leading-none">0.0000 <span class="text-xs text-slate-400">BTC</span></p>
-</div>
-</div>
-</div>
-<div id="withdrawal-message" class="text-sm hidden"></div>
-<button type="submit" class="w-full bg-primary hover:bg-primary/90 text-black font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
-                            Withdraw Now <span class="material-icons text-sm">arrow_forward</span>
-</button>
-</form>
-</div>
-</div>
 <!-- Ad/Banner Area -->
-<div class="rounded-xl overflow-hidden relative group w-full min-w-0">
-<div class="bg-slate-900 p-6 w-full">
+<div class="rounded-xl overflow-hidden relative group w-full">
+<div class="bg-slate-900 p-6">
 <h5 class="text-primary text-xs font-bold uppercase mb-1">Coming Soon</h5>
 <h4 class="text-white font-bold mb-4">Earn up to 12% APY with Bloombit Staking</h4>
 <img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" data-alt="Abstract 3D digital shapes with neon yellow lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHwE3RtjthIQUFIpsY37xhY3Ziz9_BghfRaF1Da-SKX8FIY0BxVEGSxFroAwi_MmV4rBeyjRAKJNJZ3RCacRRUXijjAg2qspHfiq9b7r_YWoqj4Uorszlk6d_gNBd-RUMIrQZ7wUkv41PQ8M8fythPyPmQQPGx1pytl-6tw3sJfeOhrh7jQbSQqVq1K_vISLkLjSRIEhhFZtWL6mPf-6OsvzjasHfzYOjNJIhio4U0Z2HEzzQ4psJuR9WbHB6q1-inYAn25jXo7Ys"/>
@@ -324,17 +248,89 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 </div>
 </div>
 
-<!-- Deposit Modal (shows wallet addresses to send crypto to) -->
-<div id="deposit-modal" class="fixed inset-0 z-50 hidden">
-<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="deposit-modal-backdrop"></div>
-<div class="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto">
-<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-zinc-800 my-8">
+<!-- Drawer Backdrop -->
+<div id="wallet-drawer-backdrop" class="fixed inset-0 bg-black/20 z-40 hidden transition-opacity" aria-hidden="true"></div>
+
+<!-- Deposit Sidebar Drawer -->
+<div id="deposit-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[480px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
-<h2 class="text-xl font-bold">Deposit Crypto</h2>
-<button type="button" id="deposit-modal-close" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full"><span class="material-icons-round">close</span></button>
+<h2 class="text-lg font-bold">Deposit Crypto</h2>
+<button type="button" id="deposit-drawer-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors"><span class="material-icons text-lg">close</span></button>
 </div>
-<div id="deposit-addresses-container" class="p-6"><div class="text-center py-8 text-slate-500">Loading addresses...</div></div>
+<div class="flex-1 overflow-y-auto p-6">
+<div id="deposit-form-step1">
+<div class="space-y-4">
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Select Currency</label>
+<select id="deposit-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700">
+<option value="">Loading...</option>
+</select>
 </div>
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Amount</label>
+<input type="number" id="deposit-amount" step="any" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="0.00"/>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Reference / TX Hash <span class="text-slate-400 font-normal">(Optional)</span></label>
+<input type="text" id="deposit-reference" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="Transaction hash or reference"/>
+</div>
+<div id="deposit-error" class="text-sm text-red-500 hidden"></div>
+<button type="button" id="deposit-submit-btn" class="w-full py-2 bg-primary text-black font-bold rounded-lg text-sm">Submit Deposit Request</button>
+</div>
+</div>
+<div id="deposit-form-step2" class="hidden">
+<div class="space-y-4">
+<div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
+<p class="text-sm font-medium text-emerald-700 dark:text-emerald-300 mb-2">Deposit request submitted!</p>
+<p class="text-xs text-emerald-600 dark:text-emerald-400">Please send your funds to the address below. Your deposit will be credited after admin approval.</p>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Send to Address</label>
+<div class="flex items-center gap-2">
+<input type="text" id="deposit-address-display" readonly class="flex-1 bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700 font-mono text-xs"/>
+<button type="button" id="deposit-copy-addr" class="px-3 py-2 bg-primary text-black font-bold rounded-lg text-xs">Copy</button>
+</div>
+</div>
+<div class="pt-4 border-t border-slate-200 dark:border-zinc-800">
+<p class="text-xs text-slate-500 mb-2">Selected Currency: <span id="deposit-selected-currency" class="font-bold"></span></p>
+<p class="text-xs text-slate-500">Amount: <span id="deposit-selected-amount" class="font-bold"></span></p>
+</div>
+<button type="button" id="deposit-close-btn" class="w-full py-2 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-sm mt-4">Close</button>
+</div>
+</div>
+</div>
+
+<!-- Withdraw Sidebar Drawer -->
+<div id="withdraw-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[480px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300">
+<div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+<h2 class="text-lg font-bold">Withdraw Funds</h2>
+<button type="button" id="withdraw-drawer-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors"><span class="material-icons text-lg">close</span></button>
+</div>
+<div class="flex-1 overflow-y-auto p-6">
+<form id="withdrawal-form" class="space-y-4">
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Select Currency</label>
+<select name="currency" id="withdraw-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700">
+<option value="">Loading...</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Recipient Address</label>
+<input name="address" id="withdraw-address" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="Paste external wallet address" type="text" required/>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Amount</label>
+<div class="relative">
+<input name="amount" id="withdraw-amount" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="0.00" step="any" type="number" required/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400" id="withdraw-currency-label">—</span>
+</div>
+<p class="text-xs text-slate-400 mt-1">Available: <span id="withdraw-available">—</span></p>
+</div>
+<div id="withdrawal-message" class="text-sm hidden"></div>
+<button type="submit" class="w-full py-2 bg-primary text-black font-bold rounded-lg text-sm flex items-center justify-center gap-2">
+Withdraw Now <span class="material-icons text-sm">arrow_forward</span>
+</button>
+</form>
 </div>
 </div>
 
@@ -345,58 +341,157 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <script src="/js/crypto-prices.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var depositModal = document.getElementById('deposit-modal');
-    var depositContainer = document.getElementById('deposit-addresses-container');
-    function esc(s){ if (!s) return ''; var d=document.createElement('div'); d.textContent=String(s); return d.innerHTML; }
-    function escAttr(s){ if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function openDeposit() {
-        depositModal.classList.remove('hidden');
-        fetch('/api/addresses.php').then(function(r){ return r.json(); }).then(function(d){
-            if (d.success && d.addresses && d.addresses.length > 0) {
-                depositContainer.innerHTML = '<p class="text-sm text-slate-500 mb-4">Send only the supported network for each coin. Wrong network may result in loss.</p>' +
-                    d.addresses.map(function(a){
-                        var logo = (a.logo && /^https?:\/\//i.test(a.logo)) ? '<img src="' + escAttr(a.logo) + '" alt="" class="w-8 h-8 rounded-full flex-shrink-0"/>' : '';
-                        return '<div class="flex items-center justify-between gap-4 py-3 border-b border-slate-100 dark:border-zinc-800 last:border-0">' +
-                            '<div class="flex items-center gap-3 min-w-0">' + logo +
-                            '<div class="min-w-0"><p class="font-semibold text-sm">' + esc(a.display_name || a.symbol) + ' (' + esc(a.symbol) + ')</p>' +
-                            '<p class="font-mono text-xs text-slate-500 truncate">' + esc(a.address) + '</p></div></div>' +
-                            '<button type="button" class="copy-addr flex-shrink-0 px-3 py-1.5 bg-primary/20 text-primary rounded-lg text-xs font-bold hover:bg-primary hover:text-black transition-colors" data-addr="' + escAttr(a.address) + '">Copy</button>' +
-                        '</div>';
-                    }).join('');
-                depositContainer.querySelectorAll('.copy-addr').forEach(function(btn){
-                    btn.addEventListener('click', function(){
-                        var addr = btn.getAttribute('data-addr');
-                        if (addr && navigator.clipboard) navigator.clipboard.writeText(addr).then(function(){ btn.textContent = 'Copied!'; setTimeout(function(){ btn.textContent = 'Copy'; }, 1500); });
-                    });
-                });
-            } else {
-                depositContainer.innerHTML = '<div class="text-center py-8 text-slate-500">No deposit addresses configured. Please contact support.</div>';
-            }
-        }).catch(function(){ depositContainer.innerHTML = '<div class="text-center py-8 text-red-500">Failed to load addresses.</div>'; });
-    }
-    function closeDeposit() { depositModal.classList.add('hidden'); }
-    document.getElementById('deposit-btn').addEventListener('click', openDeposit);
-    document.getElementById('deposit-modal-backdrop').addEventListener('click', closeDeposit);
-    document.getElementById('deposit-modal-close').addEventListener('click', closeDeposit);
+    var backdrop = document.getElementById('wallet-drawer-backdrop');
+    var depositDrawer = document.getElementById('deposit-drawer');
+    var withdrawDrawer = document.getElementById('withdraw-drawer');
+    var depositStep1 = document.getElementById('deposit-form-step1');
+    var depositStep2 = document.getElementById('deposit-form-step2');
+    var addressesData = null;
+    var userBalances = <?php 
+        $balanceMap = [];
+        foreach ($walletBalances as $b) {
+            $balanceMap[$b['currency']] = $b;
+        }
+        echo json_encode($balanceMap);
+    ?>;
 
-    if (!window.BloombitCryptoPrices) return;
-    var coinIds = ['bitcoin','ethereum','tether'];
-    function updateWalletValues(prices) {
-        if (!prices) return;
-        document.querySelectorAll('.wallet-assets-table tr[data-coin][data-balance]').forEach(function(row) {
-            var coinId = row.getAttribute('data-coin');
-            var balance = parseFloat(row.getAttribute('data-balance')) || 0;
-            var p = prices[coinId];
-            var valueEl = row.querySelector('.wallet-value');
-            if (valueEl && p && p.usd != null) {
-                valueEl.textContent = '$' + (balance * p.usd).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            }
-        });
+    function openDrawer(drawer) {
+        if (drawer === depositDrawer) withdrawDrawer.style.transform = 'translateX(100%)';
+        else depositDrawer.style.transform = 'translateX(100%)';
+        drawer.style.transform = 'translateX(0)';
+        backdrop.classList.remove('hidden');
     }
-    window.BloombitCryptoPrices.fetch(coinIds).then(updateWalletValues);
-    setInterval(function() {
+    function closeDrawer(drawer) {
+        drawer.style.transform = 'translateX(100%)';
+        backdrop.classList.add('hidden');
+    }
+    function closeAllDrawers() {
+        closeDrawer(depositDrawer);
+        closeDrawer(withdrawDrawer);
+    }
+
+    // Load addresses for both drawers
+    fetch('/api/addresses.php').then(function(r){ return r.json(); }).then(function(d){
+        if (d.success && d.addresses && d.addresses.length > 0) {
+            addressesData = d.addresses;
+            var depositSelect = document.getElementById('deposit-currency');
+            var withdrawSelect = document.getElementById('withdraw-currency');
+            var options = d.addresses.map(function(a){
+                return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ')</option>';
+            }).join('');
+            depositSelect.innerHTML = options;
+            withdrawSelect.innerHTML = options;
+        }
+    });
+
+    // Deposit drawer handlers
+    document.getElementById('deposit-btn').addEventListener('click', function(){ depositStep1.classList.remove('hidden'); depositStep2.classList.add('hidden'); document.getElementById('deposit-error').classList.add('hidden'); openDrawer(depositDrawer); });
+    document.getElementById('deposit-drawer-close').addEventListener('click', function(){ closeDrawer(depositDrawer); });
+    document.getElementById('deposit-close-btn').addEventListener('click', function(){ closeDrawer(depositDrawer); window.location.reload(); });
+    if (backdrop) backdrop.addEventListener('click', closeAllDrawers);
+
+    document.getElementById('deposit-submit-btn').addEventListener('click', function(){
+        var currency = document.getElementById('deposit-currency').value;
+        var amount = parseFloat(document.getElementById('deposit-amount').value) || 0;
+        var reference = document.getElementById('deposit-reference').value.trim();
+        var errEl = document.getElementById('deposit-error');
+        if (!currency || amount <= 0) {
+            errEl.textContent = 'Please select a currency and enter a valid amount';
+            errEl.classList.remove('hidden');
+            return;
+        }
+        errEl.classList.add('hidden');
+        fetch('/api/user/deposit.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currency: currency, amount: amount, reference: reference || null })
+        }).then(function(r){ return r.json(); }).then(function(res){
+            if (res.success) {
+                var addr = addressesData.find(function(a){ return a.symbol === currency; });
+                document.getElementById('deposit-address-display').value = addr ? addr.address : '';
+                document.getElementById('deposit-selected-currency').textContent = currency;
+                document.getElementById('deposit-selected-amount').textContent = amount;
+                depositStep1.classList.add('hidden');
+                depositStep2.classList.remove('hidden');
+            } else {
+                errEl.textContent = res.error || 'Failed to submit deposit';
+                errEl.classList.remove('hidden');
+            }
+        }).catch(function(){ errEl.textContent = 'Request failed'; errEl.classList.remove('hidden'); });
+    });
+    document.getElementById('deposit-copy-addr').addEventListener('click', function(){
+        var addr = document.getElementById('deposit-address-display').value;
+        if (addr && navigator.clipboard) {
+            navigator.clipboard.writeText(addr).then(function(){
+                var btn = document.getElementById('deposit-copy-addr');
+                btn.textContent = 'Copied!';
+                setTimeout(function(){ btn.textContent = 'Copy'; }, 1500);
+            });
+        }
+    });
+
+    // Withdraw drawer handlers
+    document.getElementById('withdraw-btn').addEventListener('click', function(){ openDrawer(withdrawDrawer); updateWithdrawBalance(); });
+    document.getElementById('withdraw-drawer-close').addEventListener('click', function(){ closeDrawer(withdrawDrawer); });
+    document.getElementById('withdraw-currency').addEventListener('change', updateWithdrawBalance);
+    function updateWithdrawBalance() {
+        var currency = document.getElementById('withdraw-currency').value;
+        document.getElementById('withdraw-currency-label').textContent = currency || '—';
+        var balance = userBalances[currency];
+        var avail = balance ? parseFloat(balance.amount) : 0;
+        document.getElementById('withdraw-available').textContent = avail.toFixed(8) + ' ' + (currency || '');
+    }
+    document.getElementById('withdrawal-form').addEventListener('submit', function(e){
+        e.preventDefault();
+        var currency = document.getElementById('withdraw-currency').value;
+        var amount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
+        var address = document.getElementById('withdraw-address').value.trim();
+        var msgEl = document.getElementById('withdrawal-message');
+        if (!currency || amount <= 0 || !address) {
+            msgEl.textContent = 'Please fill all fields';
+            msgEl.className = 'text-sm text-red-500';
+            msgEl.classList.remove('hidden');
+            return;
+        }
+        msgEl.classList.add('hidden');
+        fetch('/api/user/withdraw.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currency: currency, amount: amount, address: address })
+        }).then(function(r){ return r.json(); }).then(function(res){
+            if (res.success) {
+                msgEl.textContent = res.data.message || 'Withdrawal request submitted';
+                msgEl.className = 'text-sm text-emerald-500';
+                msgEl.classList.remove('hidden');
+                setTimeout(function(){ closeDrawer(withdrawDrawer); window.location.reload(); }, 2000);
+            } else {
+                msgEl.textContent = res.error || 'Failed';
+                msgEl.className = 'text-sm text-red-500';
+                msgEl.classList.remove('hidden');
+            }
+        }).catch(function(){ msgEl.textContent = 'Request failed'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); });
+    });
+
+    // Crypto prices update
+    if (window.BloombitCryptoPrices) {
+        var coinIds = ['bitcoin','ethereum','tether'];
+        function updateWalletValues(prices) {
+            if (!prices) return;
+            document.querySelectorAll('.wallet-assets-table tr[data-coin][data-balance]').forEach(function(row) {
+                var coinId = row.getAttribute('data-coin');
+                var balance = parseFloat(row.getAttribute('data-balance')) || 0;
+                var p = prices[coinId];
+                var valueEl = row.querySelector('.wallet-value');
+                if (valueEl && p && p.usd != null) {
+                    valueEl.textContent = '$' + (balance * p.usd).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+            });
+        }
         window.BloombitCryptoPrices.fetch(coinIds).then(updateWalletValues);
-    }, 300000);
+        setInterval(function() {
+            window.BloombitCryptoPrices.fetch(coinIds).then(updateWalletValues);
+        }, 300000);
+    }
 });
 </script>
 </body></html>

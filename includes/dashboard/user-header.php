@@ -20,14 +20,7 @@ $initials = strtoupper(substr($userName ?: 'U', 0, 2));
         </div>
     </div>
     <div class="flex items-center gap-3 sm:gap-6 flex-wrap">
-        <div class="flex gap-2 sm:gap-4">
-            <div class="bg-white dark:bg-white/5 border border-primary/10 px-3 sm:px-4 py-2 rounded-xl flex items-center gap-2 sm:gap-3 shadow-sm">
-                <span class="text-xs text-slate-400 uppercase font-bold">BTC/USD</span>
-                <span class="font-bold text-sm sm:text-base" data-coin="bitcoin" data-price="">--</span>
-                <span class="text-xs font-bold crypto-change text-emerald-500" data-coin="bitcoin" data-change="">--</span>
-            </div>
-        </div>
-        <div class="flex items-center gap-3 sm:gap-4 border-l border-slate-200 dark:border-white/10 pl-4">
+        <div class="flex items-center gap-3 sm:gap-4">
             <button class="relative w-10 h-10 flex items-center justify-center text-slate-400 hover:text-primary transition-colors rounded-xl hover:bg-primary/10 min-h-[44px] min-w-[44px]">
                 <span class="material-icons-round">notifications</span>
                 <span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>

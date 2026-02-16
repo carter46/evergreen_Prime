@@ -5,15 +5,51 @@ $currentPage = 'analytics';
 $siteName = get_site_name();
 $totalProfit = 0;
 $analyticsTx = [];
+$dailyAvgReturn = 0;
+$activeCapital = 0;
+$estMonthlyEarnings = 0;
+$chartData = [];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
     $r->execute([$userId]);
     $totalProfit = (float)$r->fetchColumn();
+    
     $stmt = $pdo->prepare('SELECT type, amount, currency, status, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50');
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) $analyticsTx[] = $row;
+    
+    // Calculate daily avg return (from payouts over last 30 days)
+    $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    $r->execute([$userId]);
+    $dailyAvgReturn = (float)$r->fetchColumn();
+    
+    // Active capital (sum of active investments)
+    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
+    $r->execute([$userId]);
+    $activeCapital = (float)$r->fetchColumn();
+    
+    // Est monthly earnings (active capital * avg yield)
+    $r = $pdo->prepare("SELECT COALESCE(AVG((p.yield_min + p.yield_max) / 2), 0) FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = 'active'");
+    $r->execute([$userId]);
+    $avgYield = (float)$r->fetchColumn();
+    $estMonthlyEarnings = $activeCapital * ($avgYield / 100);
+    
+    // Chart data (cumulative performance from transactions)
+    $stmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal', 'payout') AND created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
+    $stmt->execute([$userId]);
+    $dailyData = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $date = $row['date'];
+        if (!isset($dailyData[$date])) $dailyData[$date] = ['deposit' => 0, 'withdrawal' => 0, 'payout' => 0];
+        $dailyData[$date][$row['type']] = (float)$row['total'];
+    }
+    $cumulative = 0;
+    foreach ($dailyData as $date => $amounts) {
+        $cumulative += $amounts['deposit'] - $amounts['withdrawal'] + $amounts['payout'];
+        $chartData[] = ['date' => $date, 'value' => $cumulative];
+    }
 } catch (Throwable $e) { }
 ?>
 <!DOCTYPE html>
@@ -63,26 +99,12 @@ try {
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display min-h-screen overflow-x-hidden">
 <div class="flex min-h-screen">
 <?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 overflow-y-auto">
+<main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<div class="p-4 sm:p-6 lg:p-8">
-<!-- Page Header -->
-<header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-<div>
+<div class="mb-6">
 <h1 class="text-2xl sm:text-3xl font-bold">Earnings Analytics</h1>
 <p class="text-slate-500 mt-1">Detailed performance tracking and profit distribution history.</p>
 </div>
-<div class="flex items-center gap-3">
-<button class="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center gap-2 hover:bg-white transition-all text-sm font-medium">
-<span class="material-icons-round text-lg">calendar_today</span>
-                    Last 30 Days
-                </button>
-<button class="px-4 py-2 bg-primary text-black rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-all text-sm font-bold shadow-sm shadow-primary/20">
-<span class="material-icons-round text-lg">download</span>
-                    Export PDF
-                </button>
-</div>
-</header>
 <!-- Top Stats Grid -->
 <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 <div class="glass-card bg-white dark:bg-zinc-900 p-5 rounded-xl">
@@ -111,7 +133,7 @@ try {
 </div>
 <h3 class="text-slate-400 text-sm font-medium">Daily Avg. Return</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">2.45%</span>
+<span class="text-2xl font-bold tracking-tight">$<?php echo number_format($dailyAvgReturn, 2); ?></span>
 </div>
 <div class="mt-4 h-8 w-full">
 <div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
@@ -128,7 +150,7 @@ try {
 </div>
 <h3 class="text-slate-400 text-sm font-medium">Active Capital</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$125,500</span>
+<span class="text-2xl font-bold tracking-tight">$<?php echo number_format($activeCapital, 2); ?></span>
 </div>
 <div class="mt-4 h-8 w-full">
 <div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
@@ -145,7 +167,7 @@ try {
 </div>
 <h3 class="text-slate-400 text-sm font-medium">Est. Monthly Earnings</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$9,240.00</span>
+<span class="text-2xl font-bold tracking-tight">$<?php echo number_format($estMonthlyEarnings, 2); ?></span>
 </div>
 <div class="mt-4 h-8 w-full">
 <div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
@@ -171,37 +193,46 @@ try {
 <button class="px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all">ALL</button>
 </div>
 </div>
-<div class="relative h-[300px] w-full">
-<!-- Abstract Visualization of Area Chart -->
-<div class="absolute inset-0 flex items-end">
-<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 300">
+<div class="relative h-[300px] w-full" id="analytics-chart">
+<?php
+if (!empty($chartData)) {
+    $maxVal = max(array_column($chartData, 'value'));
+    $minVal = min(array_column($chartData, 'value'));
+    $range = $maxVal - $minVal;
+    if ($range == 0) $range = 1;
+    $points = [];
+    $dates = [];
+    $count = count($chartData);
+    foreach ($chartData as $i => $point) {
+        $x = $count > 1 ? ($i / ($count - 1)) * 1000 : 500;
+        $y = 300 - (($point['value'] - $minVal) / $range) * 250;
+        $points[] = $x . ',' . $y;
+        if ($i === 0 || $i === floor($count / 4) || $i === floor($count / 2) || $i === floor($count * 3 / 4) || $i === $count - 1) {
+            $dates[] = date('M j', strtotime($point['date']));
+        }
+    }
+    $pathD = 'M' . implode(' L', $points);
+    $areaD = $pathD . ' L1000,300 L0,300 Z';
+?>
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
 <defs>
-<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<linearGradient id="analyticsChartGradient" x1="0" x2="0" y1="0" y2="1">
 <stop offset="0%" stop-color="#f9bd0b" stop-opacity="0.2"></stop>
 <stop offset="100%" stop-color="#f9bd0b" stop-opacity="0"></stop>
-</lineargradient>
+</linearGradient>
 </defs>
-<path d="M0,250 Q100,240 200,220 T400,180 T600,130 T800,80 T1000,40 L1000,300 L0,300 Z" fill="url(#chartGradient)"></path>
-<path d="M0,250 Q100,240 200,220 T400,180 T600,130 T800,80 T1000,40" fill="none" stroke="#f9bd0b" stroke-width="3"></path>
-<!-- Dots for points -->
-<circle cx="200" cy="220" fill="#f9bd0b" r="4"></circle>
-<circle cx="400" cy="180" fill="#f9bd0b" r="4"></circle>
-<circle cx="600" cy="130" fill="#f9bd0b" r="4"></circle>
-<circle cx="800" cy="80" fill="#f9bd0b" r="4"></circle>
+<path d="<?php echo htmlspecialchars($areaD); ?>" fill="url(#analyticsChartGradient)"></path>
+<path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#f9bd0b" stroke-width="3"></path>
+<?php foreach ($points as $i => $p): if ($i % floor($count / 5) === 0 || $i === $count - 1): list($px, $py) = explode(',', $p); ?>
+<circle cx="<?php echo $px; ?>" cy="<?php echo $py; ?>" fill="#f9bd0b" r="4"></circle>
+<?php endif; endforeach; ?>
 </svg>
-</div>
-<!-- Tooltip Simulation -->
-<div class="absolute left-1/2 top-1/4 -translate-x-1/2 -translate-y-full bg-zinc-900 text-white p-3 rounded-lg shadow-xl text-xs flex flex-col items-center pointer-events-none after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-8 after:border-transparent after:border-t-zinc-900">
-<span class="text-zinc-400 font-medium">May 14, 2024</span>
-<span class="text-primary font-bold text-sm">$32,450.00 (+4.2%)</span>
-</div>
-</div>
 <div class="flex justify-between mt-4 px-2 text-xs text-slate-400 font-medium">
-<span>14 May</span>
-<span>21 May</span>
-<span>28 May</span>
-<span>04 Jun</span>
-<span>Today</span>
+<?php foreach ($dates as $d): ?><span><?php echo htmlspecialchars($d); ?></span><?php endforeach; ?>
+</div>
+<?php } else { ?>
+<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>
+<?php } ?>
 </div>
 </div>
 <!-- Side Widgets -->
@@ -287,167 +318,59 @@ try {
 </tr>
 </thead>
 <tbody class="text-sm divide-y divide-slate-100 dark:divide-zinc-800">
-<!-- Row 1 -->
-<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-colors">
+<?php
+$coinLogosAnalytics = [
+    'BTC' => 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
+    'ETH' => 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
+    'USDT' => 'https://assets.coingecko.com/coins/images/325/large/Tether.png',
+];
+foreach ($analyticsTx as $tx):
+    $isPayout = $tx['type'] === 'payout';
+    $logo = $coinLogosAnalytics[strtoupper($tx['currency'])] ?? null;
+    $statusClass = $tx['status'] === 'completed' ? 'text-emerald-500' : ($tx['status'] === 'rejected' ? 'text-red-500' : 'text-amber-500');
+    $statusIcon = $tx['status'] === 'completed' ? 'check_circle' : ($tx['status'] === 'rejected' ? 'cancel' : 'schedule');
+?>
+<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-colors animate-fade-in">
 <td class="px-6 py-4">
-<p class="font-semibold">Jun 14, 2024</p>
-<p class="text-xs text-slate-400">14:22 PM</p>
+<p class="font-semibold"><?php echo date('M j, Y', strtotime($tx['created_at'])); ?></p>
+<p class="text-xs text-slate-400"><?php echo date('H:i', strtotime($tx['created_at'])); ?></p>
 </td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
 <div class="w-2 h-2 rounded-full bg-primary"></div>
-<span class="font-medium">AI Quantum Yield</span>
+<span class="font-medium"><?php echo htmlspecialchars(ucfirst($tx['type'])); ?></span>
 </div>
 </td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
-<img alt="BTC" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png"/>
-<span class="font-medium">BTC</span>
+<?php if ($logo): ?><img alt="<?php echo htmlspecialchars($tx['currency']); ?>" class="w-5 h-5" src="<?php echo htmlspecialchars($logo); ?>"/><?php endif; ?>
+<span class="font-medium"><?php echo htmlspecialchars($tx['currency']); ?></span>
 </div>
 </td>
-<td class="px-6 py-4 font-bold text-emerald-500">+$450.25</td>
+<td class="px-6 py-4 font-bold <?php echo $isPayout ? 'text-emerald-500' : 'text-slate-600'; ?>"><?php echo $isPayout ? '+' : ''; ?>$<?php echo number_format((float)$tx['amount'], 2); ?></td>
 <td class="px-6 py-4">
-<span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded font-bold text-xs">2.1%</span>
+<?php if ($isPayout): ?>
+<span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded font-bold text-xs"><?php echo number_format((($tx['amount'] / ($activeCapital ?: 1)) * 100), 1); ?>%</span>
+<?php else: ?>
+<span class="px-2 py-1 bg-slate-100 dark:bg-zinc-800 text-slate-500 rounded font-bold text-xs">—</span>
+<?php endif; ?>
 </td>
 <td class="px-6 py-4">
-<span class="flex items-center gap-1 text-emerald-500 font-medium">
-<span class="material-icons-round text-sm">check_circle</span>
-                                    Completed
-                                </span>
+<span class="flex items-center gap-1 <?php echo $statusClass; ?> font-medium">
+<span class="material-icons-round text-sm"><?php echo $statusIcon; ?></span>
+<?php echo htmlspecialchars(ucfirst($tx['status'])); ?>
+</span>
 </td>
 </tr>
-<!-- Row 2 -->
-<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-colors">
-<td class="px-6 py-4">
-<p class="font-semibold">Jun 13, 2024</p>
-<p class="text-xs text-slate-400">09:15 AM</p>
-</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-blue-400"></div>
-<span class="font-medium">Stable Edge</span>
-</div>
-</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<img alt="USDT" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/325/large/Tether.png"/>
-<span class="font-medium">USDT</span>
-</div>
-</td>
-<td class="px-6 py-4 font-bold text-emerald-500">+$122.10</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded font-bold text-xs">1.8%</span>
-</td>
-<td class="px-6 py-4">
-<span class="flex items-center gap-1 text-emerald-500 font-medium">
-<span class="material-icons-round text-sm">check_circle</span>
-                                    Completed
-                                </span>
-</td>
-</tr>
-<!-- Row 3 -->
-<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-colors">
-<td class="px-6 py-4">
-<p class="font-semibold">Jun 12, 2024</p>
-<p class="text-xs text-slate-400">22:45 PM</p>
-</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-primary"></div>
-<span class="font-medium">AI Quantum Yield</span>
-</div>
-</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<img alt="ETH" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png"/>
-<span class="font-medium">ETH</span>
-</div>
-</td>
-<td class="px-6 py-4 font-bold text-emerald-500">+$310.44</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded font-bold text-xs">2.4%</span>
-</td>
-<td class="px-6 py-4">
-<span class="flex items-center gap-1 text-emerald-500 font-medium">
-<span class="material-icons-round text-sm">check_circle</span>
-                                    Completed
-                                </span>
-</td>
-</tr>
-<!-- Row 4 -->
-<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-colors">
-<td class="px-6 py-4">
-<p class="font-semibold">Jun 12, 2024</p>
-<p class="text-xs text-slate-400">11:02 AM</p>
-</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-purple-400"></div>
-<span class="font-medium">DeFi Harvester</span>
-</div>
-</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<img alt="SOL" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/4128/large/solana.png"/>
-<span class="font-medium">SOL</span>
-</div>
-</td>
-<td class="px-6 py-4 font-bold text-emerald-500">+$89.50</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded font-bold text-xs">3.1%</span>
-</td>
-<td class="px-6 py-4">
-<span class="flex items-center gap-1 text-emerald-500 font-medium">
-<span class="material-icons-round text-sm">check_circle</span>
-                                    Completed
-                                </span>
-</td>
-</tr>
-<!-- Row 5 -->
-<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-colors">
-<td class="px-6 py-4">
-<p class="font-semibold">Jun 11, 2024</p>
-<p class="text-xs text-slate-400">18:30 PM</p>
-</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-primary"></div>
-<span class="font-medium">AI Quantum Yield</span>
-</div>
-</td>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<img alt="BTC" class="w-5 h-5" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png"/>
-<span class="font-medium">BTC</span>
-</div>
-</td>
-<td class="px-6 py-4 font-bold text-emerald-500">+$214.18</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded font-bold text-xs">1.9%</span>
-</td>
-<td class="px-6 py-4">
-<span class="flex items-center gap-1 text-emerald-500 font-medium">
-<span class="material-icons-round text-sm">check_circle</span>
-                                    Completed
-                                </span>
-</td>
-</tr>
+<?php endforeach; ?>
+<?php if (empty($analyticsTx)): ?>
+<tr><td class="px-6 py-8 text-center text-slate-500" colspan="6">No transactions yet.</td></tr>
+<?php endif; ?>
 </tbody>
 </table>
 </div>
 <div class="p-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
-<span class="text-xs text-slate-400 font-medium">Showing 1-10 of 124 entries</span>
-<div class="flex gap-2">
-<button class="p-2 border border-slate-200 dark:border-zinc-700 rounded-lg opacity-50 cursor-not-allowed">
-<span class="material-icons-round text-sm">chevron_left</span>
-</button>
-<button class="px-4 py-2 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs font-bold bg-primary text-black">1</button>
-<button class="px-4 py-2 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs font-bold hover:bg-slate-50 dark:hover:bg-zinc-800">2</button>
-<button class="px-4 py-2 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs font-bold hover:bg-slate-50 dark:hover:bg-zinc-800">3</button>
-<button class="p-2 border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800">
-<span class="material-icons-round text-sm">chevron_right</span>
-</button>
-</div>
+<span class="text-xs text-slate-400 font-medium">Showing <?php echo min(count($analyticsTx), 50); ?> entries</span>
 </div>
 </div>
 </main>
@@ -456,4 +379,43 @@ try {
 <span class="material-icons-round">support_agent</span>
 </button>
 <script src="/js/app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Page load animations
+    var cards = document.querySelectorAll('.glass-card');
+    cards.forEach(function(card, i) {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(function() {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, i * 100);
+    });
+    
+    // Chart animation
+    var chart = document.getElementById('analytics-chart');
+    if (chart) {
+        var paths = chart.querySelectorAll('path');
+        paths.forEach(function(path) {
+            var length = path.getTotalLength();
+            path.style.strokeDasharray = length;
+            path.style.strokeDashoffset = length;
+            path.style.transition = 'stroke-dashoffset 2s ease';
+            setTimeout(function() {
+                path.style.strokeDashoffset = 0;
+            }, 500);
+        });
+    }
+});
+</script>
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+</style>
 </body></html>
