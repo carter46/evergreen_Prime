@@ -42,16 +42,9 @@ try {
         $userBalance += $usdVal;
         $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => $usdVal];
     }
-    $highestUsdValue = 0;
-    foreach ($walletBalances as $b) {
-        if ($b['usd_value'] > 0 && $b['usd_value'] > $highestUsdValue) {
-            $highestUsdValue = $b['usd_value'];
-            $highestCoin = $b['currency'];
-            $highestAmount = $b['amount'];
-            $highestCoinLogo = $coinLogos[$b['currency']] ?? 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
-        }
-    }
-    $highestDisplay = $highestAmount > 0 ? round($highestAmount) : 0;
+    usort($walletBalances, function($a, $b) { return ($b['usd_value'] <=> $a['usd_value']); });
+    $topCoins = array_slice(array_filter($walletBalances, function($b) { return $b['usd_value'] > 0; }), 0, 3);
+    $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return $b['usd_value'] > 0; })) - 3);
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
     $r->execute([$userId]); $totalProfit = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
@@ -134,16 +127,24 @@ try {
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
 <!-- Dashboard Grid -->
 <div class="grid grid-cols-12 gap-6">
-<!-- Wallet Balance Card (Gradient Design) -->
-<div class="col-span-6 relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
+<!-- Row 1: Total Estimated Balance (75%) | Live AI Trades (25%) -->
+<div class="col-span-12 lg:col-span-9 relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
 <div>
 <p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
 <h1 class="text-4xl font-bold tracking-tight">$<?php echo number_format($userBalance, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
-<p class="text-primary mt-2 flex items-center gap-1">
-<img class="w-5 h-5" src="<?php echo htmlspecialchars($highestCoinLogo); ?>" alt="<?php echo htmlspecialchars($highestCoin); ?>"/>
-<?php echo $highestDisplay; ?> <?php echo htmlspecialchars($highestCoin); ?>
+<p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
+<?php
+$parts = [];
+foreach ($topCoins as $c) {
+    $logo = $coinLogos[$c['currency']] ?? 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
+    $amt = $c['amount'] > 0 ? round($c['amount']) : 0;
+    $parts[] = '<img class="w-5 h-5" src="' . htmlspecialchars($logo) . '" alt="' . htmlspecialchars($c['currency']) . '"/>' . $amt . ' ' . htmlspecialchars($c['currency']);
+}
+echo implode(' <span class="text-white/60 mx-1">|</span> ', $parts);
+if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$extraCoinCount.'</span>';
+?>
 </p>
 <div class="flex gap-3 mt-4">
 <button type="button" id="deposit-btn-dash" class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
@@ -170,62 +171,8 @@ try {
 </div>
 </div>
 </div>
-<!-- Performance Chart Section -->
-<div class="col-span-6 bg-white dark:bg-white/5 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-white/5">
-<div class="flex justify-between items-center mb-6">
-<h3 class="text-lg font-bold">Performance Growth</h3>
-<div class="flex bg-slate-100 dark:bg-white/5 p-1 rounded-lg">
-<button type="button" data-period="1D" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1D' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1D</button>
-<button type="button" data-period="1W" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1W' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1W</button>
-<button type="button" data-period="1M" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1M' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1M</button>
-<button type="button" data-period="1Y" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1Y' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1Y</button>
-</div>
-</div>
-<div class="h-40 relative flex flex-col" id="performance-chart-wrapper">
-<div class="flex-1 relative min-h-0" id="performance-chart">
-<?php
-$dates = [];
-if (!empty($chartData)) {
-    $maxVal = max(array_column($chartData, 'value'));
-    $minVal = min(array_column($chartData, 'value'));
-    $range = $maxVal - $minVal;
-    if ($range == 0) $range = 1;
-    $points = [];
-    $dates = [];
-    $count = count($chartData);
-    foreach ($chartData as $i => $point) {
-        $x = $count > 1 ? ($i / ($count - 1)) * 100 : 50;
-        $y = 100 - (($point['value'] - $minVal) / $range) * 80;
-        $points[] = $x . ',' . $y;
-        if ($i === 0 || $i === floor($count / 4) || $i === floor($count / 2) || $i === floor($count * 3 / 4) || $i === $count - 1) {
-            $dates[] = date('M j', strtotime($point['date']));
-        }
-    }
-    $pathD = 'M' . implode(' L', $points);
-    $areaD = $pathD . ' L' . ($count > 1 ? 100 : 50) . ',100 L0,100 Z';
-?>
-<div class="absolute inset-0 trading-graph-bg rounded-lg"></div>
-<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-<defs>
-<linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" style="stop-color:#ffc105;stop-opacity:0.2"></stop>
-<stop offset="100%" style="stop-color:#ffc105;stop-opacity:0"></stop>
-</linearGradient>
-</defs>
-<path d="<?php echo htmlspecialchars($areaD); ?>" fill="url(#chartGradient)"></path>
-<path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#ffc105" stroke-width="2"></path>
-</svg>
-<?php } else { ?>
-<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>
-<?php } ?>
-</div>
-<div class="flex justify-between mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest" id="chart-dates">
-<?php if (!empty($chartData) && isset($dates)) { foreach ($dates as $d): ?><span><?php echo htmlspecialchars($d); ?></span><?php endforeach; } ?>
-</div>
-</div>
-</div>
-<!-- Active AI Bots Feed -->
-<div class="col-span-4 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-[400px]">
+<!-- Live AI Trades (30%) - swapped position with Performance -->
+<div class="col-span-12 lg:col-span-3 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-[400px]">
 <div class="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-white/5">
 <h3 class="font-bold flex items-center gap-2">
 <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
@@ -288,8 +235,62 @@ if (!empty($chartData)) {
 </div>
 </div>
 </div>
-<!-- My Investments -->
-<div class="col-span-8 bg-white dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5">
+<!-- Performance Growth (50%) -->
+<div class="col-span-12 lg:col-span-6 bg-white dark:bg-white/5 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-white/5">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-bold">Performance Growth</h3>
+<div class="flex bg-slate-100 dark:bg-white/5 p-1 rounded-lg">
+<button type="button" data-period="1D" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1D' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1D</button>
+<button type="button" data-period="1W" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1W' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1W</button>
+<button type="button" data-period="1M" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1M' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1M</button>
+<button type="button" data-period="1Y" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1Y' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1Y</button>
+</div>
+</div>
+<div class="h-40 relative flex flex-col" id="performance-chart-wrapper">
+<div class="flex-1 relative min-h-0" id="performance-chart">
+<?php
+$dates = [];
+if (!empty($chartData)) {
+    $maxVal = max(array_column($chartData, 'value'));
+    $minVal = min(array_column($chartData, 'value'));
+    $range = $maxVal - $minVal;
+    if ($range == 0) $range = 1;
+    $points = [];
+    $dates = [];
+    $count = count($chartData);
+    foreach ($chartData as $i => $point) {
+        $x = $count > 1 ? ($i / ($count - 1)) * 100 : 50;
+        $y = 100 - (($point['value'] - $minVal) / $range) * 80;
+        $points[] = $x . ',' . $y;
+        if ($i === 0 || $i === floor($count / 4) || $i === floor($count / 2) || $i === floor($count * 3 / 4) || $i === $count - 1) {
+            $dates[] = date('M j', strtotime($point['date']));
+        }
+    }
+    $pathD = 'M' . implode(' L', $points);
+    $areaD = $pathD . ' L' . ($count > 1 ? 100 : 50) . ',100 L0,100 Z';
+?>
+<div class="absolute inset-0 trading-graph-bg rounded-lg"></div>
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#ffc105;stop-opacity:0.2"></stop>
+<stop offset="100%" style="stop-color:#ffc105;stop-opacity:0"></stop>
+</linearGradient>
+</defs>
+<path d="<?php echo htmlspecialchars($areaD); ?>" fill="url(#chartGradient)"></path>
+<path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#ffc105" stroke-width="2"></path>
+</svg>
+<?php } else { ?>
+<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>
+<?php } ?>
+</div>
+<div class="flex justify-between mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest" id="chart-dates">
+<?php if (!empty($chartData) && isset($dates)) { foreach ($dates as $d): ?><span><?php echo htmlspecialchars($d); ?></span><?php endforeach; } ?>
+</div>
+</div>
+</div>
+<!-- My Active Plans (50%) -->
+<div class="col-span-12 lg:col-span-6 bg-white dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5">
 <div class="flex justify-between items-center mb-6">
 <h3 class="text-lg font-bold">My Active Plans</h3>
 <a href="/dashboard/user/analytics" class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">

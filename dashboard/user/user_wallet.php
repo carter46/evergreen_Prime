@@ -33,23 +33,16 @@ try {
         $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => round($usd, 2)];
         $walletTotalUsd += $usd;
     }
-    $highestUsdValue = 0;
-    foreach ($walletBalances as $b) {
-        if ($b['usd_value'] > 0 && $b['usd_value'] > $highestUsdValue) {
-            $highestUsdValue = $b['usd_value'];
-            $highestCoin = $b['currency'];
-            $highestAmount = $b['amount'];
-            $highestCoinLogo = $coinLogosMap[$b['currency']] ?? 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
-        }
-    }
-    $highestDisplay = $highestAmount > 0 ? round($highestAmount) : 0;
+    usort($walletBalances, function($a, $b) { return ($b['usd_value'] <=> $a['usd_value']); });
+    $topCoins = array_slice(array_filter($walletBalances, function($b) { return $b['usd_value'] > 0; }), 0, 3);
+    $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return $b['usd_value'] > 0; })) - 3);
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
     $r->execute([$userId]); $totalProfit = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
     $r->execute([$userId]); $dailyEarning = (float)$r->fetchColumn();
-    $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 10');
+    $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5');
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $walletTransactions[] = $row;
@@ -113,9 +106,17 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <div>
 <p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
 <h1 class="text-4xl font-bold tracking-tight">$<?php echo number_format($walletTotalUsd, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
-<p class="text-primary mt-2 flex items-center gap-1">
-<img class="w-5 h-5" src="<?php echo htmlspecialchars($highestCoinLogo); ?>" alt="<?php echo htmlspecialchars($highestCoin); ?>"/>
-<?php echo isset($highestDisplay) ? $highestDisplay : 0; ?> <?php echo htmlspecialchars($highestCoin); ?>
+<p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
+<?php
+$parts = [];
+foreach ($topCoins as $c) {
+    $logo = $coinLogosMap[$c['currency']] ?? 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
+    $amt = $c['amount'] > 0 ? round($c['amount']) : 0;
+    $parts[] = '<img class="w-5 h-5" src="' . htmlspecialchars($logo) . '" alt="' . htmlspecialchars($c['currency']) . '"/>' . $amt . ' ' . htmlspecialchars($c['currency']);
+}
+echo implode(' <span class="text-white/60 mx-1">|</span> ', $parts);
+if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$extraCoinCount.'</span>';
+?>
 </p>
 <div class="flex gap-3 mt-4">
 <button type="button" id="deposit-btn" class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
@@ -144,8 +145,8 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 </div>
 </div>
 
-<!-- Row 2: Assets (60%) + Security (20%) + Coming Soon (20%) -->
-<div class="col-span-12 grid grid-cols-1 lg:grid-cols-[3fr_1fr_1fr] gap-6">
+<!-- Row 2: Assets (50%) + Security (25%) + Coming Soon (25%) -->
+<div class="col-span-12 grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr] gap-6">
 <!-- Your Assets -->
 <div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
 <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
