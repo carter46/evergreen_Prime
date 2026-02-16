@@ -627,7 +627,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }).catch(function(){ msgEl.textContent = 'Request failed'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); });
         });
-    }
+    });
 
     // Crypto prices update
     if (window.BloombitCryptoPrices) {
