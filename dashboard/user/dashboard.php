@@ -128,12 +128,12 @@ try {
 <!-- Dashboard Grid -->
 <div class="grid grid-cols-12 gap-6">
 <!-- Row 1: Total Estimated Balance (60%) | Live AI Trades (40%) -->
-<div class="col-span-12 lg:col-span-7 relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
+<div class="col-span-12 lg:col-span-7 relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-6 text-white shadow-2xl">
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
 <div>
 <p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
-<h1 class="text-6xl font-bold tracking-tight">$<?php echo number_format($userBalance, 2); ?> <span class="text-xl font-normal text-slate-400 ml-2">USD</span></h1>
+<h1 class="text-5xl font-bold tracking-tight">$<?php echo number_format($userBalance, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
 <?php
 $parts = [];
@@ -155,7 +155,7 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 </button>
 </div>
 </div>
-<div class="mt-10 grid grid-cols-3 gap-6 border-t border-white/10 pt-8">
+<div class="mt-6 grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
 <div>
 <p class="text-slate-400 text-xs mb-1">Total Profit</p>
 <p class="font-bold text-emerald-400">$<?php echo number_format($totalProfit, 2); ?></p>
@@ -172,7 +172,7 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 </div>
 </div>
 <!-- Live AI Trades (40%) -->
-<div class="col-span-12 lg:col-span-5 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-[400px]">
+<div class="col-span-12 lg:col-span-5 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-[320px]">
 <div class="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-white/5">
 <h3 class="font-bold flex items-center gap-2">
 <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
@@ -180,9 +180,9 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
                         </h3>
 <span class="text-xs font-bold text-primary">SCANNING...</span>
 </div>
-<div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+<div class="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3">
 <!-- Trade 1 -->
-<div class="live-trade-card flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark/50 border border-slate-100 dark:border-white/5">
+<div class="live-trade-card flex-1 min-h-0 flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark/50 border border-slate-100 dark:border-white/5">
 <div class="flex items-center gap-3">
 <div class="trade-icon-container w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
 <span class="trade-icon material-icons-round text-emerald-500 text-sm">trending_up</span>
@@ -195,7 +195,7 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <span class="live-trade-amount text-sm font-bold text-emerald-500">+$245.00</span>
 </div>
 <!-- Trade 2 -->
-<div class="live-trade-card flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark/50 border border-slate-100 dark:border-white/5">
+<div class="live-trade-card flex-1 min-h-0 flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark/50 border border-slate-100 dark:border-white/5">
 <div class="flex items-center gap-3">
 <div class="trade-icon-container w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
 <span class="trade-icon material-icons-round text-red-500 text-sm">trending_down</span>
@@ -208,7 +208,7 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <span class="live-trade-amount text-sm font-bold text-red-500">-$12.40</span>
 </div>
 <!-- Trade 3 -->
-<div class="live-trade-card flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark/50 border border-slate-100 dark:border-white/5">
+<div class="live-trade-card flex-1 min-h-0 flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark/50 border border-slate-100 dark:border-white/5">
 <div class="flex items-center gap-3">
 <div class="trade-icon-container w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
 <span class="trade-icon material-icons-round text-emerald-500 text-sm">trending_up</span>

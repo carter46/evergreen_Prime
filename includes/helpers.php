@@ -83,7 +83,8 @@ function get_current_user_data(): ?array {
 function get_coingecko_prices_usd(): array {
     static $cache = null;
     if ($cache !== null) return $cache;
-    $url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether&vs_currencies=usd';
+    $ids = 'bitcoin,ethereum,tether,usd-coin,solana,binancecoin,ripple,cardano,dogecoin,tron';
+    $url = 'https://api.coingecko.com/api/v3/simple/price?ids=' . $ids . '&vs_currencies=usd';
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
@@ -105,6 +106,13 @@ function get_coingecko_prices_usd(): array {
         'bitcoin' => (float) ($data['bitcoin']['usd'] ?? 0),
         'ethereum' => (float) ($data['ethereum']['usd'] ?? 0),
         'tether' => (float) ($data['tether']['usd'] ?? 1),
+        'usd-coin' => (float) ($data['usd-coin']['usd'] ?? 1),
+        'solana' => (float) ($data['solana']['usd'] ?? 0),
+        'binancecoin' => (float) ($data['binancecoin']['usd'] ?? 0),
+        'ripple' => (float) ($data['ripple']['usd'] ?? 0),
+        'cardano' => (float) ($data['cardano']['usd'] ?? 0),
+        'dogecoin' => (float) ($data['dogecoin']['usd'] ?? 0),
+        'tron' => (float) ($data['tron']['usd'] ?? 0),
     ];
     return $cache;
 }
@@ -113,7 +121,11 @@ function get_coingecko_prices_usd(): array {
  * Map wallet currency code to CoinGecko price key.
  */
 function currency_to_coingecko(string $currency): ?string {
-    $map = ['BTC' => 'bitcoin', 'ETH' => 'ethereum', 'USDT' => 'tether'];
+    $map = [
+        'BTC' => 'bitcoin', 'ETH' => 'ethereum', 'USDT' => 'tether', 'USDC' => 'usd-coin',
+        'SOL' => 'solana', 'BNB' => 'binancecoin', 'XRP' => 'ripple', 'ADA' => 'cardano',
+        'DOGE' => 'dogecoin', 'TRX' => 'tron',
+    ];
     return $map[strtoupper($currency)] ?? null;
 }
 

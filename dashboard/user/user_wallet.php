@@ -296,6 +296,7 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 <div>
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Amount</label>
 <input type="number" id="deposit-amount" step="any" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="0.00"/>
+<p class="text-xs text-slate-400 mt-1" id="deposit-usd-value">—</p>
 </div>
 <div>
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Reference / TX Hash <span class="text-slate-400 font-normal">(Optional)</span></label>
@@ -353,6 +354,8 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400" id="withdraw-currency-label">—</span>
 </div>
 <p class="text-xs text-slate-400 mt-1">Available: <span id="withdraw-available">—</span></p>
+<p class="text-xs text-slate-400 mt-1" id="withdraw-usd-value">—</p>
+<p class="text-xs text-amber-600 dark:text-amber-400 mt-1" id="withdraw-limit-hint">Min. withdrawal: $<span id="withdraw-min-limit"><?php echo htmlspecialchars(get_site_setting('min_withdrawal_limit', '10')); ?></span> USD</p>
 </div>
 <div id="withdrawal-message" class="text-sm hidden"></div>
 <button type="submit" class="w-full py-2 bg-primary text-black font-bold rounded-lg text-sm flex items-center justify-center gap-2">
@@ -412,13 +415,23 @@ document.addEventListener('DOMContentLoaded', function() {
             addressesData = d.addresses;
             var depositSelect = document.getElementById('deposit-currency');
             var withdrawSelect = document.getElementById('withdraw-currency');
-            var options = d.addresses.map(function(a){
+            var depositOptions = d.addresses.map(function(a){
                 return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ')</option>';
             }).join('');
-            if (depositSelect) depositSelect.innerHTML = options;
+            if (depositSelect) depositSelect.innerHTML = depositOptions;
+            // Withdraw: only show coins user has balance in
+            var withdrawAddresses = d.addresses.filter(function(a){
+                var b = userBalances[a.symbol];
+                return b && parseFloat(b.amount) > 0;
+            });
+            var withdrawOptions = withdrawAddresses.length > 0
+                ? withdrawAddresses.map(function(a){
+                    return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ') — ' + (userBalances[a.symbol] ? parseFloat(userBalances[a.symbol].amount).toFixed(6) : '0') + '</option>';
+                }).join('')
+                : '<option value="">No funds available to withdraw</option>';
             if (withdrawSelect) {
-                withdrawSelect.innerHTML = options;
-                withdrawSelect.addEventListener('change', updateWithdrawBalance);
+                withdrawSelect.innerHTML = withdrawOptions;
+                withdrawSelect.addEventListener('change', function(){ updateWithdrawBalance(); updateWithdrawUsdValue(); });
             }
             // Auto-open drawer if redirected from dashboard with action param
             if (urlAction === 'deposit' && depositDrawer) {
@@ -489,13 +502,17 @@ document.addEventListener('DOMContentLoaded', function() {
         withdrawBtn.addEventListener('click', function(){ 
             if (withdrawDrawer) {
                 openDrawer(withdrawDrawer); 
-                updateWithdrawBalance(); 
+                updateWithdrawBalance();
+                updateWithdrawUsdValue();
             }
         });
     }
     if (withdrawCloseBtn && withdrawDrawer) {
         withdrawCloseBtn.addEventListener('click', function(){ closeDrawer(withdrawDrawer); });
     }
+    var minWithdrawLimitEl = document.getElementById('withdraw-min-limit');
+    var minWithdrawLimitUsd = parseFloat(minWithdrawLimitEl ? minWithdrawLimitEl.textContent : '10') || 10;
+
     function updateWithdrawBalance() {
         var sel = document.getElementById('withdraw-currency');
         var lbl = document.getElementById('withdraw-currency-label');
@@ -506,6 +523,54 @@ document.addEventListener('DOMContentLoaded', function() {
         var balance = userBalances[currency];
         var avail = balance ? parseFloat(balance.amount) : 0;
         availEl.textContent = avail.toFixed(8) + ' ' + (currency || '');
+    }
+
+    function getUsdPricePerUnit(symbol) {
+        var Config = window.BloombitCryptoConfig || {};
+        var stablecoins = ['USDT','USDC','BUSD','USD','DAI'];
+        if (stablecoins.indexOf((symbol || '').toUpperCase()) >= 0) return Promise.resolve(1);
+        var coinId = Config.getCoinIdBySymbol ? Config.getCoinIdBySymbol(symbol) : null;
+        if (!coinId) return Promise.resolve(null);
+        if (!window.BloombitCryptoPrices || !window.BloombitCryptoPrices.fetch) return Promise.resolve(null);
+        return window.BloombitCryptoPrices.fetch([coinId]).then(function(prices){ return prices && prices[coinId] ? prices[coinId].usd : null; });
+    }
+
+    function updateDepositUsdValue() {
+        var currency = document.getElementById('deposit-currency').value;
+        var amount = parseFloat(document.getElementById('deposit-amount').value) || 0;
+        var el = document.getElementById('deposit-usd-value');
+        if (!el) return;
+        if (!currency || amount <= 0) { el.textContent = '—'; return; }
+        el.textContent = '≈ $—';
+        getUsdPricePerUnit(currency).then(function(price){
+            if (price != null) el.textContent = '≈ $' + (amount * price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USD';
+            else el.textContent = '—';
+        });
+    }
+
+    function updateWithdrawUsdValue() {
+        var currency = document.getElementById('withdraw-currency').value;
+        var amount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
+        var el = document.getElementById('withdraw-usd-value');
+        if (!el) return;
+        if (!currency || amount <= 0) { el.textContent = '—'; return; }
+        el.textContent = '≈ $—';
+        getUsdPricePerUnit(currency).then(function(price){
+            if (price != null) el.textContent = '≈ $' + (amount * price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USD';
+            else el.textContent = '—';
+        });
+    }
+
+    if (document.getElementById('deposit-amount')) {
+        document.getElementById('deposit-amount').addEventListener('input', updateDepositUsdValue);
+        document.getElementById('deposit-amount').addEventListener('change', updateDepositUsdValue);
+    }
+    if (document.getElementById('deposit-currency')) {
+        document.getElementById('deposit-currency').addEventListener('change', updateDepositUsdValue);
+    }
+    if (document.getElementById('withdraw-amount')) {
+        document.getElementById('withdraw-amount').addEventListener('input', updateWithdrawUsdValue);
+        document.getElementById('withdraw-amount').addEventListener('change', updateWithdrawUsdValue);
     }
     document.getElementById('withdrawal-form').addEventListener('submit', function(e){
         e.preventDefault();
@@ -520,23 +585,49 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         msgEl.classList.add('hidden');
-        fetch('/api/user/withdraw.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ currency: currency, amount: amount, address: address })
-        }).then(function(r){ return r.json(); }).then(function(res){
-            if (res.success) {
-                msgEl.textContent = res.data.message || 'Withdrawal request submitted';
-                msgEl.className = 'text-sm text-emerald-500';
-                msgEl.classList.remove('hidden');
-                setTimeout(function(){ closeDrawer(withdrawDrawer); window.location.reload(); }, 2000);
-            } else {
-                msgEl.textContent = res.error || 'Failed';
+        getUsdPricePerUnit(currency).then(function(price){
+            var amountUsd = price != null ? amount * price : 0;
+            if (amountUsd > 0 && amountUsd < minWithdrawLimitUsd) {
+                msgEl.textContent = 'Minimum withdrawal is $' + minWithdrawLimitUsd.toFixed(2) + ' USD. Your amount is approx. $' + amountUsd.toFixed(2) + ' USD.';
                 msgEl.className = 'text-sm text-red-500';
                 msgEl.classList.remove('hidden');
+                return;
             }
-        }).catch(function(){ msgEl.textContent = 'Request failed'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); });
-    });
+            fetch('/api/user/withdraw.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currency: currency, amount: amount, address: address })
+            }).then(function(r){ return r.json(); }).then(function(res){
+                if (res.success) {
+                    msgEl.textContent = res.data.message || 'Withdrawal request submitted';
+                    msgEl.className = 'text-sm text-emerald-500';
+                    msgEl.classList.remove('hidden');
+                    setTimeout(function(){ closeDrawer(withdrawDrawer); window.location.reload(); }, 2000);
+                } else {
+                    msgEl.textContent = res.error || 'Failed';
+                    msgEl.className = 'text-sm text-red-500';
+                    msgEl.classList.remove('hidden');
+                }
+            }).catch(function(){ msgEl.textContent = 'Request failed'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); });
+        }).catch(function(){
+            fetch('/api/user/withdraw.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currency: currency, amount: amount, address: address })
+            }).then(function(r){ return r.json(); }).then(function(res){
+                if (res.success) {
+                    msgEl.textContent = res.data.message || 'Withdrawal request submitted';
+                    msgEl.className = 'text-sm text-emerald-500';
+                    msgEl.classList.remove('hidden');
+                    setTimeout(function(){ closeDrawer(withdrawDrawer); window.location.reload(); }, 2000);
+                } else {
+                    msgEl.textContent = res.error || 'Failed';
+                    msgEl.className = 'text-sm text-red-500';
+                    msgEl.classList.remove('hidden');
+                }
+            }).catch(function(){ msgEl.textContent = 'Request failed'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); });
+        });
+    }
 
     // Crypto prices update
     if (window.BloombitCryptoPrices) {

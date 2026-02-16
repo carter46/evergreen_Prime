@@ -103,16 +103,26 @@
         'tron': { usd: 0.08, usd_24h_change: 0.5 }
     };
 
+    // Symbol -> CoinGecko ID (for USD conversion)
+    const SYMBOL_TO_COINGECKO = {};
+    Object.entries(COIN_META).forEach(([id, meta]) => {
+        if (meta && meta.symbol) SYMBOL_TO_COINGECKO[meta.symbol.toUpperCase()] = id;
+    });
+
     global.BloombitCryptoConfig = {
         COINS_TOP,
         COIN_META,
         CRYPTO_LOGOS,
         FALLBACK_PRICES,
+        SYMBOL_TO_COINGECKO,
         getLogo: function (coinId) {
             return CRYPTO_LOGOS[coinId] || '';
         },
         getMeta: function (coinId) {
             return COIN_META[coinId] || { symbol: (coinId || '').toUpperCase().slice(0, 4), name: coinId || '' };
+        },
+        getCoinIdBySymbol: function (symbol) {
+            return SYMBOL_TO_COINGECKO[(symbol || '').toUpperCase()] || null;
         }
     };
 })(typeof window !== 'undefined' ? window : this);
