@@ -127,13 +127,13 @@ try {
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
 <!-- Dashboard Grid -->
 <div class="grid grid-cols-12 gap-6">
-<!-- Row 1: Total Estimated Balance (75%) | Live AI Trades (25%) -->
-<div class="col-span-12 lg:col-span-9 relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
+<!-- Row 1: Total Estimated Balance (60%) | Live AI Trades (40%) -->
+<div class="col-span-12 lg:col-span-7 relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
 <div>
 <p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
-<h1 class="text-4xl font-bold tracking-tight">$<?php echo number_format($userBalance, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
+<h1 class="text-6xl font-bold tracking-tight">$<?php echo number_format($userBalance, 2); ?> <span class="text-xl font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
 <?php
 $parts = [];
@@ -171,8 +171,8 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 </div>
 </div>
 </div>
-<!-- Live AI Trades (30%) - swapped position with Performance -->
-<div class="col-span-12 lg:col-span-3 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-[400px]">
+<!-- Live AI Trades (40%) -->
+<div class="col-span-12 lg:col-span-5 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-[400px]">
 <div class="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-white/5">
 <h3 class="font-bold flex items-center gap-2">
 <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
@@ -219,19 +219,6 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 </div>
 </div>
 <span class="live-trade-amount text-sm font-bold text-emerald-500">+$89.15</span>
-</div>
-<!-- Trade 4 -->
-<div class="live-trade-card flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark/50 border border-slate-100 dark:border-white/5">
-<div class="flex items-center gap-3">
-<div class="trade-icon-container w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-<span class="trade-icon material-icons-round text-emerald-500 text-sm">trending_up</span>
-</div>
-<div>
-<p class="trade-pair text-xs font-bold">BNB/USDT Long</p>
-<p class="trade-time text-[10px] text-slate-400">24 mins ago</p>
-</div>
-</div>
-<span class="live-trade-amount text-sm font-bold text-emerald-500">+$156.40</span>
 </div>
 </div>
 </div>

@@ -105,7 +105,7 @@ $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.
 <div class="relative z-10">
 <div>
 <p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
-<h1 class="text-4xl font-bold tracking-tight">$<?php echo number_format($walletTotalUsd, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
+<h1 class="text-6xl font-bold tracking-tight">$<?php echo number_format($walletTotalUsd, 2); ?> <span class="text-xl font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
 <?php
 $parts = [];
@@ -148,22 +148,22 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <!-- Row 2: Assets (50%) + Security (25%) + Coming Soon (25%) -->
 <div class="col-span-12 grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr] gap-6">
 <!-- Your Assets -->
-<div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-<h2 class="text-lg font-bold">Your Assets</h2>
-<div class="relative">
-<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-<input class="pl-9 pr-4 py-1.5 bg-slate-50 dark:bg-slate-900 border-none rounded-lg text-sm focus:ring-1 focus:ring-primary w-48" placeholder="Search coin..." type="text"/>
+<div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm min-w-0">
+<div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+<h2 class="text-base font-bold">Your Assets</h2>
+<div class="relative shrink-0">
+<span class="material-icons absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">search</span>
+<input class="pl-7 pr-3 py-1 bg-slate-50 dark:bg-slate-900 border-none rounded text-xs focus:ring-1 focus:ring-primary w-32" placeholder="Search..." type="text"/>
 </div>
 </div>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
+<div class="overflow-hidden">
+<table class="w-full text-left table-fixed min-w-0">
 <thead>
-<tr class="text-slate-400 text-[10px] uppercase tracking-wider border-b border-slate-50 dark:border-slate-800">
-<th class="px-6 py-4 font-semibold">Asset</th>
-<th class="px-6 py-4 font-semibold text-right">Balance</th>
-<th class="px-6 py-4 font-semibold text-right">Value (USD)</th>
-<th class="px-6 py-4 font-semibold text-right">Action</th>
+<tr class="text-slate-400 text-[9px] uppercase tracking-wider border-b border-slate-50 dark:border-slate-800">
+<th class="px-3 py-2 font-semibold w-1/4">Asset</th>
+<th class="px-3 py-2 font-semibold text-right w-1/4">Balance</th>
+<th class="px-3 py-2 font-semibold text-right w-1/4">Value</th>
+<th class="px-3 py-2 font-semibold text-right w-1/4">Action</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800 wallet-assets-table">
@@ -174,24 +174,24 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
   $name = $coinNames[$cu] ?? $b['currency'];
 ?>
 <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="<?php echo $coinId; ?>" data-balance="<?php echo $b['amount']; ?>">
-<td class="px-6 py-5">
-<div class="flex items-center gap-3">
-<?php if ($logo): ?><div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"><img alt="<?php echo $cu; ?>" class="w-6 h-6 crypto-logo" src="<?php echo htmlspecialchars($logo); ?>"/></div><?php endif; ?>
-<div>
-<p class="font-bold text-sm"><?php echo htmlspecialchars($name); ?></p>
-<p class="text-xs text-slate-500"><?php echo $cu; ?></p>
+<td class="px-3 py-3">
+<div class="flex items-center gap-2 min-w-0">
+<?php if ($logo): ?><div class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden"><img alt="<?php echo $cu; ?>" class="w-4 h-4 crypto-logo" src="<?php echo htmlspecialchars($logo); ?>"/></div><?php endif; ?>
+<div class="min-w-0">
+<p class="font-bold text-xs truncate"><?php echo htmlspecialchars($name); ?></p>
+<p class="text-[10px] text-slate-500"><?php echo $cu; ?></p>
 </div>
 </div>
 </td>
-<td class="px-6 py-5 text-right font-medium text-sm"><?php echo number_format($b['amount'], 8); ?> <?php echo $cu; ?></td>
-<td class="px-6 py-5 text-right font-bold text-sm wallet-value" data-coin="<?php echo $coinId; ?>">$<?php echo number_format($b['usd_value'], 2); ?></td>
-<td class="px-6 py-5 text-right">
-<button class="text-xs font-bold px-4 py-1.5 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
+<td class="px-3 py-3 text-right font-medium text-xs truncate"><?php echo number_format($b['amount'], 4); ?> <?php echo $cu; ?></td>
+<td class="px-3 py-3 text-right font-bold text-xs wallet-value truncate" data-coin="<?php echo $coinId; ?>">$<?php echo number_format($b['usd_value'], 2); ?></td>
+<td class="px-3 py-3 text-right">
+<button class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
 </td>
 </tr>
 <?php endforeach; ?>
 <?php if (empty($walletBalances)): ?>
-<tr><td class="px-6 py-8 text-center text-slate-500" colspan="4">No balances yet.</td></tr>
+<tr><td class="px-3 py-6 text-center text-slate-500 text-xs" colspan="4">No balances yet.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>
