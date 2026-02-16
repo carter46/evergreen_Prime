@@ -323,6 +323,8 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 </div>
 </div>
 
+</div>
+
 <div id="withdraw-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[480px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-[50] border-l border-slate-200 dark:border-zinc-800 flex flex-col transition-transform duration-300 ease-out" style="transform:translateX(100%)">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">Withdraw Funds</h2>
