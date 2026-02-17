@@ -209,9 +209,9 @@ try {
 </div>
 </section>
 <!-- Main Analytics Section -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-<!-- Column: Active Plans (50%) | Cumulative Performance (50%) - two columns side by side -->
-<div class="xl:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="space-y-8 mb-8">
+<!-- Row 1: Active Plans (50%) | Cumulative Performance (50%) - full width, two columns -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
 <!-- Active Plans (50% - left) -->
 <div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl min-h-0">
 <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
@@ -305,9 +305,8 @@ if (!empty($chartData)) {
 </div>
 </div>
 </div>
-<!-- Side Widgets -->
-<div class="space-y-6">
-<!-- Winning Streak -->
+<!-- Row 2: Side Widgets -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 <div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl flex items-center gap-6">
 <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center border-4 border-primary/20">
 <span class="material-icons-round text-3xl text-primary">workspace_premium</span>
@@ -321,7 +320,6 @@ if (!empty($chartData)) {
                         </p>
 </div>
 </div>
-<!-- Max Drawdown -->
 <div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl flex items-center gap-6">
 <div class="w-16 h-16 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
 <span class="material-icons-round text-3xl text-slate-400">warning_amber</span>
@@ -332,7 +330,6 @@ if (!empty($chartData)) {
 <p class="text-xs text-slate-400 mt-1">Market stability high</p>
 </div>
 </div>
-<!-- Earnings Breakdown Doughnut Simulation -->
 <div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl">
 <h2 class="text-sm font-bold mb-4">Profit by Asset</h2>
 <div class="flex items-center gap-6">
