@@ -522,16 +522,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => false, 'error' => 'Active investment not found']);
                 exit;
             }
-            $refundUsd = (float) $inv['amount'];
+            $refundAmount = (float) $inv['amount'];
             $pdo->beginTransaction();
             try {
                 $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['cancelled', $invId]);
                 $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                    ->execute([$userId, 'USD', $refundUsd]);
+                    ->execute([$userId, 'USDT', $refundAmount]);
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')
-                    ->execute([$userId, 'deposit', $refundUsd, 'USD', 'completed']);
+                    ->execute([$userId, 'deposit', $refundAmount, 'USDT', 'completed']);
                 $pdo->commit();
-                echo json_encode(['success' => true, 'data' => ['message' => 'Plan cancelled and amount refunded']]);
+                echo json_encode(['success' => true, 'data' => ['message' => 'Plan cancelled and amount refunded in USDT']]);
             } catch (Throwable $e) {
                 $pdo->rollBack();
                 http_response_code(500);

@@ -188,6 +188,24 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- Add last_earnings_at to user_investments (for earnings distribution intervals)
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_investments' AND COLUMN_NAME = 'last_earnings_at');
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE user_investments ADD COLUMN last_earnings_at DATETIME NULL AFTER status', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- AI Bot Config / Earnings site settings
+INSERT INTO site_settings (`key`, value) VALUES
+  ('max_withdrawal_limit', '50000'),
+  ('earnings_paused', '0'),
+  ('distribution_interval', 'daily'),
+  ('distribution_start_time', '09:00:00')
+ON DUPLICATE KEY UPDATE value = VALUES(value);
+
 -- Create kyc_submissions table
 CREATE TABLE IF NOT EXISTS kyc_submissions (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

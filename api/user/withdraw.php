@@ -49,29 +49,18 @@ if ($amountUsd < $minUsd) {
     exit;
 }
 
+$maxUsd = (float) (get_site_setting('max_withdrawal_limit', '') ?: 0);
+if ($maxUsd > 0 && $amountUsd > $maxUsd) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Maximum withdrawal is $' . number_format($maxUsd, 2) . ' USD. Your amount is approx. $' . number_format($amountUsd, 2) . ' USD.']);
+    exit;
+}
+
 try {
     $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Database unavailable']);
-    exit;
-}
-
-// Validate min withdrawal limit (USD)
-$minUsd = (float) (get_site_setting('min_withdrawal_limit', '10') ?: '10');
-$amountUsd = $amount;
-if (in_array($currency, ['USDT', 'USDC', 'BUSD', 'USD', 'DAI'], true)) {
-    $amountUsd = $amount; // 1:1
-} else {
-    $prices = get_coingecko_prices_usd();
-    $cgId = currency_to_coingecko($currency);
-    if ($cgId && isset($prices[$cgId]) && $prices[$cgId] > 0) {
-        $amountUsd = $amount * $prices[$cgId];
-    }
-}
-if ($amountUsd < $minUsd) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Minimum withdrawal is $' . number_format($minUsd, 2) . ' USD. Your amount is approx. $' . number_format($amountUsd, 2) . ' USD.']);
     exit;
 }
 

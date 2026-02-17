@@ -27,7 +27,6 @@ try {
 require_once __DIR__ . '/../../includes/helpers.php';
 $siteName = get_site_name();
 $siteSettings = [
-    'min_withdrawal_limit' => get_site_setting('min_withdrawal_limit', '10'),
     'max_active_plans_per_user' => get_site_setting('max_active_plans_per_user', '3'),
     'compounding_enabled' => get_site_setting('compounding_enabled', '0'),
 ];
@@ -196,10 +195,6 @@ foreach ($adminPlans as $idx => $p):
             </h2>
 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-8">
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-<div>
-<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Min. Withdrawal Limit ($)</label>
-<input id="global-min-withdrawal" class="w-full bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" type="number" step="0.01" value="<?php echo htmlspecialchars($siteSettings['min_withdrawal_limit']); ?>"/>
-</div>
 <div>
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Max. Active Plans / User</label>
 <input id="global-max-plans" class="w-full bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" type="number" min="1" value="<?php echo htmlspecialchars($siteSettings['max_active_plans_per_user']); ?>"/>
@@ -448,7 +443,6 @@ if (drawer) {
     var btn = this;
     btn.disabled = true;
     var data = {
-      min_withdrawal_limit: document.getElementById('global-min-withdrawal').value,
       max_active_plans_per_user: document.getElementById('global-max-plans').value,
       compounding_enabled: document.getElementById('global-compounding').checked ? '1' : '0'
     };

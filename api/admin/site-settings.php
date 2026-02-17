@@ -14,7 +14,7 @@ if (($_SESSION['role'] ?? '') !== 'admin') {
     exit;
 }
 
-$allowedKeys = ['min_withdrawal_limit', 'max_active_plans_per_user', 'compounding_enabled'];
+$allowedKeys = ['max_active_plans_per_user', 'compounding_enabled'];
 
 try {
     $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
@@ -30,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $stmt->execute($allowedKeys);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $data = [
-        'min_withdrawal_limit' => '10',
         'max_active_plans_per_user' => '3',
         'compounding_enabled' => '0',
     ];

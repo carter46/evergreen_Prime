@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS user_investments (
   duration_days INT UNSIGNED NULL,
   start_date DATE NOT NULL,
   status ENUM('active', 'paused', 'completed', 'cancelled') NOT NULL DEFAULT 'active',
+  last_earnings_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_inv_user (user_id),
   INDEX idx_inv_plan (plan_id),
@@ -172,8 +173,12 @@ INSERT INTO site_settings (`key`, value) VALUES
   ('hero_title', 'Smarter Crypto Investing Powered by Advanced AI'),
   ('hero_subtitle', 'Automate your wealth with institutional-grade machine learning algorithms. Deploy sophisticated bots that trade 24/7 while you sleep.'),
   ('min_withdrawal_limit', '10'),
+  ('max_withdrawal_limit', '50000'),
   ('max_active_plans_per_user', '3'),
-  ('compounding_enabled', '0')
+  ('compounding_enabled', '0'),
+  ('earnings_paused', '0'),
+  ('distribution_interval', 'daily'),
+  ('distribution_start_time', '09:00:00')
 ON DUPLICATE KEY UPDATE value = VALUES(value);
 
 -- Default coins (CoinGecko IDs + logos - expandable via Admin or migration)
