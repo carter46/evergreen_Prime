@@ -26,25 +26,35 @@ try {
     $whereClause = implode(' AND ', $where);
 
     $hasAvatar = false;
+    $hasKyc = false;
     try {
         $ac = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
         $hasAvatar = $ac && $ac->rowCount() > 0;
+        $kc = $pdo->query("SHOW COLUMNS FROM users LIKE 'kyc_status'");
+        $hasKyc = $kc && $kc->rowCount() > 0;
     } catch (Throwable $e) {}
     $avatarCol = $hasAvatar ? ', u.avatar_url' : '';
+    $kycCol = $hasKyc ? ', u.kyc_status' : '';
 
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM users u WHERE {$whereClause}");
     $countStmt->execute($params);
     $total = (int) $countStmt->fetchColumn();
     $offset = ($page - 1) * $perPage;
 
-    $sql = "SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol},
+    $sql = "SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol}{$kycCol},
             (SELECT COUNT(*) FROM user_investments WHERE user_id = u.id AND status = 'active') AS active_plans_count
             FROM users u WHERE {$whereClause} ORDER BY u.created_at DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $userIds = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $kyc = !$row['active'] ? 'suspended' : ($row['email_verified'] ? 'verified' : 'pending');
+        if (!$row['active']) {
+            $kyc = 'suspended';
+        } elseif ($hasKyc && isset($row['kyc_status'])) {
+            $kyc = $row['kyc_status'] ?? 'none';
+        } else {
+            $kyc = $row['email_verified'] ? 'verified' : 'pending';
+        }
         $userIds[] = (int)$row['id'];
         $users[] = [
             'id' => (int)$row['id'],
@@ -162,7 +172,7 @@ try {
 <tbody class="divide-y divide-slate-100 dark:divide-zinc-800">
 <?php
 $avatarClasses = ['bg-blue-100 text-blue-600', 'bg-emerald-100 text-emerald-600', 'bg-purple-100 text-purple-600', 'bg-amber-100 text-amber-600'];
-$kycClasses = ['verified' => 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400', 'pending' => 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400', 'suspended' => 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'];
+$kycClasses = ['verified' => 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400', 'pending' => 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400', 'rejected' => 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400', 'none' => 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-slate-400', 'suspended' => 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'];
 foreach ($users as $i => $u):
     $initials = strtoupper(substr($u['name'], 0, 2)) ?: 'U';
     $avClass = $avatarClasses[$i % 4];
@@ -225,7 +235,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <?php foreach ($users as $i => $u):
     $initials = strtoupper(substr($u['name'], 0, 2)) ?: 'U';
     $avClass = ['bg-blue-100 text-blue-600', 'bg-emerald-100 text-emerald-600', 'bg-purple-100 text-purple-600', 'bg-amber-100 text-amber-600'][$i % 4];
-    $kc = ['verified' => 'bg-green-100 text-green-700', 'pending' => 'bg-yellow-100 text-yellow-700', 'suspended' => 'bg-red-100 text-red-700'][$u['kyc_status']] ?? 'bg-slate-100 text-slate-500';
+    $kc = ['verified' => 'bg-green-100 text-green-700', 'pending' => 'bg-yellow-100 text-yellow-700', 'rejected' => 'bg-red-100 text-red-700', 'none' => 'bg-slate-100 text-slate-500', 'suspended' => 'bg-red-100 text-red-700'][$u['kyc_status']] ?? 'bg-slate-100 text-slate-500';
 ?>
 <div class="user-mobile-card bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden" data-user-id="<?php echo $u['id']; ?>">
 <button type="button" class="user-mobile-toggle w-full px-4 py-4 flex items-center justify-between gap-3 text-left">
