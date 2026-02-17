@@ -210,10 +210,10 @@ try {
 </section>
 <!-- Main Analytics Section -->
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-<!-- Column: Active Plans (50%) + Cumulative Performance (50%) -->
-<div class="xl:col-span-2 flex flex-col gap-6">
-<!-- Active Plans (50% - first) -->
-<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl flex-1 min-h-0">
+<!-- Column: Active Plans (50%) | Cumulative Performance (50%) - two columns side by side -->
+<div class="xl:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Active Plans (50% - left) -->
+<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl min-h-0">
 <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
 <span class="material-icons-round text-primary text-xl">savings</span>
                         Active Plans
@@ -247,8 +247,8 @@ try {
 </div>
 <?php endif; ?>
 </div>
-<!-- Cumulative Performance (50% - second) -->
-<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl flex-1 min-h-0">
+<!-- Cumulative Performance (50% - right) -->
+<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl min-h-0">
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 <h2 class="text-lg font-bold flex items-center gap-2">
                         Cumulative Performance
