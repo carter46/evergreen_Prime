@@ -411,23 +411,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => false, 'error' => 'Invalid or disabled currency']);
                 exit;
             }
-            if ($type === 'credit') {
-                $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                    ->execute([$userId, $currency, $amount]);
-                echo json_encode(['success' => true, 'data' => ['message' => 'Balance credited']]);
-            } else {
-                $stmt = $pdo->prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ?');
-                $stmt->execute([$userId, $currency]);
-                $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                $current = $row ? (float) $row['amount'] : 0;
-                if ($current < $amount) {
-                    http_response_code(400);
-                    echo json_encode(['success' => false, 'error' => 'Insufficient balance']);
-                    exit;
+            $amountStr = number_format($amount, 18, '.', '');
+            $adminId = (int) ($_SESSION['user_id'] ?? 0);
+            $ref = 'admin_' . ($type === 'credit' ? 'credit' : 'debit') . '_' . $adminId . '_' . $userId . '_' . date('Ymd_His');
+            $pdo->beginTransaction();
+            try {
+                if ($type === 'credit') {
+                    $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
+                        ->execute([$userId, $currency, $amountStr]);
+                    // Record transaction so it appears in user history
+                    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
+                        ->execute([$userId, 'deposit', $amountStr, $currency, 'completed', $ref]);
+                    $pdo->commit();
+                    echo json_encode(['success' => true, 'data' => ['message' => 'Balance credited']]);
+                } else {
+                    // Lock row to prevent race conditions
+                    $stmt = $pdo->prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ? FOR UPDATE');
+                    $stmt->execute([$userId, $currency]);
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $current = $row ? (float) $row['amount'] : 0;
+                    if ($current < $amount) {
+                        $pdo->rollBack();
+                        http_response_code(400);
+                        echo json_encode(['success' => false, 'error' => 'Insufficient balance']);
+                        exit;
+                    }
+                    $pdo->prepare('UPDATE wallet_balances SET amount = amount - ? WHERE user_id = ? AND currency = ?')
+                        ->execute([$amountStr, $userId, $currency]);
+                    // Record transaction so it appears in user history
+                    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
+                        ->execute([$userId, 'withdrawal', $amountStr, $currency, 'completed', $ref]);
+                    $pdo->commit();
+                    echo json_encode(['success' => true, 'data' => ['message' => 'Balance debited']]);
                 }
-                $pdo->prepare('UPDATE wallet_balances SET amount = amount - ? WHERE user_id = ? AND currency = ?')
-                    ->execute([$amount, $userId, $currency]);
-                echo json_encode(['success' => true, 'data' => ['message' => 'Balance debited']]);
+            } catch (Throwable $e) {
+                $pdo->rollBack();
+                http_response_code(500);
+                echo json_encode(['success' => false, 'error' => 'Failed to adjust balance']);
             }
             exit;
 

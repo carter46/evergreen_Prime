@@ -93,6 +93,8 @@ function get_current_user_data(): ?array {
 function get_coingecko_prices_usd(): array {
     static $cache = null;
     if ($cache !== null) return $cache;
+    $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'bloombit_prices_usd.json';
+    $cacheMaxAgeSeconds = 600; // 10 minutes
     $ids = 'bitcoin,ethereum,tether,usd-coin,solana,binancecoin,ripple,cardano,dogecoin,tron';
     $url = 'https://api.coingecko.com/api/v3/simple/price?ids=' . $ids . '&vs_currencies=usd';
     $ch = curl_init($url);
@@ -104,12 +106,27 @@ function get_coingecko_prices_usd(): array {
     $json = curl_exec($ch);
     curl_close($ch);
     if (!$json) {
-        $cache = [];
+        // Fallback to a recent local cache, otherwise return stable defaults.
+        if (is_file($cacheFile) && (time() - filemtime($cacheFile)) <= $cacheMaxAgeSeconds) {
+            $cached = json_decode((string) @file_get_contents($cacheFile), true);
+            if (is_array($cached)) {
+                $cache = $cached;
+                return $cache;
+            }
+        }
+        $cache = ['tether' => 1.0, 'usd-coin' => 1.0];
         return $cache;
     }
     $data = json_decode($json, true);
     if (!is_array($data)) {
-        $cache = [];
+        if (is_file($cacheFile) && (time() - filemtime($cacheFile)) <= $cacheMaxAgeSeconds) {
+            $cached = json_decode((string) @file_get_contents($cacheFile), true);
+            if (is_array($cached)) {
+                $cache = $cached;
+                return $cache;
+            }
+        }
+        $cache = ['tether' => 1.0, 'usd-coin' => 1.0];
         return $cache;
     }
     $cache = [
@@ -124,6 +141,8 @@ function get_coingecko_prices_usd(): array {
         'dogecoin' => (float) ($data['dogecoin']['usd'] ?? 0),
         'tron' => (float) ($data['tron']['usd'] ?? 0),
     ];
+    // Store a short-lived local cache to reduce UI inconsistencies on CoinGecko hiccups.
+    @file_put_contents($cacheFile, json_encode($cache));
     return $cache;
 }
 
@@ -150,7 +169,8 @@ function wallet_balances_to_usd(array $balances, array $prices = null): float {
         $cur = strtoupper($b['currency'] ?? '');
         $amt = (float) ($b['amount'] ?? 0);
         if ($amt <= 0) continue;
-        if ($cur === 'USD') {
+        if (in_array($cur, ['USD', 'USDT', 'USDC', 'BUSD', 'DAI'], true)) {
+            // Treat stable settlement currencies as $1.00 USD (even if CoinGecko is unavailable)
             $total += $amt;
         } elseif ($key = currency_to_coingecko($cur)) {
             $total += $amt * ($prices[$key] ?? 0);

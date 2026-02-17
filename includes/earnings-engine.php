@@ -39,7 +39,8 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
 
     $stmt = $pdo->query("
         SELECT ui.id, ui.user_id, ui.plan_id, ui.amount, ui.start_date, ui.last_earnings_at, ui.created_at,
-               p.yield_min, p.yield_max, p.enabled AS plan_enabled
+               ui.duration_days AS investment_duration_days,
+               p.yield_min, p.yield_max, p.duration_days AS plan_duration_days, p.enabled AS plan_enabled
         FROM user_investments ui
         INNER JOIN plans p ON p.id = ui.plan_id AND p.enabled = 1
         WHERE ui.status = 'active' AND ui.amount > 0
@@ -63,21 +64,36 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
         $startDate = new DateTime($inv['start_date'] . ' 00:00:00', new DateTimeZone('UTC'));
         $refDateTime = $lastAt ?? $startDate;
 
+        // Auto-stop earnings when investment duration has ended.
+        $durationDays = (int) ($inv['investment_duration_days'] ?? $inv['plan_duration_days'] ?? 30);
+        if ($durationDays <= 0) $durationDays = 30;
+        $endDate = clone $startDate;
+        $endDate->modify('+' . $durationDays . ' days');
+        $matured = $now >= $endDate;
+        $capNow = $matured ? $endDate : $now;
+        if ($refDateTime >= $endDate) {
+            if ($matured) {
+                // Mark completed so it no longer counts as an active plan.
+                try { $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['completed', $invId]); } catch (Throwable $e) {}
+            }
+            continue;
+        }
+
         $toCredit = 0.0;
         $newLastAt = null;
 
         if ($manual) {
-            $daysSince = $refDateTime->diff($now)->days;
+            $daysSince = $refDateTime->diff($capNow)->days;
             // Manual distribution should only credit what has actually accumulated since last credit.
             if ($daysSince < 1) {
                 continue;
             }
             $toCredit = $dailyEarning * (float) $daysSince;
-            $newLastAt = clone $now;
+            $newLastAt = clone $capNow;
         } elseif (in_array($interval, ['5min', '12h'], true)) {
-            list($toCredit, $newLastAt) = compute_continuous_earnings($interval, $refDateTime, $now, $dailyEarning);
+            list($toCredit, $newLastAt) = compute_continuous_earnings($interval, $refDateTime, $capNow, $dailyEarning);
         } else {
-            list($toCredit, $newLastAt) = compute_batch_earnings($interval, $startTime, $refDateTime, $now, $dailyEarning);
+            list($toCredit, $newLastAt) = compute_batch_earnings($interval, $startTime, $refDateTime, $capNow, $dailyEarning);
         }
 
         if ($toCredit <= 0 || $newLastAt === null) {
@@ -95,8 +111,13 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
                 ->execute([$userId, $currency, $toCreditStr]);
             $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
                 ->execute([$userId, 'payout', $toCreditStr, $currency, 'completed', 'earnings_inv_' . $invId]);
-            $pdo->prepare('UPDATE user_investments SET last_earnings_at = ? WHERE id = ?')
-                ->execute([$newLastAt->format('Y-m-d H:i:s'), $invId]);
+            if ($matured && $newLastAt >= $endDate) {
+                $pdo->prepare('UPDATE user_investments SET last_earnings_at = ?, status = ? WHERE id = ?')
+                    ->execute([$newLastAt->format('Y-m-d H:i:s'), 'completed', $invId]);
+            } else {
+                $pdo->prepare('UPDATE user_investments SET last_earnings_at = ? WHERE id = ?')
+                    ->execute([$newLastAt->format('Y-m-d H:i:s'), $invId]);
+            }
             $pdo->commit();
             $result['credits']++;
             $result['total_amount'] += $toCredit;

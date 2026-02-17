@@ -12,6 +12,7 @@ $settings = [
     'distribution_start_time' => get_site_setting('distribution_start_time', '09:00:00'),
 ];
 $earningsPaused = $settings['earnings_paused'] === '1';
+$earningsActive = !$earningsPaused;
 $interval = $settings['distribution_interval'];
 $showStartTime = in_array($interval, ['daily', 'weekly', 'monthly'], true);
 ?>
@@ -74,13 +75,13 @@ Earnings Distribution
 </h2>
 <div class="flex items-center justify-between gap-4">
 <div>
-<p class="font-medium">Pause / Resume</p>
-<p class="text-sm text-slate-500">When paused, no earnings are credited. Investments remain active.</p>
+<p class="font-medium">Status</p>
+<p class="text-sm text-slate-500">Green = active distribution. Grey = paused (no credits).</p>
 </div>
 <label class="relative inline-flex items-center cursor-pointer">
-<input id="ai-earnings-paused" type="checkbox" class="sr-only peer" <?php echo $earningsPaused ? 'checked' : ''; ?>/>
-<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-<span class="ml-3 text-sm font-medium text-slate-700 dark:text-zinc-300">Paused</span>
+<input id="ai-earnings-active" type="checkbox" class="sr-only peer" <?php echo $earningsActive ? 'checked' : ''; ?>/>
+<div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+<span id="ai-earnings-label" class="ml-3 text-sm font-medium <?php echo $earningsActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-zinc-300'; ?>"><?php echo $earningsActive ? 'Active' : 'Paused'; ?></span>
 </label>
 </div>
 </section>
@@ -156,7 +157,7 @@ Run Manual Distribution
     var data = {
       min_withdrawal_limit: document.getElementById('ai-min-withdrawal').value,
       max_withdrawal_limit: document.getElementById('ai-max-withdrawal').value,
-      earnings_paused: document.getElementById('ai-earnings-paused').checked ? '1' : '0',
+      earnings_paused: document.getElementById('ai-earnings-active').checked ? '0' : '1',
       distribution_interval: intervalSel.value,
       distribution_start_time: timeVal
     };
