@@ -13,7 +13,7 @@ $highestCoinLogo = 'https://assets.coingecko.com/coins/images/1/large/bitcoin.pn
 $totalProfit = 0;
 $activeCapital = 0;
 $dailyEarning = 0;
-$coinLogosMap = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png','USDC'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','XRP'=>'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png','SOL'=>'https://assets.coingecko.com/coins/images/4128/large/solana.png','BNB'=>'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png','USD'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png'];
+$coinLogosMap = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png','USDC'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','BUSD'=>'https://assets.coingecko.com/coins/images/9576/large/BUSD.png','USD'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','XRP'=>'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png','SOL'=>'https://assets.coingecko.com/coins/images/4128/large/solana.png','BNB'=>'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png','ADA'=>'https://assets.coingecko.com/coins/images/975/large/cardano.png','DOGE'=>'https://assets.coingecko.com/coins/images/5/large/dogecoin.png','TRX'=>'https://assets.coingecko.com/coins/images/1094/large/tron-logo.png'];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
@@ -48,8 +48,7 @@ try {
         $walletTransactions[] = $row;
     }
 } catch (Throwable $e) { }
-$coinNames = ['BTC'=>'Bitcoin','ETH'=>'Ethereum','USDT'=>'Tether','USD'=>'US Dollar'];
-$coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png'];
+$coinNames = ['BTC'=>'Bitcoin','ETH'=>'Ethereum','USDT'=>'Tether','USDC'=>'USD Coin','BUSD'=>'Binance USD','USD'=>'US Dollar','XRP'=>'XRP','SOL'=>'Solana','BNB'=>'BNB','ADA'=>'Cardano','DOGE'=>'Dogecoin','TRX'=>'TRON'];
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en"><head>
@@ -167,23 +166,34 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800 wallet-assets-table">
-<?php foreach ($walletBalances as $b):
+<?php
+$coinIdMap = ['USDT'=>'tether','USDC'=>'usd-coin','BUSD'=>'binance-usd','USD'=>'usd-coin','BTC'=>'bitcoin','ETH'=>'ethereum','SOL'=>'solana','BNB'=>'binancecoin','XRP'=>'ripple','ADA'=>'cardano','DOGE'=>'dogecoin','TRX'=>'tron'];
+$fmtBalance = function($amt, $cur) {
+  $amt = (float)$amt;
+  if ($amt <= 0) return '0';
+  if (in_array($cur, ['USD','USDT','USDC','BUSD'], true)) return number_format($amt, 2);
+  if ($amt >= 1000) return number_format(round($amt, 0));
+  if ($amt >= 1) return number_format($amt, 2);
+  if ($amt >= 0.01) return number_format($amt, 4);
+  return rtrim(rtrim(number_format($amt, 6), '0'), '.');
+};
+foreach ($walletBalances as $b):
   $cu = strtoupper($b['currency']);
-  $coinId = strtolower($b['currency']) === 'usdt' ? 'tether' : strtolower($b['currency']);
-  $logo = $coinLogos[$cu] ?? null;
+  $coinId = $coinIdMap[$cu] ?? strtolower($b['currency']);
+  $logo = $coinLogosMap[$cu] ?? null;
   $name = $coinNames[$cu] ?? $b['currency'];
 ?>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="<?php echo $coinId; ?>" data-balance="<?php echo $b['amount']; ?>">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="<?php echo htmlspecialchars($coinId); ?>" data-balance="<?php echo $b['amount']; ?>">
 <td class="px-3 py-3">
 <div class="flex items-center gap-2 min-w-0">
-<?php if ($logo): ?><div class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden"><img alt="<?php echo $cu; ?>" class="w-4 h-4 crypto-logo" src="<?php echo htmlspecialchars($logo); ?>"/></div><?php endif; ?>
+<?php if ($logo): ?><div class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-slate-800"><img alt="<?php echo htmlspecialchars($cu); ?>" class="w-5 h-5 object-contain" src="<?php echo htmlspecialchars($logo); ?>" loading="lazy"/></div><?php else: ?><div class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-500"><?php echo htmlspecialchars(substr($cu,0,1)); ?></div><?php endif; ?>
 <div class="min-w-0">
 <p class="font-bold text-xs truncate"><?php echo htmlspecialchars($name); ?></p>
 <p class="text-[10px] text-slate-500"><?php echo $cu; ?></p>
 </div>
 </div>
 </td>
-<td class="px-3 py-3 text-right font-medium text-xs truncate"><?php echo number_format($b['amount'], 4); ?> <?php echo $cu; ?></td>
+<td class="px-3 py-3 text-right font-medium text-xs truncate"><?php echo $fmtBalance($b['amount'], $cu); ?> <?php echo $cu; ?></td>
 <td class="px-3 py-3 text-right font-bold text-xs wallet-value truncate" data-coin="<?php echo $coinId; ?>">$<?php echo number_format($b['usd_value'], 2); ?></td>
 <td class="px-3 py-3 text-right">
 <button class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
