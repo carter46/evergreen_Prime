@@ -3,10 +3,14 @@ $currentPage = 'profile';
 $profileUser = get_current_user_data() ?? [];
 $profileName = $profileUser['name'] ?? 'User';
 $profileEmail = $profileUser['email'] ?? '';
+$profilePhone = $profileUser['phone_number'] ?? '';
+$profileCountry = $profileUser['country'] ?? '';
 $profileAvatar = $profileUser['avatar_url'] ?? null;
 $profileInitials = strtoupper(substr($profileName ?: 'U', 0, 2));
 $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : '';
-?>
+$profileVerified = !empty($profileUser['verified']);
+$profileKycStatus = $profileUser['kyc_status'] ?? 'none';
+$profile2FA = (bool)($profileUser['two_factor_enabled'] ?? false);
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8"/>
@@ -14,6 +18,7 @@ $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : ''
 <title><?php echo htmlspecialchars($siteName); ?> | Profile and Security Settings</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
@@ -63,20 +68,21 @@ $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : ''
 <div>
 <div class="flex items-center gap-3">
 <h1 class="text-2xl font-bold" data-profile-name><?php echo htmlspecialchars($profileName); ?></h1>
+<?php if ($profileVerified): ?>
 <span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
-<span class="material-icons text-[14px]">verified</span>
-                                Verified
-                            </span>
+<span class="material-icons text-[14px]">verified</span> Verified
+</span>
+<?php endif; ?>
 </div>
 <p class="text-slate-500 dark:text-slate-400" data-profile-email><?php echo htmlspecialchars($profileEmail); ?></p>
 <p class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">User ID: <span data-user-id><?php echo htmlspecialchars($profileUserId); ?></span></p>
 </div>
 </div>
 <div class="flex gap-3">
-<button class="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-lg shadow-sm transition-all flex items-center gap-2">
+<a href="/dashboard/user/kyc" class="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-lg shadow-sm transition-all flex items-center gap-2">
 <span class="material-icons text-sm">shield</span>
                         Verify Identity
-                    </button>
+                    </a>
 </div>
 </div>
 </div>
@@ -109,30 +115,38 @@ $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : ''
 <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
                         Personal Information
                     </h2>
+<form id="profile-form" class="space-y-6">
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <div class="space-y-2">
 <label class="text-sm font-medium text-slate-500">Full Name</label>
-<input class="w-full bg-slate-50 dark:bg-background-dark/20 border-slate-200 dark:border-primary/20 rounded-lg focus:ring-primary focus:border-primary transition-all" type="text" value="John Doe"/>
+<input name="name" class="w-full bg-slate-50 dark:bg-background-dark/20 border-slate-200 dark:border-primary/20 rounded-lg focus:ring-primary focus:border-primary transition-all" type="text" value="<?php echo htmlspecialchars($profileName); ?>" placeholder="Your name"/>
 </div>
 <div class="space-y-2">
 <label class="text-sm font-medium text-slate-500">Phone Number</label>
-<input class="w-full bg-slate-50 dark:bg-background-dark/20 border-slate-200 dark:border-primary/20 rounded-lg focus:ring-primary focus:border-primary transition-all" type="text" value="+44 7700 900077"/>
+<input name="phone_number" class="w-full bg-slate-50 dark:bg-background-dark/20 border-slate-200 dark:border-primary/20 rounded-lg focus:ring-primary focus:border-primary transition-all" type="text" value="<?php echo htmlspecialchars($profilePhone); ?>" placeholder="+1 234 567 8900"/>
 </div>
 <div class="space-y-2 md:col-span-2">
 <label class="text-sm font-medium text-slate-500">Country/Region</label>
-<select class="w-full bg-slate-50 dark:bg-background-dark/20 border-slate-200 dark:border-primary/20 rounded-lg focus:ring-primary focus:border-primary transition-all">
-<option>United Kingdom</option>
-<option>United States</option>
-<option>Germany</option>
-<option>Singapore</option>
+<select name="country" class="w-full bg-slate-50 dark:bg-background-dark/20 border-slate-200 dark:border-primary/20 rounded-lg focus:ring-primary focus:border-primary transition-all">
+<option value="">Select country</option>
+<option value="United Kingdom" <?php echo $profileCountry === 'United Kingdom' ? 'selected' : ''; ?>>United Kingdom</option>
+<option value="United States" <?php echo $profileCountry === 'United States' ? 'selected' : ''; ?>>United States</option>
+<option value="Germany" <?php echo $profileCountry === 'Germany' ? 'selected' : ''; ?>>Germany</option>
+<option value="Singapore" <?php echo $profileCountry === 'Singapore' ? 'selected' : ''; ?>>Singapore</option>
+<option value="Nigeria" <?php echo $profileCountry === 'Nigeria' ? 'selected' : ''; ?>>Nigeria</option>
+<option value="Canada" <?php echo $profileCountry === 'Canada' ? 'selected' : ''; ?>>Canada</option>
+<option value="Australia" <?php echo $profileCountry === 'Australia' ? 'selected' : ''; ?>>Australia</option>
+<option value="India" <?php echo $profileCountry === 'India' ? 'selected' : ''; ?>>India</option>
 </select>
 </div>
 </div>
+<div id="profile-save-message" class="text-sm hidden"></div>
 <div class="mt-8 flex justify-end">
-<button class="bg-primary text-white px-8 py-2.5 rounded-lg font-bold hover:bg-primary/90 transition-all">
+<button type="submit" class="bg-primary text-white px-8 py-2.5 rounded-lg font-bold hover:bg-primary/90 transition-all">
                             Save Changes
                         </button>
 </div>
+</form>
 </section>
 <!-- Security Section -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -143,13 +157,13 @@ $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : ''
 <span class="material-icons">vibration</span>
 </div>
 <label class="relative inline-flex items-center cursor-pointer">
-<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<input id="2fa-toggle" disabled class="sr-only peer" type="checkbox" <?php echo $profile2FA ? 'checked' : ''; ?>/>
 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-background-dark/60 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
 </label>
 </div>
 <h3 class="font-bold text-lg mb-1">Two-Factor Auth</h3>
-<p class="text-sm text-slate-500 mb-6 leading-relaxed">Secure your account with Google Authenticator or SMS.</p>
-<button class="w-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all font-bold py-2 rounded-lg">
+<p class="text-sm text-slate-500 mb-6 leading-relaxed">Secure your account with Google Authenticator or SMS. TOTP setup coming soon.</p>
+<button type="button" id="setup-2fa-btn" class="w-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all font-bold py-2 rounded-lg">
                             Setup 2FA
                         </button>
 </div>
@@ -161,8 +175,8 @@ $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : ''
 </div>
 </div>
 <h3 class="font-bold text-lg mb-1">Password</h3>
-<p class="text-sm text-slate-500 mb-6 leading-relaxed">Last updated 32 days ago. Use a strong password.</p>
-<button class="w-full bg-slate-900 text-white dark:bg-primary dark:text-white transition-all font-bold py-2 rounded-lg">
+<p class="text-sm text-slate-500 mb-6 leading-relaxed">Use a strong password with at least 8 characters.</p>
+<button type="button" id="change-password-btn" class="w-full bg-slate-900 text-white dark:bg-primary dark:text-white transition-all font-bold py-2 rounded-lg">
                             Change Password
                         </button>
 </div>
@@ -171,7 +185,6 @@ $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : ''
 <section class="bg-white dark:bg-background-dark/40 rounded-xl border border-primary/10 shadow-sm overflow-hidden">
 <div class="p-6 border-b border-primary/10 flex justify-between items-center">
 <h2 class="text-lg font-bold">Recent Login Activity</h2>
-<button class="text-sm text-primary font-bold hover:underline">Logout all other sessions</button>
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-left">
@@ -188,32 +201,17 @@ $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : ''
 <tr class="hover:bg-slate-50/50 dark:hover:bg-background-dark/30 transition-colors">
 <td class="px-6 py-4 flex items-center gap-3">
 <span class="material-icons text-slate-400">desktop_windows</span>
-<span class="font-medium text-sm">Chrome (MacOS)</span>
+<span class="font-medium text-sm">Current Session</span>
 </td>
-<td class="px-6 py-4 text-sm font-mono text-slate-500">192.168.1.42</td>
-<td class="px-6 py-4 text-sm text-slate-500">London, UK</td>
-<td class="px-6 py-4 text-sm text-slate-500">Current Session</td>
-<td class="px-6 py-4 text-right">
-<span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
-</td>
-</tr>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-background-dark/30 transition-colors">
-<td class="px-6 py-4 flex items-center gap-3">
-<span class="material-icons text-slate-400">smartphone</span>
-<span class="font-medium text-sm">iPhone 14 Pro</span>
-</td>
-<td class="px-6 py-4 text-sm font-mono text-slate-500">172.16.254.1</td>
-<td class="px-6 py-4 text-sm text-slate-500">Manchester, UK</td>
-<td class="px-6 py-4 text-sm text-slate-500">2 hours ago</td>
-<td class="px-6 py-4 text-right">
-<button class="text-slate-400 hover:text-red-500 transition-colors">
-<span class="material-icons text-sm">close</span>
-</button>
+<td class="px-6 py-4">
+<span class="w-2 h-2 rounded-full bg-green-500 inline-block mr-2"></span>
+<span class="text-sm text-slate-500">Active</span>
 </td>
 </tr>
 </tbody>
 </table>
 </div>
+<p class="px-6 py-4 text-sm text-slate-500">Session logging coming soon.</p>
 </section>
 </div>
 <!-- Right Column: KYC Status -->
@@ -222,53 +220,45 @@ $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : ''
 <section class="bg-white dark:bg-background-dark/40 rounded-xl border border-primary/10 p-6 shadow-sm">
 <h3 class="font-bold text-lg mb-4 flex items-center justify-between">
                         Identity Verification
-                        <span class="text-primary text-sm font-medium">80%</span>
+                        <?php if ($profileKycStatus === 'verified'): ?>
+                        <span class="text-green-600 dark:text-green-400 text-sm font-medium">Verified</span>
+                        <?php elseif ($profileKycStatus === 'pending'): ?>
+                        <span class="text-primary text-sm font-medium">Under Review</span>
+                        <?php elseif ($profileKycStatus === 'rejected'): ?>
+                        <span class="text-red-600 dark:text-red-400 text-sm font-medium">Rejected</span>
+                        <?php else: ?>
+                        <span class="text-slate-500 text-sm font-medium">Not verified</span>
+                        <?php endif; ?>
 </h3>
-<div class="w-full bg-slate-100 dark:bg-background-dark/60 rounded-full h-2 mb-6">
-<div class="bg-primary h-2 rounded-full" style="width: 80%"></div>
-</div>
 <div class="space-y-4">
 <div class="flex items-center gap-4">
-<div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center">
-<span class="material-icons text-sm">check</span>
+<div class="w-8 h-8 rounded-full <?php echo $profileVerified ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-slate-100 dark:bg-background-dark/60 text-slate-400'; ?> flex items-center justify-center">
+<span class="material-icons text-sm"><?php echo $profileVerified ? 'check' : 'mail'; ?></span>
 </div>
 <div class="flex-1">
 <p class="text-sm font-bold">Email Verified</p>
-<p class="text-xs text-slate-400">Confirmed on Jan 12, 2024</p>
+<p class="text-xs text-slate-400"><?php echo $profileVerified ? 'Confirmed' : 'Pending'; ?></p>
 </div>
 </div>
 <div class="flex items-center gap-4">
-<div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center">
-<span class="material-icons text-sm">check</span>
+<div class="w-8 h-8 rounded-full <?php echo $profileKycStatus === 'verified' ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : ($profileKycStatus === 'pending' ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-background-dark/60 text-slate-400'); ?> flex items-center justify-center">
+<span class="material-icons text-sm"><?php echo $profileKycStatus === 'verified' ? 'check' : ($profileKycStatus === 'pending' ? 'hourglass_empty' : 'verified_user'); ?></span>
 </div>
 <div class="flex-1">
-<p class="text-sm font-bold">Personal Info</p>
-<p class="text-xs text-slate-400">Completed</p>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-<span class="material-icons text-sm">hourglass_empty</span>
-</div>
-<div class="flex-1">
-<p class="text-sm font-bold">Government ID</p>
-<p class="text-xs text-slate-400">Processing verification...</p>
-</div>
-</div>
-<div class="flex items-center gap-4 opacity-50">
-<div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-background-dark/60 text-slate-400 flex items-center justify-center">
-<span class="material-icons text-sm">lock</span>
-</div>
-<div class="flex-1">
-<p class="text-sm font-bold">Proof of Address</p>
-<p class="text-xs text-slate-400">Locked</p>
+<p class="text-sm font-bold">KYC Status</p>
+<p class="text-xs text-slate-400"><?php
+if ($profileKycStatus === 'verified') echo 'Verified';
+elseif ($profileKycStatus === 'pending') echo 'Documents under review';
+elseif ($profileKycStatus === 'rejected') echo 'Please resubmit documents';
+else echo 'Complete verification to withdraw';
+?></p>
 </div>
 </div>
 </div>
-<button class="w-full mt-8 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-bold py-3 rounded-lg flex items-center justify-center gap-2">
-<span class="material-icons text-sm">upload</span>
-                        Upload Documents
-                    </button>
+<a href="/dashboard/user/kyc" class="mt-8 block w-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-bold py-3 rounded-lg flex items-center justify-center gap-2 text-center">
+<span class="material-icons text-sm"><?php echo in_array($profileKycStatus, ['verified']) ? 'visibility' : 'upload'; ?></span>
+                        <?php echo in_array($profileKycStatus, ['verified']) ? 'View KYC' : 'Upload Documents'; ?>
+                    </a>
 </section>
 <!-- Security Tips Card -->
 <section class="bg-slate-900 text-white rounded-xl p-6 shadow-sm border border-slate-800">
@@ -322,4 +312,58 @@ $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : ''
 </div>
 </div>
 <script src="/js/app.js"></script>
+<script>
+(function(){
+  var profileForm = document.getElementById('profile-form');
+  var profileMsg = document.getElementById('profile-save-message');
+  var changePwBtn = document.getElementById('change-password-btn');
+  var setup2faBtn = document.getElementById('setup-2fa-btn');
+
+  if (profileForm) {
+    profileForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var fd = new FormData(profileForm);
+      var payload = { name: fd.get('name') || '', phone_number: fd.get('phone_number') || '', country: fd.get('country') || '' };
+      fetch('/api/user/profile.php', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(payload)
+      }).then(function(r){ return r.json(); }).then(function(res){
+        if (profileMsg) {
+          profileMsg.classList.remove('hidden');
+          profileMsg.className = 'text-sm ' + (res.success ? 'text-green-600' : 'text-red-600');
+          profileMsg.textContent = res.success ? 'Profile saved.' : (res.error || 'Failed to save');
+        }
+        if (res.success && res.data) {
+          var n = document.querySelector('[data-profile-name]'); if (n) n.textContent = res.data.name || 'User';
+        }
+      }).catch(function(){ if (profileMsg) { profileMsg.classList.remove('hidden'); profileMsg.className = 'text-sm text-red-600'; profileMsg.textContent = 'Network error'; } });
+    });
+  }
+
+  if (changePwBtn) {
+    changePwBtn.addEventListener('click', function(){
+      var curr = prompt('Enter current password:');
+      if (curr === null) return;
+      var pass = prompt('Enter new password (min 8 chars):');
+      if (pass === null || pass.length < 8) { alert('Password must be at least 8 characters'); return; }
+      var confirm = prompt('Confirm new password:');
+      if (confirm !== pass) { alert('Passwords do not match'); return; }
+      fetch('/api/user/profile.php', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ current_password: curr, password: pass })
+      }).then(function(r){ return r.json(); }).then(function(res){
+        alert(res.success ? 'Password updated.' : (res.error || 'Failed to update password'));
+      }).catch(function(){ alert('Network error'); });
+    });
+  }
+
+  if (setup2faBtn) {
+    setup2faBtn.addEventListener('click', function(){ alert('Two-factor authentication setup is coming soon.'); });
+  }
+})();
+</script>
 </body></html>

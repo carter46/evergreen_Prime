@@ -21,7 +21,9 @@ CREATE TABLE IF NOT EXISTS users (
   admin_notes TEXT NULL,
   avatar_url VARCHAR(500) NULL,
   phone_number VARCHAR(50) NULL,
+  country VARCHAR(100) NULL,
   referral_code VARCHAR(100) NULL,
+  kyc_status ENUM('none', 'pending', 'verified', 'rejected') NOT NULL DEFAULT 'none',
   INDEX idx_users_email (email),
   INDEX idx_users_role (role)
 ) ENGINE=InnoDB;
@@ -127,6 +129,26 @@ CREATE TABLE IF NOT EXISTS transactions (
   INDEX idx_tx_type (type),
   INDEX idx_tx_status (status),
   INDEX idx_tx_created (created_at),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- KYC submissions
+CREATE TABLE IF NOT EXISTS kyc_submissions (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  document_type ENUM('passport', 'id_card', 'driver_license') NOT NULL,
+  front_path VARCHAR(500) NOT NULL,
+  back_path VARCHAR(500) NULL,
+  full_name VARCHAR(255) NOT NULL,
+  date_of_birth DATE NULL,
+  address TEXT NULL,
+  status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+  rejection_reason TEXT NULL,
+  reviewed_by INT UNSIGNED NULL,
+  reviewed_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_kyc_user (user_id),
+  INDEX idx_kyc_status (status),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 

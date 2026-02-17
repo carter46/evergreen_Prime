@@ -41,6 +41,10 @@ $navClass = function ($page) use ($current) {
             <span class="material-icons text-[20px] shrink-0">receipt_long</span>
             <span class="font-medium truncate">Transactions</span>
         </a>
+        <a class="<?php echo $navClass('kyc'); ?>" href="/dashboard/admin/kyc">
+            <span class="material-icons text-[20px] shrink-0">verified_user</span>
+            <span class="font-medium truncate">KYC Management</span>
+        </a>
         <a class="<?php echo $navClass('ai'); ?>" href="/dashboard/admin">
             <span class="material-icons text-[20px] shrink-0">smart_toy</span>
             <span class="font-medium truncate">AI Bot Config</span>

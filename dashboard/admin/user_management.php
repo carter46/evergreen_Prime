@@ -374,13 +374,18 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <!-- Security -->
 <div>
 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Security Settings</h4>
-<div class="flex items-center justify-between">
+<div class="flex items-center justify-between mb-3">
 <div class="flex items-center gap-3"><span class="material-icons">verified_user</span><span class="text-sm font-medium">Two-Factor Auth (2FA)</span></div>
 <label class="relative inline-flex items-center cursor-pointer">
 <input type="checkbox" id="drawer-2fa-toggle" class="sr-only peer" />
 <div class="w-11 h-6 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
 </label>
 </div>
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-3"><span class="material-icons text-sm">badge</span><span class="text-sm font-medium">KYC Status</span></div>
+<span id="drawer-kyc-status" class="text-xs font-bold px-2 py-0.5 rounded-full uppercase">—</span>
+</div>
+<button type="button" id="drawer-verify-kyc-btn" class="w-full mt-2 px-3 py-2 text-xs font-bold rounded-lg bg-primary/20 text-primary hover:bg-primary hover:text-black transition-colors">Verify KYC (Bypass)</button>
 </div>
 </div>
 <!-- Drawer Actions -->
@@ -499,6 +504,12 @@ function loadUser(id) {
 
     var tfaToggle = document.getElementById('drawer-2fa-toggle');
     if (tfaToggle) tfaToggle.checked = !!u.two_factor_enabled;
+    var kycEl = document.getElementById('drawer-kyc-status');
+    if (kycEl) {
+      var ks = (u.kyc_status || 'none').toLowerCase();
+      kycEl.textContent = ks;
+      kycEl.className = 'text-xs font-bold px-2 py-0.5 rounded-full uppercase ' + (ks === 'verified' ? 'bg-emerald-100 text-emerald-700' : (ks === 'pending' ? 'bg-amber-100 text-amber-700' : (ks === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600')));
+    }
     var blockBtn = document.getElementById('drawer-block-btn');
     blockBtn.textContent = u.active ? 'Block User' : 'Unblock User';
     blockBtn.className = 'px-2 py-2 text-xs font-bold rounded-lg ' + (u.active ? 'bg-red-500 text-black hover:bg-red-600' : 'bg-green-600 text-white hover:bg-green-700');
@@ -674,6 +685,21 @@ document.getElementById('drawer-block-btn').addEventListener('click', function()
     .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { loadUser(id); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
 });
 
+document.getElementById('drawer-verify-kyc-btn').addEventListener('click', function(){
+  var id = document.getElementById('drawer-user-id').value;
+  if (!id) return;
+  if (!confirm('Verify this user\'s KYC without documents? They will be able to withdraw.')) return;
+  fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'verify_kyc', user_id: parseInt(id, 10) }) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (res.success) {
+        var toast = document.getElementById('user-toast');
+        if (toast) { toast.textContent = 'KYC verified'; toast.classList.remove('hidden'); setTimeout(function(){ toast.classList.add('hidden'); }, 2000); }
+        loadUser(parseInt(id, 10));
+      } else { alert(res.error || 'Failed'); }
+    })
+    .catch(function(){ alert('Request failed'); });
+});
 document.getElementById('drawer-2fa-toggle').addEventListener('change', function(){
   var id = document.getElementById('drawer-user-id').value;
   if (!id) return;

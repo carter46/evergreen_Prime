@@ -56,10 +56,12 @@ function get_current_user_data(): ?array {
     try {
         $pdo = require __DIR__ . '/db.php';
         $cols = 'name, email, email_verified';
-        try {
-            $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
-            if ($chk && $chk->rowCount() > 0) $cols .= ', avatar_url';
-        } catch (Throwable $e) {}
+        foreach (['avatar_url', 'phone_number', 'country', 'kyc_status', 'two_factor_enabled'] as $c) {
+            try {
+                $chk = $pdo->query("SHOW COLUMNS FROM users LIKE '{$c}'");
+                if ($chk && $chk->rowCount() > 0) $cols .= ', ' . $c;
+            } catch (Throwable $e) {}
+        }
         $stmt = $pdo->prepare("SELECT {$cols} FROM users WHERE id = ?");
         $stmt->execute([$_SESSION['user_id']]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -68,6 +70,10 @@ function get_current_user_data(): ?array {
             'email' => $row['email'] ?? '',
             'avatar_url' => $row['avatar_url'] ?? null,
             'verified' => (bool) ($row['email_verified'] ?? false),
+            'phone_number' => $row['phone_number'] ?? null,
+            'country' => $row['country'] ?? null,
+            'kyc_status' => $row['kyc_status'] ?? 'none',
+            'two_factor_enabled' => (bool) ($row['two_factor_enabled'] ?? false),
         ] : null;
         return $cache;
     } catch (Throwable $e) {

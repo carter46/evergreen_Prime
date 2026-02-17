@@ -38,6 +38,7 @@ Options -Indexes
     RewriteRule ^dashboard/admin/plans$ dashboard/admin/plan_management.php [L]
     RewriteRule ^dashboard/admin/addresses$ dashboard/admin/addresses.php [L]
     RewriteRule ^dashboard/admin/communication$ dashboard/admin/communication_hub.php [L]
+    RewriteRule ^dashboard/admin/kyc$ dashboard/admin/kyc_management.php [L]
 
     # Auth pages (clean URL -> PHP)
     RewriteRule ^login$ login.php [L]

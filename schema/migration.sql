@@ -168,3 +168,42 @@ SET @sql = IF(@enum_exists = 0,
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- Add kyc_status and country to users
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'kyc_status');
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE users ADD COLUMN kyc_status ENUM(\'none\', \'pending\', \'verified\', \'rejected\') NOT NULL DEFAULT \'none\' AFTER referral_code', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'country');
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE users ADD COLUMN country VARCHAR(100) NULL AFTER phone_number', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Create kyc_submissions table
+CREATE TABLE IF NOT EXISTS kyc_submissions (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  document_type ENUM('passport', 'id_card', 'driver_license') NOT NULL,
+  front_path VARCHAR(500) NOT NULL,
+  back_path VARCHAR(500) NULL,
+  full_name VARCHAR(255) NOT NULL,
+  date_of_birth DATE NULL,
+  address TEXT NULL,
+  status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+  rejection_reason TEXT NULL,
+  reviewed_by INT UNSIGNED NULL,
+  reviewed_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_kyc_user (user_id),
+  INDEX idx_kyc_status (status),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;

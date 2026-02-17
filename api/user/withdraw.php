@@ -86,6 +86,19 @@ if (!$stmt->fetch()) {
 
 $userId = (int) $_SESSION['user_id'];
 
+// KYC required for withdrawals
+$colChk = $pdo->query("SHOW COLUMNS FROM users LIKE 'kyc_status'");
+if ($colChk && $colChk->rowCount() > 0) {
+    $stmt = $pdo->prepare('SELECT kyc_status FROM users WHERE id = ?');
+    $stmt->execute([$userId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (($row['kyc_status'] ?? 'none') !== 'verified') {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'KYC verification required to withdraw. Complete verification in Settings > KYC.']);
+        exit;
+    }
+}
+
 $pdo->beginTransaction();
 try {
     // Check balance WITHIN transaction to prevent race conditions

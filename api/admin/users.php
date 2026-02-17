@@ -50,22 +50,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $user['two_factor_enabled'] = (bool) (isset($user['two_factor_enabled']) ? $user['two_factor_enabled'] : 0);
         if (!isset($user['avatar_url'])) $user['avatar_url'] = null;
 
-        // Check if two_factor_enabled column exists
+        // Check if two_factor_enabled, kyc_status columns exist
         try {
             $colStmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'two_factor_enabled'");
+            $kycCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'kyc_status'");
+            $extraCols = 'two_factor_enabled, admin_notes';
+            if ($kycCol && $kycCol->rowCount() > 0) $extraCols .= ', kyc_status';
             if ($colStmt->rowCount() > 0) {
-                $fullStmt = $pdo->prepare('SELECT two_factor_enabled, admin_notes FROM users WHERE id = ?');
+                $fullStmt = $pdo->prepare("SELECT {$extraCols} FROM users WHERE id = ?");
                 $fullStmt->execute([$id]);
                 $extra = $fullStmt->fetch(PDO::FETCH_ASSOC);
                 $user['two_factor_enabled'] = (bool) ($extra['two_factor_enabled'] ?? 0);
                 $user['admin_notes'] = $extra['admin_notes'] ?? '';
+                $user['kyc_status'] = $extra['kyc_status'] ?? 'none';
             } else {
                 $user['two_factor_enabled'] = false;
                 $user['admin_notes'] = '';
+                $user['kyc_status'] = 'none';
             }
         } catch (Throwable $e) {
             $user['two_factor_enabled'] = false;
             $user['admin_notes'] = '';
+            $user['kyc_status'] = 'none';
         }
 
         // Wallet balances
@@ -551,6 +557,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Throwable $e) {
                 echo json_encode(['success' => false, 'error' => '2FA not supported']);
             }
+            exit;
+
+        case 'verify_kyc':
+            $kycCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'kyc_status'");
+            if (!$kycCol || $kycCol->rowCount() === 0) {
+                echo json_encode(['success' => false, 'error' => 'KYC not configured']);
+                exit;
+            }
+            $pdo->prepare('UPDATE users SET kyc_status = ? WHERE id = ?')->execute(['verified', $userId]);
+            echo json_encode(['success' => true, 'data' => ['message' => 'KYC verified (bypass)']]);
             exit;
 
         default:
