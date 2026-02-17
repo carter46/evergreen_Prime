@@ -460,27 +460,63 @@ document.addEventListener('DOMContentLoaded', function() {
         }, i * 100);
     });
     
-    // Chart animation
-    var chart = document.getElementById('analytics-chart');
-    if (chart) {
-        var paths = chart.querySelectorAll('path');
+    var chartWrapper = document.getElementById('analytics-chart');
+    var currentPeriod = '<?php echo htmlspecialchars($period); ?>';
+
+    function animateChart(chartEl) {
+        if (!chartEl) return;
+        var paths = chartEl.querySelectorAll('path');
         paths.forEach(function(path) {
             var length = path.getTotalLength();
             path.style.strokeDasharray = length;
             path.style.strokeDashoffset = length;
             path.style.transition = 'stroke-dashoffset 2s ease';
-            setTimeout(function() {
-                path.style.strokeDashoffset = 0;
-            }, 500);
+            setTimeout(function() { path.style.strokeDashoffset = 0; }, 500);
         });
     }
-    
-    // Analytics filter buttons
-    var filterBtns = document.querySelectorAll('.analytics-filter-btn');
-    filterBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
+    if (chartWrapper) animateChart(chartWrapper);
+
+    function updateAnalyticsChart(data) {
+        if (!chartWrapper) return;
+        if (!data || data.length === 0) {
+            chartWrapper.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>';
+            return;
+        }
+        var maxVal = Math.max.apply(null, data.map(function(d){ return d.value; }));
+        var minVal = Math.min.apply(null, data.map(function(d){ return d.value; }));
+        var range = maxVal - minVal;
+        if (range === 0) range = 1;
+        var count = data.length;
+        var points = [];
+        var dates = [];
+        data.forEach(function(point, i) {
+            var x = count > 1 ? (i / (count - 1)) * 1000 : 500;
+            var y = 300 - ((point.value - minVal) / range) * 250;
+            points.push(x + ',' + y);
+            if (i === 0 || i === Math.floor(count / 4) || i === Math.floor(count / 2) || i === Math.floor(count * 3 / 4) || i === count - 1) {
+                dates.push(new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            }
+        });
+        var pathD = 'M' + points.join(' L');
+        var areaD = pathD + ' L1000,300 L0,300 Z';
+        chartWrapper.innerHTML = '<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300"><defs><linearGradient id="analyticsChartGradient" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f9bd0b" stop-opacity="0.2"></stop><stop offset="100%" stop-color="#f9bd0b" stop-opacity="0"></stop></linearGradient></defs><path d="' + areaD + '" fill="url(#analyticsChartGradient)"></path><path d="' + pathD + '" fill="none" stroke="#f9bd0b" stroke-width="3"></path></svg><div class="flex justify-between mt-4 px-2 text-xs text-slate-400 font-medium">' + dates.map(function(d){ return '<span>' + d + '</span>'; }).join('') + '</div>';
+        animateChart(chartWrapper);
+    }
+
+    document.querySelectorAll('.analytics-filter-btn').forEach(function(btn) {
+        var p = btn.getAttribute('data-period');
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
             var period = this.getAttribute('data-period');
-            window.location.href = '?period=' + period;
+            document.querySelectorAll('.analytics-filter-btn').forEach(function(b) {
+                b.classList.remove('bg-white', 'dark:bg-zinc-700', 'shadow-sm');
+                b.classList.add('hover:bg-white', 'dark:hover:bg-zinc-700');
+            });
+            this.classList.add('bg-white', 'dark:bg-zinc-700', 'shadow-sm');
+            this.classList.remove('hover:bg-white', 'dark:hover:bg-zinc-700');
+            fetch('/api/user/chart-data.php?period=' + encodeURIComponent(period) + '&type=analytics', { credentials: 'same-origin' }).then(function(r){ return r.json(); }).then(function(res){
+                if (res.success && res.data) updateAnalyticsChart(res.data);
+            }).catch(function(){ if (chartWrapper) chartWrapper.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">Failed to load chart</div>'; });
         });
     });
 });
