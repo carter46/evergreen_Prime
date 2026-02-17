@@ -341,8 +341,8 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <!-- User Wallet -->
 <div>
   <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">User Wallet</h4>
-  <div id="drawer-wallet-breakdown" class="text-sm text-slate-600 dark:text-slate-400 space-y-1 mb-3"></div>
-  <div id="drawer-total-balance" class="text-2xl font-bold text-emerald-600 mb-4">$0.00</div>
+  <div id="drawer-total-balance" class="text-2xl font-bold text-emerald-600 mb-2">$0.00</div>
+  <div id="drawer-wallet-breakdown" class="text-sm text-slate-600 dark:text-slate-400 space-y-0.5 mb-4"></div>
   <button type="button" id="drawer-adjust-balance-btn" class="text-sm text-black font-medium hover:underline">Adjust balance</button>
   <div id="drawer-adjust-panel" class="hidden mt-3 p-4 bg-slate-50 dark:bg-zinc-800 rounded-lg space-y-3">
     <div>
@@ -368,7 +368,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 </div>
 <!-- Active Investments -->
 <div>
-<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Active Investments (click to cancel)</h4>
+<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Active &amp; Paused Plans</h4>
 <div id="drawer-investments" class="space-y-3"></div>
 </div>
 <!-- Security -->
@@ -457,12 +457,21 @@ function loadUser(id) {
     document.getElementById('drawer-edit-password').value = '';
 
     var totalBal = document.getElementById('drawer-total-balance');
-    if (totalBal) totalBal.textContent = '$' + (parseFloat(u.total_balance_usd || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    if (totalBal) totalBal.textContent = '$' + (parseFloat(u.total_balance_usd || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' USD';
     var breakdownEl = document.getElementById('drawer-wallet-breakdown');
     if (breakdownEl) {
       var wb = (u.wallet_balances || []).filter(function(b){ return (parseFloat(b.amount) || 0) > 0; });
       if (wb.length > 0) {
-        breakdownEl.innerHTML = wb.map(function(b){ var amt = parseFloat(b.amount); var fmt = amt >= 1 ? amt.toFixed(2) : (amt >= 0.01 ? amt.toFixed(4) : amt.toFixed(6)); return '<div>'+b.currency+': '+fmt+'</div>'; }).join('');
+        var fmtAmt = function(amt, cur) {
+          amt = parseFloat(amt);
+          if (amt <= 0) return '0';
+          if (['USD','USDT','USDC','BUSD'].indexOf(cur) >= 0) return '$' + amt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          if (amt >= 1000) return amt.toLocaleString('en-US', { maximumFractionDigits: 0 });
+          if (amt >= 1) return amt.toFixed(2);
+          if (amt >= 0.01) return amt.toFixed(4);
+          return amt.toFixed(6).replace(/\.?0+$/, '');
+        };
+        breakdownEl.innerHTML = wb.map(function(b){ return '<div class="flex justify-between"><span>'+b.currency+'</span><span>'+fmtAmt(b.amount, b.currency)+'</span></div>'; }).join('');
       } else {
         breakdownEl.innerHTML = '<span class="text-slate-400">No balances</span>';
       }
@@ -481,7 +490,10 @@ function loadUser(id) {
     inv.innerHTML = '';
     (u.investments || []).forEach(function(i){
       var avg = ((i.yield_min + i.yield_max) / 2).toFixed(1);
-      inv.innerHTML += '<div class="drawer-investment-card p-4 border border-slate-200 dark:border-zinc-800 rounded-xl cursor-pointer hover:border-primary/50 transition-colors group" data-inv-id="'+i.id+'"><div class="flex justify-between items-start mb-2"><div><div class="text-sm font-bold">'+i.plan_name+'</div><p class="text-[10px] text-slate-500">'+avg+'% Daily ROI</p></div><span class="text-xs font-bold text-primary">$'+parseFloat(i.amount).toLocaleString()+'</span></div><div class="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity"><button type="button" class="drawer-cancel-investment px-2 py-1 text-[10px] font-bold bg-red-500 text-white rounded hover:bg-red-600" data-inv-id="'+i.id+'">Cancel & Refund</button></div></div>';
+      var isPaused = (i.status || '').toLowerCase() === 'paused';
+      var statusBadge = isPaused ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">Paused</span>' : '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Active</span>';
+      var pauseOrResume = isPaused ? '<button type="button" class="drawer-resume-investment px-2 py-1 text-[10px] font-bold bg-emerald-500 text-white rounded hover:bg-emerald-600" data-inv-id="'+i.id+'">Resume</button>' : '<button type="button" class="drawer-pause-investment px-2 py-1 text-[10px] font-bold bg-amber-500 text-white rounded hover:bg-amber-600" data-inv-id="'+i.id+'">Pause</button>';
+      inv.innerHTML += '<div class="drawer-investment-card p-4 border border-slate-200 dark:border-zinc-800 rounded-xl hover:border-primary/50 transition-colors group" data-inv-id="'+i.id+'"><div class="flex justify-between items-start mb-2"><div><div class="text-sm font-bold flex items-center gap-2">'+i.plan_name+' '+statusBadge+'</div><p class="text-[10px] text-slate-500">'+avg+'% Daily ROI</p></div><span class="text-xs font-bold text-primary">$'+parseFloat(i.amount).toLocaleString()+'</span></div><div class="flex gap-2 mt-2 flex-wrap">'+pauseOrResume+'<button type="button" class="drawer-cancel-investment px-2 py-1 text-[10px] font-bold bg-red-500 text-white rounded hover:bg-red-600" data-inv-id="'+i.id+'">Cancel & Refund</button></div></div>';
     });
     if (!u.investments || u.investments.length === 0) inv.innerHTML = '<p class="text-sm text-slate-500">No active investments</p>';
 
@@ -506,8 +518,26 @@ document.getElementById('drawer-adjust-balance-btn').addEventListener('click', f
 document.getElementById('drawer-adjust-type').addEventListener('change', function(){
   populateCurrencySelect(this.value === 'debit', currentUserWallet);
 });
+function doPlanAction(action, invId, userId, confirmMsg) {
+  if (!invId || !userId) return;
+  if (confirmMsg && !confirm(confirmMsg)) return;
+  fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: action, user_id: parseInt(userId, 10), investment_id: parseInt(invId, 10) }) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (res.success) {
+        var toast = document.getElementById('user-toast');
+        if (toast) { toast.textContent = res.data && res.data.message ? res.data.message : 'Done'; toast.classList.remove('hidden'); setTimeout(function(){ toast.classList.add('hidden'); }, 2000); }
+        loadUser(parseInt(userId, 10));
+      } else { alert(res.error || 'Failed'); }
+    })
+    .catch(function(){ alert('Request failed'); });
+}
 document.addEventListener('click', function(e){
-  var btn = e.target.closest('.drawer-cancel-investment');
+  var btn = e.target.closest('.drawer-pause-investment');
+  if (btn) { e.preventDefault(); e.stopPropagation(); doPlanAction('pause_plan', btn.getAttribute('data-inv-id'), document.getElementById('drawer-user-id').value, 'Pause this plan? Daily earnings will not be credited until resumed.'); return; }
+  btn = e.target.closest('.drawer-resume-investment');
+  if (btn) { e.preventDefault(); e.stopPropagation(); doPlanAction('resume_plan', btn.getAttribute('data-inv-id'), document.getElementById('drawer-user-id').value); return; }
+  btn = e.target.closest('.drawer-cancel-investment');
   if (!btn) return;
   e.preventDefault();
   e.stopPropagation();

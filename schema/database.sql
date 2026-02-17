@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS user_investments (
   amount DECIMAL(18,2) NOT NULL,
   duration_days INT UNSIGNED NULL,
   start_date DATE NOT NULL,
-  status ENUM('active', 'completed', 'cancelled') NOT NULL DEFAULT 'active',
+  status ENUM('active', 'paused', 'completed', 'cancelled') NOT NULL DEFAULT 'active',
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_inv_user (user_id),
   INDEX idx_inv_plan (plan_id),

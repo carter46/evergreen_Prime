@@ -81,13 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         require_once dirname(__DIR__, 2) . '/includes/helpers.php';
         $user['total_balance_usd'] = wallet_balances_to_usd($user['wallet_balances']);
 
-        // Active investments with plan names
+        // Active + paused investments with plan names
         $stmt = $pdo->prepare('
             SELECT ui.id, ui.amount, ui.start_date, ui.status, ui.duration_days AS investment_duration_days, p.name AS plan_name, p.yield_min, p.yield_max, p.duration_days AS plan_duration_days
             FROM user_investments ui
             JOIN plans p ON p.id = ui.plan_id
-            WHERE ui.user_id = ? AND ui.status = "active"
-            ORDER BY ui.created_at DESC
+            WHERE ui.user_id = ? AND ui.status IN ("active", "paused")
+            ORDER BY ui.status ASC, ui.created_at DESC
         ');
         $stmt->execute([$id]);
         $user['investments'] = [];
@@ -423,6 +423,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ->execute([$amount, $userId, $currency]);
                 echo json_encode(['success' => true, 'data' => ['message' => 'Balance debited']]);
             }
+            exit;
+
+        case 'pause_plan':
+            $invId = (int) ($input['investment_id'] ?? 0);
+            if ($invId <= 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Invalid investment ID']);
+                exit;
+            }
+            $stmt = $pdo->prepare('SELECT id, user_id, status FROM user_investments WHERE id = ? AND user_id = ?');
+            $stmt->execute([$invId, $userId]);
+            $inv = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$inv || $inv['status'] !== 'active') {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'Active investment not found']);
+                exit;
+            }
+            $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['paused', $invId]);
+            echo json_encode(['success' => true, 'data' => ['message' => 'Plan paused – daily earnings will not be credited until resumed']]);
+            exit;
+
+        case 'resume_plan':
+            $invId = (int) ($input['investment_id'] ?? 0);
+            if ($invId <= 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Invalid investment ID']);
+                exit;
+            }
+            $stmt = $pdo->prepare('SELECT id, user_id, status FROM user_investments WHERE id = ? AND user_id = ?');
+            $stmt->execute([$invId, $userId]);
+            $inv = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$inv || $inv['status'] !== 'paused') {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'Paused investment not found']);
+                exit;
+            }
+            $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['active', $invId]);
+            echo json_encode(['success' => true, 'data' => ['message' => 'Plan resumed']]);
+            exit;
+
+        case 'pause_plan':
+            $invId = (int) ($input['investment_id'] ?? 0);
+            if ($invId <= 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Invalid investment ID']);
+                exit;
+            }
+            $stmt = $pdo->prepare('SELECT id, user_id, status FROM user_investments WHERE id = ? AND user_id = ?');
+            $stmt->execute([$invId, $userId]);
+            $inv = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$inv || $inv['status'] !== 'active') {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'Active investment not found']);
+                exit;
+            }
+            $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['paused', $invId]);
+            echo json_encode(['success' => true, 'data' => ['message' => 'Plan paused – daily earnings will not be credited until resumed']]);
+            exit;
+
+        case 'resume_plan':
+            $invId = (int) ($input['investment_id'] ?? 0);
+            if ($invId <= 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Invalid investment ID']);
+                exit;
+            }
+            $stmt = $pdo->prepare('SELECT id, user_id, status FROM user_investments WHERE id = ? AND user_id = ?');
+            $stmt->execute([$invId, $userId]);
+            $inv = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$inv || $inv['status'] !== 'paused') {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'Paused investment not found']);
+                exit;
+            }
+            $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['active', $invId]);
+            echo json_encode(['success' => true, 'data' => ['message' => 'Plan resumed']]);
             exit;
 
         case 'cancel_plan':
