@@ -22,11 +22,12 @@ if (!isset($_SESSION['user_id'])) {
 
 $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 $planId = (int) ($input['plan_id'] ?? 0);
-$amount = (float) ($input['amount'] ?? 0);
+$amountUsd = (float) ($input['amount'] ?? 0);
+$currency = strtoupper(trim($input['currency'] ?? 'USD'));
 
-if ($planId <= 0 || $amount <= 0) {
+if ($planId <= 0 || $amountUsd <= 0 || empty($currency)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Invalid plan ID or amount']);
+    echo json_encode(['success' => false, 'error' => 'Invalid plan ID, amount, or currency']);
     exit;
 }
 
@@ -56,37 +57,41 @@ if (!$plan['enabled']) {
 }
 
 // Validate amount is within range
-if ($amount < $plan['min_deposit']) {
+if ($amountUsd < $plan['min_deposit']) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Amount is below minimum deposit']);
     exit;
 }
 
-if ($plan['max_deposit'] !== null && $amount > $plan['max_deposit']) {
+if ($plan['max_deposit'] !== null && $amountUsd > $plan['max_deposit']) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Amount exceeds maximum deposit']);
     exit;
 }
 
-// Check user balance (convert all to USD)
-$userId = (int) $_SESSION['user_id'];
-$stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
-$stmt->execute([$userId]);
-$totalBalance = 0;
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $amt = (float)$row['amount'];
-    $currency = strtoupper($row['currency']);
-    if (in_array($currency, ['USDT','USDC','USD','BUSD'], true)) {
-        $totalBalance += $amt;
+// Convert USD amount to selected currency for debit
+$amountToDebit = $amountUsd;
+if (!in_array($currency, ['USDT','USDC','USD','BUSD'], true)) {
+    $prices = get_coingecko_prices_usd();
+    $cgId = currency_to_coingecko($currency);
+    if (!$cgId || !isset($prices[$cgId]) || $prices[$cgId] <= 0) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Unable to convert ' . $currency . ' to USD. Try USDT or USD.']);
+        exit;
     }
-    elseif ($currency === 'BTC') $totalBalance += $amt * 65000;
-    elseif ($currency === 'ETH') $totalBalance += $amt * 3500;
-    else $totalBalance += $amt;
+    $amountToDebit = $amountUsd / $prices[$cgId];
 }
 
-if ($totalBalance < $amount) {
+// Check user balance in selected currency
+$userId = (int) $_SESSION['user_id'];
+$stmt = $pdo->prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ?');
+$stmt->execute([$userId, $currency]);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+$balance = $row ? (float)$row['amount'] : 0;
+
+if ($balance < $amountToDebit) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Insufficient balance']);
+    echo json_encode(['success' => false, 'error' => 'Insufficient ' . $currency . ' balance. Need ' . number_format($amountToDebit, 8) . ' ' . $currency]);
     exit;
 }
 
@@ -104,15 +109,15 @@ if ($activeCount >= $maxPlans) {
 
 $pdo->beginTransaction();
 try {
-    // Create investment record
+    // Create investment record (amount stored in USD for plan value)
     $stmt = $pdo->prepare('INSERT INTO user_investments (user_id, plan_id, amount, start_date, status) VALUES (?, ?, ?, CURDATE(), ?)');
-    $stmt->execute([$userId, $planId, $amount, 'active']);
+    $stmt->execute([$userId, $planId, $amountUsd, 'active']);
     
-    // Debit user balance (deduct from USD, create if doesn't exist)
-    $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, -?) ON DUPLICATE KEY UPDATE amount = amount - ?')->execute([$userId, 'USD', $amount, $amount]);
+    // Debit user balance (deduct from selected currency)
+    $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, -?) ON DUPLICATE KEY UPDATE amount = amount - ?')->execute([$userId, $currency, $amountToDebit, $amountToDebit]);
     
-    // Create transaction record
-    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')->execute([$userId, 'investment', $amount, 'USD', 'completed']);
+    // Create transaction record (amount debited in selected currency)
+    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')->execute([$userId, 'investment', $amountToDebit, $currency, 'completed']);
     
     $pdo->commit();
     echo json_encode([

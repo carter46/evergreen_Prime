@@ -6,9 +6,30 @@ $siteName = get_site_name();
 
 $plans = [];
 $userBalance = 0;
+$walletBalances = [];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
+    
+    // Fetch user wallet balances (per currency)
+    $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
+    $stmt->execute([$userId]);
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $amt = (float)$row['amount'];
+        if ($amt <= 0) continue;
+        $currency = strtoupper($row['currency']);
+        $usdVal = $amt;
+        if (in_array($currency, ['USDT','USDC','USD','BUSD'], true)) $usdVal = $amt;
+        elseif ($currency === 'BTC') $usdVal = $amt * 65000;
+        elseif ($currency === 'ETH') $usdVal = $amt * 3500;
+        elseif ($currency === 'SOL') $usdVal = $amt * 100;
+        elseif ($currency === 'BNB') $usdVal = $amt * 582;
+        elseif ($currency === 'XRP') $usdVal = $amt * 0.55;
+        else $usdVal = $amt;
+        $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => $usdVal];
+        $userBalance += $usdVal;
+    }
+    usort($walletBalances, function($a, $b) { return ($b['usd_value'] <=> $a['usd_value']); });
     
     // Fetch enabled plans
     $stmt = $pdo->query('SELECT id, name, slug, description, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
@@ -26,17 +47,6 @@ try {
             'withdrawal_days' => (int)$row['withdrawal_days'],
             'features' => $row['features_json'] ? json_decode($row['features_json'], true) : [],
         ];
-    }
-    
-    // Calculate user balance
-    $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
-    $stmt->execute([$userId]);
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $amt = (float)$row['amount'];
-        if (in_array(strtoupper($row['currency']), ['USDT','USDC','USD','BUSD'], true)) $userBalance += $amt;
-        elseif (strtoupper($row['currency']) === 'BTC') $userBalance += $amt * 65000;
-        elseif (strtoupper($row['currency']) === 'ETH') $userBalance += $amt * 3500;
-        else $userBalance += $amt;
     }
 } catch (Throwable $e) { }
 ?>
@@ -131,7 +141,7 @@ try {
 </div>
 <?php endif; ?>
 
-<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" class="subscribe-plan-btn w-full bg-primary hover:bg-primary/90 text-black font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/20">
+<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-duration="<?php echo (int)$plan['duration_days']; ?>" class="subscribe-plan-btn w-full bg-primary hover:bg-primary/90 text-black font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/20">
 Subscribe Now
 </button>
 </div>
@@ -157,15 +167,31 @@ Subscribe Now
 <form id="subscribe-form">
 <input type="hidden" id="subscribe-plan-id" name="plan_id"/>
 <div class="mb-4">
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Duration</label>
+<p class="text-sm font-medium" id="modal-plan-duration">—</p>
+<p class="text-xs text-slate-500 mt-1">Investment period for this plan</p>
+</div>
+<div class="mb-4">
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Pay With</label>
+<select id="subscribe-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" <?php echo empty($walletBalances) ? 'disabled' : 'required'; ?>>
+<option value="">Select currency</option>
+<?php foreach ($walletBalances as $b): ?>
+<option value="<?php echo htmlspecialchars($b['currency']); ?>" data-amount="<?php echo $b['amount']; ?>" data-usd="<?php echo $b['usd_value']; ?>"><?php echo htmlspecialchars($b['currency']); ?> — <?php echo number_format($b['amount'], 4); ?> (≈ $<?php echo number_format($b['usd_value'], 2); ?>)</option>
+<?php endforeach; ?>
+</select>
+<?php if (empty($walletBalances)): ?><p class="text-xs text-amber-600 mt-1">Deposit funds to your wallet first.</p><?php endif; ?>
+<p class="text-xs text-slate-500 mt-1">Available: <span id="selected-coin-balance">—</span></p>
+</div>
+<div class="mb-4">
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Investment Amount (USD)</label>
 <input type="number" id="subscribe-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" required/>
-<p class="text-xs text-slate-500 mt-1">Available Balance: $<span id="available-balance"><?php echo number_format($userBalance, 2); ?></span></p>
+<p class="text-xs text-slate-500 mt-1">Total Balance: $<span id="available-balance"><?php echo number_format($userBalance, 2); ?></span></p>
 <p class="text-xs text-slate-500 mt-1">Range: $<span id="plan-min"></span> - <span id="plan-max"></span></p>
 </div>
 <div id="subscribe-error" class="text-sm text-red-500 hidden mb-4"></div>
 <div class="flex gap-3">
 <button type="button" id="subscribe-cancel-btn" class="flex-1 px-4 py-2 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg">Cancel</button>
-<button type="submit" class="flex-1 px-4 py-2 bg-primary text-black font-bold rounded-lg">Subscribe</button>
+<button type="submit" id="subscribe-submit-btn" class="flex-1 px-4 py-2 bg-primary text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" <?php echo empty($walletBalances) ? 'disabled' : ''; ?>>Subscribe</button>
 </div>
 </form>
 </div>
@@ -194,19 +220,35 @@ document.addEventListener('DOMContentLoaded', function() {
     var currentPlanMin = 0;
     var currentPlanMax = 0;
     
-    function openModal(planId, planName, planMin, planMax) {
+    var currencySelect = document.getElementById('subscribe-currency');
+    var durationEl = document.getElementById('modal-plan-duration');
+    var selectedBalanceEl = document.getElementById('selected-coin-balance');
+
+    function openModal(planId, planName, planMin, planMax, planDuration) {
         planIdEl.value = planId;
         planNameEl.textContent = planName;
         currentPlanMin = planMin;
         currentPlanMax = planMax;
         planMinEl.textContent = '$' + planMin.toLocaleString();
         planMaxEl.textContent = planMax > 0 ? '$' + planMax.toLocaleString() : 'Unlimited';
+        if (durationEl) durationEl.textContent = (planDuration || 30) + ' days';
         amountEl.value = '';
         amountEl.min = planMin;
         amountEl.max = planMax > 0 ? planMax : '';
+        if (currencySelect) { currencySelect.value = ''; updateSelectedBalance(); }
         errorEl.classList.add('hidden');
         modal.classList.remove('hidden');
     }
+
+    function updateSelectedBalance() {
+        if (!currencySelect || !selectedBalanceEl) return;
+        var opt = currencySelect.options[currencySelect.selectedIndex];
+        if (!opt || !opt.value) { selectedBalanceEl.textContent = '—'; return; }
+        var amt = parseFloat(opt.getAttribute('data-amount')) || 0;
+        var curr = opt.value;
+        selectedBalanceEl.textContent = amt.toFixed(8) + ' ' + curr + ' (≈ $' + (parseFloat(opt.getAttribute('data-usd')) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ')';
+    }
+    if (currencySelect) currencySelect.addEventListener('change', updateSelectedBalance);
     
     function closeModal() {
         modal.classList.add('hidden');
@@ -218,7 +260,8 @@ document.addEventListener('DOMContentLoaded', function() {
             var planName = this.getAttribute('data-plan-name');
             var planMin = parseFloat(this.getAttribute('data-plan-min'));
             var planMax = parseFloat(this.getAttribute('data-plan-max')) || 0;
-            openModal(planId, planName, planMin, planMax);
+            var planDuration = parseInt(this.getAttribute('data-plan-duration'), 10) || 30;
+            openModal(planId, planName, planMin, planMax, planDuration);
         });
     });
     
@@ -230,8 +273,15 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         var planId = parseInt(planIdEl.value, 10);
         var amount = parseFloat(amountEl.value) || 0;
+        var currency = (currencySelect && currencySelect.value) || 'USD';
         
         errorEl.classList.add('hidden');
+        
+        if (!currency && !currencySelect.disabled) {
+            errorEl.textContent = 'Please select a currency to pay with';
+            errorEl.classList.remove('hidden');
+            return;
+        }
         
         if (amount < currentPlanMin) {
             errorEl.textContent = 'Amount must be at least $' + currentPlanMin.toLocaleString();
@@ -245,8 +295,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (amount > availableBalance) {
-            errorEl.textContent = 'Insufficient balance. Available: $' + availableBalance.toLocaleString();
+        var selOpt = currencySelect && currencySelect.options[currencySelect.selectedIndex];
+        var coinUsdValue = selOpt ? parseFloat(selOpt.getAttribute('data-usd')) || 0 : availableBalance;
+        if (amount > coinUsdValue) {
+            errorEl.textContent = 'Insufficient balance in selected currency. Available: $' + coinUsdValue.toLocaleString();
             errorEl.classList.remove('hidden');
             return;
         }
@@ -254,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/user/subscribe-plan.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plan_id: planId, amount: amount })
+            body: JSON.stringify({ plan_id: planId, amount: amount, currency: currency })
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
                 alert('Successfully subscribed to ' + planNameEl.textContent);
