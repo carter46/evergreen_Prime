@@ -71,6 +71,12 @@ try {
         $chartData[] = ['date' => $date, 'value' => $cumulative];
     }
     
+    // Fetch active plans (user's subscribed plans with details)
+    $activePlansStmt = $pdo->prepare('SELECT ui.id, ui.amount, ui.start_date, ui.created_at, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days, p.min_deposit, p.max_deposit FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC');
+    $activePlansStmt->execute([$userId, 'active']);
+    $activePlans = [];
+    while ($row = $activePlansStmt->fetch(PDO::FETCH_ASSOC)) $activePlans[] = $row;
+
     // Fetch all transactions for table (limit 50)
     $txStmt = $pdo->prepare('SELECT type, amount, currency, status, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50');
     $txStmt->execute([$userId]);
@@ -204,8 +210,45 @@ try {
 </section>
 <!-- Main Analytics Section -->
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-<!-- Performance Chart -->
-<div class="xl:col-span-2 glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl">
+<!-- Column: Active Plans (50%) + Cumulative Performance (50%) -->
+<div class="xl:col-span-2 flex flex-col gap-6">
+<!-- Active Plans (50% - first) -->
+<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl flex-1 min-h-0">
+<h2 class="text-lg font-bold flex items-center gap-2 mb-4">
+<span class="material-icons-round text-primary text-xl">savings</span>
+                        Active Plans
+</h2>
+<?php if (!empty($activePlans)): ?>
+<div class="space-y-4 overflow-y-auto custom-scrollbar max-h-[280px]">
+<?php foreach ($activePlans as $ap):
+    $endDate = date('Y-m-d', strtotime($ap['start_date'] . ' + ' . (int)$ap['duration_days'] . ' days'));
+    $daysLeft = max(0, (strtotime($endDate) - time()) / 86400);
+?>
+<div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-700">
+<div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+<span class="font-bold text-base"><?php echo htmlspecialchars($ap['plan_name']); ?></span>
+<span class="px-2 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full">Active</span>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+<div><span class="text-slate-400 block text-xs">Amount</span><span class="font-bold">$<?php echo number_format((float)$ap['amount'], 2); ?></span></div>
+<div><span class="text-slate-400 block text-xs">Duration</span><span class="font-bold"><?php echo (int)$ap['duration_days']; ?> days</span></div>
+<div><span class="text-slate-400 block text-xs">Yield</span><span class="font-bold text-emerald-500"><?php echo number_format((float)$ap['yield_min'], 1); ?>–<?php echo number_format((float)$ap['yield_max'], 1); ?>%</span></div>
+<div><span class="text-slate-400 block text-xs">Ends</span><span class="font-medium"><?php echo date('M j, Y', strtotime($endDate)); ?></span></div>
+</div>
+<p class="text-xs text-slate-500 mt-2">Started <?php echo date('M j, Y', strtotime($ap['start_date'])); ?> · ~<?php echo (int)$daysLeft; ?> days remaining</p>
+</div>
+<?php endforeach; ?>
+</div>
+<?php else: ?>
+<div class="flex flex-col items-center justify-center py-12 text-slate-400">
+<span class="material-icons-round text-4xl mb-2 opacity-50">inventory_2</span>
+<p class="text-sm font-medium">No active plans</p>
+<p class="text-xs mt-1">Subscribe to a plan from the dashboard to start earning</p>
+</div>
+<?php endif; ?>
+</div>
+<!-- Cumulative Performance (50% - second) -->
+<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl flex-1 min-h-0">
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 <h2 class="text-lg font-bold flex items-center gap-2">
                         Cumulative Performance
@@ -259,6 +302,7 @@ if (!empty($chartData)) {
 <?php } else { ?>
 <div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>
 <?php } ?>
+</div>
 </div>
 </div>
 <!-- Side Widgets -->
