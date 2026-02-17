@@ -94,27 +94,6 @@ $profile2FA = isset($profileUser['two_factor_enabled']) ? (bool)$profileUser['tw
 </div>
 </div>
 </div>
-<!-- Navigation Tabs -->
-<div class="border-b border-primary/10 mb-8 overflow-x-auto">
-<nav class="flex gap-8 min-w-max">
-<button class="pb-4 px-1 text-sm font-semibold tab-active flex items-center gap-2">
-<span class="material-icons text-sm">person</span>
-                    Profile
-                </button>
-<button class="pb-4 px-1 text-sm font-semibold text-slate-500 hover:text-primary transition-colors flex items-center gap-2">
-<span class="material-icons text-sm">lock</span>
-                    Security
-                </button>
-<button class="pb-4 px-1 text-sm font-semibold text-slate-500 hover:text-primary transition-colors flex items-center gap-2">
-<span class="material-icons text-sm">notifications</span>
-                    Notifications
-                </button>
-<button class="pb-4 px-1 text-sm font-semibold text-slate-500 hover:text-primary transition-colors flex items-center gap-2">
-<span class="material-icons text-sm">terminal</span>
-                    API Management
-                </button>
-</nav>
-</div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 <!-- Left Column: Settings Forms -->
 <div class="lg:col-span-2 space-y-8">
@@ -289,34 +268,32 @@ else echo 'Complete verification to withdraw';
 </div>
 </div>
 </main>
-<!-- 2FA QR Code Modal (Hidden in Flow, Visualized here) -->
-<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+<!-- Change Password Modal -->
+<div id="password-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
 <div class="bg-white dark:bg-background-dark rounded-xl max-w-md w-full p-8 shadow-2xl">
 <div class="flex justify-between items-center mb-6">
-<h2 class="text-xl font-bold">Setup Google Authenticator</h2>
-<button class="text-slate-400 hover:text-slate-600 transition-colors">
-<span class="material-icons">close</span>
-</button>
+<h2 class="text-xl font-bold">Change Password</h2>
+<button type="button" id="password-modal-close" class="text-slate-400 hover:text-slate-600 transition-colors"><span class="material-icons">close</span></button>
 </div>
-<div class="space-y-6 text-center">
-<div class="mx-auto w-48 h-48 bg-white border-8 border-slate-50 rounded-lg p-2 flex items-center justify-center">
-<div class="w-full h-full bg-slate-900 flex flex-col items-center justify-center text-white rounded">
-<span class="material-icons text-6xl">qr_code_2</span>
-<p class="text-[10px] mt-1 font-mono uppercase">BLOOMBIT-2FA</p>
+<form id="password-form" class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Current password</label>
+<input type="password" id="pw-current" required class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Enter current password"/>
 </div>
+<div>
+<label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">New password (min 8 characters)</label>
+<input type="password" id="pw-new" required minlength="8" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Enter new password"/>
 </div>
-<div class="space-y-2">
-<p class="text-sm text-slate-600 dark:text-slate-400">Scan this QR code with your authenticator app.</p>
-<div class="bg-slate-50 dark:bg-background-dark/40 p-3 rounded-lg border border-slate-100 dark:border-primary/10 flex items-center justify-between">
-<span class="font-mono text-sm tracking-widest uppercase">K7JN-90X3-PL92-BA10</span>
-<button class="text-primary material-icons text-sm">content_copy</button>
+<div>
+<label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Confirm new password</label>
+<input type="password" id="pw-confirm" required minlength="8" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Confirm new password"/>
 </div>
+<div id="password-modal-message" class="text-sm hidden"></div>
+<div class="flex gap-2 pt-2">
+<button type="submit" class="flex-1 bg-primary text-black font-bold py-2.5 rounded-lg hover:bg-primary/90">Change Password</button>
+<button type="button" id="password-modal-cancel" class="px-4 py-2.5 text-slate-600 dark:text-slate-400 font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800">Cancel</button>
 </div>
-<div class="space-y-3">
-<input class="w-full text-center text-2xl tracking-[1em] font-bold border-slate-200 focus:ring-primary focus:border-primary rounded-lg py-3" placeholder="Enter 6-digit code" type="text"/>
-<button class="w-full bg-primary text-white font-bold py-3 rounded-lg">Verify &amp; Enable</button>
-</div>
-</div>
+</form>
 </div>
 </div>
 <script src="/js/app.js"></script>
@@ -350,22 +327,52 @@ else echo 'Complete verification to withdraw';
     });
   }
 
-  if (changePwBtn) {
-    changePwBtn.addEventListener('click', function(){
-      var curr = prompt('Enter current password:');
-      if (curr === null) return;
-      var pass = prompt('Enter new password (min 8 chars):');
-      if (pass === null || pass.length < 8) { alert('Password must be at least 8 characters'); return; }
-      var confirm = prompt('Confirm new password:');
-      if (confirm !== pass) { alert('Passwords do not match'); return; }
+  var pwModal = document.getElementById('password-modal');
+  var pwForm = document.getElementById('password-form');
+  var pwMsg = document.getElementById('password-modal-message');
+  var pwClose = document.getElementById('password-modal-close');
+  var pwCancel = document.getElementById('password-modal-cancel');
+
+  function showPasswordModal() {
+    if (pwModal) { pwModal.classList.remove('hidden'); pwModal.classList.add('flex'); pwMsg.classList.add('hidden'); pwForm.reset(); }
+  }
+  function hidePasswordModal() {
+    if (pwModal) { pwModal.classList.add('hidden'); pwModal.classList.remove('flex'); pwMsg.classList.add('hidden'); }
+  }
+
+  if (changePwBtn) changePwBtn.addEventListener('click', showPasswordModal);
+  if (pwClose) pwClose.addEventListener('click', hidePasswordModal);
+  if (pwCancel) pwCancel.addEventListener('click', hidePasswordModal);
+  if (pwModal) pwModal.addEventListener('click', function(e){ if (e.target === pwModal) hidePasswordModal(); });
+
+  if (pwForm) {
+    pwForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var curr = document.getElementById('pw-current').value;
+      var pass = document.getElementById('pw-new').value;
+      var conf = document.getElementById('pw-confirm').value;
+      if (pass.length < 8) { pwMsg.classList.remove('hidden'); pwMsg.className = 'text-sm text-red-600'; pwMsg.textContent = 'New password must be at least 8 characters'; return; }
+      if (pass !== conf) { pwMsg.classList.remove('hidden'); pwMsg.className = 'text-sm text-red-600'; pwMsg.textContent = 'Passwords do not match'; return; }
+      pwMsg.classList.add('hidden');
       fetch('/api/user/profile.php', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({ current_password: curr, password: pass })
       }).then(function(r){ return r.json(); }).then(function(res){
-        alert(res.success ? 'Password updated.' : (res.error || 'Failed to update password'));
-      }).catch(function(){ alert('Network error'); });
+        pwMsg.classList.remove('hidden');
+        if (res.success) {
+          pwMsg.className = 'text-sm text-green-600';
+          pwMsg.textContent = 'Password changed successfully.';
+          pwForm.reset();
+          setTimeout(hidePasswordModal, 1500);
+        } else {
+          pwMsg.className = 'text-sm text-red-600';
+          pwMsg.textContent = res.error || 'Failed to update password';
+        }
+      }).catch(function(){
+        pwMsg.classList.remove('hidden'); pwMsg.className = 'text-sm text-red-600'; pwMsg.textContent = 'Network error';
+      });
     });
   }
 
