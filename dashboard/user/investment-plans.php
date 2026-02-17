@@ -206,6 +206,23 @@ Subscribe Now
 </div>
 </div>
 
+<!-- Success Modal (replaces browser alert) -->
+<div id="subscribe-success-modal" class="fixed inset-0 z-[60] hidden">
+<div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+<div class="absolute inset-0 flex items-center justify-center p-4">
+<div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-sm border border-emerald-200 dark:border-emerald-900/50 overflow-hidden">
+<div class="p-8 text-center">
+<div class="w-20 h-20 mx-auto mb-5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+<span class="material-icons-round text-emerald-600 dark:text-emerald-400 text-4xl">check_circle</span>
+</div>
+<h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1">Subscription Successful!</h3>
+<p class="text-slate-600 dark:text-slate-400 text-sm mb-1">You've successfully subscribed to <strong class="text-primary" id="success-plan-name"></strong></p>
+<p class="text-slate-500 dark:text-slate-500 text-xs">Redirecting to your dashboard…</p>
+</div>
+</div>
+</div>
+</div>
+
 </main>
 </div>
 <script src="/js/app.js"></script>
@@ -336,8 +353,12 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({ plan_id: planId, amount: amount, currency: currency, duration_days: duration })
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
-                alert('Successfully subscribed to ' + planNameEl.textContent);
-                window.location.href = '/dashboard/user/dashboard';
+                modal.classList.add('hidden');
+                var successModal = document.getElementById('subscribe-success-modal');
+                var successPlanEl = document.getElementById('success-plan-name');
+                if (successPlanEl) successPlanEl.textContent = planNameEl.textContent || 'the plan';
+                if (successModal) successModal.classList.remove('hidden');
+                setTimeout(function(){ window.location.href = '/dashboard/user/dashboard'; }, 2200);
             } else {
                 errorEl.textContent = res.error || 'Failed to subscribe';
                 errorEl.classList.remove('hidden');
