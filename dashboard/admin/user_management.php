@@ -341,6 +341,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <!-- User Wallet -->
 <div>
   <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">User Wallet</h4>
+  <div id="drawer-wallet-breakdown" class="text-sm text-slate-600 dark:text-slate-400 space-y-1 mb-3"></div>
   <div id="drawer-total-balance" class="text-2xl font-bold text-emerald-600 mb-4">$0.00</div>
   <button type="button" id="drawer-adjust-balance-btn" class="text-sm text-black font-medium hover:underline">Adjust balance</button>
   <div id="drawer-adjust-panel" class="hidden mt-3 p-4 bg-slate-50 dark:bg-zinc-800 rounded-lg space-y-3">
@@ -367,7 +368,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 </div>
 <!-- Active Investments -->
 <div>
-<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Active Investments</h4>
+<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Active Investments (click to cancel)</h4>
 <div id="drawer-investments" class="space-y-3"></div>
 </div>
 <!-- Security -->
@@ -398,17 +399,35 @@ var drawer = document.getElementById('user-profile-drawer');
 var backdrop = document.getElementById('user-drawer-backdrop');
 if (!drawer) return;
 
-function populateCurrencySelect() {
+var allCoinsCache = [];
+var currentUserWallet = [];
+function populateCurrencySelect(isDebit, walletBalances) {
   var sel = document.getElementById('drawer-adjust-currency');
   if (!sel) return;
-  fetch('/api/admin/coins.php').then(function(r){ return r.json(); }).then(function(d){
-    if (!d.success || !d.coins) { sel.innerHTML = '<option value="">No coins</option>'; return; }
-    var enabled = d.coins.filter(function(c){ return c.enabled; });
-    sel.innerHTML = enabled.map(function(c){ return '<option value="'+c.symbol+'">'+c.display_name+' ('+c.symbol+')</option>'; }).join('');
-    if (enabled.length === 0) sel.innerHTML = '<option value="">No coins</option>';
-  }).catch(function(){ sel.innerHTML = '<option value="">Failed to load</option>'; });
+  if (isDebit && walletBalances && walletBalances.length > 0) {
+    var withBalance = walletBalances.filter(function(b){ return (parseFloat(b.amount) || 0) > 0; });
+    if (withBalance.length === 0) { sel.innerHTML = '<option value="">No balance to debit</option>'; return; }
+    sel.innerHTML = withBalance.map(function(b){ return '<option value="'+b.currency+'">'+b.currency+' ('+parseFloat(b.amount).toFixed(4)+')</option>'; }).join('');
+  } else {
+    if (allCoinsCache.length > 0) {
+      sel.innerHTML = allCoinsCache.map(function(c){ return '<option value="'+c.symbol+'">'+c.display_name+' ('+c.symbol+')</option>'; }).join('');
+      return;
+    }
+    fetch('/api/admin/coins.php').then(function(r){ return r.json(); }).then(function(d){
+      if (d.success && d.coins && d.coins.length > 0) {
+        allCoinsCache = d.coins.filter(function(c){ return c.enabled; });
+        if (allCoinsCache.length === 0) allCoinsCache = [{symbol:'USD',display_name:'US Dollar'},{symbol:'USDT',display_name:'Tether'},{symbol:'BTC',display_name:'Bitcoin'},{symbol:'ETH',display_name:'Ethereum'}];
+      } else {
+        allCoinsCache = [{symbol:'USD',display_name:'US Dollar'},{symbol:'USDT',display_name:'Tether'},{symbol:'BTC',display_name:'Bitcoin'},{symbol:'ETH',display_name:'Ethereum'}];
+      }
+      sel.innerHTML = allCoinsCache.map(function(c){ return '<option value="'+c.symbol+'">'+c.display_name+' ('+c.symbol+')</option>'; }).join('');
+    }).catch(function(){ sel.innerHTML = '<option value="USD">USD</option><option value="USDT">USDT</option><option value="BTC">BTC</option>'; });
+  }
 }
-populateCurrencySelect();
+fetch('/api/admin/coins.php').then(function(r){ return r.json(); }).then(function(d){
+  if (d.success && d.coins) allCoinsCache = d.coins.filter(function(c){ return c.enabled; });
+  if (allCoinsCache.length === 0) allCoinsCache = [{symbol:'USD',display_name:'US Dollar'},{symbol:'USDT',display_name:'Tether'},{symbol:'BTC',display_name:'Bitcoin'},{symbol:'ETH',display_name:'Ethereum'}];
+}).catch(function(){});
 
 function openDrawer() { closeAddUserDrawer(); drawer.style.transform = 'translateX(0)'; if (backdrop) backdrop.classList.remove('hidden'); }
 function closeDrawer() { drawer.style.transform = 'translateX(100%)'; if (backdrop) backdrop.classList.add('hidden'); }
@@ -439,18 +458,30 @@ function loadUser(id) {
 
     var totalBal = document.getElementById('drawer-total-balance');
     if (totalBal) totalBal.textContent = '$' + (parseFloat(u.total_balance_usd || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    var breakdownEl = document.getElementById('drawer-wallet-breakdown');
+    if (breakdownEl) {
+      var wb = (u.wallet_balances || []).filter(function(b){ return (parseFloat(b.amount) || 0) > 0; });
+      if (wb.length > 0) {
+        breakdownEl.innerHTML = wb.map(function(b){ var amt = parseFloat(b.amount); var fmt = amt >= 1 ? amt.toFixed(2) : (amt >= 0.01 ? amt.toFixed(4) : amt.toFixed(6)); return '<div>'+b.currency+': '+fmt+'</div>'; }).join('');
+      } else {
+        breakdownEl.innerHTML = '<span class="text-slate-400">No balances</span>';
+      }
+    }
     var adjustPanel = document.getElementById('drawer-adjust-panel');
     if (adjustPanel) adjustPanel.classList.add('hidden');
     var amountInput = document.getElementById('drawer-adjust-amount');
     if (amountInput) amountInput.value = '';
     var errEl = document.getElementById('drawer-adjust-error');
     if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+    currentUserWallet = u.wallet_balances || [];
+    var typeSel = document.getElementById('drawer-adjust-type');
+    populateCurrencySelect(typeSel && typeSel.value === 'debit', currentUserWallet);
 
     var inv = document.getElementById('drawer-investments');
     inv.innerHTML = '';
     (u.investments || []).forEach(function(i){
       var avg = ((i.yield_min + i.yield_max) / 2).toFixed(1);
-      inv.innerHTML += '<div class="p-4 border border-slate-200 dark:border-zinc-800 rounded-xl"><div class="flex justify-between items-start mb-2"><div><div class="text-sm font-bold">'+i.plan_name+'</div><p class="text-[10px] text-slate-500">'+avg+'% Daily ROI</p></div><span class="text-xs font-bold text-primary">$'+parseFloat(i.amount).toLocaleString()+'</span></div></div>';
+      inv.innerHTML += '<div class="drawer-investment-card p-4 border border-slate-200 dark:border-zinc-800 rounded-xl cursor-pointer hover:border-primary/50 transition-colors group" data-inv-id="'+i.id+'"><div class="flex justify-between items-start mb-2"><div><div class="text-sm font-bold">'+i.plan_name+'</div><p class="text-[10px] text-slate-500">'+avg+'% Daily ROI</p></div><span class="text-xs font-bold text-primary">$'+parseFloat(i.amount).toLocaleString()+'</span></div><div class="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity"><button type="button" class="drawer-cancel-investment px-2 py-1 text-[10px] font-bold bg-red-500 text-white rounded hover:bg-red-600" data-inv-id="'+i.id+'">Cancel & Refund</button></div></div>';
     });
     if (!u.investments || u.investments.length === 0) inv.innerHTML = '<p class="text-sm text-slate-500">No active investments</p>';
 
@@ -471,6 +502,29 @@ document.getElementById('drawer-adjust-balance-btn').addEventListener('click', f
   var err = document.getElementById('drawer-adjust-error');
   if (err) { err.classList.add('hidden'); err.textContent = ''; }
   if (panel) panel.classList.toggle('hidden');
+});
+document.getElementById('drawer-adjust-type').addEventListener('change', function(){
+  populateCurrencySelect(this.value === 'debit', currentUserWallet);
+});
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.drawer-cancel-investment');
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  var invId = btn.getAttribute('data-inv-id');
+  var userId = document.getElementById('drawer-user-id').value;
+  if (!invId || !userId) return;
+  if (!confirm('Cancel this plan and refund the full amount to the user\'s wallet?')) return;
+  fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cancel_plan', user_id: parseInt(userId, 10), investment_id: parseInt(invId, 10) }) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (res.success) {
+        var toast = document.getElementById('user-toast');
+        if (toast) { toast.textContent = res.data && res.data.message ? res.data.message : 'Plan cancelled'; toast.classList.remove('hidden'); setTimeout(function(){ toast.classList.add('hidden'); }, 2000); }
+        loadUser(parseInt(userId, 10));
+      } else { alert(res.error || 'Failed'); }
+    })
+    .catch(function(){ alert('Request failed'); });
 });
 document.getElementById('drawer-adjust-go').addEventListener('click', function(){
   var id = document.getElementById('drawer-user-id').value;

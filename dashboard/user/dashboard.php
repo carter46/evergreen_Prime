@@ -136,10 +136,17 @@ try {
 <h1 class="text-5xl font-bold tracking-tight">$<?php echo number_format($userBalance, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
 <?php
+$fmtCoinAmt = function($amt) {
+    if ($amt <= 0) return '0';
+    if ($amt >= 1000) return number_format(round($amt, 0));
+    if ($amt >= 1) return number_format($amt, 2);
+    if ($amt >= 0.01) return number_format($amt, 4);
+    return rtrim(rtrim(number_format($amt, 6), '0'), '.');
+};
 $parts = [];
 foreach ($topCoins as $c) {
     $logo = $coinLogos[$c['currency']] ?? 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
-    $amt = $c['amount'] > 0 ? round($c['amount']) : 0;
+    $amt = $c['amount'] > 0 ? $fmtCoinAmt($c['amount']) : '0';
     $parts[] = '<img class="w-5 h-5" src="' . htmlspecialchars($logo) . '" alt="' . htmlspecialchars($c['currency']) . '"/>' . $amt . ' ' . htmlspecialchars($c['currency']);
 }
 echo implode(' <span class="text-white/60 mx-1">|</span> ', $parts);
@@ -150,9 +157,9 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <button type="button" id="deposit-btn-dash" class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
 <span class="material-icons text-sm">add</span> Deposit
 </button>
-<button type="button" id="withdraw-btn-dash" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all backdrop-blur-sm">
-<span class="material-icons text-sm">file_upload</span> Withdraw
-</button>
+<a href="/dashboard/user/transactions" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all backdrop-blur-sm">
+<span class="material-icons text-sm">history</span> Transactions
+</a>
 </div>
 </div>
 <div class="mt-6 grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
@@ -456,17 +463,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Deposit/Withdraw buttons - redirect with action param
+    // Deposit button - redirect to wallet
     var depositBtnDash = document.getElementById('deposit-btn-dash');
-    var withdrawBtnDash = document.getElementById('withdraw-btn-dash');
     if (depositBtnDash) {
         depositBtnDash.addEventListener('click', function() {
             window.location.href = '/dashboard/user/wallet?action=deposit';
-        });
-    }
-    if (withdrawBtnDash) {
-        withdrawBtnDash.addEventListener('click', function() {
-            window.location.href = '/dashboard/user/wallet?action=withdraw';
         });
     }
 });

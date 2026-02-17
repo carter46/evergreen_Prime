@@ -393,9 +393,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => false, 'error' => 'Amount must be greater than 0']);
                 exit;
             }
-            $stmtCheck = $pdo->prepare('SELECT 1 FROM coins WHERE UPPER(symbol) = ? AND enabled = 1 LIMIT 1');
-            $stmtCheck->execute([strtoupper($currency)]);
-            if ($currency === '' || !$stmtCheck->fetch()) {
+            $allowedCurrencies = ['USD','USDT','USDC','BUSD','BTC','ETH','SOL','BNB','XRP','ADA','DOGE','TRX'];
+            $currencyValid = in_array($currency, $allowedCurrencies);
+            if (!$currencyValid) {
+                $stmtCheck = $pdo->prepare('SELECT 1 FROM coins WHERE UPPER(symbol) = ? AND enabled = 1 LIMIT 1');
+                $stmtCheck->execute([$currency]);
+                $currencyValid = (bool) $stmtCheck->fetch();
+            }
+            if ($currency === '' || !$currencyValid) {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Invalid or disabled currency']);
                 exit;
@@ -417,6 +422,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->prepare('UPDATE wallet_balances SET amount = amount - ? WHERE user_id = ? AND currency = ?')
                     ->execute([$amount, $userId, $currency]);
                 echo json_encode(['success' => true, 'data' => ['message' => 'Balance debited']]);
+            }
+            exit;
+
+        case 'cancel_plan':
+            $invId = (int) ($input['investment_id'] ?? 0);
+            if ($invId <= 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Invalid investment ID']);
+                exit;
+            }
+            $stmt = $pdo->prepare('SELECT ui.id, ui.user_id, ui.plan_id, ui.amount, ui.status FROM user_investments ui WHERE ui.id = ? AND ui.user_id = ?');
+            $stmt->execute([$invId, $userId]);
+            $inv = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$inv || $inv['status'] !== 'active') {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'Active investment not found']);
+                exit;
+            }
+            $refundUsd = (float) $inv['amount'];
+            $pdo->beginTransaction();
+            try {
+                $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['cancelled', $invId]);
+                $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
+                    ->execute([$userId, 'USD', $refundUsd]);
+                $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')
+                    ->execute([$userId, 'deposit', $refundUsd, 'USD', 'completed']);
+                $pdo->commit();
+                echo json_encode(['success' => true, 'data' => ['message' => 'Plan cancelled and amount refunded']]);
+            } catch (Throwable $e) {
+                $pdo->rollBack();
+                http_response_code(500);
+                echo json_encode(['success' => false, 'error' => 'Failed to cancel plan']);
             }
             exit;
 
