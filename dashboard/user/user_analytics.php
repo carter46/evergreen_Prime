@@ -72,7 +72,7 @@ try {
     }
     
     // Fetch active plans (user's subscribed plans with details)
-    $activePlansStmt = $pdo->prepare('SELECT ui.id, ui.amount, ui.start_date, ui.created_at, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days, p.min_deposit, p.max_deposit FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC');
+    $activePlansStmt = $pdo->prepare('SELECT ui.id, ui.amount, ui.start_date, ui.created_at, ui.duration_days as investment_duration_days, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days as plan_duration_days, p.min_deposit, p.max_deposit FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC');
     $activePlansStmt->execute([$userId, 'active']);
     $activePlans = [];
     while ($row = $activePlansStmt->fetch(PDO::FETCH_ASSOC)) $activePlans[] = $row;
@@ -221,7 +221,8 @@ try {
 <?php if (!empty($activePlans)): ?>
 <div class="space-y-4 overflow-y-auto custom-scrollbar max-h-[280px]">
 <?php foreach ($activePlans as $ap):
-    $endDate = date('Y-m-d', strtotime($ap['start_date'] . ' + ' . (int)$ap['duration_days'] . ' days'));
+    $apDuration = (int)($ap['investment_duration_days'] ?? $ap['plan_duration_days'] ?? 30);
+    $endDate = date('Y-m-d', strtotime($ap['start_date'] . ' + ' . $apDuration . ' days'));
     $daysLeft = max(0, (strtotime($endDate) - time()) / 86400);
 ?>
 <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-700">
@@ -231,7 +232,7 @@ try {
 </div>
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
 <div><span class="text-slate-400 block text-xs">Amount</span><span class="font-bold">$<?php echo number_format((float)$ap['amount'], 2); ?></span></div>
-<div><span class="text-slate-400 block text-xs">Duration</span><span class="font-bold"><?php echo (int)$ap['duration_days']; ?> days</span></div>
+<div><span class="text-slate-400 block text-xs">Duration</span><span class="font-bold"><?php echo $apDuration; ?> days</span></div>
 <div><span class="text-slate-400 block text-xs">Yield</span><span class="font-bold text-emerald-500"><?php echo number_format((float)$ap['yield_min'], 1); ?>–<?php echo number_format((float)$ap['yield_max'], 1); ?>%</span></div>
 <div><span class="text-slate-400 block text-xs">Ends</span><span class="font-medium"><?php echo date('M j, Y', strtotime($endDate)); ?></span></div>
 </div>

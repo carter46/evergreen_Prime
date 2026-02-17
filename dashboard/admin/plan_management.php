@@ -292,12 +292,12 @@ foreach ($adminPlans as $idx => $p):
 <input name="yield" id="plan-form-yield" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" step="0.1" value="1" required/>
 </div>
 <div>
-<label class="block text-sm font-medium mb-1.5">Min. Duration (Months)</label>
-<input name="min_duration_months" id="plan-form-min-months" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" required placeholder="e.g. 1"/>
+<label class="block text-sm font-medium mb-1.5">Min. Duration (Days)</label>
+<input name="min_duration_days" id="plan-form-min-days" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" min="1" required placeholder="e.g. 7"/>
 </div>
 <div>
-<label class="block text-sm font-medium mb-1.5">Max. Duration (Months)</label>
-<input name="max_duration_months" id="plan-form-max-months" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" required placeholder="e.g. 12"/>
+<label class="block text-sm font-medium mb-1.5">Max. Duration (Days)</label>
+<input name="max_duration_days" id="plan-form-max-days" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" min="1" required placeholder="e.g. 30"/>
 </div>
 <div>
 <label class="block text-sm font-medium mb-1.5">Withdrawal (Days)</label>
@@ -380,8 +380,8 @@ if (drawer) {
     document.getElementById('plan-form-min').value = '100'; 
     document.getElementById('plan-form-max').value = ''; 
     document.getElementById('plan-form-yield').value = '1'; 
-    document.getElementById('plan-form-min-months').value = '1'; 
-    document.getElementById('plan-form-max-months').value = '12'; 
+    document.getElementById('plan-form-min-days').value = '7'; 
+    document.getElementById('plan-form-max-days').value = '30'; 
     document.getElementById('plan-form-withdrawal').value = '7'; 
     document.getElementById('plan-form-features').value = ''; 
     document.getElementById('plan-drawer-title').textContent = 'Add New Plan';
@@ -405,8 +405,8 @@ if (drawer) {
             document.getElementById('plan-form-min').value = p.min_deposit;
             document.getElementById('plan-form-max').value = p.max_deposit || '';
             document.getElementById('plan-form-yield').value = p.yield_min ?? p.yield;
-            document.getElementById('plan-form-min-months').value = p.min_duration_months ?? '';
-            document.getElementById('plan-form-max-months').value = p.max_duration_months ?? '';
+            document.getElementById('plan-form-min-days').value = p.min_duration_days ?? (p.min_duration_months ? p.min_duration_months * 30 : '7');
+            document.getElementById('plan-form-max-days').value = p.max_duration_days ?? (p.max_duration_months ? p.max_duration_months * 30 : '30');
             document.getElementById('plan-form-withdrawal').value = p.withdrawal_days;
             document.getElementById('plan-form-features').value = (p.features || []).join('\n');
             document.getElementById('plan-drawer-title').textContent = 'Edit Plan: ' + p.name;
@@ -439,7 +439,7 @@ if (drawer) {
     var id = document.getElementById('plan-form-id').value;
     var featuresText = document.getElementById('plan-form-features').value || '';
     var features = featuresText.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
-    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, description: document.getElementById('plan-form-description').value.trim(), icon: document.getElementById('plan-form-icon').value, min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_months: parseInt(document.getElementById('plan-form-min-months').value, 10) || null, max_duration_months: parseInt(document.getElementById('plan-form-max-months').value, 10) || null, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7, features: features };
+    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, description: document.getElementById('plan-form-description').value.trim(), icon: document.getElementById('plan-form-icon').value, min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_days: parseInt(document.getElementById('plan-form-min-days').value, 10) || null, max_duration_days: parseInt(document.getElementById('plan-form-max-days').value, 10) || null, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7, features: features };
     fetch('/api/admin/plans.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
       .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { drawer.classList.add('hidden'); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
   });

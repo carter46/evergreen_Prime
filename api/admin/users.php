@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Active investments with plan names
         $stmt = $pdo->prepare('
-            SELECT ui.id, ui.amount, ui.start_date, ui.status, p.name AS plan_name, p.yield_min, p.yield_max, p.duration_days
+            SELECT ui.id, ui.amount, ui.start_date, ui.status, ui.duration_days AS investment_duration_days, p.name AS plan_name, p.yield_min, p.yield_max, p.duration_days AS plan_duration_days
             FROM user_investments ui
             JOIN plans p ON p.id = ui.plan_id
             WHERE ui.user_id = ? AND ui.status = "active"
@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'status' => $row['status'],
                 'yield_min' => (float) $row['yield_min'],
                 'yield_max' => (float) $row['yield_max'],
-                'duration_days' => (int) $row['duration_days'],
+                'duration_days' => (int) ($row['investment_duration_days'] ?? $row['plan_duration_days'] ?? 30),
             ];
         }
 

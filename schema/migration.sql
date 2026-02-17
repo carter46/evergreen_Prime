@@ -117,6 +117,35 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- Add min_duration_days, max_duration_days to plans (flexible user duration)
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'plans' AND COLUMN_NAME = 'min_duration_days');
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE plans ADD COLUMN min_duration_days INT UNSIGNED NULL AFTER max_duration_months', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'plans' AND COLUMN_NAME = 'max_duration_days');
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE plans ADD COLUMN max_duration_days INT UNSIGNED NULL AFTER min_duration_days', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Add duration_days to user_investments (user's chosen duration)
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_investments' AND COLUMN_NAME = 'duration_days');
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE user_investments ADD COLUMN duration_days INT UNSIGNED NULL AFTER amount', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 -- Ensure transactions table has 'rejected' status (if using older schema)
 SET @enum_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
     WHERE TABLE_SCHEMA = DATABASE() 

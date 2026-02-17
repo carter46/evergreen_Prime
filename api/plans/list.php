@@ -13,7 +13,7 @@ try {
     exit;
 }
 
-$stmt = $pdo->query('SELECT id, name, slug, min_deposit AS min, max_deposit AS max, yield_min, yield_max, duration_days, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
+$stmt = $pdo->query('SELECT id, name, slug, min_deposit AS min, max_deposit AS max, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $plans = [];
@@ -27,6 +27,8 @@ foreach ($rows as $r) {
         'yield_min' => (float) $r['yield_min'],
         'yield_max' => (float) $r['yield_max'],
         'duration_days' => (int) $r['duration_days'],
+        'min_duration_days' => isset($r['min_duration_days']) && $r['min_duration_days'] !== null ? (int) $r['min_duration_days'] : (int) $r['duration_days'],
+        'max_duration_days' => isset($r['max_duration_days']) && $r['max_duration_days'] !== null ? (int) $r['max_duration_days'] : (int) $r['duration_days'],
         'withdrawal_days' => (int) $r['withdrawal_days'],
         'features' => $r['features_json'] ? json_decode($r['features_json'], true) : [],
     ];

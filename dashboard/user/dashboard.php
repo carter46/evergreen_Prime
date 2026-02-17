@@ -51,7 +51,7 @@ try {
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
     $r->execute([$userId]); $dailyEarning = (float)$r->fetchColumn();
-    $stmt = $pdo->prepare('SELECT ui.*, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC LIMIT 5');
+    $stmt = $pdo->prepare('SELECT ui.id, ui.plan_id, ui.amount, ui.start_date, ui.status, ui.duration_days as investment_duration_days, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days as plan_duration_days FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC LIMIT 5');
     $stmt->execute([$userId, 'active']);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) $activeInvestments[] = $row;
     
@@ -289,7 +289,7 @@ if (!empty($chartData)) {
     $startDate = new DateTime($inv['start_date']);
     $now = new DateTime();
     $daysElapsed = $now->diff($startDate)->days;
-    $durationDays = (int)($inv['duration_days'] ?? 30);
+    $durationDays = (int)($inv['investment_duration_days'] ?? $inv['plan_duration_days'] ?? 30);
     $progress = min(100, ($daysElapsed / $durationDays) * 100);
     $avgYield = (($inv['yield_min'] ?? 0) + ($inv['yield_max'] ?? 0)) / 2;
     $roi = ($inv['amount'] * $avgYield / 100) * ($daysElapsed / 30);

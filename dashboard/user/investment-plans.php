@@ -32,7 +32,7 @@ try {
     usort($walletBalances, function($a, $b) { return ($b['usd_value'] <=> $a['usd_value']); });
     
     // Fetch enabled plans
-    $stmt = $pdo->query('SELECT id, name, slug, description, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
+    $stmt = $pdo->query('SELECT id, name, slug, description, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $plans[] = [
             'id' => (int)$row['id'],
@@ -44,6 +44,8 @@ try {
             'yield_min' => (float)$row['yield_min'],
             'yield_max' => (float)$row['yield_max'],
             'duration_days' => (int)$row['duration_days'],
+            'min_duration_days' => isset($row['min_duration_days']) && $row['min_duration_days'] !== null ? (int)$row['min_duration_days'] : (isset($row['min_duration_months']) && $row['min_duration_months'] !== null ? (int)$row['min_duration_months'] * 30 : (int)$row['duration_days']),
+            'max_duration_days' => isset($row['max_duration_days']) && $row['max_duration_days'] !== null ? (int)$row['max_duration_days'] : (isset($row['max_duration_months']) && $row['max_duration_months'] !== null ? (int)$row['max_duration_months'] * 30 : (int)$row['duration_days']),
             'withdrawal_days' => (int)$row['withdrawal_days'],
             'features' => $row['features_json'] ? json_decode($row['features_json'], true) : [],
         ];
@@ -119,7 +121,11 @@ try {
 </div>
 <div class="flex justify-between items-center">
 <span class="text-sm text-slate-500">Duration</span>
-<span class="text-sm font-bold"><?php echo $plan['duration_days']; ?> days</span>
+<span class="text-sm font-bold"><?php 
+$minD = $plan['min_duration_days'] ?? $plan['duration_days'];
+$maxD = $plan['max_duration_days'] ?? $plan['duration_days'];
+echo ($minD === $maxD) ? $minD . ' days' : $minD . ' - ' . $maxD . ' days'; 
+?></span>
 </div>
 <div class="flex justify-between items-center">
 <span class="text-sm text-slate-500">Withdrawal</span>
@@ -141,7 +147,8 @@ try {
 </div>
 <?php endif; ?>
 
-<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-duration="<?php echo (int)$plan['duration_days']; ?>" class="subscribe-plan-btn w-full bg-primary hover:bg-primary/90 text-black font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/20">
+<?php $pMinD = $plan['min_duration_days'] ?? $plan['duration_days']; $pMaxD = $plan['max_duration_days'] ?? $plan['duration_days']; ?>
+<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-min-days="<?php echo $pMinD; ?>" data-plan-max-days="<?php echo $pMaxD; ?>" class="subscribe-plan-btn w-full bg-primary hover:bg-primary/90 text-black font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/20">
 Subscribe Now
 </button>
 </div>
@@ -167,9 +174,9 @@ Subscribe Now
 <form id="subscribe-form">
 <input type="hidden" id="subscribe-plan-id" name="plan_id"/>
 <div class="mb-4">
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Duration</label>
-<p class="text-sm font-medium" id="modal-plan-duration">—</p>
-<p class="text-xs text-slate-500 mt-1">Investment period for this plan</p>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Duration (Days)</label>
+<input type="number" id="subscribe-duration" min="1" max="365" step="1" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" required/>
+<p class="text-xs text-slate-500 mt-1">Choose between <span id="modal-min-days">—</span> and <span id="modal-max-days">—</span> days</p>
 </div>
 <div class="mb-4">
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Pay With</label>
@@ -221,17 +228,29 @@ document.addEventListener('DOMContentLoaded', function() {
     var currentPlanMax = 0;
     
     var currencySelect = document.getElementById('subscribe-currency');
-    var durationEl = document.getElementById('modal-plan-duration');
+    var durationInput = document.getElementById('subscribe-duration');
+    var modalMinDaysEl = document.getElementById('modal-min-days');
+    var modalMaxDaysEl = document.getElementById('modal-max-days');
     var selectedBalanceEl = document.getElementById('selected-coin-balance');
+    var currentPlanMinDays = 7;
+    var currentPlanMaxDays = 30;
 
-    function openModal(planId, planName, planMin, planMax, planDuration) {
+    function openModal(planId, planName, planMin, planMax, planMinDays, planMaxDays) {
         planIdEl.value = planId;
         planNameEl.textContent = planName;
         currentPlanMin = planMin;
         currentPlanMax = planMax;
+        currentPlanMinDays = planMinDays || 7;
+        currentPlanMaxDays = planMaxDays || 30;
         planMinEl.textContent = '$' + planMin.toLocaleString();
         planMaxEl.textContent = planMax > 0 ? '$' + planMax.toLocaleString() : 'Unlimited';
-        if (durationEl) durationEl.textContent = (planDuration || 30) + ' days';
+        if (modalMinDaysEl) modalMinDaysEl.textContent = currentPlanMinDays;
+        if (modalMaxDaysEl) modalMaxDaysEl.textContent = currentPlanMaxDays;
+        if (durationInput) {
+            durationInput.min = currentPlanMinDays;
+            durationInput.max = currentPlanMaxDays;
+            durationInput.value = Math.min(currentPlanMaxDays, Math.max(currentPlanMinDays, Math.round((currentPlanMinDays + currentPlanMaxDays) / 2)));
+        }
         amountEl.value = '';
         amountEl.min = planMin;
         amountEl.max = planMax > 0 ? planMax : '';
@@ -260,8 +279,9 @@ document.addEventListener('DOMContentLoaded', function() {
             var planName = this.getAttribute('data-plan-name');
             var planMin = parseFloat(this.getAttribute('data-plan-min'));
             var planMax = parseFloat(this.getAttribute('data-plan-max')) || 0;
-            var planDuration = parseInt(this.getAttribute('data-plan-duration'), 10) || 30;
-            openModal(planId, planName, planMin, planMax, planDuration);
+            var planMinDays = parseInt(this.getAttribute('data-plan-min-days'), 10) || 7;
+            var planMaxDays = parseInt(this.getAttribute('data-plan-max-days'), 10) || 30;
+            openModal(planId, planName, planMin, planMax, planMinDays, planMaxDays);
         });
     });
     
@@ -295,6 +315,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        var duration = parseInt(durationInput ? durationInput.value : 0, 10) || 0;
+        if (duration < currentPlanMinDays || duration > currentPlanMaxDays) {
+            errorEl.textContent = 'Duration must be between ' + currentPlanMinDays + ' and ' + currentPlanMaxDays + ' days';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+        
         var selOpt = currencySelect && currencySelect.options[currencySelect.selectedIndex];
         var coinUsdValue = selOpt ? parseFloat(selOpt.getAttribute('data-usd')) || 0 : availableBalance;
         if (amount > coinUsdValue) {
@@ -306,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/user/subscribe-plan.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plan_id: planId, amount: amount, currency: currency })
+            body: JSON.stringify({ plan_id: planId, amount: amount, currency: currency, duration_days: duration })
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
                 alert('Successfully subscribed to ' + planNameEl.textContent);

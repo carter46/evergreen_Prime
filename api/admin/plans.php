@@ -41,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'withdrawal_days' => (int) $r['withdrawal_days'],
             'min_duration_months' => isset($r['min_duration_months']) && $r['min_duration_months'] !== null ? (int) $r['min_duration_months'] : null,
             'max_duration_months' => isset($r['max_duration_months']) && $r['max_duration_months'] !== null ? (int) $r['max_duration_months'] : null,
+            'min_duration_days' => isset($r['min_duration_days']) && $r['min_duration_days'] !== null ? (int) $r['min_duration_days'] : (isset($r['min_duration_months']) && $r['min_duration_months'] !== null ? (int) $r['min_duration_months'] * 30 : null),
+            'max_duration_days' => isset($r['max_duration_days']) && $r['max_duration_days'] !== null ? (int) $r['max_duration_days'] : (isset($r['max_duration_months']) && $r['max_duration_months'] !== null ? (int) $r['max_duration_months'] * 30 : null),
             'features_json' => $r['features_json'],
             'features' => $r['features_json'] ? json_decode($r['features_json'], true) : [],
             'enabled' => (bool) $r['enabled'],
@@ -71,8 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 'token'];
     $icon = trim($input['icon'] ?? '') ?: null;
     if ($icon && !in_array($icon, $allowedIcons, true)) $icon = 'trending_up';
-    $minDurationMonths = isset($input['min_duration_months']) && $input['min_duration_months'] !== '' && $input['min_duration_months'] !== null ? (int) $input['min_duration_months'] : null;
-    $maxDurationMonths = isset($input['max_duration_months']) && $input['max_duration_months'] !== '' && $input['max_duration_months'] !== null ? (int) $input['max_duration_months'] : null;
+    $minDurationDays = isset($input['min_duration_days']) && $input['min_duration_days'] !== '' && $input['min_duration_days'] !== null ? (int) $input['min_duration_days'] : null;
+    $maxDurationDays = isset($input['max_duration_days']) && $input['max_duration_days'] !== '' && $input['max_duration_days'] !== null ? (int) $input['max_duration_days'] : null;
     $enabled = isset($input['enabled']) ? (bool) $input['enabled'] : true;
     $sortOrder = (int) ($input['sort_order'] ?? 0);
 
@@ -99,20 +101,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    if ($minDurationMonths === null || $maxDurationMonths === null) {
+    if ($minDurationDays === null || $maxDurationDays === null) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Min. and Max. Duration (Months) are required']);
+        echo json_encode(['success' => false, 'error' => 'Min. and Max. Duration (Days) are required']);
+        exit;
+    }
+    if ($minDurationDays > $maxDurationDays) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Min. duration cannot exceed max. duration']);
+        exit;
+    }
+    if ($minDurationDays < 1 || $maxDurationDays < 1) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Min. and Max. duration must be at least 1 day']);
         exit;
     }
 
-    $durationDays = max(30, (int) round(($minDurationMonths + $maxDurationMonths) / 2 * 30));
+    $durationDays = max(1, (int) round(($minDurationDays + $maxDurationDays) / 2));
 
     if ($id > 0) {
-        $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, description=?, icon=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, min_duration_months=?, max_duration_months=?, features_json=?, enabled=?, sort_order=? WHERE id=?');
-        $stmt->execute([$name, $slug, $description, $icon, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationMonths, $maxDurationMonths, $featuresJson, $enabled ? 1 : 0, $sortOrder, $id]);
+        $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, description=?, icon=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, min_duration_days=?, max_duration_days=?, features_json=?, enabled=?, sort_order=? WHERE id=?');
+        $stmt->execute([$name, $slug, $description, $icon, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder, $id]);
     } else {
-        $stmt = $pdo->prepare('INSERT INTO plans (name, slug, description, icon, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, min_duration_months, max_duration_months, features_json, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$name, $slug, $description, $icon, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationMonths, $maxDurationMonths, $featuresJson, $enabled ? 1 : 0, $sortOrder]);
+        $stmt = $pdo->prepare('INSERT INTO plans (name, slug, description, icon, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, min_duration_days, max_duration_days, features_json, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$name, $slug, $description, $icon, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder]);
     }
     echo json_encode(['success' => true, 'data' => ['message' => 'Plan saved successfully']]);
     exit;

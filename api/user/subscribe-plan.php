@@ -24,6 +24,7 @@ $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 $planId = (int) ($input['plan_id'] ?? 0);
 $amountUsd = (float) ($input['amount'] ?? 0);
 $currency = strtoupper(trim($input['currency'] ?? 'USD'));
+$durationDays = isset($input['duration_days']) ? (int) $input['duration_days'] : null;
 
 if ($planId <= 0 || $amountUsd <= 0 || empty($currency)) {
     http_response_code(400);
@@ -40,7 +41,7 @@ try {
 }
 
 // Validate plan exists and is enabled
-$stmt = $pdo->prepare('SELECT id, name, min_deposit, max_deposit, enabled FROM plans WHERE id = ?');
+$stmt = $pdo->prepare('SELECT id, name, min_deposit, max_deposit, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, enabled FROM plans WHERE id = ?');
 $stmt->execute([$planId]);
 $plan = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -66,6 +67,19 @@ if ($amountUsd < $plan['min_deposit']) {
 if ($plan['max_deposit'] !== null && $amountUsd > $plan['max_deposit']) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Amount exceeds maximum deposit']);
+    exit;
+}
+
+// Resolve plan min/max duration (days)
+$planMinDays = isset($plan['min_duration_days']) && $plan['min_duration_days'] !== null ? (int) $plan['min_duration_days'] : (isset($plan['min_duration_months']) && $plan['min_duration_months'] !== null ? (int) $plan['min_duration_months'] * 30 : (int) $plan['duration_days']);
+$planMaxDays = isset($plan['max_duration_days']) && $plan['max_duration_days'] !== null ? (int) $plan['max_duration_days'] : (isset($plan['max_duration_months']) && $plan['max_duration_months'] !== null ? (int) $plan['max_duration_months'] * 30 : (int) $plan['duration_days']);
+
+if ($durationDays === null || $durationDays < 1) {
+    $durationDays = $planMinDays;
+}
+if ($durationDays < $planMinDays || $durationDays > $planMaxDays) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Duration must be between ' . $planMinDays . ' and ' . $planMaxDays . ' days']);
     exit;
 }
 
@@ -109,9 +123,9 @@ if ($activeCount >= $maxPlans) {
 
 $pdo->beginTransaction();
 try {
-    // Create investment record (amount stored in USD for plan value)
-    $stmt = $pdo->prepare('INSERT INTO user_investments (user_id, plan_id, amount, start_date, status) VALUES (?, ?, ?, CURDATE(), ?)');
-    $stmt->execute([$userId, $planId, $amountUsd, 'active']);
+    // Create investment record (amount stored in USD, duration_days from user choice)
+    $stmt = $pdo->prepare('INSERT INTO user_investments (user_id, plan_id, amount, duration_days, start_date, status) VALUES (?, ?, ?, ?, CURDATE(), ?)');
+    $stmt->execute([$userId, $planId, $amountUsd, $durationDays, 'active']);
     
     // Debit user balance (deduct from selected currency)
     $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, -?) ON DUPLICATE KEY UPDATE amount = amount - ?')->execute([$userId, $currency, $amountToDebit, $amountToDebit]);
