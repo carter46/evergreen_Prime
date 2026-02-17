@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var depositSelect = document.getElementById('deposit-currency');
             var withdrawSelect = document.getElementById('withdraw-currency');
             var depositOptions = d.addresses.map(function(a){
-                return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ')</option>';
+                return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ')</option>';
             }).join('');
             if (depositSelect) depositSelect.innerHTML = depositOptions;
             // Withdraw: only show coins user has balance in
@@ -426,12 +426,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             var withdrawOptions = withdrawAddresses.length > 0
                 ? withdrawAddresses.map(function(a){
-                    return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ') — ' + (userBalances[a.symbol] ? parseFloat(userBalances[a.symbol].amount).toFixed(6) : '0') + '</option>';
+                    return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ') — ' + (userBalances[a.symbol] ? parseFloat(userBalances[a.symbol].amount).toFixed(6) : '0') + '</option>';
                 }).join('')
                 : '<option value="">No funds available to withdraw</option>';
             if (withdrawSelect) {
                 withdrawSelect.innerHTML = withdrawOptions;
-                withdrawSelect.addEventListener('change', function(){ updateWithdrawBalance(); updateWithdrawUsdValue(); });
+                updateWithdrawBalance();
+                updateWithdrawUsdValue();
             }
             // Auto-open drawer if redirected from dashboard with action param
             if (urlAction === 'deposit' && depositDrawer) {
@@ -525,14 +526,19 @@ document.addEventListener('DOMContentLoaded', function() {
         availEl.textContent = avail.toFixed(8) + ' ' + (currency || '');
     }
 
-    function getUsdPricePerUnit(symbol) {
-        var Config = window.BloombitCryptoConfig || {};
+    function getUsdPricePerUnit(symbol, coinKey) {
         var stablecoins = ['USDT','USDC','BUSD','USD','DAI'];
         if (stablecoins.indexOf((symbol || '').toUpperCase()) >= 0) return Promise.resolve(1);
-        var coinId = Config.getCoinIdBySymbol ? Config.getCoinIdBySymbol(symbol) : null;
+        var coinId = coinKey || (window.BloombitCryptoConfig && window.BloombitCryptoConfig.getCoinIdBySymbol ? window.BloombitCryptoConfig.getCoinIdBySymbol(symbol) : null);
         if (!coinId) return Promise.resolve(null);
         if (!window.BloombitCryptoPrices || !window.BloombitCryptoPrices.fetch) return Promise.resolve(null);
         return window.BloombitCryptoPrices.fetch([coinId]).then(function(prices){ return prices && prices[coinId] ? prices[coinId].usd : null; });
+    }
+
+    function getSelectedCoinKey(selectId) {
+        var sel = document.getElementById(selectId);
+        if (!sel || !sel.options[sel.selectedIndex]) return null;
+        return sel.options[sel.selectedIndex].getAttribute('data-coin-key') || null;
     }
 
     function updateDepositUsdValue() {
@@ -542,7 +548,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!el) return;
         if (!currency || amount <= 0) { el.textContent = '—'; return; }
         el.textContent = '≈ $—';
-        getUsdPricePerUnit(currency).then(function(price){
+        var coinKey = getSelectedCoinKey('deposit-currency');
+        getUsdPricePerUnit(currency, coinKey).then(function(price){
             if (price != null) el.textContent = '≈ $' + (amount * price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USD';
             else el.textContent = '—';
         });
@@ -555,7 +562,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!el) return;
         if (!currency || amount <= 0) { el.textContent = '—'; return; }
         el.textContent = '≈ $—';
-        getUsdPricePerUnit(currency).then(function(price){
+        var coinKey = getSelectedCoinKey('withdraw-currency');
+        getUsdPricePerUnit(currency, coinKey).then(function(price){
             if (price != null) el.textContent = '≈ $' + (amount * price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USD';
             else el.textContent = '—';
         });
@@ -572,6 +580,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('withdraw-amount').addEventListener('input', updateWithdrawUsdValue);
         document.getElementById('withdraw-amount').addEventListener('change', updateWithdrawUsdValue);
     }
+    if (document.getElementById('withdraw-currency')) {
+        document.getElementById('withdraw-currency').addEventListener('change', function(){ updateWithdrawBalance(); updateWithdrawUsdValue(); });
+    }
     document.getElementById('withdrawal-form').addEventListener('submit', function(e){
         e.preventDefault();
         var currency = document.getElementById('withdraw-currency').value;
@@ -585,7 +596,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         msgEl.classList.add('hidden');
-        getUsdPricePerUnit(currency).then(function(price){
+        var wdCoinKey = getSelectedCoinKey('withdraw-currency');
+        getUsdPricePerUnit(currency, wdCoinKey).then(function(price){
             var amountUsd = price != null ? amount * price : 0;
             if (amountUsd > 0 && amountUsd < minWithdrawLimitUsd) {
                 msgEl.textContent = 'Minimum withdrawal is $' + minWithdrawLimitUsd.toFixed(2) + ' USD. Your amount is approx. $' + amountUsd.toFixed(2) + ' USD.';
