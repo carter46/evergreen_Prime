@@ -169,6 +169,17 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- Ensure transactions amount supports fractional USDT credits (for 5-min interval)
+SET @col = (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'amount');
+SET @has_precision = IF(LOWER(@col) LIKE 'decimal(36,18)%', 1, 0);
+SET @sql = IF(@has_precision = 0,
+    'ALTER TABLE transactions MODIFY COLUMN amount DECIMAL(36,18) NOT NULL',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 -- Add kyc_status and country to users
 SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'kyc_status');
@@ -200,11 +211,28 @@ DEALLOCATE PREPARE stmt;
 
 -- AI Bot Config / Earnings site settings
 INSERT INTO site_settings (`key`, value) VALUES
+  ('min_withdrawal_limit', '10'),
   ('max_withdrawal_limit', '50000'),
   ('earnings_paused', '0'),
   ('distribution_interval', 'daily'),
   ('distribution_start_time', '09:00:00')
-ON DUPLICATE KEY UPDATE value = VALUES(value);
+ON DUPLICATE KEY UPDATE value = value;
+
+-- Ensure transactions.amount supports fractional USDT payouts (DECIMAL 36,18)
+SET @tx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'amount');
+SET @tx_scale = (SELECT NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'amount');
+SET @sql = IF(@tx_exists = 0,
+    'SELECT 1',
+    IF(@tx_scale IS NULL OR @tx_scale < 18,
+        'ALTER TABLE transactions MODIFY COLUMN amount DECIMAL(36,18) NOT NULL',
+        'SELECT 1'
+    )
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- Create kyc_submissions table
 CREATE TABLE IF NOT EXISTS kyc_submissions (

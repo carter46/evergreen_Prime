@@ -68,10 +68,11 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
 
         if ($manual) {
             $daysSince = $refDateTime->diff($now)->days;
+            // Manual distribution should only credit what has actually accumulated since last credit.
             if ($daysSince < 1) {
-                $daysSince = 1;
+                continue;
             }
-            $toCredit = $dailyEarning * $daysSince;
+            $toCredit = $dailyEarning * (float) $daysSince;
             $newLastAt = clone $now;
         } elseif (in_array($interval, ['5min', '12h'], true)) {
             list($toCredit, $newLastAt) = compute_continuous_earnings($interval, $refDateTime, $now, $dailyEarning);
@@ -83,12 +84,17 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
             continue;
         }
 
+        // Normalize precision for DECIMAL(36,18) storage.
+        $toCredit = (float) $toCredit;
+        if ($toCredit <= 0) continue;
+        $toCreditStr = number_format($toCredit, 18, '.', '');
+
         $pdo->beginTransaction();
         try {
             $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                ->execute([$userId, $currency, $toCredit]);
+                ->execute([$userId, $currency, $toCreditStr]);
             $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
-                ->execute([$userId, 'payout', $toCredit, $currency, 'completed', 'earnings_inv_' . $invId]);
+                ->execute([$userId, 'payout', $toCreditStr, $currency, 'completed', 'earnings_inv_' . $invId]);
             $pdo->prepare('UPDATE user_investments SET last_earnings_at = ? WHERE id = ?')
                 ->execute([$newLastAt->format('Y-m-d H:i:s'), $invId]);
             $pdo->commit();
@@ -113,6 +119,9 @@ function compute_continuous_earnings(string $interval, DateTime $ref, DateTime $
     $perInterval = $dailyEarning / $intervalsPerDay;
 
     $diff = $now->getTimestamp() - $ref->getTimestamp();
+    if ($diff <= 0) {
+        return [0.0, null];
+    }
     $diffMinutes = (int) floor($diff / 60);
     $elapsedIntervals = (int) floor($diffMinutes / $intervalMinutes);
     if ($elapsedIntervals < 1) {
@@ -135,53 +144,47 @@ function compute_batch_earnings(string $interval, string $startTime, DateTime $r
     $minute = $parts[1] ?? 0;
     $sec = $parts[2] ?? 0;
 
-    $todayStart = clone $now;
-    $todayStart->setTime($hour, $minute, $sec);
-
-    $daysAccumulated = 0;
+    // Compute the most recent scheduled boundary (UTC) for each interval.
     $boundary = null;
-
     if ($interval === 'daily') {
-        if ($now < $todayStart) {
-            return [0.0, null];
+        $boundary = clone $now;
+        $boundary->setTime($hour, $minute, $sec);
+        if ($now < $boundary) {
+            $boundary->modify('-1 day');
         }
-        $lastDate = $ref->format('Y-m-d');
-        $todayDate = $now->format('Y-m-d');
-        if ($lastDate >= $todayDate) {
-            return [0.0, null];
-        }
-        $daysAccumulated = 1;
-        $boundary = clone $todayStart;
     } elseif ($interval === 'weekly') {
-        $dow = (int) $now->format('w');
+        // Weekly boundary is Monday at distribution_start_time.
+        $dow = (int) $now->format('w'); // 0=Sun..6=Sat
         $daysToMonday = ($dow === 0) ? 6 : ($dow - 1);
-        $weeklyBoundary = clone $now;
-        $weeklyBoundary->modify('-' . $daysToMonday . ' days');
-        $weeklyBoundary->setTime($hour, $minute, $sec);
-        if ($now < $weeklyBoundary) {
-            $weeklyBoundary->modify('-7 days');
+        $boundary = clone $now;
+        $boundary->modify('-' . $daysToMonday . ' days');
+        $boundary->setTime($hour, $minute, $sec);
+        if ($now < $boundary) {
+            $boundary->modify('-7 days');
         }
-        if ($ref >= $weeklyBoundary) {
-            return [0.0, null];
-        }
-        $daysAccumulated = 7;
-        $boundary = clone $weeklyBoundary;
     } elseif ($interval === 'monthly') {
-        $firstOfMonth = clone $now;
-        $firstOfMonth->setDate((int) $now->format('Y'), (int) $now->format('m'), 1);
-        $firstOfMonth->setTime($hour, $minute, $sec);
-        if ($now < $firstOfMonth) {
-            $firstOfMonth->modify('-1 month');
+        // Monthly boundary is the 1st day of the month at distribution_start_time.
+        $boundary = clone $now;
+        $boundary->setDate((int) $now->format('Y'), (int) $now->format('m'), 1);
+        $boundary->setTime($hour, $minute, $sec);
+        if ($now < $boundary) {
+            $boundary->modify('-1 month');
         }
-        if ($ref >= $firstOfMonth) {
-            return [0.0, null];
-        }
-        $daysAccumulated = (int) $firstOfMonth->format('t');
-        $boundary = clone $firstOfMonth;
     } else {
         return [0.0, null];
     }
 
-    $creditable = $dailyEarning * $daysAccumulated;
+    // Credit all full days accumulated between the last credited time and the boundary.
+    $boundaryTs = $boundary->getTimestamp();
+    $refTs = $ref->getTimestamp();
+    if ($refTs >= $boundaryTs) {
+        return [0.0, null];
+    }
+    $days = (int) floor(($boundaryTs - $refTs) / 86400);
+    if ($days < 1) {
+        return [0.0, null];
+    }
+
+    $creditable = $dailyEarning * (float) $days;
     return [$creditable, $boundary];
 }

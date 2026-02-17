@@ -76,7 +76,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $allowed = ['5min', '12h', 'daily', 'weekly', 'monthly'];
             if (!in_array($v, $allowed, true)) $v = 'daily';
         }
+        if ($k === 'distribution_start_time') {
+            // Accept HH:MM or HH:MM:SS, store as HH:MM:SS
+            if (preg_match('/^([01]\\d|2[0-3]):([0-5]\\d)$/', $v, $m)) {
+                $v = $m[1] . ':' . $m[2] . ':00';
+            } elseif (!preg_match('/^([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$/', $v)) {
+                $v = '09:00:00';
+            }
+        }
+        if ($k === 'min_withdrawal_limit' || $k === 'max_withdrawal_limit') {
+            $num = (float) $v;
+            if ($num < 0) $num = 0;
+            $v = (string) $num;
+        }
         $updates[$k] = $v;
+    }
+
+    // Enforce max >= min when both provided
+    if (isset($updates['min_withdrawal_limit'], $updates['max_withdrawal_limit'])) {
+        $min = (float) $updates['min_withdrawal_limit'];
+        $max = (float) $updates['max_withdrawal_limit'];
+        if ($max > 0 && $max < $min) {
+            $updates['max_withdrawal_limit'] = (string) $min;
+        }
     }
 
     $stmt = $pdo->prepare('INSERT INTO site_settings (`key`, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)');

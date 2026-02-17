@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id INT UNSIGNED NOT NULL,
   type ENUM('deposit', 'withdrawal', 'payout', 'investment') NOT NULL,
-  amount DECIMAL(18,2) NOT NULL,
+  amount DECIMAL(36,18) NOT NULL,
   currency VARCHAR(20) NOT NULL DEFAULT 'USD',
   status ENUM('pending', 'completed', 'rejected', 'cancelled') NOT NULL DEFAULT 'pending',
   reference VARCHAR(255) DEFAULT NULL,

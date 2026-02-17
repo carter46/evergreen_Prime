@@ -365,7 +365,16 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 </div>
 <p class="text-xs text-slate-400 mt-1">Available: <span id="withdraw-available">—</span></p>
 <p class="text-xs text-slate-400 mt-1" id="withdraw-usd-value">—</p>
-<p class="text-xs text-amber-600 dark:text-amber-400 mt-1" id="withdraw-limit-hint">Min. withdrawal: $<span id="withdraw-min-limit"><?php echo htmlspecialchars(get_site_setting('min_withdrawal_limit', '10')); ?></span> USD</p>
+<?php
+  $minW = get_site_setting('min_withdrawal_limit', '10');
+  $maxW = get_site_setting('max_withdrawal_limit', '');
+?>
+<p class="text-xs text-amber-600 dark:text-amber-400 mt-1" id="withdraw-limit-hint">
+  Min: $<span id="withdraw-min-limit"><?php echo htmlspecialchars($minW); ?></span> USD
+  <?php if (!empty($maxW) && (float)$maxW > 0): ?>
+    <span class="mx-1">•</span> Max: $<span id="withdraw-max-limit"><?php echo htmlspecialchars($maxW); ?></span> USD
+  <?php endif; ?>
+</p>
 </div>
 <div id="withdrawal-message" class="text-sm hidden"></div>
 <button type="submit" class="w-full py-2 bg-primary text-black font-bold rounded-lg text-sm flex items-center justify-center gap-2">
