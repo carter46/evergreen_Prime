@@ -129,6 +129,20 @@ function get_coingecko_prices_usd(): array {
         $cache = ['tether' => 1.0, 'usd-coin' => 1.0];
         return $cache;
     }
+    // CoinGecko may return an error JSON (e.g. rate limit) that is still an array.
+    // Treat missing core keys as a fetch failure and fall back to cached values.
+    $looksValid = isset($data['bitcoin']['usd']) || isset($data['ethereum']['usd']) || isset($data['tether']['usd']);
+    if (!$looksValid) {
+        if (is_file($cacheFile) && (time() - filemtime($cacheFile)) <= $cacheMaxAgeSeconds) {
+            $cached = json_decode((string) @file_get_contents($cacheFile), true);
+            if (is_array($cached)) {
+                $cache = $cached;
+                return $cache;
+            }
+        }
+        $cache = ['tether' => 1.0, 'usd-coin' => 1.0];
+        return $cache;
+    }
     $cache = [
         'bitcoin' => (float) ($data['bitcoin']['usd'] ?? 0),
         'ethereum' => (float) ($data['ethereum']['usd'] ?? 0),

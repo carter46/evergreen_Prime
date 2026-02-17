@@ -9,6 +9,11 @@ $dailyAvgReturn = 0;
 $activeCapital = 0;
 $estMonthlyEarnings = 0;
 $chartData = [];
+$winningStreakDays = 0;
+$personalBestStreakDays = 0;
+$maxDrawdownPct = null;
+$payoutByCurrency = [];
+$payoutTotalForBreakdown = 0.0;
 $period = $_GET['period'] ?? '1M';
 $days = match($period) {
     '1D' => 1,
@@ -82,6 +87,96 @@ try {
     $txStmt->execute([$userId]);
     $analyticsTx = [];
     while ($row = $txStmt->fetch(PDO::FETCH_ASSOC)) $analyticsTx[] = $row;
+
+    // Winning streak & personal best: based on days with payout credits (completed)
+    $payoutDaysStmt = $pdo->prepare("
+        SELECT DATE(created_at) AS d
+        FROM transactions
+        WHERE user_id = ? AND type = 'payout' AND status = 'completed'
+        GROUP BY DATE(created_at)
+        ORDER BY d DESC
+        LIMIT 400
+    ");
+    $payoutDaysStmt->execute([$userId]);
+    $payoutDays = [];
+    while ($r = $payoutDaysStmt->fetch(PDO::FETCH_ASSOC)) {
+        if (!empty($r['d'])) $payoutDays[] = $r['d'];
+    }
+    if (!empty($payoutDays)) {
+        // Current streak from most recent payout day
+        $prev = null;
+        foreach ($payoutDays as $idx => $d) {
+            $ts = strtotime($d);
+            if ($idx === 0) {
+                $winningStreakDays = 1;
+                $prev = $ts;
+                continue;
+            }
+            if (($prev - $ts) === 86400) {
+                $winningStreakDays++;
+                $prev = $ts;
+            } else {
+                break;
+            }
+        }
+        // Personal best streak (max consecutive payout days)
+        $best = 1;
+        $run = 1;
+        for ($i = 1; $i < count($payoutDays); $i++) {
+            $a = strtotime($payoutDays[$i - 1]);
+            $b = strtotime($payoutDays[$i]);
+            if (($a - $b) === 86400) {
+                $run++;
+                if ($run > $best) $best = $run;
+            } else {
+                $run = 1;
+            }
+        }
+        $personalBestStreakDays = $best;
+    }
+
+    // Max drawdown from cumulative chart values (best-effort metric)
+    if (!empty($chartData)) {
+        $peak = null;
+        $maxDd = 0.0;
+        foreach ($chartData as $pt) {
+            $v = (float) ($pt['value'] ?? 0);
+            if ($peak === null || $v > $peak) $peak = $v;
+            if ($peak !== null && $peak > 0) {
+                $dd = ($peak - $v) / $peak;
+                if ($dd > $maxDd) $maxDd = $dd;
+            }
+        }
+        $maxDrawdownPct = $maxDd * 100.0;
+    }
+
+    // Earnings breakdown by payout currency (for the selected period)
+    if ($period === 'ALL') {
+        $brStmt = $pdo->prepare("
+            SELECT currency, SUM(amount) AS total
+            FROM transactions
+            WHERE user_id = ? AND type = 'payout' AND status = 'completed'
+            GROUP BY currency
+            ORDER BY total DESC
+        ");
+        $brStmt->execute([$userId]);
+    } else {
+        $brStmt = $pdo->prepare("
+            SELECT currency, SUM(amount) AS total
+            FROM transactions
+            WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+            GROUP BY currency
+            ORDER BY total DESC
+        ");
+        $brStmt->execute([$userId, $days]);
+    }
+    while ($r = $brStmt->fetch(PDO::FETCH_ASSOC)) {
+        $cur = strtoupper(trim($r['currency'] ?? ''));
+        $tot = (float) ($r['total'] ?? 0);
+        if ($cur === '' || $tot <= 0) continue;
+        $payoutByCurrency[$cur] = $tot;
+        $payoutTotalForBreakdown += $tot;
+    }
 } catch (Throwable $e) { }
 ?>
 <!DOCTYPE html>
@@ -314,11 +409,11 @@ if (!empty($chartData)) {
 </div>
 <div>
 <h3 class="text-slate-400 text-sm font-medium">Winning Streak</h3>
-<p class="text-3xl font-bold">14 Days</p>
-<p class="text-xs text-emerald-500 mt-1 flex items-center gap-1">
+<p class="text-3xl font-bold"><?php echo (int)$winningStreakDays; ?> Day<?php echo ((int)$winningStreakDays) === 1 ? '' : 's'; ?></p>
+<p class="text-xs text-slate-400 mt-1 flex items-center gap-1" title="Based on consecutive days with completed payout credits">
 <span class="material-icons-round text-xs">keyboard_double_arrow_up</span>
-                            Personal Best
-                        </p>
+Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$personalBestStreakDays) === 1 ? '' : 's'; ?>
+</p>
 </div>
 </div>
 <div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl flex items-center gap-6">
@@ -327,35 +422,36 @@ if (!empty($chartData)) {
 </div>
 <div>
 <h3 class="text-slate-400 text-sm font-medium">Max Drawdown</h3>
-<p class="text-3xl font-bold">3.2%</p>
-<p class="text-xs text-slate-400 mt-1">Market stability high</p>
+<p class="text-3xl font-bold"><?php echo $maxDrawdownPct === null ? '—' : number_format((float)$maxDrawdownPct, 1) . '%'; ?></p>
+<p class="text-xs text-slate-400 mt-1" title="Computed from the cumulative net flow curve shown above">Based on cumulative curve</p>
 </div>
 </div>
 <div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl">
-<h2 class="text-sm font-bold mb-4">Profit by Asset</h2>
-<div class="flex items-center gap-6">
-<div class="relative w-24 h-24">
-<svg class="w-full h-full transform -rotate-90">
-<circle class="dark:stroke-zinc-800" cx="48" cy="48" fill="transparent" r="40" stroke="#f1f1f1" stroke-width="12"></circle>
-<circle cx="48" cy="48" fill="transparent" r="40" stroke="#f9bd0b" stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-width="12"></circle>
-<circle cx="48" cy="48" fill="transparent" r="40" stroke="#f59e0b" stroke-dasharray="251.2" stroke-dashoffset="188.4" stroke-width="12"></circle>
-</svg>
-</div>
-<div class="flex-1 space-y-2">
+<h2 class="text-sm font-bold mb-4">Earnings by Currency</h2>
+<?php
+  $breakdownRows = [];
+  if ($payoutTotalForBreakdown > 0) {
+      foreach ($payoutByCurrency as $cur => $tot) {
+          $breakdownRows[] = ['cur' => $cur, 'tot' => $tot, 'pct' => ($tot / $payoutTotalForBreakdown) * 100.0];
+      }
+  }
+  $breakdownRows = array_slice($breakdownRows, 0, 4);
+?>
+<?php if (!empty($breakdownRows)): ?>
+<div class="space-y-2">
+<?php foreach ($breakdownRows as $idx => $b): ?>
 <div class="flex items-center justify-between text-xs">
-<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span>BTC</span>
-<span class="font-bold">65%</span>
+  <span class="flex items-center gap-2">
+    <span class="w-2 h-2 rounded-full <?php echo $idx === 0 ? 'bg-primary' : ($idx === 1 ? 'bg-emerald-500' : ($idx === 2 ? 'bg-amber-500' : 'bg-slate-200')); ?>"></span>
+    <?php echo htmlspecialchars($b['cur']); ?>
+  </span>
+  <span class="font-bold"><?php echo number_format((float)$b['pct'], 0); ?>%</span>
 </div>
-<div class="flex items-center justify-between text-xs">
-<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span>ETH</span>
-<span class="font-bold">25%</span>
+<?php endforeach; ?>
 </div>
-<div class="flex items-center justify-between text-xs">
-<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-200"></span>Other</span>
-<span class="font-bold">10%</span>
-</div>
-</div>
-</div>
+<?php else: ?>
+<div class="text-sm text-slate-400">No payout data yet.</div>
+<?php endif; ?>
 </div>
 </div>
 </div>

@@ -85,7 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             ];
         }
         require_once dirname(__DIR__, 2) . '/includes/helpers.php';
-        $user['total_balance_usd'] = wallet_balances_to_usd($user['wallet_balances']);
+        $prices = get_coingecko_prices_usd();
+        $user['total_balance_usd'] = wallet_balances_to_usd($user['wallet_balances'], $prices);
 
         // Active + paused investments with plan names
         $stmt = $pdo->prepare('
