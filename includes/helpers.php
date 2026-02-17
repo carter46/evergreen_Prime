@@ -65,16 +65,20 @@ function get_current_user_data(): ?array {
         $stmt = $pdo->prepare("SELECT {$cols} FROM users WHERE id = ?");
         $stmt->execute([$_SESSION['user_id']]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $cache = $row ? [
+        if (!$row) {
+            $cache = null;
+            return null;
+        }
+        $cache = [
             'name' => $row['name'] ?? '',
             'email' => $row['email'] ?? '',
-            'avatar_url' => $row['avatar_url'] ?? null,
+            'avatar_url' => isset($row['avatar_url']) ? $row['avatar_url'] : null,
             'verified' => (bool) ($row['email_verified'] ?? false),
-            'phone_number' => $row['phone_number'] ?? null,
-            'country' => $row['country'] ?? null,
-            'kyc_status' => $row['kyc_status'] ?? 'none',
-            'two_factor_enabled' => (bool) ($row['two_factor_enabled'] ?? false),
-        ] : null;
+            'phone_number' => isset($row['phone_number']) ? $row['phone_number'] : null,
+            'country' => isset($row['country']) ? $row['country'] : null,
+            'kyc_status' => isset($row['kyc_status']) ? $row['kyc_status'] : 'none',
+            'two_factor_enabled' => isset($row['two_factor_enabled']) ? (bool) $row['two_factor_enabled'] : false,
+        ];
         return $cache;
     } catch (Throwable $e) {
         return null;

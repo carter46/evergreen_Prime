@@ -1,6 +1,13 @@
-<?php require_once __DIR__ . '/../../includes/auth-check.php'; require_once __DIR__ . '/../../includes/helpers.php'; $siteName = get_site_name();
+<?php 
+require_once __DIR__ . '/../../includes/auth-check.php'; 
+require_once __DIR__ . '/../../includes/helpers.php'; 
+$siteName = get_site_name();
 $currentPage = 'profile';
-$profileUser = get_current_user_data() ?? [];
+try {
+    $profileUser = get_current_user_data() ?? [];
+} catch (Throwable $e) {
+    $profileUser = [];
+}
 $profileName = $profileUser['name'] ?? 'User';
 $profileEmail = $profileUser['email'] ?? '';
 $profilePhone = $profileUser['phone_number'] ?? '';
@@ -10,7 +17,8 @@ $profileInitials = strtoupper(substr($profileName ?: 'U', 0, 2));
 $profileUserId = isset($_SESSION['user_id']) ? 'BB-' . $_SESSION['user_id'] : '';
 $profileVerified = !empty($profileUser['verified']);
 $profileKycStatus = $profileUser['kyc_status'] ?? 'none';
-$profile2FA = (bool)($profileUser['two_factor_enabled'] ?? false);
+$profile2FA = isset($profileUser['two_factor_enabled']) ? (bool)$profileUser['two_factor_enabled'] : false;
+?>
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8"/>
