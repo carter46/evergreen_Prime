@@ -66,9 +66,6 @@ try {
 <h1 class="text-2xl font-bold text-slate-900">Broadcast &amp; Communication Hub</h1>
 </div>
 <div class="flex items-center gap-3">
-<button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg flex items-center gap-2 hover:bg-slate-50 transition-colors">
-<span class="material-icons-outlined text-base">save</span> Save Draft
-                </button>
 <button type="submit" form="broadcast-form" class="px-6 py-2 bg-primary text-slate-900 font-bold rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity">
 <span class="material-icons-outlined text-base">send</span> Send Broadcast
                 </button>
@@ -76,16 +73,11 @@ try {
 </header>
 <div class="grid grid-cols-12 gap-8">
 <!-- Composition Area -->
-<div class="col-span-12 xl:col-span-8 space-y-6">
-<!-- Tabs -->
+<div class="col-span-12 space-y-6">
 <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
-<div class="flex border-b border-slate-100 dark:border-zinc-700">
-<button class="flex-1 px-6 py-4 flex items-center justify-center gap-2 font-semibold text-slate-900 dark:text-white border-b-2 border-primary bg-transparent">
-<span class="material-icons-outlined text-xl">email</span> Email Broadcast
-</button>
-<button class="flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors bg-transparent border-b-2 border-transparent">
-<span class="material-icons-outlined text-xl">notifications</span> In-App Notifications
-</button>
+<div class="px-6 py-4 border-b border-slate-100 dark:border-zinc-700 flex items-center gap-2">
+<span class="material-icons-outlined text-xl text-primary">email</span>
+<h2 class="text-base font-bold text-slate-900 dark:text-white">Email Broadcast</h2>
 </div>
 <form id="broadcast-form" class="p-6 space-y-6">
 <!-- Message Metadata -->
@@ -120,131 +112,16 @@ try {
 <textarea name="body" class="w-full border-none focus:ring-0 p-4 text-slate-700 leading-relaxed" placeholder="Write your message here. Use placeholders for dynamic content..." rows="8" required></textarea>
 </div>
 </div>
-<!-- Targeting Logic -->
-<div class="p-4 bg-slate-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-slate-300 dark:border-zinc-600">
-<h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
-<span class="material-icons-outlined text-base">filter_alt</span> Recipient Targeting
-</h3>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-<div class="space-y-2">
-<label class="text-[11px] font-bold text-slate-500 uppercase">User Segment</label>
-<select name="recipients" id="broadcast-recipients" class="w-full text-sm bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary">
-<option value="all">All Users</option>
-<option value="active_investors">Active Investors Only</option>
-<option value="kyc_verified">KYC Verified Only</option>
-</select>
-</div>
-<div class="space-y-2">
-<label class="text-[11px] font-bold text-slate-500 uppercase">Minimum Balance</label>
-<input class="w-full text-sm bg-white border-slate-200 rounded-lg" placeholder="$ 0.00" type="number"/>
-</div>
-<div class="space-y-2">
-<label class="text-[11px] font-bold text-slate-500 uppercase">Last Login</label>
-<select class="w-full text-sm bg-white border-slate-200 rounded-lg">
-<option>Last 7 Days</option>
-<option>Last 30 Days</option>
-<option>Inactive &gt; 90 Days</option>
-</select>
-</div>
-</div>
-<div class="mt-4 flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
-<span>Estimated Reach: <strong class="text-slate-900 dark:text-white" id="broadcast-reach-count">—</strong></span>
-</div>
-</div>
-</div>
 <div id="broadcast-message" class="text-sm hidden"></div>
-<button type="submit" class="px-6 py-2 bg-primary text-slate-900 font-bold rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity">
+<div class="flex flex-col sm:flex-row gap-3">
+<button type="button" id="broadcast-send-test" class="sm:w-auto px-6 py-2 bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 font-bold rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-700 flex items-center justify-center gap-2">
+<span class="material-icons-outlined text-base">send_to_mobile</span> Send Test to My Email
+</button>
+<button type="submit" class="sm:w-auto px-6 py-2 bg-primary text-slate-900 font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
 <span class="material-icons-outlined text-base">send</span> Send Broadcast
-                </button>
+</button>
+</div>
 </form>
-</div>
-<!-- Scheduling Section -->
-<div class="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800">
-<h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
-<span class="material-icons-outlined text-base">schedule</span> Schedule Broadcast
-</h3>
-<div class="space-y-4">
-<div class="flex flex-col sm:flex-row gap-4">
-<label class="flex-1 cursor-pointer">
-<input checked class="hidden peer" name="send_time" type="radio" value="immediately"/>
-<div class="p-4 rounded-xl border-2 border-slate-200 dark:border-zinc-700 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
-<p class="font-bold text-sm text-slate-900 dark:text-white">Send Immediately</p>
-<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Deploy as soon as possible</p>
-</div>
-</label>
-<label class="flex-1 cursor-pointer">
-<input class="hidden peer" name="send_time" type="radio" value="schedule"/>
-<div class="p-4 rounded-xl border-2 border-slate-200 dark:border-zinc-700 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
-<p class="font-bold text-sm text-slate-900 dark:text-white">Schedule Later</p>
-<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pick a specific date and time</p>
-</div>
-</label>
-</div>
-<div id="broadcast-schedule-datetime" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 opacity-50 pointer-events-none">
-<div class="flex-1 relative">
-<label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Date</label>
-<span class="material-icons-outlined absolute left-3 top-[38px] -translate-y-1/2 text-slate-400 text-sm">calendar_today</span>
-<input id="broadcast-schedule-date" class="w-full pl-10 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-sm text-slate-700 dark:text-slate-300" type="date"/>
-</div>
-<div class="flex-1 relative">
-<label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Time</label>
-<span class="material-icons-outlined absolute left-3 top-[38px] -translate-y-1/2 text-slate-400 text-sm">schedule</span>
-<input id="broadcast-schedule-time" class="w-full pl-10 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-sm text-slate-700 dark:text-slate-300" type="time"/>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Preview Sidebar -->
-<div class="col-span-12 xl:col-span-4 space-y-6">
-<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 sticky top-8">
-<div class="p-4 border-b border-slate-100 flex items-center justify-between">
-<span class="text-sm font-bold text-slate-700 uppercase tracking-tight">Real-Time Preview</span>
-<div class="flex bg-slate-100 p-1 rounded-lg">
-<button class="p-1 px-3 bg-white rounded shadow-sm text-xs font-bold flex items-center gap-1">
-<span class="material-icons-outlined text-sm">desktop_windows</span> Desktop
-                            </button>
-<button class="p-1 px-3 text-slate-400 hover:text-slate-600 text-xs font-bold flex items-center gap-1">
-<span class="material-icons-outlined text-sm">smartphone</span> Mobile
-                            </button>
-</div>
-</div>
-<div class="p-6 bg-slate-50 aspect-[3/4] flex items-center justify-center">
-<!-- Email Mockup Container -->
-<div class="bg-white w-full h-full shadow-lg rounded border border-slate-200 flex flex-col overflow-hidden">
-<div class="h-1 bg-primary"></div>
-<div class="p-4 flex items-center justify-center border-b border-slate-50 bg-white">
-<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-<span class="material-icons-outlined text-xs">account_balance_wallet</span>
-</div>
-</div>
-<div class="p-4 space-y-4 custom-scrollbar overflow-y-auto">
-<h4 class="text-lg font-bold text-slate-900 leading-tight">Hello {user_name},</h4>
-<div class="space-y-3">
-<div class="h-2 w-full bg-slate-100 rounded"></div>
-<div class="h-2 w-full bg-slate-100 rounded"></div>
-<div class="h-2 w-3/4 bg-slate-100 rounded"></div>
-</div>
-<div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-center space-y-1">
-<p class="text-[10px] text-slate-400 font-bold uppercase">Current Balance</p>
-<p class="text-lg font-bold text-slate-900">{balance} BTC</p>
-</div>
-<div class="h-2 w-full bg-slate-100 rounded mt-4"></div>
-<div class="h-10 bg-primary rounded flex items-center justify-center text-xs font-bold text-slate-900">
-                                    Access Your Dashboard
-                                </div>
-</div>
-<div class="mt-auto p-4 border-t border-slate-50 text-[10px] text-slate-400 text-center">
-<p>© 2024 Bloombit Fintech. All rights reserved.</p>
-<p class="mt-1">Unsubscribe | View in Browser</p>
-</div>
-</div>
-</div>
-<div class="p-4 bg-slate-50 dark:bg-zinc-800/50 border-t border-slate-100 dark:border-zinc-700">
-<button type="button" id="broadcast-send-test" class="w-full py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-zinc-600 rounded-lg hover:bg-white dark:hover:bg-zinc-700 transition-all flex items-center justify-center gap-2">
-<span class="material-icons-outlined text-sm">send_to_mobile</span> Send Test to My Email
-                        </button>
-</div>
 </div>
 </div>
 <!-- History Table -->
@@ -303,49 +180,24 @@ try {
 </div>
 </div>
 </div>
+</div>
 </main>
-<!-- Success Confirmation Overlay (Hidden by default, for visualization of context) -->
-<div class="fixed bottom-8 right-8 bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center gap-4 border-l-4 border-primary max-w-sm hidden">
-<div class="w-8 h-8 bg-primary text-slate-900 rounded-full flex items-center justify-center">
-<span class="material-icons-outlined text-sm">check</span>
-</div>
-<div>
-<p class="text-sm font-bold">Broadcast Sent Successfully</p>
-<p class="text-xs text-slate-400">Your campaign has been added to the queue for 4,285 recipients.</p>
-</div>
-<button class="text-slate-500 hover:text-white"><span class="material-icons-outlined text-lg">close</span></button>
 </div>
 <script src="/js/app.js"></script>
 <script>
 (function(){
   var form = document.getElementById('broadcast-form');
   var msgEl = document.getElementById('broadcast-message');
-  var recipientsSel = document.getElementById('broadcast-recipients');
-  var reachEl = document.getElementById('broadcast-reach-count');
   var testBtn = document.getElementById('broadcast-send-test');
-
-  function fetchReach(){
-    var r = recipientsSel ? recipientsSel.value : 'all';
-    fetch('/api/admin/broadcast-reach.php?recipients=' + encodeURIComponent(r), { credentials: 'same-origin' })
-      .then(function(res){ return res.json(); })
-      .then(function(data){
-        if (reachEl && data.success) reachEl.textContent = data.data.count + ' Users';
-      });
-  }
-  if (recipientsSel) {
-    fetchReach();
-    recipientsSel.addEventListener('change', fetchReach);
-  }
 
   function doBroadcast(isTest){
     var subj = form.querySelector('[name="subject"]').value.trim();
     var body = form.querySelector('[name="body"]').value.trim();
-    var rec = recipientsSel ? recipientsSel.value : 'all';
     if (!subj || !body) { if (msgEl) { msgEl.textContent = 'Subject and body required.'; msgEl.className = 'text-sm text-red-600'; msgEl.classList.remove('hidden'); } return; }
     if (msgEl) msgEl.classList.add('hidden');
     var btn = form.querySelector('button[type="submit"]');
     if (btn) btn.disabled = true;
-    var payload = { subject: subj, body: body, recipients: rec };
+    var payload = { subject: subj, body: body };
     if (isTest) payload.test = true;
     fetch('/api/admin/broadcast.php', {
       method: 'POST',
@@ -387,17 +239,6 @@ try {
     btn.addEventListener('click', function(){
       var ta = form.querySelector('[name="body"]');
       if (ta) ta.value += ' ' + btn.dataset.insertPlaceholder;
-    });
-  });
-
-  var scheduleWrap = document.getElementById('broadcast-schedule-datetime');
-  document.querySelectorAll('input[name="send_time"]').forEach(function(radio){
-    radio.addEventListener('change', function(){
-      if (scheduleWrap) {
-        var isSchedule = this.value === 'schedule';
-        scheduleWrap.classList.toggle('opacity-50', !isSchedule);
-        scheduleWrap.classList.toggle('pointer-events-none', !isSchedule);
-      }
     });
   });
 })();
