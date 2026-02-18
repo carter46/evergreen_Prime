@@ -32,12 +32,8 @@ if ($planId <= 0 || $amountUsd <= 0 || empty($currency)) {
     exit;
 }
 
-// Stable settlement currencies only (no live FX pricing dependencies)
-if (!in_array($currency, ['USDT','USDC','USD','BUSD','DAI'], true)) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Please fund investments using USDT, USDC, USD, BUSD, or DAI.']);
-    exit;
-}
+$stablecoins = ['USDT','USDC','USD','BUSD','DAI'];
+$isStable = in_array($currency, $stablecoins, true);
 
 try {
     $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
@@ -90,8 +86,18 @@ if ($durationDays < $planMinDays || $durationDays > $planMaxDays) {
     exit;
 }
 
-// Stable currencies are treated 1:1 with USD for plan funding.
-$amountToDebit = $amountUsd;
+// For stablecoins: 1:1 with USD. For volatile coins: convert USD to coin amount.
+if ($isStable) {
+    $amountToDebit = $amountUsd;
+} else {
+    $quote = quote_coin_amount_from_usd($pdo, $currency, $amountUsd);
+    if (empty($quote)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Unable to get price for ' . $currency . '. Try USDT, USDC, or DAI.']);
+        exit;
+    }
+    $amountToDebit = (float) $quote['coin_amount'];
+}
 
 // Check user balance in selected currency
 $userId = (int) $_SESSION['user_id'];
@@ -130,12 +136,11 @@ try {
     // Create transaction record (amount debited in selected currency)
     $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')->execute([$userId, 'investment', $amountToDebit, $currency, 'completed']);
 
-    // Update cached USD balance snapshot (stable currencies only bump 1:1)
-    $cur = strtoupper($currency);
-    if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
+    // Update cached USD balance snapshot
+    if ($isStable) {
         bump_user_last_balance_usd($pdo, $userId, -1 * (float)$amountToDebit);
     } else {
-        refresh_user_last_balance_usd($pdo, $userId);
+        bump_user_last_balance_usd($pdo, $userId, -1 * (float)$amountUsd);
     }
     
     $pdo->commit();

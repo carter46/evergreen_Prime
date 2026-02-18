@@ -341,7 +341,7 @@ try {
 <p class="text-sm font-medium">No active plans</p>
 <p class="text-xs mt-1">Subscribe to a plan from the dashboard to start earning</p>
 <a href="/dashboard/user/investment-plans" class="mt-4 px-6 py-2.5 bg-primary hover:bg-primary/90 text-black font-bold rounded-lg text-sm flex items-center gap-2 transition-all">
-<span class="material-icons text-sm">rocket_launch</span> Get Started
+<span class="material-symbols-outlined text-lg" style="font-size:1.125rem">rocket_launch</span> Get Started
 </a>
 </div>
 <?php endif; ?>

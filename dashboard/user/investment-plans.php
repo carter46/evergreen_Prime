@@ -22,19 +22,16 @@ try {
         }
     } catch (Throwable $e) {}
     
-    // Fetch user wallet balances (per currency)
+    // Fetch user wallet balances (per currency) - include ALL coins with positive balance
     $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
     $stmt->execute([$userId]);
+    $stablecoins = ['USDT','USDC','USD','BUSD','DAI'];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $amt = (float)$row['amount'];
         if ($amt <= 0) continue;
-        $currency = strtoupper($row['currency']);
-        // Subscriptions are funded in stable settlement currencies only.
-        if (!in_array($currency, ['USDT','USDC','USD','BUSD','DAI'], true)) {
-            continue;
-        }
-        // No placeholder pricing: only stable assets have deterministic USD value.
-        $usdVal = in_array($currency, ['USDT','USDC','USD','BUSD','DAI'], true) ? $amt : null;
+        $currency = strtoupper(trim($row['currency'] ?? ''));
+        if (empty($currency)) continue;
+        $usdVal = in_array($currency, $stablecoins, true) ? $amt : null;
         $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => $usdVal];
     }
     usort($walletBalances, function($a, $b) {
@@ -193,7 +190,7 @@ Subscribe Now
 <select id="subscribe-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" <?php echo empty($walletBalances) ? 'disabled' : 'required'; ?>>
 <option value="">Select currency</option>
 <?php foreach ($walletBalances as $b): ?>
-<option value="<?php echo htmlspecialchars($b['currency']); ?>" data-amount="<?php echo $b['amount']; ?>" data-usd="<?php echo $b['usd_value'] === null ? '' : $b['usd_value']; ?>"><?php echo htmlspecialchars($b['currency']); ?> — <?php echo number_format($b['amount'], 4); ?> (≈ <?php echo $b['usd_value'] === null ? '—' : '$' . number_format((float)$b['usd_value'], 2); ?>)</option>
+<option value="<?php echo htmlspecialchars($b['currency']); ?>" data-amount="<?php echo $b['amount']; ?>" data-usd="<?php echo $b['usd_value'] === null ? '' : $b['usd_value']; ?>"><?php echo htmlspecialchars($b['currency']); ?> — <?php echo number_format($b['amount'], 8); ?> <?php echo $b['usd_value'] === null ? '(≈ USD value at checkout)' : '(≈ $' . number_format((float)$b['usd_value'], 2) . ')'; ?></option>
 <?php endforeach; ?>
 </select>
 <?php if (empty($walletBalances)): ?><p class="text-xs text-amber-600 mt-1">Deposit funds to your wallet first.</p><?php endif; ?>
