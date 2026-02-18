@@ -62,7 +62,45 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <p class="text-slate-500 dark:text-zinc-400 mt-1">Site branding, admin account, and testing tools.</p>
 </div>
 
+<div class="mb-6">
+  <div class="inline-flex flex-wrap gap-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-2">
+    <button type="button" id="settings-tab-admin" class="px-4 py-2 rounded-lg text-sm font-bold transition-colors">Admin Account</button>
+    <button type="button" id="settings-tab-branding" class="px-4 py-2 rounded-lg text-sm font-bold transition-colors">Branding</button>
+    <button type="button" id="settings-tab-email" class="px-4 py-2 rounded-lg text-sm font-bold transition-colors">Email Settings</button>
+  </div>
+</div>
+
 <div class="space-y-8">
+
+<!-- Admin Account Tab -->
+<div id="settings-panel-admin">
+<section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">admin_panel_settings</span> Admin Account</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Admin Email</label>
+<input id="settings-admin-email" type="email" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($adminEmail); ?>" placeholder="admin@example.com"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Current Password</label>
+<input id="settings-current-pw" type="password" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" placeholder="Required to change password"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">New Password</label>
+<input id="settings-new-pw" type="password" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" placeholder="Leave blank to keep"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Confirm New Password</label>
+<input id="settings-confirm-pw" type="password" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" placeholder="Confirm new password"/>
+</div>
+</div>
+<button type="button" id="settings-save-admin" class="mt-4 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Update Admin Account</button>
+<div id="settings-admin-msg" class="text-sm mt-2 hidden"></div>
+</section>
+</div>
+
+<!-- Branding Tab -->
+<div id="settings-panel-branding" class="hidden">
 <!-- Site Branding -->
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
 <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">palette</span> Site Branding</h2>
@@ -98,46 +136,10 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <button type="button" id="settings-save-branding" class="mt-4 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Save Branding</button>
 <div id="settings-branding-msg" class="text-sm mt-2 hidden"></div>
 </section>
+</div>
 
-<!-- Admin Account -->
-<section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
-<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">admin_panel_settings</span> Admin Account</h2>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<div>
-<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Admin Email</label>
-<input id="settings-admin-email" type="email" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($adminEmail); ?>" placeholder="admin@example.com"/>
-</div>
-<div>
-<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Current Password</label>
-<input id="settings-current-pw" type="password" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" placeholder="Required to change password"/>
-</div>
-<div>
-<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">New Password</label>
-<input id="settings-new-pw" type="password" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" placeholder="Leave blank to keep"/>
-</div>
-<div>
-<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Confirm New Password</label>
-<input id="settings-confirm-pw" type="password" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" placeholder="Confirm new password"/>
-</div>
-</div>
-<button type="button" id="settings-save-admin" class="mt-4 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Update Admin Account</button>
-<div id="settings-admin-msg" class="text-sm mt-2 hidden"></div>
-</section>
-
-<!-- Testing Section -->
-<section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
-<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">science</span> Testing</h2>
-<p class="text-sm text-slate-500 dark:text-zinc-400 mb-4">Send a test email to verify mail configuration. Enter an email address to receive the test.</p>
-<div class="flex flex-wrap gap-4 items-end mb-4">
-<div class="flex-1 min-w-[200px]">
-<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Email to receive test</label>
-<input id="settings-test-email-to" type="email" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($adminEmail); ?>" placeholder="test@example.com"/>
-</div>
-<button type="button" id="settings-send-test-email" class="px-6 py-2.5 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-700">Send Test Email</button>
-</div>
-<div id="settings-test-msg" class="text-sm mt-2 hidden"></div>
-</section>
-
+<!-- Email Settings Tab -->
+<div id="settings-panel-email" class="hidden">
 <!-- Email Configuration -->
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
 <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">mail</span> Email Configuration</h2>
@@ -240,6 +242,21 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <button type="button" id="settings-save-email" class="mt-6 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Save Email Settings</button>
 <div id="settings-email-msg" class="text-sm mt-2 hidden"></div>
 </section>
+
+<!-- Testing Section (after IMAP) -->
+<section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">science</span> Testing</h2>
+<p class="text-sm text-slate-500 dark:text-zinc-400 mb-4">After saving your email configuration, send a test email to confirm everything works.</p>
+<div class="flex flex-wrap gap-4 items-end mb-4">
+<div class="flex-1 min-w-[200px]">
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Email to receive test</label>
+<input id="settings-test-email-to" type="email" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($adminEmail); ?>" placeholder="test@example.com"/>
+</div>
+<button type="button" id="settings-send-test-email" class="px-6 py-2.5 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-700">Send Test Email</button>
+</div>
+<div id="settings-test-msg" class="text-sm mt-2 hidden"></div>
+</section>
+</div>
 </div>
 </div>
 </main>
@@ -252,6 +269,40 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
     el.className = 'text-sm mt-2 ' + (ok ? 'text-green-600' : 'text-red-600');
     el.classList.remove('hidden');
   };
+
+  // Tabs
+  var tabBtns = {
+    admin: document.getElementById('settings-tab-admin'),
+    branding: document.getElementById('settings-tab-branding'),
+    email: document.getElementById('settings-tab-email'),
+  };
+  var panels = {
+    admin: document.getElementById('settings-panel-admin'),
+    branding: document.getElementById('settings-panel-branding'),
+    email: document.getElementById('settings-panel-email'),
+  };
+  function setActiveTab(key){
+    Object.keys(panels).forEach(function(k){
+      if (panels[k]) panels[k].classList.toggle('hidden', k !== key);
+    });
+    Object.keys(tabBtns).forEach(function(k){
+      var b = tabBtns[k];
+      if (!b) return;
+      var active = (k === key);
+      b.className = 'px-4 py-2 rounded-lg text-sm font-bold transition-colors ' +
+        (active
+          ? 'bg-primary text-slate-900'
+          : 'bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-zinc-800');
+    });
+    try { localStorage.setItem('bloombit_admin_settings_tab', key); } catch (e) {}
+  }
+  if (tabBtns.admin) tabBtns.admin.addEventListener('click', function(){ setActiveTab('admin'); });
+  if (tabBtns.branding) tabBtns.branding.addEventListener('click', function(){ setActiveTab('branding'); });
+  if (tabBtns.email) tabBtns.email.addEventListener('click', function(){ setActiveTab('email'); });
+  var initialTab = 'admin';
+  try { initialTab = localStorage.getItem('bloombit_admin_settings_tab') || 'admin'; } catch (e) {}
+  if (!panels[initialTab]) initialTab = 'admin';
+  setActiveTab(initialTab);
 
   document.getElementById('settings-save-branding').addEventListener('click', function(){
     var siteName = document.getElementById('settings-site-name').value.trim();
