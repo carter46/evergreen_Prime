@@ -73,14 +73,14 @@ $navClass = function ($page) use ($current) {
 </aside>
 <div class="hidden lg:block w-64 shrink-0 flex-none" aria-hidden="true"></div>
 <script>
-(function(){
+document.addEventListener('DOMContentLoaded',function(){
     var overlay=document.getElementById('user-sidebar-overlay');
     var sidebar=document.getElementById('user-sidebar');
     var toggleBtn=document.getElementById('user-sidebar-toggle');
     function open(){ sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden'); document.body.style.overflow='hidden'; }
     function close(){ sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); document.body.style.overflow=''; }
     if(overlay) overlay.addEventListener('click',close);
-    if(toggleBtn) toggleBtn.addEventListener('click',function(){ sidebar.classList.contains('-translate-x-full')?open():close(); });
+    if(toggleBtn) toggleBtn.addEventListener('click',function(e){ e.preventDefault(); e.stopPropagation(); sidebar.classList.contains('-translate-x-full')?open():close(); });
     document.querySelectorAll('#user-sidebar a, #user-sidebar button').forEach(function(el){ el.addEventListener('click',function(){ if(window.innerWidth<1024) close(); }); });
-})();
+});
 </script>

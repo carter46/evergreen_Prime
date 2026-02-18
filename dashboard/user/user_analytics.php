@@ -226,7 +226,7 @@ try {
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display min-h-screen overflow-x-hidden">
 <div class="flex min-h-screen">
 <?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
+<main class="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
 <div class="mb-6">
 <h1 class="text-2xl sm:text-3xl font-bold">Earnings Analytics</h1>

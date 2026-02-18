@@ -60,9 +60,9 @@ $profile2FA = isset($profileUser['two_factor_enabled']) ? (bool)$profileUser['tw
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen overflow-x-hidden">
 <div class="flex min-h-screen">
 <?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 overflow-y-auto">
+<main class="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+<div class="max-w-7xl mx-auto py-6 sm:py-10">
 <!-- Profile Header Section -->
 <div class="bg-white dark:bg-background-dark/40 rounded-xl border border-primary/10 p-6 mb-8 shadow-sm">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">

@@ -143,7 +143,7 @@ try {
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 overflow-x-hidden">
 <div class="flex min-h-screen">
 <?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
+<main class="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
 <!-- Dashboard Grid -->
 <div class="grid grid-cols-12 gap-6">

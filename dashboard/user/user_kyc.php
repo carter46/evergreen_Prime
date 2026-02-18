@@ -33,9 +33,9 @@ $kycStatus = $profileUser['kyc_status'] ?? 'none';
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 antialiased overflow-x-hidden">
 <div class="flex min-h-screen">
 <?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 overflow-y-auto">
+<main class="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<div class="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
+<div class="max-w-2xl mx-auto">
 <h1 class="text-2xl font-bold mb-2">Identity Verification</h1>
 <p class="text-slate-500 dark:text-slate-400 mb-8">Complete KYC verification to enable withdrawals.</p>
 
