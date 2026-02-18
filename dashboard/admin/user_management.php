@@ -151,7 +151,7 @@ try {
 <input class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
 </th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Name</th>
-<th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Cached USD Balance</th>
+<th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Total Balance</th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Active Plans</th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">KYC Status</th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400 text-right">Actions</th>
@@ -238,7 +238,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <span class="material-icons text-slate-400 user-mobile-chevron transition-transform shrink-0">expand_more</span>
 </button>
 <div class="user-mobile-expand hidden border-t border-slate-100 dark:border-zinc-800 px-4 py-4 space-y-3">
-<div class="flex justify-between items-center"><span class="text-xs text-slate-500">Cached USD Balance</span><span class="font-bold text-sm">$<?php echo number_format($u['total_balance_usd'], 2); ?></span></div>
+<div class="flex justify-between items-center"><span class="text-xs text-slate-500">Total Balance</span><span class="font-bold text-sm">$<?php echo number_format($u['total_balance_usd'], 2); ?></span></div>
 <div class="flex justify-between items-center"><span class="text-xs text-slate-500">Active Plans</span><span class="<?php echo $u['active_plans_count'] > 0 ? 'bg-primary/20 text-primary' : 'text-slate-500'; ?> text-xs font-bold"><?php echo $u['active_plans_count']; ?> Plan<?php echo $u['active_plans_count'] !== 1 ? 's' : ''; ?></span></div>
 <button type="button" class="user-edit-btn w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-zinc-900 font-bold rounded-lg text-sm" data-user-id="<?php echo $u['id']; ?>"><span class="material-icons text-lg">edit</span>Edit User</button>
 </div>
@@ -338,7 +338,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 </form>
 <!-- User Wallet -->
 <div>
-  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Cached USD Balance</h4>
+  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Balance</h4>
   <div id="drawer-total-balance" class="text-2xl font-bold text-emerald-600 mb-2">$0.00</div>
   <div id="drawer-wallet-breakdown" class="text-sm text-slate-600 dark:text-slate-400 space-y-0.5 mb-4"></div>
   <button type="button" id="drawer-adjust-balance-btn" class="text-sm text-black font-medium hover:underline">Adjust balance</button>
@@ -460,7 +460,7 @@ function loadUser(id) {
     document.getElementById('drawer-edit-password').value = '';
 
     var totalBal = document.getElementById('drawer-total-balance');
-    if (totalBal) totalBal.textContent = '$' + (parseFloat(u.total_balance_usd || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' USD (cached)';
+    if (totalBal) totalBal.textContent = '$' + (parseFloat(u.total_balance_usd || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' USD';
     var breakdownEl = document.getElementById('drawer-wallet-breakdown');
     if (breakdownEl) {
       var wb = (u.wallet_balances || []).filter(function(b){ return (parseFloat(b.amount) || 0) > 0; });

@@ -202,7 +202,7 @@ Subscribe Now
 <div class="mb-4">
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Investment Amount (USD)</label>
 <input type="number" id="subscribe-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" required/>
-<p class="text-xs text-slate-500 mt-1">Cached USD Balance: $<span id="available-balance"><?php echo number_format($userBalance, 2); ?></span></p>
+<p class="text-xs text-slate-500 mt-1">USD Balance: $<span id="available-balance"><?php echo number_format($userBalance, 2); ?></span></p>
 <p class="text-xs text-slate-500 mt-1">Range: $<span id="plan-min"></span> - <span id="plan-max"></span></p>
 </div>
 <div id="subscribe-error" class="text-sm text-red-500 hidden mb-4"></div>
