@@ -14,7 +14,7 @@ if (($_SESSION['role'] ?? '') !== 'admin') {
     exit;
 }
 
-$allowedKeys = ['max_active_plans_per_user', 'compounding_enabled'];
+$allowedKeys = ['max_active_plans_per_user', 'compounding_enabled', 'site_name', 'site_logo', 'site_favicon'];
 
 try {
     $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
@@ -32,6 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $data = [
         'max_active_plans_per_user' => '3',
         'compounding_enabled' => '0',
+        'site_name' => '',
+        'site_logo' => '',
+        'site_favicon' => '',
     ];
     foreach ($rows as $r) {
         if (in_array($r['key'], $allowedKeys, true)) {

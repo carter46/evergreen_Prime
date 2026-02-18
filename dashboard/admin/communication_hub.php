@@ -1,5 +1,17 @@
-<?php require_once __DIR__ . '/../../includes/admin-check.php'; require_once __DIR__ . '/../../includes/helpers.php'; $siteName = get_site_name();
+<?php
+require_once __DIR__ . '/../../includes/admin-check.php';
+require_once __DIR__ . '/../../includes/helpers.php';
+$siteName = get_site_name();
 $currentPage = 'communication';
+$broadcastHistory = [];
+try {
+    $pdo = require __DIR__ . '/../../includes/db.php';
+    $chk = $pdo->query("SHOW TABLES LIKE 'broadcast_campaigns'");
+    if ($chk && $chk->rowCount() > 0) {
+        $stmt = $pdo->query('SELECT id, subject, recipients_filter, total_recipients, status, sent_at FROM broadcast_campaigns ORDER BY sent_at DESC LIMIT 20');
+        $broadcastHistory = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    }
+} catch (Throwable $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="en"><head>
@@ -90,8 +102,8 @@ $currentPage = 'communication';
 <div class="flex items-center justify-between">
 <label class="text-sm font-semibold text-slate-600 uppercase tracking-wider">Message Body</label>
 <div class="flex gap-2">
-<button class="px-2 py-1 bg-slate-100 text-[10px] font-bold text-slate-500 rounded hover:bg-slate-200 uppercase tracking-tighter">Insert {user_name}</button>
-<button class="px-2 py-1 bg-slate-100 text-[10px] font-bold text-slate-500 rounded hover:bg-slate-200 uppercase tracking-tighter">Insert {balance}</button>
+<button type="button" class="px-2 py-1 bg-slate-100 dark:bg-zinc-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 rounded hover:bg-slate-200 dark:hover:bg-zinc-600 uppercase tracking-tighter" data-insert-placeholder="{user_name}">Insert {user_name}</button>
+<button type="button" class="px-2 py-1 bg-slate-100 dark:bg-zinc-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 rounded hover:bg-slate-200 dark:hover:bg-zinc-600 uppercase tracking-tighter" data-insert-placeholder="{balance}">Insert {balance}</button>
 </div>
 </div>
 <div class="border border-slate-200 rounded-lg overflow-hidden">
@@ -114,11 +126,10 @@ $currentPage = 'communication';
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 <div class="space-y-2">
 <label class="text-[11px] font-bold text-slate-500 uppercase">User Segment</label>
-<select class="w-full text-sm bg-white border-slate-200 rounded-lg">
-<option>Active Investors Only</option>
-<option>All Users</option>
-<option>KYC Verified Only</option>
-<option>Custom Segment...</option>
+<select name="recipients" id="broadcast-recipients" class="w-full text-sm bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary">
+<option value="all">All Users</option>
+<option value="active_investors">Active Investors Only</option>
+<option value="kyc_verified">KYC Verified Only</option>
 </select>
 </div>
 <div class="space-y-2">
@@ -134,9 +145,8 @@ $currentPage = 'communication';
 </select>
 </div>
 </div>
-<div class="mt-4 flex items-center justify-between text-xs font-medium text-slate-500">
-<span>Estimated Reach: <strong class="text-slate-900">4,285 Users</strong></span>
-<button class="text-primary-dark font-bold hover:underline">Refine Segments</button>
+<div class="mt-4 flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+<span>Estimated Reach: <strong class="text-slate-900 dark:text-white" id="broadcast-reach-count">—</strong></span>
 </div>
 </div>
 </div>
@@ -226,8 +236,8 @@ $currentPage = 'communication';
 </div>
 </div>
 </div>
-<div class="p-4 bg-slate-50 border-t border-slate-100">
-<button class="w-full py-2.5 text-xs font-bold text-slate-600 border border-slate-200 rounded-lg hover:bg-white transition-all flex items-center justify-center gap-2">
+<div class="p-4 bg-slate-50 dark:bg-zinc-800/50 border-t border-slate-100 dark:border-zinc-700">
+<button type="button" id="broadcast-send-test" class="w-full py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-zinc-600 rounded-lg hover:bg-white dark:hover:bg-zinc-700 transition-all flex items-center justify-center gap-2">
 <span class="material-icons-outlined text-sm">send_to_mobile</span> Send Test to My Email
                         </button>
 </div>
@@ -257,117 +267,34 @@ $currentPage = 'communication';
 <th class="px-6 py-4 text-right">Actions</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-slate-100">
-<tr class="hover:bg-slate-50/50 transition-colors">
+<tbody class="divide-y divide-slate-100 dark:divide-zinc-700">
+<?php if (empty($broadcastHistory)): ?>
+<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">No broadcasts sent yet.</td></tr>
+<?php else: ?>
+<?php foreach ($broadcastHistory as $bc): ?>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-zinc-800/50 transition-colors">
 <td class="px-6 py-4">
 <div class="flex items-center gap-3">
-<div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
-<span class="material-icons-outlined text-sm">email</span>
-</div>
+<div class="p-2 bg-primary/10 text-primary rounded-lg"><span class="material-icons-outlined text-sm">email</span></div>
 <div>
-<p class="text-sm font-semibold text-slate-900">Security Update 2.1</p>
-<p class="text-xs text-slate-400">Email Broadcast</p>
+<p class="text-sm font-semibold text-slate-900 dark:text-white"><?php echo htmlspecialchars($bc['subject']); ?></p>
+<p class="text-xs text-slate-400"><?php echo htmlspecialchars($bc['recipients_filter']); ?></p>
 </div>
 </div>
 </td>
-<td class="px-6 py-4">
-<span class="text-sm font-medium text-slate-700">12,450</span>
-</td>
-<td class="px-6 py-4">
-<div class="space-y-1">
-<div class="flex items-center gap-4 text-[11px]">
-<span class="text-slate-500">Open Rate: <strong class="text-emerald-600">42%</strong></span>
-<span class="text-slate-500">Click Rate: <strong class="text-emerald-600">8%</strong></span>
-</div>
-<div class="w-32 h-1 bg-slate-100 rounded-full overflow-hidden">
-<div class="bg-emerald-500 h-full w-[42%]"></div>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase">Sent</span>
-</td>
-<td class="px-6 py-4">
-<p class="text-xs text-slate-600">Oct 24, 2023</p>
-<p class="text-[10px] text-slate-400">09:15 AM</p>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="p-1 hover:bg-slate-100 rounded text-slate-400"><span class="material-icons-outlined text-sm">more_vert</span></button>
-</td>
+<td class="px-6 py-4"><span class="text-sm font-medium text-slate-700 dark:text-slate-300"><?php echo (int)$bc['total_recipients']; ?></span></td>
+<td class="px-6 py-4">—</td>
+<td class="px-6 py-4"><span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold rounded-full uppercase">Sent</span></td>
+<td class="px-6 py-4"><p class="text-xs text-slate-600 dark:text-slate-400"><?php echo date('M j, Y', strtotime($bc['sent_at'])); ?></p><p class="text-[10px] text-slate-400"><?php echo date('g:i A', strtotime($bc['sent_at'])); ?></p></td>
+<td class="px-6 py-4 text-right"></td>
 </tr>
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="p-2 bg-amber-50 text-amber-600 rounded-lg">
-<span class="material-icons-outlined text-sm">notifications</span>
-</div>
-<div>
-<p class="text-sm font-semibold text-slate-900">New Token Listing: $BTC</p>
-<p class="text-xs text-slate-400">In-App Notification</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="text-sm font-medium text-slate-700">8,200</span>
-</td>
-<td class="px-6 py-4">
-<div class="space-y-1">
-<div class="flex items-center gap-4 text-[11px]">
-<span class="text-slate-500">Read Rate: <strong class="text-amber-600">65%</strong></span>
-</div>
-<div class="w-32 h-1 bg-slate-100 rounded-full overflow-hidden">
-<div class="bg-amber-400 h-full w-[65%]"></div>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase">Scheduled</span>
-</td>
-<td class="px-6 py-4">
-<p class="text-xs text-slate-600">Oct 28, 2023</p>
-<p class="text-[10px] text-slate-400">14:00 PM</p>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="p-1 hover:bg-slate-100 rounded text-slate-400"><span class="material-icons-outlined text-sm">more_vert</span></button>
-</td>
-</tr>
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="p-2 bg-slate-100 text-slate-600 rounded-lg">
-<span class="material-icons-outlined text-sm">drafts</span>
-</div>
-<div>
-<p class="text-sm font-semibold text-slate-900">Holiday Rewards Bonus</p>
-<p class="text-xs text-slate-400">Email Broadcast</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="text-sm font-medium text-slate-700">—</span>
-</td>
-<td class="px-6 py-4">
-<span class="text-[10px] text-slate-400 italic">No data yet</span>
-</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-full uppercase">Draft</span>
-</td>
-<td class="px-6 py-4">
-<p class="text-xs text-slate-600">—</p>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="p-1 hover:bg-slate-100 rounded text-slate-400"><span class="material-icons-outlined text-sm">more_vert</span></button>
-</td>
-</tr>
+<?php endforeach; ?>
+<?php endif; ?>
 </tbody>
 </table>
 </div>
-<div class="p-4 border-t border-slate-100 flex items-center justify-between">
-<p class="text-xs text-slate-500 font-medium">Showing 1-3 of 42 campaigns</p>
-<div class="flex gap-2">
-<button class="p-1 px-3 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50">Prev</button>
-<button class="p-1 px-3 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold">Next</button>
-</div>
+<div class="p-4 border-t border-slate-100 dark:border-zinc-700">
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium"><?php echo count($broadcastHistory); ?> campaign(s)</p>
 </div>
 </div>
 </div>
@@ -385,4 +312,79 @@ $currentPage = 'communication';
 <button class="text-slate-500 hover:text-white"><span class="material-icons-outlined text-lg">close</span></button>
 </div>
 <script src="/js/app.js"></script>
+<script>
+(function(){
+  var form = document.getElementById('broadcast-form');
+  var msgEl = document.getElementById('broadcast-message');
+  var recipientsSel = document.getElementById('broadcast-recipients');
+  var reachEl = document.getElementById('broadcast-reach-count');
+  var testBtn = document.getElementById('broadcast-send-test');
+
+  function fetchReach(){
+    var r = recipientsSel ? recipientsSel.value : 'all';
+    fetch('/api/admin/broadcast-reach.php?recipients=' + encodeURIComponent(r), { credentials: 'same-origin' })
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        if (reachEl && data.success) reachEl.textContent = data.data.count + ' Users';
+      });
+  }
+  if (recipientsSel) {
+    fetchReach();
+    recipientsSel.addEventListener('change', fetchReach);
+  }
+
+  function doBroadcast(isTest){
+    var subj = form.querySelector('[name="subject"]').value.trim();
+    var body = form.querySelector('[name="body"]').value.trim();
+    var rec = recipientsSel ? recipientsSel.value : 'all';
+    if (!subj || !body) { if (msgEl) { msgEl.textContent = 'Subject and body required.'; msgEl.className = 'text-sm text-red-600'; msgEl.classList.remove('hidden'); } return; }
+    if (msgEl) msgEl.classList.add('hidden');
+    var btn = form.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true;
+    var payload = { subject: subj, body: body, recipients: rec };
+    if (isTest) payload.test = true;
+    fetch('/api/admin/broadcast.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(payload)
+    }).then(function(r){ return r.json(); }).then(function(res){
+      if (msgEl) {
+        msgEl.textContent = res.success ? (res.data && res.data.message) : (res.error || 'Failed');
+        msgEl.className = 'text-sm ' + (res.success ? 'text-green-600' : 'text-red-600');
+        msgEl.classList.remove('hidden');
+      }
+      if (res.success && !isTest) setTimeout(function(){ location.reload(); }, 1500);
+      if (btn) btn.disabled = false;
+    }).catch(function(){
+      if (msgEl) { msgEl.textContent = 'Request failed.'; msgEl.className = 'text-sm text-red-600'; msgEl.classList.remove('hidden'); }
+      if (btn) btn.disabled = false;
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      doBroadcast(false);
+    });
+  }
+  if (testBtn) {
+    testBtn.addEventListener('click', function(){
+      var subj = form.querySelector('[name="subject"]').value.trim();
+      var body = form.querySelector('[name="body"]').value.trim();
+      if (!subj || !body) { alert('Enter subject and body first.'); return; }
+      testBtn.disabled = true;
+      doBroadcast(true);
+      setTimeout(function(){ testBtn.disabled = false; }, 2000);
+    });
+  }
+
+  document.querySelectorAll('button[data-insert-placeholder]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var ta = form.querySelector('[name="body"]');
+      if (ta) ta.value += ' ' + btn.dataset.insertPlaceholder;
+    });
+  });
+})();
+</script>
 </body></html>

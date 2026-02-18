@@ -274,6 +274,19 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- OTP Infrastructure (registration, login, disable_2fa)
+CREATE TABLE IF NOT EXISTS email_otp_codes (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  otp CHAR(6) NOT NULL,
+  purpose ENUM('register','login','disable_2fa') NOT NULL,
+  expires_at DATETIME NOT NULL,
+  used TINYINT(1) DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_email_purpose (email, purpose),
+  INDEX idx_expires (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Create kyc_submissions table
 CREATE TABLE IF NOT EXISTS kyc_submissions (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -293,3 +306,14 @@ CREATE TABLE IF NOT EXISTS kyc_submissions (
   INDEX idx_kyc_status (status),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- Broadcast campaigns (for Communication Hub history)
+CREATE TABLE IF NOT EXISTS broadcast_campaigns (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  subject VARCHAR(255) NOT NULL,
+  recipients_filter VARCHAR(50) NOT NULL DEFAULT 'all',
+  total_recipients INT UNSIGNED NOT NULL DEFAULT 0,
+  status ENUM('sent','draft') NOT NULL DEFAULT 'sent',
+  sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

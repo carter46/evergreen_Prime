@@ -31,7 +31,7 @@ try {
     exit;
 }
 
-$stmt = $pdo->prepare('SELECT id, email, password_hash, role FROM users WHERE email = ? AND active = 1');
+$stmt = $pdo->prepare('SELECT id, email, password_hash, role, name, two_factor_enabled FROM users WHERE email = ? AND active = 1');
 $stmt->execute([$email]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -41,16 +41,41 @@ if (!$user || !password_verify($password, $user['password_hash'])) {
     exit;
 }
 
-session_start();
+$twoFactorEnabled = !empty($user['two_factor_enabled']);
+
+if ($twoFactorEnabled) {
+    require_once dirname(__DIR__, 2) . '/includes/otp-helper.php';
+    $otp = createOtp($email, 'login');
+    if ($otp) {
+        sendOtpEmail($email, $otp, 'login', $user['name'] ?? null);
+    }
+    $redirect = trim($input['redirect'] ?? '/dashboard');
+    if ($user['role'] === 'admin') $redirect = '/dashboard/admin';
+    echo json_encode([
+        'success' => true,
+        'data' => [
+            'step' => 'verify_otp',
+            'email' => $email,
+            'message' => 'We sent a 6-digit code to your email. Enter it to sign in.',
+            'redirect' => $redirect,
+        ]
+    ]);
+    exit;
+}
+
+require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 $_SESSION['user_id'] = (int) $user['id'];
 $_SESSION['email'] = $user['email'];
 $_SESSION['role'] = $user['role'];
+
+$redirect = trim($input['redirect'] ?? '/dashboard');
+if ($user['role'] === 'admin') $redirect = '/dashboard/admin';
 
 echo json_encode([
     'success' => true,
     'data' => [
         'user_id' => $_SESSION['user_id'],
         'email' => $_SESSION['email'],
-        'redirect' => '/dashboard'
+        'redirect' => $redirect
     ]
 ]);

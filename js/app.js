@@ -131,23 +131,161 @@
         const form = document.getElementById('login-form');
         if (!form) return;
         const msgEl = document.getElementById('login-form-message');
+        const otpStep = document.getElementById('login-otp-step');
+        const otpEmailDisplay = document.getElementById('login-otp-email-display');
+        const otpInputs = document.querySelectorAll('#login-otp-inputs [data-otp-digit]');
+        const otpMessage = document.getElementById('login-otp-message');
+        const otpResend = document.getElementById('login-otp-resend');
+        const otpSubmit = document.getElementById('login-otp-submit');
+        const haveAccount = document.getElementById('login-have-account');
+
+        let loginEmail = null;
+        let loginRedirect = '/dashboard';
+
+        function showLoginOtpStep(email, redirect) {
+            loginEmail = email;
+            loginRedirect = redirect || '/dashboard';
+            form.classList.add('hidden');
+            if (haveAccount) haveAccount.classList.add('hidden');
+            otpEmailDisplay.textContent = 'Code sent to ' + email;
+            otpStep.classList.remove('hidden');
+            otpInputs.forEach(inp => { inp.value = ''; });
+            otpInputs[0]?.focus();
+            otpMessage.classList.add('hidden');
+            let s = 60;
+            if (otpResend) {
+                otpResend.disabled = true;
+                otpResend.textContent = 'Resend code (' + s + 's)';
+                const iv = setInterval(function () {
+                    s--;
+                    otpResend.textContent = 'Resend code (' + s + 's)';
+                    if (s <= 0) {
+                        clearInterval(iv);
+                        otpResend.disabled = false;
+                        otpResend.textContent = 'Resend code';
+                    }
+                }, 1000);
+            }
+        }
+
+        function getLoginOtpValue() {
+            return Array.from(otpInputs || []).map(inp => inp.value).join('');
+        }
+
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             const email = form.querySelector('[name="email"]')?.value?.trim() || '';
             const password = form.querySelector('[name="password"]')?.value || '';
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get('redirect') || '/dashboard';
             const btn = form.querySelector('button[type="submit"]');
             if (btn) btn.disabled = true;
-            apiFetch('/auth/login.php', { method: 'POST', body: JSON.stringify({ email, password }) })
+            apiFetch('/auth/login.php', { method: 'POST', body: JSON.stringify({ email, password, redirect }) })
                 .then(data => {
-                    const params = new URLSearchParams(window.location.search);
-                    const redirect = params.get('redirect') || data.data?.redirect || '/dashboard';
-                    window.location.href = redirect;
+                    if (data.data?.step === 'verify_otp') {
+                        showLoginOtpStep(data.data.email, data.data.redirect);
+                    } else {
+                        window.location.href = data.data?.redirect || redirect;
+                    }
                 })
                 .catch(err => {
                     showMessage(msgEl, err.message || 'Login failed. Try again.', true);
                     if (btn) btn.disabled = false;
                 });
         });
+
+        if (otpResend) otpResend.addEventListener('click', function () {
+            if (!loginEmail || otpResend.disabled) return;
+            otpResend.disabled = true;
+            fetch(API_BASE + '/auth/send-otp.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ email: loginEmail, purpose: 'login' })
+            }).then(r => r.json()).then(function (res) {
+                if (res.success) {
+                    if (otpMessage) {
+                        otpMessage.textContent = 'Code sent. Check your email.';
+                        otpMessage.className = 'text-sm text-green-600';
+                        otpMessage.classList.remove('hidden');
+                    }
+                    let s = 60;
+                    otpResend.textContent = 'Resend code (' + s + 's)';
+                    const iv = setInterval(function () {
+                        s--;
+                        otpResend.textContent = 'Resend code (' + s + 's)';
+                        if (s <= 0) {
+                            clearInterval(iv);
+                            otpResend.disabled = false;
+                            otpResend.textContent = 'Resend code';
+                        }
+                    }, 1000);
+                } else {
+                    if (otpMessage) {
+                        otpMessage.textContent = res.error || 'Failed to resend';
+                        otpMessage.className = 'text-sm text-red-500';
+                        otpMessage.classList.remove('hidden');
+                    }
+                    otpResend.disabled = false;
+                }
+            }).catch(function () {
+                if (otpMessage) {
+                    otpMessage.textContent = 'Failed to resend. Try again.';
+                    otpMessage.className = 'text-sm text-red-500';
+                    otpMessage.classList.remove('hidden');
+                }
+                otpResend.disabled = false;
+            });
+        });
+
+        if (otpSubmit) otpSubmit.addEventListener('click', function () {
+            const otp = getLoginOtpValue();
+            if (otp.length !== 6) {
+                if (otpMessage) {
+                    otpMessage.textContent = 'Please enter all 6 digits.';
+                    otpMessage.className = 'text-sm text-red-500';
+                    otpMessage.classList.remove('hidden');
+                }
+                return;
+            }
+            otpSubmit.disabled = true;
+            if (otpMessage) otpMessage.classList.add('hidden');
+            fetch(API_BASE + '/auth/verify-login-otp.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ email: loginEmail, otp, redirect: loginRedirect })
+            }).then(r => r.json()).then(function (res) {
+                if (res.success) {
+                    window.location.href = res.data?.redirect || loginRedirect;
+                } else {
+                    if (otpMessage) {
+                        otpMessage.textContent = res.error || 'Invalid code. Try again.';
+                        otpMessage.className = 'text-sm text-red-500';
+                        otpMessage.classList.remove('hidden');
+                    }
+                    otpSubmit.disabled = false;
+                }
+            }).catch(function () {
+                if (otpMessage) {
+                    otpMessage.textContent = 'Verification failed. Try again.';
+                    otpMessage.className = 'text-sm text-red-500';
+                    otpMessage.classList.remove('hidden');
+                }
+                otpSubmit.disabled = false;
+            });
+        });
+
+        if (otpInputs && otpInputs.length) {
+            otpInputs.forEach((inp, i) => {
+                inp.addEventListener('input', function () {
+                    if (this.value && i < otpInputs.length - 1) otpInputs[i + 1].focus();
+                });
+                inp.addEventListener('keydown', function (e) {
+                    if (e.key === 'Backspace' && !this.value && i > 0) otpInputs[i - 1].focus();
+                });
+            });
+        }
     }
 
     function initForgotPasswordForm() {
@@ -213,6 +351,48 @@
         const form = document.getElementById('register-form');
         if (!form) return;
         const msgEl = document.getElementById('register-form-message');
+        const otpStep = document.getElementById('register-otp-step');
+        const thankYou = document.getElementById('register-thank-you');
+        const otpEmailDisplay = document.getElementById('register-otp-email-display');
+        const otpInputs = document.querySelectorAll('#register-otp-inputs [data-otp-digit]');
+        const otpMessage = document.getElementById('register-otp-message');
+        const otpResend = document.getElementById('register-otp-resend');
+        const otpSubmit = document.getElementById('register-otp-submit');
+        const haveAccount = document.getElementById('register-have-account');
+
+        let registerEmail = null;
+
+        function showOtpStep(email) {
+            registerEmail = email;
+            form.classList.add('hidden');
+            if (haveAccount) haveAccount.classList.add('hidden');
+            otpEmailDisplay.textContent = 'Code sent to ' + email;
+            otpStep.classList.remove('hidden');
+            otpInputs.forEach(inp => { inp.value = ''; });
+            otpInputs[0]?.focus();
+            otpMessage.classList.add('hidden');
+            startResendCooldown();
+        }
+
+        function startResendCooldown() {
+            otpResend.disabled = true;
+            let s = 60;
+            otpResend.textContent = 'Resend code (' + s + 's)';
+            const iv = setInterval(function () {
+                s--;
+                otpResend.textContent = 'Resend code (' + s + 's)';
+                if (s <= 0) {
+                    clearInterval(iv);
+                    otpResend.disabled = false;
+                    otpResend.textContent = 'Resend code';
+                }
+            }, 1000);
+        }
+
+        function getOtpValue() {
+            return Array.from(otpInputs).map(inp => inp.value).join('');
+        }
+
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             const name = form.querySelector('[name="name"]')?.value?.trim() || '';
@@ -238,24 +418,108 @@
                     opts.body = body;
                     opts.headers = { 'Accept': 'application/json' };
                 }
-                return fetch('/api/auth/register.php', { ...opts, credentials: 'same-origin' })
+                return fetch(API_BASE + '/auth/register.php', { ...opts, credentials: 'same-origin' })
                     .then(r => r.json().then(data => ({ ok: r.ok, data })))
                     .then(({ ok, data }) => {
                         if (!ok) throw new Error(data.error || 'Request failed');
                         return data;
                     });
             };
+            const onSuccess = (data) => {
+                if (data.data?.step === 'verify_otp') {
+                    showOtpStep(data.data.email);
+                } else {
+                    window.location.href = data.data?.redirect || '/dashboard';
+                }
+            };
             if (hasAvatar) {
                 const fd = new FormData(form);
                 fd.delete('confirm_password');
                 fd.delete('terms');
-                doRequest(fd).then(data => { window.location.href = data.data?.redirect || '/dashboard'; })
-                    .catch(err => { showMessage(msgEl, err.message || 'Registration failed. Try again.', true); if (btn) btn.disabled = false; });
+                doRequest(fd).then(onSuccess).catch(err => {
+                    showMessage(msgEl, err.message || 'Registration failed. Try again.', true);
+                    if (btn) btn.disabled = false;
+                });
             } else {
                 doRequest(JSON.stringify({ name, email, password, phone: phone || undefined, referral: referral || undefined }))
-                    .then(data => { window.location.href = data.data?.redirect || '/dashboard'; })
-                    .catch(err => { showMessage(msgEl, err.message || 'Registration failed. Try again.', true); if (btn) btn.disabled = false; });
+                    .then(onSuccess).catch(err => {
+                        showMessage(msgEl, err.message || 'Registration failed. Try again.', true);
+                        if (btn) btn.disabled = false;
+                    });
             }
+        });
+
+        if (otpResend) otpResend.addEventListener('click', function () {
+            if (!registerEmail || otpResend.disabled) return;
+            otpResend.disabled = true;
+            fetch(API_BASE + '/auth/send-otp.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ email: registerEmail, purpose: 'register' })
+            }).then(r => r.json()).then(function (res) {
+                if (res.success) {
+                    otpMessage.textContent = 'Code sent. Check your email.';
+                    otpMessage.className = 'text-sm text-green-600';
+                    otpMessage.classList.remove('hidden');
+                    startResendCooldown();
+                } else {
+                    otpMessage.textContent = res.error || 'Failed to resend';
+                    otpMessage.className = 'text-sm text-red-500';
+                    otpMessage.classList.remove('hidden');
+                    otpResend.disabled = false;
+                }
+            }).catch(function () {
+                otpMessage.textContent = 'Failed to resend. Try again.';
+                otpMessage.className = 'text-sm text-red-500';
+                otpMessage.classList.remove('hidden');
+                otpResend.disabled = false;
+            });
+        });
+
+        if (otpSubmit) otpSubmit.addEventListener('click', function () {
+            const otp = getOtpValue();
+            if (otp.length !== 6) {
+                otpMessage.textContent = 'Please enter all 6 digits.';
+                otpMessage.className = 'text-sm text-red-500';
+                otpMessage.classList.remove('hidden');
+                return;
+            }
+            otpSubmit.disabled = true;
+            otpMessage.classList.add('hidden');
+            fetch(API_BASE + '/auth/verify-registration-otp.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ email: registerEmail, otp })
+            }).then(r => r.json()).then(function (res) {
+                if (res.success) {
+                    otpStep.classList.add('hidden');
+                    thankYou.classList.remove('hidden');
+                    setTimeout(function () {
+                        window.location.href = res.data?.redirect || '/dashboard';
+                    }, 1500);
+                } else {
+                    otpMessage.textContent = res.error || 'Invalid code. Try again.';
+                    otpMessage.className = 'text-sm text-red-500';
+                    otpMessage.classList.remove('hidden');
+                    otpSubmit.disabled = false;
+                }
+            }).catch(function () {
+                otpMessage.textContent = 'Verification failed. Try again.';
+                otpMessage.className = 'text-sm text-red-500';
+                otpMessage.classList.remove('hidden');
+                otpSubmit.disabled = false;
+            });
+        });
+
+        otpInputs.forEach((inp, i) => {
+            inp.addEventListener('input', function () {
+                if (this.value && i < otpInputs.length - 1) otpInputs[i + 1].focus();
+            });
+            inp.addEventListener('keydown', function (e) {
+                if (e.key === 'Backspace' && !this.value && i > 0) otpInputs[i - 1].focus();
+            });
         });
     }
 

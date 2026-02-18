@@ -55,6 +55,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true) ?? [];
+    $action = trim($input['action'] ?? '');
+    if ($action === 'enable_2fa') {
+        try {
+            $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'two_factor_enabled'");
+            if (!$chk || $chk->rowCount() === 0) {
+                echo json_encode(['success' => false, 'error' => '2FA not supported']);
+                exit;
+            }
+            $pdo->prepare('UPDATE users SET two_factor_enabled = 1 WHERE id = ?')->execute([$userId]);
+            echo json_encode(['success' => true, 'data' => ['two_factor_enabled' => true]]);
+        } catch (Throwable $e) {
+            echo json_encode(['success' => false, 'error' => 'Failed to enable 2FA']);
+        }
+        exit;
+    }
+    if ($action === 'disable_2fa') {
+        $otp = trim($input['otp'] ?? '');
+        if (empty($otp)) {
+            echo json_encode(['success' => false, 'error' => 'OTP is required to disable 2FA']);
+            exit;
+        }
+        $stmt = $pdo->prepare('SELECT email FROM users WHERE id = ?');
+        $stmt->execute([$userId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            echo json_encode(['success' => false, 'error' => 'User not found']);
+            exit;
+        }
+        require_once dirname(__DIR__, 2) . '/includes/otp-helper.php';
+        if (!validateOtp($row['email'], $otp, 'disable_2fa')) {
+            echo json_encode(['success' => false, 'error' => 'Invalid or expired OTP']);
+            exit;
+        }
+        try {
+            $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'two_factor_enabled'");
+            if (!$chk || $chk->rowCount() === 0) {
+                echo json_encode(['success' => false, 'error' => '2FA not supported']);
+                exit;
+            }
+            $pdo->prepare('UPDATE users SET two_factor_enabled = 0 WHERE id = ?')->execute([$userId]);
+            echo json_encode(['success' => true, 'data' => ['two_factor_enabled' => false]]);
+        } catch (Throwable $e) {
+            echo json_encode(['success' => false, 'error' => 'Failed to disable 2FA']);
+        }
+        exit;
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $input = json_decode(file_get_contents('php://input'), true) ?? [];
     $currentPassword = trim($input['current_password'] ?? '');

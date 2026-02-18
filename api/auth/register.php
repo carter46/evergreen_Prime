@@ -102,17 +102,17 @@ $sql = 'INSERT INTO users (' . implode(', ', $cols) . ') VALUES (' . implode(', 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($vals);
 
-session_start();
-$_SESSION['user_id'] = (int) $pdo->lastInsertId();
-$_SESSION['email'] = $email;
-$_SESSION['role'] = 'user';
+require_once dirname(__DIR__, 2) . '/includes/otp-helper.php';
+$otp = createOtp($email, 'register');
+if ($otp) {
+    sendOtpEmail($email, $otp, 'register', $name ?: null);
+}
 
 echo json_encode([
     'success' => true,
     'data' => [
-        'message' => 'Registration successful. Welcome!',
-        'redirect' => '/dashboard',
-        'user_id' => $_SESSION['user_id'],
+        'step' => 'verify_otp',
         'email' => $email,
+        'message' => 'We sent a 6-digit code to your email. Enter it below to verify your account.',
     ]
 ]);

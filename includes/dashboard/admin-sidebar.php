@@ -49,6 +49,10 @@ $navClass = function ($page) use ($current) {
             <span class="material-icons text-[20px] shrink-0">smart_toy</span>
             <span class="font-medium truncate">AI Bot Config</span>
         </a>
+        <a class="<?php echo $navClass('settings'); ?>" href="/dashboard/admin/settings">
+            <span class="material-icons text-[20px] shrink-0">settings</span>
+            <span class="font-medium truncate">Settings</span>
+        </a>
     </nav>
     <div class="p-4 border-t border-primary/10 space-y-1">
         <a class="<?php echo $navClass('communication'); ?>" href="/dashboard/admin/communication">

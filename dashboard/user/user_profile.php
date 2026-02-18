@@ -144,14 +144,14 @@ $profile2FA = isset($profileUser['two_factor_enabled']) ? (bool)$profileUser['tw
 <span class="material-icons">vibration</span>
 </div>
 <label class="relative inline-flex items-center cursor-pointer">
-<input id="2fa-toggle" disabled class="sr-only peer" type="checkbox" <?php echo $profile2FA ? 'checked' : ''; ?>/>
+<input id="2fa-toggle" class="sr-only peer" type="checkbox" <?php echo $profile2FA ? 'checked' : ''; ?>/>
 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-background-dark/60 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
 </label>
 </div>
 <h3 class="font-bold text-lg mb-1">Two-Factor Auth</h3>
-<p class="text-sm text-slate-500 mb-6 leading-relaxed">Secure your account with Google Authenticator or SMS. TOTP setup coming soon.</p>
+<p class="text-sm text-slate-500 mb-6 leading-relaxed">Email OTP required at login when enabled. To disable, you must verify with an OTP sent to your email.</p>
 <button type="button" id="setup-2fa-btn" class="w-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all font-bold py-2 rounded-lg">
-                            Setup 2FA
+                            <?php echo $profile2FA ? '2FA is enabled' : 'Enable 2FA'; ?>
                         </button>
 </div>
 <!-- Password Card -->
@@ -268,6 +268,30 @@ else echo 'Complete verification to withdraw';
 </div>
 </div>
 </main>
+<!-- Disable 2FA OTP Modal -->
+<div id="2fa-otp-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white dark:bg-background-dark rounded-xl max-w-md w-full p-8 shadow-2xl">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-xl font-bold">Verify to Disable 2FA</h2>
+<button type="button" id="2fa-otp-modal-close" class="text-slate-400 hover:text-slate-600 transition-colors"><span class="material-icons">close</span></button>
+</div>
+<p class="text-sm text-slate-500 mb-4">We'll send a 6-digit code to your email. Enter it below to disable 2FA.</p>
+<div class="flex gap-2 justify-center my-6" id="2fa-otp-inputs">
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 1"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 2"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 3"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 4"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 5"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 6"/>
+</div>
+<div id="2fa-otp-message" class="text-sm hidden mb-4"></div>
+<button type="button" id="2fa-otp-resend" class="text-primary hover:underline text-sm font-medium disabled:opacity-50 mb-4">Resend code</button>
+<div class="flex gap-2 pt-2">
+<button type="button" id="2fa-otp-submit" class="flex-1 bg-primary text-black font-bold py-2.5 rounded-lg hover:bg-primary/90">Verify & Disable</button>
+<button type="button" id="2fa-otp-cancel" class="px-4 py-2.5 text-slate-600 dark:text-slate-400 font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800">Cancel</button>
+</div>
+</div>
+</div>
 <!-- Change Password Modal -->
 <div id="password-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
 <div class="bg-white dark:bg-background-dark rounded-xl max-w-md w-full p-8 shadow-2xl">
@@ -376,9 +400,134 @@ else echo 'Complete verification to withdraw';
     });
   }
 
-  if (setup2faBtn) {
-    setup2faBtn.addEventListener('click', function(){ alert('Two-factor authentication setup is coming soon.'); });
+  var twoFaToggle = document.getElementById('2fa-toggle');
+  var twoFaOtpModal = document.getElementById('2fa-otp-modal');
+  var twoFaOtpClose = document.getElementById('2fa-otp-modal-close');
+  var twoFaOtpInputs = document.querySelectorAll('[data-2fa-digit]');
+  var twoFaOtpMessage = document.getElementById('2fa-otp-message');
+  var twoFaOtpResend = document.getElementById('2fa-otp-resend');
+  var twoFaOtpSubmit = document.getElementById('2fa-otp-submit');
+  var twoFaOtpCancel = document.getElementById('2fa-otp-cancel');
+
+  function show2faOtpModal() {
+    if (twoFaOtpModal) {
+      twoFaOtpModal.classList.remove('hidden');
+      twoFaOtpModal.classList.add('flex');
+      twoFaOtpMessage.classList.add('hidden');
+      twoFaOtpInputs.forEach(function(inp){ inp.value = ''; });
+      twoFaOtpInputs[0] && twoFaOtpInputs[0].focus();
+      fetch('/api/auth/send-otp.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ email: '<?php echo addslashes($profileEmail); ?>', purpose: 'disable_2fa' })
+      }).then(function(r){ return r.json(); }).then(function(res){
+        if (!res.success) {
+          twoFaOtpMessage.textContent = res.error || 'Failed to send code';
+          twoFaOtpMessage.className = 'text-sm text-red-600';
+          twoFaOtpMessage.classList.remove('hidden');
+        }
+      });
+    }
   }
+  function hide2faOtpModal() {
+    if (twoFaOtpModal) { twoFaOtpModal.classList.add('hidden'); twoFaOtpModal.classList.remove('flex'); }
+  }
+
+  if (twoFaOtpClose) twoFaOtpClose.addEventListener('click', hide2faOtpModal);
+  if (twoFaOtpCancel) twoFaOtpCancel.addEventListener('click', hide2faOtpModal);
+  if (twoFaOtpModal) twoFaOtpModal.addEventListener('click', function(e){ if (e.target === twoFaOtpModal) hide2faOtpModal(); });
+
+  if (twoFaToggle) {
+    twoFaToggle.addEventListener('change', function(){
+      var cb = this;
+      var desired = cb.checked;
+      if (desired) {
+        fetch('/api/user/profile.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ action: 'enable_2fa' })
+        }).then(function(r){ return r.json(); }).then(function(res){
+          if (res.success) {
+            if (setup2faBtn) setup2faBtn.textContent = '2FA is enabled';
+          } else {
+            cb.checked = false;
+            alert(res.error || 'Failed to enable 2FA');
+          }
+        }).catch(function(){ cb.checked = false; });
+      } else {
+        show2faOtpModal();
+        cb.checked = true;
+      }
+    });
+  }
+
+  if (setup2faBtn) {
+    setup2faBtn.addEventListener('click', function(){
+      if (twoFaToggle && twoFaToggle.checked) return;
+      twoFaToggle.checked = true;
+      twoFaToggle.dispatchEvent(new Event('change'));
+    });
+  }
+
+  if (twoFaOtpResend) twoFaOtpResend.addEventListener('click', function(){
+    if (twoFaOtpResend.disabled) return;
+    twoFaOtpResend.disabled = true;
+    fetch('/api/auth/send-otp.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ email: '<?php echo addslashes($profileEmail); ?>', purpose: 'disable_2fa' })
+    }).then(function(r){ return r.json(); }).then(function(res){
+      twoFaOtpMessage.textContent = res.success ? 'Code sent.' : (res.error || 'Failed');
+      twoFaOtpMessage.className = 'text-sm ' + (res.success ? 'text-green-600' : 'text-red-600');
+      twoFaOtpMessage.classList.remove('hidden');
+      twoFaOtpResend.disabled = false;
+    });
+  });
+
+  if (twoFaOtpSubmit) twoFaOtpSubmit.addEventListener('click', function(){
+    var otp = Array.from(twoFaOtpInputs).map(function(i){ return i.value; }).join('');
+    if (otp.length !== 6) {
+      twoFaOtpMessage.textContent = 'Enter all 6 digits.';
+      twoFaOtpMessage.className = 'text-sm text-red-600';
+      twoFaOtpMessage.classList.remove('hidden');
+      return;
+    }
+    twoFaOtpSubmit.disabled = true;
+    fetch('/api/user/profile.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ action: 'disable_2fa', otp: otp })
+    }).then(function(r){ return r.json(); }).then(function(res){
+      if (res.success) {
+        hide2faOtpModal();
+        twoFaToggle.checked = false;
+        if (setup2faBtn) setup2faBtn.textContent = 'Enable 2FA';
+      } else {
+        twoFaOtpMessage.textContent = res.error || 'Invalid code';
+        twoFaOtpMessage.className = 'text-sm text-red-600';
+        twoFaOtpMessage.classList.remove('hidden');
+      }
+      twoFaOtpSubmit.disabled = false;
+    }).catch(function(){
+      twoFaOtpMessage.textContent = 'Request failed.';
+      twoFaOtpMessage.className = 'text-sm text-red-600';
+      twoFaOtpMessage.classList.remove('hidden');
+      twoFaOtpSubmit.disabled = false;
+    });
+  });
+
+  twoFaOtpInputs.forEach(function(inp, i){
+    inp.addEventListener('input', function(){
+      if (this.value && i < twoFaOtpInputs.length - 1) twoFaOtpInputs[i + 1].focus();
+    });
+    inp.addEventListener('keydown', function(e){
+      if (e.key === 'Backspace' && !this.value && i > 0) twoFaOtpInputs[i - 1].focus();
+    });
+  });
 })();
 </script>
 </body></html>

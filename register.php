@@ -94,6 +94,7 @@ $siteName = get_site_name();
 <a href="/" class="inline-flex items-center gap-2 text-zinc-500 hover:text-primary transition-colors p-2" aria-label="Back to home"><span class="material-symbols-outlined">arrow_back</span></a>
 </div>
 </div>
+<div id="register-step-form" class="space-y-5">
 <form id="register-form" class="space-y-5">
 <!-- Progress Line -->
 <div class="w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden mb-8">
@@ -177,11 +178,39 @@ $siteName = get_site_name();
                         Create My Account
                     </button>
 </div>
-<p class="text-center text-sm text-zinc-600 dark:text-zinc-400 mt-8">
+<p class="text-center text-sm text-zinc-600 dark:text-zinc-400 mt-8" id="register-have-account">
                     Already have an account? 
                     <a class="text-primary font-bold hover:underline" href="/login">Log in here</a>
 </p>
 </form>
+<!-- OTP Verification Step (hidden initially) -->
+<div id="register-otp-step" class="space-y-5 hidden">
+<h2 class="text-xl font-bold text-zinc-900 dark:text-white">Verify your email</h2>
+<p class="text-zinc-500 dark:text-zinc-400 text-sm" id="register-otp-email-display"></p>
+<p class="text-sm text-zinc-600 dark:text-zinc-400">Enter the 6-digit code we sent to your email.</p>
+<div class="flex gap-2 justify-center my-6" id="register-otp-inputs">
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 1"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 2"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 3"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 4"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 5"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 6"/>
+</div>
+<div id="register-otp-message" class="text-sm hidden"></div>
+<button type="button" id="register-otp-resend" class="text-primary hover:underline text-sm font-medium disabled:opacity-50" disabled>Resend code (60s)</button>
+<button type="button" id="register-otp-submit" class="w-full py-3.5 px-4 bg-primary hover:bg-primary/90 text-black font-bold rounded-lg shadow-lg shadow-primary/20 transition-all mt-4">
+                        Verify & Continue
+                    </button>
+</div>
+<!-- Thank You Step (hidden initially) -->
+<div id="register-thank-you" class="hidden text-center py-8">
+<div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
+<span class="material-icons text-green-600 text-3xl">check_circle</span>
+</div>
+<h2 class="text-xl font-bold text-zinc-900 dark:text-white mb-2">Thank you!</h2>
+<p class="text-zinc-500 dark:text-zinc-400 text-sm mb-4">Your account has been verified. Redirecting to your dashboard...</p>
+</div>
+</div>
 </div>
 </div>
 <script src="/js/app.js"></script>

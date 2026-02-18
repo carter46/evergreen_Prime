@@ -105,8 +105,27 @@ $siteName = get_site_name();
 <span class="material-symbols-outlined transition-transform group-hover:translate-x-1" data-icon="arrow_forward">arrow_forward</span>
 </button>
 </form>
+<!-- OTP Verification Step (hidden initially) -->
+<div id="login-otp-step" class="space-y-6 hidden mt-8">
+<h2 class="text-xl font-bold text-text-main dark:text-white">Verify your identity</h2>
+<p class="text-text-muted text-sm" id="login-otp-email-display"></p>
+<p class="text-sm text-text-muted">Enter the 6-digit code we sent to your email.</p>
+<div class="flex gap-2 justify-center my-6" id="login-otp-inputs">
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 1"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 2"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 3"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 4"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 5"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 6"/>
+</div>
+<div id="login-otp-message" class="text-sm hidden"></div>
+<button type="button" id="login-otp-resend" class="text-primary hover:underline text-sm font-medium disabled:opacity-50" disabled>Resend code (60s)</button>
+<button type="button" id="login-otp-submit" class="w-full bg-primary hover:brightness-105 text-text-main font-bold py-4 rounded-xl flex items-center justify-center gap-2">
+                        Verify & Sign In
+                    </button>
+</div>
 <!-- Footer Link -->
-<p class="mt-12 text-center text-text-muted text-sm">
+<p class="mt-12 text-center text-text-muted text-sm" id="login-have-account">
                     Don't have an account? 
                     <a class="text-text-main dark:text-white font-bold hover:text-primary transition-colors ml-1" href="/register">Create an account</a>
 </p>

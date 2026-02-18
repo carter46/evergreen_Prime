@@ -41,6 +41,7 @@ Options -Indexes
     RewriteRule ^dashboard/admin/communication$ dashboard/admin/communication_hub.php [L]
     RewriteRule ^dashboard/admin/kyc$ dashboard/admin/kyc_management.php [L]
     RewriteRule ^dashboard/admin/ai-config$ dashboard/admin/ai_bot_config.php [L]
+    RewriteRule ^dashboard/admin/settings$ dashboard/admin/settings.php [L]
 
     # Auth pages (clean URL -> PHP)
     RewriteRule ^login$ login.php [L]
