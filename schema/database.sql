@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS users (
   country VARCHAR(100) NULL,
   referral_code VARCHAR(100) NULL,
   kyc_status ENUM('none', 'pending', 'verified', 'rejected') NOT NULL DEFAULT 'none',
+  last_balance_usd DECIMAL(18,2) NOT NULL DEFAULT 0,
+  last_balance_usd_updated_at DATETIME NULL,
   INDEX idx_users_email (email),
   INDEX idx_users_role (role)
 ) ENGINE=InnoDB;

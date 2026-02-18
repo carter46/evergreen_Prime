@@ -64,6 +64,13 @@ try {
         if ($tx['type'] === 'deposit') {
             $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
                 ->execute([$tx['user_id'], $tx['currency'], $tx['amount']]);
+            require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+            $cur = strtoupper((string) $tx['currency']);
+            if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
+                bump_user_last_balance_usd($pdo, (int)$tx['user_id'], (float)$tx['amount']);
+            } else {
+                refresh_user_last_balance_usd($pdo, (int)$tx['user_id']);
+            }
         }
         // For withdrawals, status update is sufficient (balance already debited on request)
         
@@ -80,6 +87,13 @@ try {
         if ($tx['type'] === 'withdrawal') {
             $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
                 ->execute([$tx['user_id'], $tx['currency'], $tx['amount']]);
+            require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+            $cur = strtoupper((string) $tx['currency']);
+            if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
+                bump_user_last_balance_usd($pdo, (int)$tx['user_id'], (float)$tx['amount']);
+            } else {
+                refresh_user_last_balance_usd($pdo, (int)$tx['user_id']);
+            }
         }
         // For deposits, no balance change needed (user hasn't been credited yet)
         

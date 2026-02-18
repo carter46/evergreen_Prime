@@ -35,6 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         } catch (Throwable $e) {}
         $cols = 'id, email, name, role, email_verified, active, created_at, updated_at';
         if ($hasAvatar) $cols .= ', avatar_url';
+        $hasCachedUsd = false;
+        try {
+            $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
+            $hasCachedUsd = $bc && $bc->rowCount() > 0;
+        } catch (Throwable $e) {}
+        if ($hasCachedUsd) $cols .= ', last_balance_usd, last_balance_usd_updated_at';
         $stmt = $pdo->prepare("SELECT {$cols} FROM users WHERE id = ?");
         $stmt->execute([$id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -84,9 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'amount' => (float) $row['amount'],
             ];
         }
-        require_once dirname(__DIR__, 2) . '/includes/helpers.php';
-        $prices = get_coingecko_prices_usd();
-        $user['total_balance_usd'] = wallet_balances_to_usd($user['wallet_balances'], $prices);
+        // Use DB-cached last known balance for consistent admin display (no live CoinGecko here)
+        $user['total_balance_usd'] = $hasCachedUsd ? (float) ($user['last_balance_usd'] ?? 0) : 0.0;
+        $user['total_balance_usd_updated_at'] = $hasCachedUsd ? ($user['last_balance_usd_updated_at'] ?? null) : null;
 
         // Active + paused investments with plan names
         $stmt = $pdo->prepare('
@@ -156,9 +162,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $whereClause = implode(' AND ', $where);
 
     $hasAvatarCol = false;
+    $hasCachedUsdCol = false;
     try {
         $ac = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
         $hasAvatarCol = $ac && $ac->rowCount() > 0;
+        $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
+        $hasCachedUsdCol = $bc && $bc->rowCount() > 0;
     } catch (Throwable $e) {}
 
     $countSql = "SELECT COUNT(*) FROM users u WHERE {$whereClause}";
@@ -167,8 +176,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $total = (int) $countStmt->fetchColumn();
 
     $avatarCol = $hasAvatarCol ? ', u.avatar_url' : '';
+    $balCol = $hasCachedUsdCol ? ', u.last_balance_usd, u.last_balance_usd_updated_at' : '';
     $sql = "
-        SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol},
+        SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol}{$balCol},
                (SELECT COUNT(*) FROM user_investments WHERE user_id = u.id AND status = 'active') AS active_plans_count
         FROM users u
         WHERE {$whereClause}
@@ -178,7 +188,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $users = [];
-    $userIds = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $kyc = 'pending';
         if (!$row['active']) {
@@ -186,7 +195,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         } elseif ($row['email_verified']) {
             $kyc = 'verified';
         }
-        $userIds[] = (int) $row['id'];
         $users[] = [
             'id' => (int) $row['id'],
             'email' => $row['email'],
@@ -196,28 +204,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
             'avatar_url' => $row['avatar_url'] ?? null,
-            'total_balance_usd' => 0.0,
+            'total_balance_usd' => $hasCachedUsdCol ? (float) ($row['last_balance_usd'] ?? 0) : 0.0,
+            'total_balance_usd_updated_at' => $hasCachedUsdCol ? ($row['last_balance_usd_updated_at'] ?? null) : null,
             'active_plans_count' => (int) $row['active_plans_count'],
             'kyc_status' => $kyc,
         ];
     }
-    if (!empty($userIds)) {
-        require_once dirname(__DIR__, 2) . '/includes/helpers.php';
-        $placeholders = implode(',', array_fill(0, count($userIds), '?'));
-        $wbStmt = $pdo->prepare("SELECT user_id, currency, amount FROM wallet_balances WHERE user_id IN ($placeholders)");
-        $wbStmt->execute($userIds);
-        $balancesByUser = [];
-        while ($r = $wbStmt->fetch(PDO::FETCH_ASSOC)) {
-            $uid = (int) $r['user_id'];
-            if (!isset($balancesByUser[$uid])) $balancesByUser[$uid] = [];
-            $balancesByUser[$uid][] = ['currency' => $r['currency'], 'amount' => (float) $r['amount']];
-        }
-        $prices = get_coingecko_prices_usd();
-        foreach ($users as &$u) {
-            $u['total_balance_usd'] = wallet_balances_to_usd($balancesByUser[$u['id']] ?? [], $prices);
-        }
-        unset($u);
-    }
+    // NOTE: We intentionally do NOT call CoinGecko here.
+    // List view uses users.last_balance_usd (cached snapshot) for stable display.
 
     echo json_encode([
         'success' => true,
@@ -423,6 +417,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Record transaction so it appears in user history
                     $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
                         ->execute([$userId, 'deposit', $amountStr, $currency, 'completed', $ref]);
+                    require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+                    refresh_user_last_balance_usd($pdo, $userId);
                     $pdo->commit();
                     echo json_encode(['success' => true, 'data' => ['message' => 'Balance credited']]);
                 } else {
@@ -442,6 +438,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Record transaction so it appears in user history
                     $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
                         ->execute([$userId, 'withdrawal', $amountStr, $currency, 'completed', $ref]);
+                    require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+                    refresh_user_last_balance_usd($pdo, $userId);
                     $pdo->commit();
                     echo json_encode(['success' => true, 'data' => ['message' => 'Balance debited']]);
                 }
@@ -551,6 +549,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ->execute([$userId, 'USDT', $refundAmount]);
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')
                     ->execute([$userId, 'deposit', $refundAmount, 'USDT', 'completed']);
+                require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+                bump_user_last_balance_usd($pdo, $userId, (float) $refundAmount);
                 $pdo->commit();
                 echo json_encode(['success' => true, 'data' => ['message' => 'Plan cancelled and amount refunded in USDT']]);
             } catch (Throwable $e) {

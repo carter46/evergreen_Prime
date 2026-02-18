@@ -161,6 +161,27 @@ function get_coingecko_prices_usd(): array {
 }
 
 /**
+ * Get a USD price snapshot WITHOUT making any external requests.
+ * Priority:
+ * 1) site_settings.prices_usd_json (if present and valid JSON object)
+ * 2) local temp file cache (bloombit_prices_usd.json)
+ * 3) stable defaults only
+ */
+function get_prices_usd_snapshot_no_fetch(): array {
+    $json = (string) (get_site_setting('prices_usd_json', '') ?? '');
+    if ($json !== '') {
+        $data = json_decode($json, true);
+        if (is_array($data)) return $data;
+    }
+    $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'bloombit_prices_usd.json';
+    if (is_file($cacheFile)) {
+        $cached = json_decode((string) @file_get_contents($cacheFile), true);
+        if (is_array($cached)) return $cached;
+    }
+    return ['tether' => 1.0, 'usd-coin' => 1.0];
+}
+
+/**
  * Map wallet currency code to CoinGecko price key.
  */
 function currency_to_coingecko(string $currency): ?string {
@@ -191,6 +212,85 @@ function wallet_balances_to_usd(array $balances, array $prices = null): float {
         }
     }
     return $total;
+}
+
+/**
+ * Refresh user's cached "last known" USD balance stored on users table.
+ * This prevents admin pages from depending on live CoinGecko at render time.
+ *
+ * Behavior:
+ * - Always counts stable currencies 1:1.
+ * - Non-stable currencies only included if a valid USD price is available.
+ * - If user has non-stables but no valid prices are available, we DO NOT overwrite the cached value.
+ */
+function refresh_user_last_balance_usd(PDO $pdo, int $userId): void {
+    // Ensure columns exist (safe on older DBs)
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
+        if (!$chk || $chk->rowCount() === 0) return;
+    } catch (Throwable $e) {
+        return;
+    }
+
+    $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
+    $stmt->execute([$userId]);
+    $balances = [];
+    while ($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $balances[] = ['currency' => $r['currency'], 'amount' => (float) $r['amount']];
+    }
+
+    if (empty($balances)) {
+        $pdo->prepare('UPDATE users SET last_balance_usd = 0, last_balance_usd_updated_at = NOW() WHERE id = ?')->execute([$userId]);
+        return;
+    }
+
+    $prices = get_prices_usd_snapshot_no_fetch();
+    $stable = ['USD', 'USDT', 'USDC', 'BUSD', 'DAI'];
+    $total = 0.0;
+    $hasNonStable = false;
+    $pricedNonStable = false;
+    $hasStable = false;
+
+    foreach ($balances as $b) {
+        $cur = strtoupper($b['currency'] ?? '');
+        $amt = (float) ($b['amount'] ?? 0);
+        if ($amt <= 0) continue;
+
+        if (in_array($cur, $stable, true)) {
+            $hasStable = true;
+            $total += $amt;
+        } else {
+            $hasNonStable = true;
+            $cg = currency_to_coingecko($cur);
+            if ($cg && isset($prices[$cg]) && (float)$prices[$cg] > 0) {
+                $total += $amt * (float) $prices[$cg];
+                $pricedNonStable = true;
+            }
+        }
+    }
+
+    // If user has ONLY non-stable assets AND we can't price any of them from a snapshot,
+    // keep last known cached value (do not overwrite to 0).
+    if (!$hasStable && $hasNonStable && !$pricedNonStable) {
+        return;
+    }
+
+    $pdo->prepare('UPDATE users SET last_balance_usd = ?, last_balance_usd_updated_at = NOW() WHERE id = ?')
+        ->execute([number_format($total, 2, '.', ''), $userId]);
+}
+
+/**
+ * Efficiently bump cached USD balance by a known USD delta (e.g. USDT payout).
+ */
+function bump_user_last_balance_usd(PDO $pdo, int $userId, float $deltaUsd): void {
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
+        if (!$chk || $chk->rowCount() === 0) return;
+    } catch (Throwable $e) {
+        return;
+    }
+    $pdo->prepare('UPDATE users SET last_balance_usd = GREATEST(0, COALESCE(last_balance_usd, 0) + ?), last_balance_usd_updated_at = NOW() WHERE id = ?')
+        ->execute([number_format($deltaUsd, 2, '.', ''), $userId]);
 }
 
 /**

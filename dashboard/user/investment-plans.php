@@ -10,6 +10,17 @@ $walletBalances = [];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
+
+    // Prefer cached USD balance from users table (stable, consistent display)
+    try {
+        $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
+        $hasCachedUsd = $bc && $bc->rowCount() > 0;
+        if ($hasCachedUsd) {
+            $s = $pdo->prepare('SELECT last_balance_usd FROM users WHERE id = ?');
+            $s->execute([(int)$userId]);
+            $userBalance = (float) ($s->fetchColumn() ?? 0);
+        }
+    } catch (Throwable $e) {}
     
     // Fetch user wallet balances (per currency)
     $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
@@ -18,18 +29,17 @@ try {
         $amt = (float)$row['amount'];
         if ($amt <= 0) continue;
         $currency = strtoupper($row['currency']);
-        $usdVal = $amt;
-        if (in_array($currency, ['USDT','USDC','USD','BUSD'], true)) $usdVal = $amt;
-        elseif ($currency === 'BTC') $usdVal = $amt * 65000;
-        elseif ($currency === 'ETH') $usdVal = $amt * 3500;
-        elseif ($currency === 'SOL') $usdVal = $amt * 100;
-        elseif ($currency === 'BNB') $usdVal = $amt * 582;
-        elseif ($currency === 'XRP') $usdVal = $amt * 0.55;
-        else $usdVal = $amt;
+        // Subscriptions are funded in stable settlement currencies only.
+        if (!in_array($currency, ['USDT','USDC','USD','BUSD','DAI'], true)) {
+            continue;
+        }
+        // No placeholder pricing: only stable assets have deterministic USD value.
+        $usdVal = in_array($currency, ['USDT','USDC','USD','BUSD','DAI'], true) ? $amt : null;
         $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => $usdVal];
-        $userBalance += $usdVal;
     }
-    usort($walletBalances, function($a, $b) { return ($b['usd_value'] <=> $a['usd_value']); });
+    usort($walletBalances, function($a, $b) {
+        return ((float)($b['usd_value'] ?? 0) <=> (float)($a['usd_value'] ?? 0));
+    });
     
     // Fetch enabled plans
     $stmt = $pdo->query('SELECT id, name, slug, description, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
@@ -183,7 +193,7 @@ Subscribe Now
 <select id="subscribe-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" <?php echo empty($walletBalances) ? 'disabled' : 'required'; ?>>
 <option value="">Select currency</option>
 <?php foreach ($walletBalances as $b): ?>
-<option value="<?php echo htmlspecialchars($b['currency']); ?>" data-amount="<?php echo $b['amount']; ?>" data-usd="<?php echo $b['usd_value']; ?>"><?php echo htmlspecialchars($b['currency']); ?> — <?php echo number_format($b['amount'], 4); ?> (≈ $<?php echo number_format($b['usd_value'], 2); ?>)</option>
+<option value="<?php echo htmlspecialchars($b['currency']); ?>" data-amount="<?php echo $b['amount']; ?>" data-usd="<?php echo $b['usd_value'] === null ? '' : $b['usd_value']; ?>"><?php echo htmlspecialchars($b['currency']); ?> — <?php echo number_format($b['amount'], 4); ?> (≈ <?php echo $b['usd_value'] === null ? '—' : '$' . number_format((float)$b['usd_value'], 2); ?>)</option>
 <?php endforeach; ?>
 </select>
 <?php if (empty($walletBalances)): ?><p class="text-xs text-amber-600 mt-1">Deposit funds to your wallet first.</p><?php endif; ?>
@@ -192,7 +202,7 @@ Subscribe Now
 <div class="mb-4">
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Investment Amount (USD)</label>
 <input type="number" id="subscribe-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" required/>
-<p class="text-xs text-slate-500 mt-1">Total Balance: $<span id="available-balance"><?php echo number_format($userBalance, 2); ?></span></p>
+<p class="text-xs text-slate-500 mt-1">Cached USD Balance: $<span id="available-balance"><?php echo number_format($userBalance, 2); ?></span></p>
 <p class="text-xs text-slate-500 mt-1">Range: $<span id="plan-min"></span> - <span id="plan-max"></span></p>
 </div>
 <div id="subscribe-error" class="text-sm text-red-500 hidden mb-4"></div>
@@ -282,7 +292,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!opt || !opt.value) { selectedBalanceEl.textContent = '—'; return; }
         var amt = parseFloat(opt.getAttribute('data-amount')) || 0;
         var curr = opt.value;
-        selectedBalanceEl.textContent = amt.toFixed(8) + ' ' + curr + ' (≈ $' + (parseFloat(opt.getAttribute('data-usd')) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ')';
+        var usdAttr = opt.getAttribute('data-usd');
+        var usdNum = usdAttr !== null && usdAttr !== '' ? (parseFloat(usdAttr) || 0) : null;
+        selectedBalanceEl.textContent = amt.toFixed(8) + ' ' + curr + ' (≈ ' + (usdNum === null ? '—' : ('$' + usdNum.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}))) + ')';
     }
     if (currencySelect) currencySelect.addEventListener('change', updateSelectedBalance);
     
@@ -339,10 +351,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Don't block the user with client-side FX assumptions (backend validates precisely).
+        // If stable USD-equivalent is available, we can still provide a gentle guardrail.
         var selOpt = currencySelect && currencySelect.options[currencySelect.selectedIndex];
-        var coinUsdValue = selOpt ? parseFloat(selOpt.getAttribute('data-usd')) || 0 : availableBalance;
-        if (amount > coinUsdValue) {
-            errorEl.textContent = 'Insufficient balance in selected currency. Available: $' + coinUsdValue.toLocaleString();
+        var usdAttr = selOpt ? selOpt.getAttribute('data-usd') : '';
+        var coinUsdValue = (usdAttr !== null && usdAttr !== '') ? (parseFloat(usdAttr) || 0) : null;
+        if (coinUsdValue !== null && coinUsdValue > 0 && amount > coinUsdValue) {
+            errorEl.textContent = 'Insufficient balance in selected currency.';
             errorEl.classList.remove('hidden');
             return;
         }

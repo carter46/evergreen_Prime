@@ -55,6 +55,36 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- Cache user last-known USD balance (for stable admin display without live CoinGecko)
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'last_balance_usd');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE users ADD COLUMN last_balance_usd DECIMAL(18,2) NOT NULL DEFAULT 0 AFTER referral_code',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'last_balance_usd_updated_at');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE users ADD COLUMN last_balance_usd_updated_at DATETIME NULL AFTER last_balance_usd',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- One-time backfill: initialize cached USD balance from stable currencies only (no external pricing)
+UPDATE users u
+SET
+  u.last_balance_usd = (
+    SELECT COALESCE(SUM(wb.amount), 0)
+    FROM wallet_balances wb
+    WHERE wb.user_id = u.id AND UPPER(wb.currency) IN ('USD','USDT','USDC','BUSD','DAI')
+  ),
+  u.last_balance_usd_updated_at = COALESCE(u.last_balance_usd_updated_at, NOW())
+WHERE u.role = 'user' AND (u.last_balance_usd_updated_at IS NULL);
+
 -- Create coins table if not exists
 CREATE TABLE IF NOT EXISTS coins (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

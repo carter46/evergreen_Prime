@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../includes/helpers.php';
 $currentPage = 'dashboard';
 $siteName = get_site_name();
 $userBalance = 0;
+$userBalanceUpdatedAt = null;
 $btcAmount = 0;
 $walletBalances = [];
 $highestCoin = 'BTC';
@@ -25,26 +26,45 @@ $days = match($period) {
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
+
+    // Prefer cached USD balance from users table (stable, consistent display)
+    $hasCachedUsd = false;
+    try {
+        $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
+        $hasCachedUsd = $bc && $bc->rowCount() > 0;
+    } catch (Throwable $e) {}
+    if ($hasCachedUsd) {
+        $s = $pdo->prepare('SELECT last_balance_usd, last_balance_usd_updated_at FROM users WHERE id = ?');
+        $s->execute([(int)$userId]);
+        $rr = $s->fetch(PDO::FETCH_ASSOC);
+        if ($rr) {
+            $userBalance = (float) ($rr['last_balance_usd'] ?? 0);
+            $userBalanceUpdatedAt = $rr['last_balance_usd_updated_at'] ?? null;
+        }
+    }
     $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png','USDC'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','BUSD'=>'https://assets.coingecko.com/coins/images/9576/large/BUSD.png','XRP'=>'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png','SOL'=>'https://assets.coingecko.com/coins/images/4128/large/solana.png','BNB'=>'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png','USD'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png'];
     $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
     $stmt->execute([$userId]);
+    $stableTotalUsd = 0.0;
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $amt = (float)$row['amount'];
         $currency = strtoupper($row['currency']);
-        $usdVal = 0;
-        if (in_array($currency, ['USDT','USDC','USD','BUSD'], true)) { $usdVal = $amt; }
-        elseif ($currency === 'BTC') { $usdVal = $amt * 65000; $btcAmount = $amt; }
-        elseif ($currency === 'ETH') { $usdVal = $amt * 3500; }
-        elseif ($currency === 'XRP') { $usdVal = $amt * 0.55; }
-        elseif ($currency === 'SOL') { $usdVal = $amt * 100; }
-        elseif ($currency === 'BNB') { $usdVal = $amt * 582; }
-        else { $usdVal = $amt; }
-        $userBalance += $usdVal;
+        // No placeholder pricing: only stable assets have deterministic USD value.
+        $usdVal = in_array($currency, ['USDT','USDC','USD','BUSD','DAI'], true) ? $amt : null;
+        if ($usdVal !== null) {
+            $stableTotalUsd += $usdVal;
+        }
         $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => $usdVal];
     }
-    usort($walletBalances, function($a, $b) { return ($b['usd_value'] <=> $a['usd_value']); });
-    $topCoins = array_slice(array_filter($walletBalances, function($b) { return $b['usd_value'] > 0; }), 0, 3);
-    $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return $b['usd_value'] > 0; })) - 3);
+    // If cached column doesn't exist yet, fall back to stable-only total.
+    if (!$userBalance && $stableTotalUsd > 0) {
+        $userBalance = $stableTotalUsd;
+    }
+    usort($walletBalances, function($a, $b) {
+        return ((float)($b['usd_value'] ?? 0) <=> (float)($a['usd_value'] ?? 0));
+    });
+    $topCoins = array_slice(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; }), 0, 3);
+    $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; })) - 3);
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
     $r->execute([$userId]); $totalProfit = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
@@ -132,7 +152,7 @@ try {
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
 <div>
-<p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
+<p class="text-slate-400 text-sm font-medium mb-1">USD Balance (cached)</p>
 <h1 class="text-5xl font-bold tracking-tight">$<?php echo number_format($userBalance, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
 <?php

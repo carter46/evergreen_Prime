@@ -27,21 +27,25 @@ try {
 
     $hasAvatar = false;
     $hasKyc = false;
+    $hasCachedUsd = false;
     try {
         $ac = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
         $hasAvatar = $ac && $ac->rowCount() > 0;
         $kc = $pdo->query("SHOW COLUMNS FROM users LIKE 'kyc_status'");
         $hasKyc = $kc && $kc->rowCount() > 0;
+        $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
+        $hasCachedUsd = $bc && $bc->rowCount() > 0;
     } catch (Throwable $e) {}
     $avatarCol = $hasAvatar ? ', u.avatar_url' : '';
     $kycCol = $hasKyc ? ', u.kyc_status' : '';
+    $balCol = $hasCachedUsd ? ', u.last_balance_usd, u.last_balance_usd_updated_at' : '';
 
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM users u WHERE {$whereClause}");
     $countStmt->execute($params);
     $total = (int) $countStmt->fetchColumn();
     $offset = ($page - 1) * $perPage;
 
-    $sql = "SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol}{$kycCol},
+    $sql = "SELECT u.id, u.email, u.name, u.active, u.email_verified, u.created_at, u.updated_at{$avatarCol}{$kycCol}{$balCol},
             (SELECT COUNT(*) FROM user_investments WHERE user_id = u.id AND status = 'active') AS active_plans_count
             FROM users u WHERE {$whereClause} ORDER BY u.created_at DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
     $stmt = $pdo->prepare($sql);
@@ -55,7 +59,6 @@ try {
         } else {
             $kyc = $row['email_verified'] ? 'verified' : 'pending';
         }
-        $userIds[] = (int)$row['id'];
         $users[] = [
             'id' => (int)$row['id'],
             'email' => $row['email'],
@@ -63,28 +66,13 @@ try {
             'active' => (bool)$row['active'],
             'created_at' => $row['created_at'],
             'avatar_url' => $row['avatar_url'] ?? null,
-            'total_balance_usd' => 0.0,
+            'total_balance_usd' => $hasCachedUsd ? (float)($row['last_balance_usd'] ?? 0) : 0.0,
             'active_plans_count' => (int)$row['active_plans_count'],
             'kyc_status' => $kyc,
         ];
     }
-    // Fetch all wallet balances for these users and convert to USD via CoinGecko
-    if (!empty($userIds)) {
-        $placeholders = implode(',', array_fill(0, count($userIds), '?'));
-        $wbStmt = $pdo->prepare("SELECT user_id, currency, amount FROM wallet_balances WHERE user_id IN ($placeholders)");
-        $wbStmt->execute($userIds);
-        $balancesByUser = [];
-        while ($r = $wbStmt->fetch(PDO::FETCH_ASSOC)) {
-            $uid = (int)$r['user_id'];
-            if (!isset($balancesByUser[$uid])) $balancesByUser[$uid] = [];
-            $balancesByUser[$uid][] = ['currency' => $r['currency'], 'amount' => (float)$r['amount']];
-        }
-        $prices = get_coingecko_prices_usd();
-        foreach ($users as &$u) {
-            $u['total_balance_usd'] = wallet_balances_to_usd($balancesByUser[$u['id']] ?? [], $prices);
-        }
-        unset($u);
-    }
+    // NOTE: We intentionally do NOT call CoinGecko here.
+    // Admin UI uses users.last_balance_usd (cached snapshot) for stable display.
     $pagination = ['page' => $page, 'per_page' => $perPage, 'total' => $total, 'total_pages' => $total > 0 ? (int)ceil($total / $perPage) : 1];
 } catch (Throwable $e) {}
 ?>
@@ -163,7 +151,7 @@ try {
 <input class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
 </th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Name</th>
-<th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Total Balance</th>
+<th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Cached USD Balance</th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">Active Plans</th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400">KYC Status</th>
 <th class="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-400 text-right">Actions</th>
@@ -250,7 +238,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <span class="material-icons text-slate-400 user-mobile-chevron transition-transform shrink-0">expand_more</span>
 </button>
 <div class="user-mobile-expand hidden border-t border-slate-100 dark:border-zinc-800 px-4 py-4 space-y-3">
-<div class="flex justify-between items-center"><span class="text-xs text-slate-500">Total Balance</span><span class="font-bold text-sm">$<?php echo number_format($u['total_balance_usd'], 2); ?></span></div>
+<div class="flex justify-between items-center"><span class="text-xs text-slate-500">Cached USD Balance</span><span class="font-bold text-sm">$<?php echo number_format($u['total_balance_usd'], 2); ?></span></div>
 <div class="flex justify-between items-center"><span class="text-xs text-slate-500">Active Plans</span><span class="<?php echo $u['active_plans_count'] > 0 ? 'bg-primary/20 text-primary' : 'text-slate-500'; ?> text-xs font-bold"><?php echo $u['active_plans_count']; ?> Plan<?php echo $u['active_plans_count'] !== 1 ? 's' : ''; ?></span></div>
 <button type="button" class="user-edit-btn w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-zinc-900 font-bold rounded-lg text-sm" data-user-id="<?php echo $u['id']; ?>"><span class="material-icons text-lg">edit</span>Edit User</button>
 </div>
@@ -350,7 +338,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 </form>
 <!-- User Wallet -->
 <div>
-  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">User Wallet</h4>
+  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Cached USD Balance</h4>
   <div id="drawer-total-balance" class="text-2xl font-bold text-emerald-600 mb-2">$0.00</div>
   <div id="drawer-wallet-breakdown" class="text-sm text-slate-600 dark:text-slate-400 space-y-0.5 mb-4"></div>
   <button type="button" id="drawer-adjust-balance-btn" class="text-sm text-black font-medium hover:underline">Adjust balance</button>
@@ -472,7 +460,7 @@ function loadUser(id) {
     document.getElementById('drawer-edit-password').value = '';
 
     var totalBal = document.getElementById('drawer-total-balance');
-    if (totalBal) totalBal.textContent = '$' + (parseFloat(u.total_balance_usd || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' USD';
+    if (totalBal) totalBal.textContent = '$' + (parseFloat(u.total_balance_usd || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' USD (cached)';
     var breakdownEl = document.getElementById('drawer-wallet-breakdown');
     if (breakdownEl) {
       var wb = (u.wallet_balances || []).filter(function(b){ return (parseFloat(b.amount) || 0) > 0; });

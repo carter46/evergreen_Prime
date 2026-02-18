@@ -111,6 +111,12 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
                 ->execute([$userId, $currency, $toCreditStr]);
             $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
                 ->execute([$userId, 'payout', $toCreditStr, $currency, 'completed', 'earnings_inv_' . $invId]);
+            // Keep cached USD balance stable without live pricing (USDT is 1:1)
+            if ($currency === 'USDT') {
+                bump_user_last_balance_usd($pdo, $userId, (float) $toCredit);
+            } else {
+                refresh_user_last_balance_usd($pdo, $userId);
+            }
             if ($matured && $newLastAt >= $endDate) {
                 $pdo->prepare('UPDATE user_investments SET last_earnings_at = ?, status = ? WHERE id = ?')
                     ->execute([$newLastAt->format('Y-m-d H:i:s'), 'completed', $invId]);

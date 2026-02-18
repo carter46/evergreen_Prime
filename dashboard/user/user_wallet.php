@@ -5,6 +5,8 @@ $currentPage = 'wallet';
 $siteName = get_site_name();
 $walletBalances = [];
 $walletTotalUsd = 0;
+$walletTotalUsdUpdatedAt = null;
+$stableTotalUsd = 0.0;
 $walletTransactions = [];
 $btcAmount = 0;
 $highestCoin = 'BTC';
@@ -17,25 +19,48 @@ $coinLogosMap = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitco
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
+
+    // Prefer cached USD balance from users table (stable, consistent display)
+    $hasCachedUsd = false;
+    try {
+        $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
+        $hasCachedUsd = $bc && $bc->rowCount() > 0;
+    } catch (Throwable $e) {}
+    if ($hasCachedUsd) {
+        $s = $pdo->prepare('SELECT last_balance_usd, last_balance_usd_updated_at FROM users WHERE id = ?');
+        $s->execute([(int)$userId]);
+        $rr = $s->fetch(PDO::FETCH_ASSOC);
+        if ($rr) {
+            $walletTotalUsd = (float) ($rr['last_balance_usd'] ?? 0);
+            $walletTotalUsdUpdatedAt = $rr['last_balance_usd_updated_at'] ?? null;
+        }
+    }
+
     $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $amt = (float) $row['amount'];
         $currency = strtoupper($row['currency']);
-        $usd = $amt;
-        if (in_array($currency, ['USDT','USDC','BUSD','USD'], true)) $usd = $amt;
-        elseif ($currency === 'BTC') { $usd = $amt * 65000; $btcAmount = $amt; }
-        elseif ($currency === 'ETH') { $usd = $amt * 3500; }
-        elseif ($currency === 'XRP') { $usd = $amt * 0.55; }
-        elseif ($currency === 'SOL') { $usd = $amt * 100; }
-        elseif ($currency === 'BNB') { $usd = $amt * 582; }
-        else $usd = $amt;
-        $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => round($usd, 2)];
-        $walletTotalUsd += $usd;
+        // No placeholder pricing: only stable assets have deterministic USD value.
+        $usd = in_array($currency, ['USDT','USDC','BUSD','USD','DAI'], true) ? $amt : null;
+        $walletBalances[] = [
+            'currency' => $currency,
+            'amount' => $amt,
+            'usd_value' => $usd === null ? null : round($usd, 2),
+        ];
+        if ($usd !== null) {
+            $stableTotalUsd += $usd;
+        }
     }
-    usort($walletBalances, function($a, $b) { return ($b['usd_value'] <=> $a['usd_value']); });
-    $topCoins = array_slice(array_filter($walletBalances, function($b) { return $b['usd_value'] > 0; }), 0, 3);
-    $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return $b['usd_value'] > 0; })) - 3);
+    // If cached column doesn't exist yet, fall back to stable-only total.
+    if (!$walletTotalUsd && $stableTotalUsd > 0) {
+        $walletTotalUsd = $stableTotalUsd;
+    }
+    usort($walletBalances, function($a, $b) {
+        return ((float)($b['usd_value'] ?? 0) <=> (float)($a['usd_value'] ?? 0));
+    });
+    $topCoins = array_slice(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; }), 0, 3);
+    $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; })) - 3);
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
     $r->execute([$userId]); $totalProfit = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
@@ -103,7 +128,7 @@ $coinNames = ['BTC'=>'Bitcoin','ETH'=>'Ethereum','USDT'=>'Tether','USDC'=>'USD C
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
 <div>
-<p class="text-slate-400 text-sm font-medium mb-1">Total Estimated Balance</p>
+<p class="text-slate-400 text-sm font-medium mb-1">USD Balance (cached)</p>
 <h1 class="text-6xl font-bold tracking-tight">$<?php echo number_format($walletTotalUsd, 2); ?> <span class="text-xl font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
 <?php
@@ -194,7 +219,13 @@ foreach ($walletBalances as $b):
 </div>
 </td>
 <td class="px-3 py-3 text-right font-medium text-xs truncate"><?php echo $fmtBalance($b['amount'], $cu); ?> <?php echo $cu; ?></td>
-<td class="px-3 py-3 text-right font-bold text-xs wallet-value truncate" data-coin="<?php echo $coinId; ?>">$<?php echo number_format($b['usd_value'], 2); ?></td>
+<td class="px-3 py-3 text-right font-bold text-xs wallet-value truncate" data-coin="<?php echo $coinId; ?>">
+<?php if ($b['usd_value'] === null): ?>
+— 
+<?php else: ?>
+$<?php echo number_format((float)$b['usd_value'], 2); ?>
+<?php endif; ?>
+</td>
 <td class="px-3 py-3 text-right">
 <button class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
 </td>
@@ -438,14 +469,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ')</option>';
             }).join('');
             if (depositSelect) depositSelect.innerHTML = depositOptions;
-            // Withdraw: only show coins user has balance in
+            // Withdraw: stable settlement currencies only (no FX assumptions)
+            var stable = ['USDT','USDC','BUSD','USD','DAI'];
             var withdrawAddresses = d.addresses.filter(function(a){
-                var b = userBalances[a.symbol];
+                var sym = (a.symbol || '').toUpperCase();
+                if (stable.indexOf(sym) < 0) return false;
+                var b = userBalances[sym] || userBalances[a.symbol];
                 return b && parseFloat(b.amount) > 0;
             });
             var withdrawOptions = withdrawAddresses.length > 0
                 ? withdrawAddresses.map(function(a){
-                    return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ') — ' + (userBalances[a.symbol] ? parseFloat(userBalances[a.symbol].amount).toFixed(6) : '0') + '</option>';
+                    var sym = (a.symbol || '').toUpperCase();
+                    var b = userBalances[sym] || userBalances[a.symbol];
+                    return '<option value="' + sym + '" data-address="' + (a.address || '') + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || sym) + ' (' + sym + ') — ' + (b ? parseFloat(b.amount).toFixed(6) : '0') + '</option>';
                 }).join('')
                 : '<option value="">No funds available to withdraw</option>';
             if (withdrawSelect) {
@@ -580,12 +616,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var el = document.getElementById('withdraw-usd-value');
         if (!el) return;
         if (!currency || amount <= 0) { el.textContent = '—'; return; }
-        el.textContent = '≈ $—';
-        var coinKey = getSelectedCoinKey('withdraw-currency');
-        getUsdPricePerUnit(currency, coinKey).then(function(price){
-            if (price != null) el.textContent = '≈ $' + (amount * price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USD';
-            else el.textContent = '—';
-        });
+        // Stable settlement currencies are 1:1
+        el.textContent = '≈ $' + amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USD';
     }
 
     if (document.getElementById('deposit-amount')) {
@@ -615,48 +647,39 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         msgEl.classList.add('hidden');
-        var wdCoinKey = getSelectedCoinKey('withdraw-currency');
-        getUsdPricePerUnit(currency, wdCoinKey).then(function(price){
-            var amountUsd = price != null ? amount * price : 0;
-            if (amountUsd > 0 && amountUsd < minWithdrawLimitUsd) {
-                msgEl.textContent = 'Minimum withdrawal is $' + minWithdrawLimitUsd.toFixed(2) + ' USD. Your amount is approx. $' + amountUsd.toFixed(2) + ' USD.';
+        var maxWithdrawLimitEl = document.getElementById('withdraw-max-limit');
+        var maxWithdrawLimitUsd = parseFloat(maxWithdrawLimitEl ? maxWithdrawLimitEl.textContent : '') || 0;
+        if (amount < minWithdrawLimitUsd) {
+            msgEl.textContent = 'Minimum withdrawal is $' + minWithdrawLimitUsd.toFixed(2) + ' USD.';
+            msgEl.className = 'text-sm text-red-500';
+            msgEl.classList.remove('hidden');
+            return;
+        }
+        if (maxWithdrawLimitUsd > 0 && amount > maxWithdrawLimitUsd) {
+            msgEl.textContent = 'Maximum withdrawal is $' + maxWithdrawLimitUsd.toFixed(2) + ' USD.';
+            msgEl.className = 'text-sm text-red-500';
+            msgEl.classList.remove('hidden');
+            return;
+        }
+        fetch('/api/user/withdraw.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currency: currency, amount: amount, address: address })
+        }).then(function(r){ return r.json(); }).then(function(res){
+            if (res.success) {
+                msgEl.textContent = res.data.message || 'Withdrawal request submitted';
+                msgEl.className = 'text-sm text-emerald-500';
+                msgEl.classList.remove('hidden');
+                setTimeout(function(){ closeDrawer(withdrawDrawer); window.location.reload(); }, 2000);
+            } else {
+                msgEl.textContent = res.error || 'Failed';
                 msgEl.className = 'text-sm text-red-500';
                 msgEl.classList.remove('hidden');
-                return;
             }
-            fetch('/api/user/withdraw.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ currency: currency, amount: amount, address: address })
-            }).then(function(r){ return r.json(); }).then(function(res){
-                if (res.success) {
-                    msgEl.textContent = res.data.message || 'Withdrawal request submitted';
-                    msgEl.className = 'text-sm text-emerald-500';
-                    msgEl.classList.remove('hidden');
-                    setTimeout(function(){ closeDrawer(withdrawDrawer); window.location.reload(); }, 2000);
-                } else {
-                    msgEl.textContent = res.error || 'Failed';
-                    msgEl.className = 'text-sm text-red-500';
-                    msgEl.classList.remove('hidden');
-                }
-            }).catch(function(){ msgEl.textContent = 'Request failed'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); });
         }).catch(function(){
-            fetch('/api/user/withdraw.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ currency: currency, amount: amount, address: address })
-            }).then(function(r){ return r.json(); }).then(function(res){
-                if (res.success) {
-                    msgEl.textContent = res.data.message || 'Withdrawal request submitted';
-                    msgEl.className = 'text-sm text-emerald-500';
-                    msgEl.classList.remove('hidden');
-                    setTimeout(function(){ closeDrawer(withdrawDrawer); window.location.reload(); }, 2000);
-                } else {
-                    msgEl.textContent = res.error || 'Failed';
-                    msgEl.className = 'text-sm text-red-500';
-                    msgEl.classList.remove('hidden');
-                }
-            }).catch(function(){ msgEl.textContent = 'Request failed'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); });
+            msgEl.textContent = 'Request failed';
+            msgEl.className = 'text-sm text-red-500';
+            msgEl.classList.remove('hidden');
         });
     });
 
