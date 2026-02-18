@@ -172,21 +172,18 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 </div>
 </div>
 </div>
-<!-- Security Checklist (35%) -->
-<div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex gap-4 self-stretch">
-<div class="w-10 h-10 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center">
-<span class="material-icons text-primary">gpp_maybe</span>
-</div>
-<div>
-<h4 class="text-sm font-bold text-slate-900 dark:text-white">Security Checklist</h4>
-<p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                            Ensure 2FA is active before withdrawing. Double-check the recipient address; crypto transfers are irreversible.
-                        </p>
+<!-- Coming Soon (35%) -->
+<div class="rounded-xl overflow-hidden relative group w-full">
+<div class="bg-slate-900 p-6 h-full">
+<h5 class="text-primary text-xs font-bold uppercase mb-1">Coming Soon</h5>
+<h4 class="text-white font-bold mb-4">Earn up to 12% APY with Bloombit Staking</h4>
+<img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" src="/uploads/images/crypto-assets.jpg" onerror="this.src='/uploads/images/crypto-assets.png';this.onerror=null"/>
+<button class="w-full mt-4 py-2 border border-white/20 text-white text-xs font-bold rounded hover:bg-white/10 transition-colors">Join Waitlist</button>
 </div>
 </div>
 </div>
 
-<!-- Row 2: Your Assets (65%) | Coming Soon (35%) -->
+<!-- Row 2: Your Assets (65%) | Security Checklist (35%) -->
 <div class="col-span-12 grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-6">
 <!-- Your Assets -->
 <div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm min-w-0">
@@ -255,13 +252,16 @@ $<?php echo number_format((float)$b['usd_value'], 2); ?>
 </table>
 </div>
 </div>
-<!-- Coming Soon -->
-<div class="rounded-xl overflow-hidden relative group w-full">
-<div class="bg-slate-900 p-6">
-<h5 class="text-primary text-xs font-bold uppercase mb-1">Coming Soon</h5>
-<h4 class="text-white font-bold mb-4">Earn up to 12% APY with Bloombit Staking</h4>
-<img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" src="/uploads/images/crypto-assets.jpg" onerror="this.src='/uploads/images/crypto-assets.png';this.onerror=null"/>
-<button class="w-full mt-4 py-2 border border-white/20 text-white text-xs font-bold rounded hover:bg-white/10 transition-colors">Join Waitlist</button>
+<!-- Security Checklist (35%) -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex gap-4 self-stretch">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center">
+<span class="material-icons text-primary">gpp_maybe</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white">Security Checklist</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                            Ensure 2FA is active before withdrawing. Double-check the recipient address; crypto transfers are irreversible.
+                        </p>
 </div>
 </div>
 </div>
