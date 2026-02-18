@@ -76,14 +76,14 @@ try {
 <!-- Composition Area -->
 <div class="col-span-12 xl:col-span-8 space-y-6">
 <!-- Tabs -->
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-<div class="flex border-b border-slate-100">
-<button class="flex-1 px-6 py-4 flex items-center justify-center gap-2 font-semibold text-slate-900 border-b-2 border-primary">
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
+<div class="flex border-b border-slate-100 dark:border-zinc-700">
+<button class="flex-1 px-6 py-4 flex items-center justify-center gap-2 font-semibold text-slate-900 dark:text-white border-b-2 border-primary bg-transparent">
 <span class="material-icons-outlined text-xl">email</span> Email Broadcast
-                        </button>
-<button class="flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium text-slate-400 hover:text-slate-600 transition-colors">
+</button>
+<button class="flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors bg-transparent border-b-2 border-transparent">
 <span class="material-icons-outlined text-xl">notifications</span> In-App Notifications
-                        </button>
+</button>
 </div>
 <form id="broadcast-form" class="p-6 space-y-6">
 <!-- Message Metadata -->
@@ -119,10 +119,10 @@ try {
 </div>
 </div>
 <!-- Targeting Logic -->
-<div class="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-<h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-4">
+<div class="p-4 bg-slate-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-slate-300 dark:border-zinc-600">
+<h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
 <span class="material-icons-outlined text-base">filter_alt</span> Recipient Targeting
-                            </h3>
+</h3>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 <div class="space-y-2">
 <label class="text-[11px] font-bold text-slate-500 uppercase">User Segment</label>
@@ -157,35 +157,37 @@ try {
 </form>
 </div>
 <!-- Scheduling Section -->
-<div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-<h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-6">
+<div class="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800">
+<h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
 <span class="material-icons-outlined text-base">schedule</span> Schedule Broadcast
-                    </h3>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-<div class="flex gap-4">
+</h3>
+<div class="space-y-4">
+<div class="flex flex-col sm:flex-row gap-4">
 <label class="flex-1 cursor-pointer">
-<input checked="" class="hidden peer" name="send_time" type="radio"/>
-<div class="p-4 rounded-xl border-2 border-slate-100 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
-<p class="font-bold text-sm">Send Immediately</p>
-<p class="text-[10px] text-slate-400">Deploy as soon as possible</p>
+<input checked class="hidden peer" name="send_time" type="radio" value="immediately"/>
+<div class="p-4 rounded-xl border-2 border-slate-200 dark:border-zinc-700 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
+<p class="font-bold text-sm text-slate-900 dark:text-white">Send Immediately</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Deploy as soon as possible</p>
 </div>
 </label>
 <label class="flex-1 cursor-pointer">
-<input class="hidden peer" name="send_time" type="radio"/>
-<div class="p-4 rounded-xl border-2 border-slate-100 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
-<p class="font-bold text-sm">Schedule Later</p>
-<p class="text-[10px] text-slate-400">Pick a specific date/time</p>
+<input class="hidden peer" name="send_time" type="radio" value="schedule"/>
+<div class="p-4 rounded-xl border-2 border-slate-200 dark:border-zinc-700 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
+<p class="font-bold text-sm text-slate-900 dark:text-white">Schedule Later</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pick a specific date and time</p>
 </div>
 </label>
 </div>
-<div class="flex items-center gap-4">
+<div id="broadcast-schedule-datetime" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 opacity-50 pointer-events-none">
 <div class="flex-1 relative">
-<span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">calendar_today</span>
-<input class="w-full pl-10 bg-slate-50 border-slate-200 rounded-lg text-sm text-slate-400 cursor-not-allowed" disabled="" type="date"/>
+<label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Date</label>
+<span class="material-icons-outlined absolute left-3 top-[38px] -translate-y-1/2 text-slate-400 text-sm">calendar_today</span>
+<input id="broadcast-schedule-date" class="w-full pl-10 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-sm text-slate-700 dark:text-slate-300" type="date"/>
 </div>
 <div class="flex-1 relative">
-<span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">schedule</span>
-<input class="w-full pl-10 bg-slate-50 border-slate-200 rounded-lg text-sm text-slate-400 cursor-not-allowed" disabled="" type="time"/>
+<label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Time</label>
+<span class="material-icons-outlined absolute left-3 top-[38px] -translate-y-1/2 text-slate-400 text-sm">schedule</span>
+<input id="broadcast-schedule-time" class="w-full pl-10 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-sm text-slate-700 dark:text-slate-300" type="time"/>
 </div>
 </div>
 </div>
@@ -193,7 +195,7 @@ try {
 </div>
 <!-- Preview Sidebar -->
 <div class="col-span-12 xl:col-span-4 space-y-6">
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 sticky top-8">
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 sticky top-8">
 <div class="p-4 border-b border-slate-100 flex items-center justify-between">
 <span class="text-sm font-bold text-slate-700 uppercase tracking-tight">Real-Time Preview</span>
 <div class="flex bg-slate-100 p-1 rounded-lg">
@@ -245,7 +247,7 @@ try {
 </div>
 <!-- History Table -->
 <div class="col-span-12">
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
 <div class="p-6 border-b border-slate-100 flex items-center justify-between">
 <h3 class="text-lg font-bold text-slate-900">Broadcast History</h3>
 <div class="flex gap-2">
@@ -383,6 +385,17 @@ try {
     btn.addEventListener('click', function(){
       var ta = form.querySelector('[name="body"]');
       if (ta) ta.value += ' ' + btn.dataset.insertPlaceholder;
+    });
+  });
+
+  var scheduleWrap = document.getElementById('broadcast-schedule-datetime');
+  document.querySelectorAll('input[name="send_time"]').forEach(function(radio){
+    radio.addEventListener('change', function(){
+      if (scheduleWrap) {
+        var isSchedule = this.value === 'schedule';
+        scheduleWrap.classList.toggle('opacity-50', !isSchedule);
+        scheduleWrap.classList.toggle('pointer-events-none', !isSchedule);
+      }
     });
   });
 })();

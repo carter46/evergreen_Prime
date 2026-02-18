@@ -1,7 +1,8 @@
 <?php
 /**
  * Bloombit - Send Test Email API
- * POST /api/admin/send-test-email.php - Sends a test email to admin's email
+ * POST /api/admin/send-test-email.php - Sends a test email to a specified address
+ * Body: { "to": "email@example.com" } (optional; defaults to admin email)
  */
 
 header('Content-Type: application/json');
@@ -43,13 +44,24 @@ if (!$admin || empty($admin['email'])) {
     exit;
 }
 
+$json = json_decode(file_get_contents('php://input') ?: '{}', true) ?: [];
+$toEmail = trim((string) ($json['to'] ?? ''));
+if ($toEmail === '') {
+    $toEmail = $admin['email'];
+}
+if (!filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Invalid email address']);
+    exit;
+}
+
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
 require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
 
 try {
     $mail = require dirname(__DIR__, 2) . '/includes/mailer.php';
     $mail->clearAddresses();
-    $mail->addAddress($admin['email']);
+    $mail->addAddress($toEmail);
     $mail->Subject = 'Bloombit - Test Email (' . date('Y-m-d H:i') . ')';
     $mail->Body = renderEmailTemplate('otp.php', [
         'otp' => '123456',
@@ -59,7 +71,7 @@ try {
     $mail->AltBody = 'This is a test email from Bloombit. If you received this, your email configuration is working.';
     $mail->isHTML(true);
     $mail->send();
-    echo json_encode(['success' => true, 'data' => ['message' => 'Test email sent to ' . $admin['email']]]);
+    echo json_encode(['success' => true, 'data' => ['message' => 'Test email sent to ' . $toEmail]]);
 } catch (Exception $e) {
     $config = include dirname(__DIR__, 2) . '/config.php';
     $msg = ($config['site']['debug'] ?? false) ? $e->getMessage() : 'Failed to send test email. Check mail configuration.';

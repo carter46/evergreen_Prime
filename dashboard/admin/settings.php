@@ -109,8 +109,14 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <!-- Testing Section -->
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
 <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">science</span> Testing</h2>
-<p class="text-sm text-slate-500 dark:text-zinc-400 mb-4">Send a test email to your admin email to verify mail configuration.</p>
+<p class="text-sm text-slate-500 dark:text-zinc-400 mb-4">Send a test email to verify mail configuration. Enter an email address to receive the test.</p>
+<div class="flex flex-wrap gap-4 items-end mb-4">
+<div class="flex-1 min-w-[200px]">
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Email to receive test</label>
+<input id="settings-test-email-to" type="email" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($adminEmail); ?>" placeholder="test@example.com"/>
+</div>
 <button type="button" id="settings-send-test-email" class="px-6 py-2.5 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-700">Send Test Email</button>
+</div>
 <div id="settings-test-msg" class="text-sm mt-2 hidden"></div>
 </section>
 </div>
@@ -206,8 +212,15 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
   document.getElementById('settings-send-test-email').addEventListener('click', function(){
     var btn = this;
     var msgEl = document.getElementById('settings-test-msg');
+    var emailTo = (document.getElementById('settings-test-email-to') || {}).value.trim();
+    if (!emailTo) { showMsg(msgEl, 'Enter an email address to receive the test.', false); return; }
     btn.disabled = true;
-    fetch('/api/admin/send-test-email.php', { method: 'POST', credentials: 'same-origin' })
+    fetch('/api/admin/send-test-email.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ to: emailTo })
+    })
       .then(function(r){ return r.json(); })
       .then(function(res){
         showMsg(msgEl, res.success ? (res.data && res.data.message) : (res.error || 'Failed'), res.success);
