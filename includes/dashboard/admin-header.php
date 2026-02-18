@@ -1,10 +1,10 @@
 <?php
 /**
  * Bloombit - Shared Admin Header (Top Bar)
- * Sticky on mobile/tablet; scrolls with content then sticks. Toggle opens sidebar.
+ * Toggle opens sidebar on mobile/tablet.
  */
 ?>
-<header class="sticky top-0 z-30 shrink-0 h-14 sm:h-16 bg-white/90 dark:bg-background-dark/95 backdrop-blur-md border-b border-primary/10 flex items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 lg:px-8">
+<header class="h-14 sm:h-16 bg-white dark:bg-background-dark border-b border-primary/10 flex items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 lg:px-8">
     <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
         <button type="button" id="admin-sidebar-toggle" class="lg:hidden flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl hover:bg-primary/10 transition-colors min-h-[44px] min-w-[44px]" aria-label="Toggle menu">
             <span class="material-icons text-2xl">menu</span>
