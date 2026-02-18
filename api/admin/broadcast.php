@@ -8,6 +8,7 @@
  * - body (required)
  * - recipients: all|active_investors|kyc_verified (optional; default all)
  * - to: string (comma/space separated external emails) OR array of emails (optional)
+ * - user_ids: array of user IDs (optional; send to specific registered users)
  * - include_users: bool (optional; default true if recipients provided, otherwise false when only external recipients are supplied)
  * - test: bool (optional; send only to current admin)
  */
@@ -34,6 +35,7 @@ $recipients = trim($input['recipients'] ?? 'all');
 $testOnly = !empty($input['test']);
 $includeUsers = array_key_exists('include_users', $input) ? (bool) $input['include_users'] : (!empty($input['recipients']));
 $toRaw = $input['to'] ?? null;
+$userIdsRaw = $input['user_ids'] ?? null;
 
 if (empty($subject) || empty($body)) {
     http_response_code(400);
@@ -85,16 +87,32 @@ if ($testOnly) {
 } else {
     $users = [];
     if ($includeUsers) {
-        if ($recipients === 'all') {
-            $stmt = $pdo->query("SELECT id, email, name FROM users WHERE role = 'user' AND active = 1");
-        } elseif ($recipients === 'active_investors') {
-            $stmt = $pdo->query("SELECT DISTINCT u.id, u.email, u.name FROM users u INNER JOIN user_investments ui ON ui.user_id = u.id AND ui.status = 'active' WHERE u.role = 'user' AND u.active = 1");
-        } elseif ($recipients === 'kyc_verified' && $hasKyc) {
-            $stmt = $pdo->query("SELECT id, email, name FROM users WHERE role = 'user' AND active = 1 AND kyc_status = 'verified'");
-        } else {
-            $stmt = $pdo->query("SELECT id, email, name FROM users WHERE role = 'user' AND active = 1");
+        $userIds = [];
+        if (is_array($userIdsRaw)) {
+            foreach ($userIdsRaw as $x) {
+                $id = (int) $x;
+                if ($id > 0) $userIds[] = $id;
+            }
         }
-        $users = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        $userIds = array_values(array_unique($userIds));
+
+        if (!empty($userIds)) {
+            $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+            $stmt = $pdo->prepare("SELECT id, email, name FROM users WHERE role = 'user' AND active = 1 AND id IN ($placeholders)");
+            $stmt->execute($userIds);
+            $users = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        } else {
+            if ($recipients === 'all') {
+                $stmt = $pdo->query("SELECT id, email, name FROM users WHERE role = 'user' AND active = 1");
+            } elseif ($recipients === 'active_investors') {
+                $stmt = $pdo->query("SELECT DISTINCT u.id, u.email, u.name FROM users u INNER JOIN user_investments ui ON ui.user_id = u.id AND ui.status = 'active' WHERE u.role = 'user' AND u.active = 1");
+            } elseif ($recipients === 'kyc_verified' && $hasKyc) {
+                $stmt = $pdo->query("SELECT id, email, name FROM users WHERE role = 'user' AND active = 1 AND kyc_status = 'verified'");
+            } else {
+                $stmt = $pdo->query("SELECT id, email, name FROM users WHERE role = 'user' AND active = 1");
+            }
+            $users = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        }
     }
 }
 
@@ -156,7 +174,9 @@ if (!$testOnly && $sent > 0) {
         $chk = $pdo->query("SHOW TABLES LIKE 'broadcast_campaigns'");
         if ($chk && $chk->rowCount() > 0) {
             $filter = 'manual';
-            if ($includeUsers) $filter = $recipients;
+            if ($includeUsers) {
+                $filter = (!empty($userIdsRaw) && is_array($userIdsRaw) && count($userIdsRaw) > 0) ? 'selected_users' : $recipients;
+            }
             if (!empty($externalEmails) && $includeUsers) $filter = $recipients . '+manual';
             $pdo->prepare('INSERT INTO broadcast_campaigns (subject, recipients_filter, total_recipients, status) VALUES (?, ?, ?, ?)')
                 ->execute([$subject, $filter, $sent, 'sent']);

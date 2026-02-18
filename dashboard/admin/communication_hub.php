@@ -5,6 +5,7 @@ $siteName = get_site_name();
 $currentPage = 'communication';
 $inbox = [];
 $sentMail = [];
+$usersList = [];
 $selectedMail = null;
 $selectedBox = '';
 try {
@@ -24,6 +25,9 @@ try {
             $selectedMail = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
         }
     }
+    // Registered users for "Single user" picker
+    $stmt = $pdo->query("SELECT id, name, email FROM users WHERE role = 'user' AND active = 1 ORDER BY id DESC LIMIT 500");
+    $usersList = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 } catch (Throwable $e) {}
 ?>
 <!DOCTYPE html>
@@ -122,16 +126,7 @@ try {
 </nav>
 <h1 class="text-2xl font-bold text-slate-900">Broadcast &amp; Communication Hub</h1>
 </div>
-<div class="flex items-center gap-3">
-<button type="button" id="mail-sync" class="px-4 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 rounded-lg flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
-<span class="material-icons-outlined text-base">sync</span> Sync Mailbox
-</button>
-<button type="submit" form="broadcast-form" class="px-6 py-2 bg-primary text-slate-900 font-bold rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity">
-<span class="material-icons-outlined text-base">send</span> Send Broadcast
-                </button>
-</div>
 </header>
-<div id="mail-sync-msg" class="text-sm hidden mb-4"></div>
 <div class="grid grid-cols-12 gap-8">
 <!-- Composition Area -->
 <div class="col-span-12 space-y-6">
@@ -141,23 +136,35 @@ try {
 <h2 class="text-base font-bold text-slate-900 dark:text-white">Compose Email</h2>
 </div>
 <form id="broadcast-form" class="p-6 space-y-6">
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-<div class="lg:col-span-2 space-y-2">
-<label class="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">To (External Emails)</label>
-<input name="to" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" placeholder="e.g. user@gmail.com, partner@company.com" type="text"/>
-<p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Comma or space separated. Leave empty if sending only to registered users.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="space-y-2">
+    <label class="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Audience</label>
+    <select id="compose-audience" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary">
+      <option value="all">All Users</option>
+      <option value="single">Single User</option>
+      <option value="external">External Email(s)</option>
+    </select>
+    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Choose who should receive this email.</p>
+  </div>
+
+  <div id="compose-user-wrap" class="space-y-2 hidden">
+    <label class="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Select User</label>
+    <select id="compose-user-id" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary">
+      <option value="">Choose a user…</option>
+      <?php foreach ($usersList as $u): ?>
+        <option value="<?php echo (int)$u['id']; ?>"><?php echo htmlspecialchars(($u['name'] ?? 'User') . ' — ' . ($u['email'] ?? '')); ?></option>
+      <?php endforeach; ?>
+    </select>
+    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">This will send only to the selected user.</p>
+  </div>
+
+  <div id="compose-external-wrap" class="space-y-2 hidden md:col-span-2">
+    <label class="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">External Emails</label>
+    <input id="compose-external-to" type="text" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" placeholder="e.g. user@gmail.com, partner@company.com"/>
+    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Comma or space separated.</p>
+  </div>
 </div>
-<div class="space-y-2">
-<label class="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Send To Registered Users</label>
-<select name="recipients" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary">
-  <option value="">No (external only)</option>
-  <option value="all">All Users</option>
-  <option value="active_investors">Active Investors</option>
-  <option value="kyc_verified">KYC Verified</option>
-</select>
-<p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Choose a segment to include users.</p>
-</div>
-</div>
+
 <div class="space-y-2">
 <label class="text-sm font-semibold text-slate-600 uppercase tracking-wider">Subject</label>
 <input name="subject" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" placeholder="Subject line" type="text" required/>
@@ -174,20 +181,21 @@ try {
 <textarea name="body" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary p-4 text-slate-700 dark:text-slate-200 leading-relaxed" placeholder="Write your message here. Use placeholders for dynamic content..." rows="10" required></textarea>
 </div>
 <div id="broadcast-message" class="text-sm hidden"></div>
+<div id="mail-sync-msg" class="text-sm hidden"></div>
 <div class="flex flex-col sm:flex-row gap-3">
-<button type="button" id="broadcast-send-test" class="sm:w-auto px-6 py-2 bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 font-bold rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-700 flex items-center justify-center gap-2">
-<span class="material-icons-outlined text-base">send_to_mobile</span> Send Test to My Email
-</button>
-<button type="submit" class="sm:w-auto px-6 py-2 bg-primary text-slate-900 font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-<span class="material-icons-outlined text-base">send</span> Send Broadcast
-</button>
+  <button type="button" id="mail-sync" class="sm:w-auto px-6 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+    <span class="material-icons-outlined text-base">sync</span> Sync Mailbox
+  </button>
+  <button type="submit" class="sm:w-auto px-6 py-2 bg-primary text-slate-900 font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+    <span class="material-icons-outlined text-base">send</span> Send Email
+  </button>
 </div>
 </form>
 </div>
 </div>
 
 <!-- Mailbox -->
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+<div class="col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-6">
   <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
     <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between">
       <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-icons-outlined text-base">inbox</span> Inbox (Contact Form)</h3>
@@ -258,9 +266,13 @@ try {
 (function(){
   var form = document.getElementById('broadcast-form');
   var msgEl = document.getElementById('broadcast-message');
-  var testBtn = document.getElementById('broadcast-send-test');
   var syncBtn = document.getElementById('mail-sync');
   var syncMsg = document.getElementById('mail-sync-msg');
+  var audienceSel = document.getElementById('compose-audience');
+  var userWrap = document.getElementById('compose-user-wrap');
+  var userSel = document.getElementById('compose-user-id');
+  var extWrap = document.getElementById('compose-external-wrap');
+  var extTo = document.getElementById('compose-external-to');
 
   function showInline(el, text, ok){
     if (!el) return;
@@ -296,18 +308,29 @@ try {
   function doBroadcast(isTest){
     var subj = form.querySelector('[name="subject"]').value.trim();
     var body = form.querySelector('[name="body"]').value.trim();
-    var to = (form.querySelector('[name="to"]') || {}).value || '';
-    var recSel = form.querySelector('[name="recipients"]');
-    var rec = recSel ? (recSel.value || '') : '';
+    var audience = audienceSel ? audienceSel.value : 'all';
+    var selectedUserId = userSel ? (userSel.value || '') : '';
+    var to = extTo ? (extTo.value || '') : '';
     if (!subj || !body) { if (msgEl) { msgEl.textContent = 'Subject and body required.'; msgEl.className = 'text-sm text-red-600'; msgEl.classList.remove('hidden'); } return; }
-    if (!isTest && !(to && to.trim()) && !rec) { if (msgEl) { msgEl.textContent = 'Add at least one recipient (external emails or a user segment).'; msgEl.className = 'text-sm text-red-600'; msgEl.classList.remove('hidden'); } return; }
+    if (!isTest) {
+      if (audience === 'single' && !selectedUserId) { if (msgEl) { msgEl.textContent = 'Select a user.'; msgEl.className = 'text-sm text-red-600'; msgEl.classList.remove('hidden'); } return; }
+      if (audience === 'external' && !(to && to.trim())) { if (msgEl) { msgEl.textContent = 'Enter at least one external email.'; msgEl.className = 'text-sm text-red-600'; msgEl.classList.remove('hidden'); } return; }
+    }
     if (msgEl) msgEl.classList.add('hidden');
     var btn = form.querySelector('button[type="submit"]');
     if (btn) btn.disabled = true;
     var payload = { subject: subj, body: body };
-    if (to && to.trim()) payload.to = to.trim();
-    if (rec) { payload.recipients = rec; payload.include_users = true; }
-    else { payload.include_users = false; }
+    if (audience === 'all') {
+      payload.include_users = true;
+      payload.recipients = 'all';
+    } else if (audience === 'single') {
+      payload.include_users = true;
+      payload.user_ids = [parseInt(selectedUserId, 10)];
+      payload.recipients = 'all';
+    } else if (audience === 'external') {
+      payload.include_users = false;
+      payload.to = to.trim();
+    }
     if (isTest) payload.test = true;
     fetch('/api/admin/broadcast.php', {
       method: 'POST',
@@ -334,15 +357,16 @@ try {
       doBroadcast(false);
     });
   }
-  if (testBtn) {
-    testBtn.addEventListener('click', function(){
-      var subj = form.querySelector('[name="subject"]').value.trim();
-      var body = form.querySelector('[name="body"]').value.trim();
-      if (!subj || !body) { alert('Enter subject and body first.'); return; }
-      testBtn.disabled = true;
-      doBroadcast(true);
-      setTimeout(function(){ testBtn.disabled = false; }, 2000);
-    });
+  function refreshAudienceUI(){
+    var a = audienceSel ? audienceSel.value : 'all';
+    if (userWrap) userWrap.classList.toggle('hidden', a !== 'single');
+    if (extWrap) extWrap.classList.toggle('hidden', a !== 'external');
+    if (a !== 'external' && extTo) extTo.value = '';
+    if (a !== 'single' && userSel) userSel.value = '';
+  }
+  if (audienceSel) {
+    audienceSel.addEventListener('change', refreshAudienceUI);
+    refreshAudienceUI();
   }
 
   document.querySelectorAll('button[data-insert-placeholder]').forEach(function(btn){
