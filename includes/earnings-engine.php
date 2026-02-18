@@ -37,6 +37,12 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
         return $result;
     }
 
+    $hasAmountUsd = false;
+    try {
+        $colChk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
+        $hasAmountUsd = $colChk && $colChk->rowCount() > 0;
+    } catch (Throwable $e) {}
+
     $stmt = $pdo->query("
         SELECT ui.id, ui.user_id, ui.plan_id, ui.amount, ui.start_date, ui.last_earnings_at, ui.created_at,
                ui.duration_days AS investment_duration_days,
@@ -60,8 +66,24 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
         if ($dailyRoiPct <= 0) $dailyRoiPct = $yieldMin;
         $dailyEarning = $amount * ($dailyRoiPct / 100);
 
-        $lastAt = $inv['last_earnings_at'] ? new DateTime($inv['last_earnings_at'], new DateTimeZone('UTC')) : null;
-        $startDate = new DateTime($inv['start_date'] . ' 00:00:00', new DateTimeZone('UTC'));
+        $lastAt = null;
+        if (!empty($inv['last_earnings_at']) && $inv['last_earnings_at'] !== '0000-00-00 00:00:00') {
+            try {
+                $lastAt = new DateTime($inv['last_earnings_at'], new DateTimeZone('UTC'));
+            } catch (Throwable $e) {
+                $lastAt = null;
+            }
+        }
+        if (empty($inv['start_date'])) {
+            $result['errors'][] = 'Inv ' . $invId . ': missing start_date';
+            continue;
+        }
+        try {
+            $startDate = new DateTime($inv['start_date'] . ' 00:00:00', new DateTimeZone('UTC'));
+        } catch (Throwable $e) {
+            $result['errors'][] = 'Inv ' . $invId . ': invalid start_date';
+            continue;
+        }
         $refDateTime = $lastAt ?? $startDate;
 
         // Auto-stop earnings when investment duration has ended.
@@ -83,12 +105,8 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
         $newLastAt = null;
 
         if ($manual) {
-            $daysSince = $refDateTime->diff($capNow)->days;
-            // Manual distribution should only credit what has actually accumulated since last credit.
-            if ($daysSince < 1) {
-                continue;
-            }
-            $toCredit = $dailyEarning * (float) $daysSince;
+            // Manual: no rules, no restrictions. Each run credits full daily ROI.
+            $toCredit = $dailyEarning;
             $newLastAt = clone $capNow;
         } elseif (in_array($interval, ['5min', '12h'], true)) {
             list($toCredit, $newLastAt) = compute_continuous_earnings($interval, $refDateTime, $capNow, $dailyEarning);
@@ -109,8 +127,14 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
         try {
             $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
                 ->execute([$userId, $currency, $toCreditStr]);
-            $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
-                ->execute([$userId, 'payout', $toCreditStr, $currency, 'completed', 'earnings_inv_' . $invId]);
+            $toCreditUsd = (float) $toCreditStr;
+            if ($hasAmountUsd) {
+                $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                    ->execute([$userId, 'payout', $toCreditStr, round($toCreditUsd, 2), $currency, 'completed', 'earnings_inv_' . $invId]);
+            } else {
+                $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
+                    ->execute([$userId, 'payout', $toCreditStr, $currency, 'completed', 'earnings_inv_' . $invId]);
+            }
             // Keep cached USD balance stable without live pricing (USDT is 1:1)
             if ($currency === 'USDT') {
                 bump_user_last_balance_usd($pdo, $userId, (float) $toCredit);
@@ -137,28 +161,21 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
 }
 
 /**
- * Continuous: 5min or 12h intervals from reference time.
+ * Continuous: 5min or 12h. Each trigger credits FULL daily ROI (no spreading).
+ * When cron runs every 5min (or 12h), user gets full 10% each time, not a fraction.
  * @return array [amount, new LastAt]
  */
 function compute_continuous_earnings(string $interval, DateTime $ref, DateTime $now, float $dailyEarning): array {
-    $intervalMinutes = $interval === '5min' ? 5 : (12 * 60);
-    $intervalsPerDay = $interval === '5min' ? 288 : 2;
-    $perInterval = $dailyEarning / $intervalsPerDay;
-
+    $intervalMinutes = $interval === '5min' ? 5 : (12 * 60); // 5 or 720
     $diff = $now->getTimestamp() - $ref->getTimestamp();
     if ($diff <= 0) {
         return [0.0, null];
     }
     $diffMinutes = (int) floor($diff / 60);
-    $elapsedIntervals = (int) floor($diffMinutes / $intervalMinutes);
-    if ($elapsedIntervals < 1) {
+    if ($diffMinutes < $intervalMinutes) {
         return [0.0, null];
     }
-
-    $creditable = $perInterval * $elapsedIntervals;
-    $newLastSeconds = $ref->getTimestamp() + ($elapsedIntervals * $intervalMinutes * 60);
-    $newLastAt = new DateTime('@' . $newLastSeconds, new DateTimeZone('UTC'));
-    return [$creditable, $newLastAt];
+    return [$dailyEarning, clone $now];
 }
 
 /**
