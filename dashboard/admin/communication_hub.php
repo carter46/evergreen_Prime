@@ -53,16 +53,16 @@ try {
 <main class="flex-1 overflow-y-auto min-w-0">
 <?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
 <div class="p-4 sm:p-6 lg:p-8 min-h-screen">
-<div id="mail-modal" class="fixed inset-0 bg-black/50 z-50 p-4 flex items-center justify-center hidden">
-  <div class="w-full max-w-3xl bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden">
-    <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between gap-4">
+<div id="mail-modal" class="fixed inset-0 bg-black/50 z-50 p-4 flex items-center justify-center overflow-y-auto hidden">
+  <div class="w-full max-w-3xl max-h-[90vh] my-auto flex flex-col bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden shrink-0">
+    <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between gap-4 shrink-0">
       <div class="min-w-0">
         <p id="mail-modal-label" class="text-xs text-slate-500 dark:text-slate-400"></p>
         <h3 id="mail-modal-subject" class="text-lg font-bold text-slate-900 dark:text-white truncate"></h3>
       </div>
       <button type="button" id="mail-modal-close" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800">Close</button>
     </div>
-    <div id="mail-modal-body" class="p-4 space-y-3">
+    <div id="mail-modal-body" class="p-4 space-y-3 overflow-y-auto min-h-0 flex-1">
       <div class="text-center py-8 text-slate-500"><span class="material-icons-outlined animate-spin">sync</span> Loading...</div>
     </div>
   </div>
