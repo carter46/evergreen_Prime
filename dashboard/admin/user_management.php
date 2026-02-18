@@ -324,6 +324,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <h3 id="drawer-name" class="text-xl font-bold"></h3>
 <p id="drawer-uid" class="text-slate-500 text-sm"></p>
 <p id="drawer-registration" class="text-[10px] text-slate-400 mt-0.5"></p>
+<p id="drawer-email-verified" class="text-[10px] text-slate-400 mt-0.5"></p>
 <div class="flex items-center gap-2 mt-1">
 <span id="drawer-status" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-widest"></span>
 <span id="drawer-last-active" class="text-[10px] text-slate-400"></span>
@@ -452,6 +453,8 @@ function loadUser(id) {
     document.getElementById('drawer-uid').textContent = 'UID: #' + u.id;
     var regEl = document.getElementById('drawer-registration');
     if (regEl) regEl.textContent = u.created_at ? 'Registered: ' + u.created_at.substring(0, 10) : '';
+    var emailVerifiedEl = document.getElementById('drawer-email-verified');
+    if (emailVerifiedEl) emailVerifiedEl.innerHTML = 'Email: ' + (u.email_verified ? '<span class="text-green-600 font-medium">Verified</span>' : '<span class="text-red-600 font-medium">Unverified</span>');
     document.getElementById('drawer-status').textContent = u.active ? 'Active' : 'Suspended';
     document.getElementById('drawer-status').className = 'text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-widest ' + (u.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700');
     document.getElementById('drawer-last-active').textContent = u.updated_at ? 'Last: ' + u.updated_at.substring(0, 10) : '';

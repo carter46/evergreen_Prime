@@ -55,6 +55,11 @@ if ($stmt->fetch()) {
     exit;
 }
 
+// Cleanup expired pending registrations
+try {
+    $pdo->exec("DELETE FROM pending_registrations WHERE expires_at < NOW()");
+} catch (Throwable $e) {}
+
 $avatarUrl = null;
 if (!empty($_FILES['avatar']['tmp_name']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
     $file = $_FILES['avatar'];
@@ -72,35 +77,18 @@ if (!empty($_FILES['avatar']['tmp_name']) && $_FILES['avatar']['error'] === UPLO
     }
 }
 
-$cols = ['email', 'password_hash', 'name', 'role', 'email_verified', 'active'];
-$vals = [$email, password_hash($password, PASSWORD_DEFAULT), $name ?: '', 'user', 0, 1];
-$placeholders = ['?', '?', '?', '?', '?', '?'];
+$passwordHash = password_hash($password, PASSWORD_DEFAULT);
+$expiresAt = date('Y-m-d H:i:s', time() + 24 * 3600);
 
+// Store in pending_registrations (no users row until OTP verified)
 try {
-    $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'phone_number'");
-    if ($chk && $chk->rowCount() > 0) {
-        $cols[] = 'phone_number';
-        $vals[] = $phone ?: null;
-        $placeholders[] = '?';
-    }
-} catch (Throwable $e) {}
-try {
-    $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'referral_code'");
-    if ($chk && $chk->rowCount() > 0) {
-        $cols[] = 'referral_code';
-        $vals[] = $referral ?: null;
-        $placeholders[] = '?';
-    }
-} catch (Throwable $e) {}
-if ($avatarUrl) {
-    $cols[] = 'avatar_url';
-    $vals[] = $avatarUrl;
-    $placeholders[] = '?';
+    $pdo->prepare('INSERT INTO pending_registrations (email, password_hash, name, phone_number, referral_code, avatar_url, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), name = VALUES(name), phone_number = VALUES(phone_number), referral_code = VALUES(referral_code), avatar_url = VALUES(avatar_url), expires_at = VALUES(expires_at)')
+        ->execute([$email, $passwordHash, $name ?: '', $phone ?: null, $referral ?: null, $avatarUrl, $expiresAt]);
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Registration failed']);
+    exit;
 }
-
-$sql = 'INSERT INTO users (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $placeholders) . ')';
-$stmt = $pdo->prepare($sql);
-$stmt->execute($vals);
 
 require_once dirname(__DIR__, 2) . '/includes/otp-helper.php';
 $otp = createOtp($email, 'register');

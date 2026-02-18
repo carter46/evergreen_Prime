@@ -32,6 +32,19 @@ function get_site_name(): string {
 }
 
 /**
+ * Normalize YouTube URL to embed URL. Returns null if not a valid YouTube URL.
+ */
+function get_youtube_embed_url(?string $url): ?string {
+    if (empty($url) || !is_string($url)) return null;
+    $url = trim($url);
+    $id = null;
+    if (preg_match('#(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})#', $url, $m)) {
+        $id = $m[1];
+    }
+    return $id ? 'https://www.youtube.com/embed/' . $id : null;
+}
+
+/**
  * Format datetime as relative time (e.g. "2 minutes ago").
  */
 function time_ago(string $datetime): string {

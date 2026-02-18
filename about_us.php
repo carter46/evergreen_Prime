@@ -1,4 +1,9 @@
-<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
+<?php
+require_once __DIR__ . '/includes/helpers.php';
+$siteName = get_site_name();
+$aboutYoutubeUrl = get_site_setting('about_youtube_url', '');
+$aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
+?>
 <!DOCTYPE html>
 
 <html class="light" lang="en"><head>
@@ -62,9 +67,9 @@
                 </p>
 <div class="flex gap-4">
 <div class="flex -space-x-3">
-<img class="w-12 h-12 rounded-full border-4 border-background-light" data-alt="Team member portrait placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuConeSlFuacsqDhp7IZd0ZTHXMPPtFarMkfNNzRxMeYX_FR8vQ-O4pgfAQHi16Grn_UfNvaL-dNyScqLK7WyXC5AtZlIeaXVhxjw_7OeOngYXjbzCAElOfz1ZgHM1V8lZuDp0pSJVYydQbnBECayBYgDPYqLRM_wvm2JQkqIAfl43Uuk3QoxYK5DS9v2AMoJXX6CAR6AtwqAohUAP7tfWy0BHUy6e7C6Pmn7-tkE8VILvHydIk_hAUA-qdki6E-l80tmr-9KHQlpYM"/>
-<img class="w-12 h-12 rounded-full border-4 border-background-light" data-alt="Team member portrait placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3cCrnhQEM71lzGPAos5LMzAYsMTQAfUjwzCjWN4c2c0FMQzICoUvoj5L4H3f8R6Wemd4Gk55GFAfgRhwlFPVEVmKlRvgMEpYu71Q0BNrbWxd17Q5lqS5L8c80X3mAEBFy6h87MNz2q_3QLUuEUPQMan1Zcwvgi0mazSVnu4NOJDl2LgbupZ63kjdfoSA8GFrhkndOTIW_sLUSjGBC4sQj5KFjWfvr5r95P6lM3xk4cbDAYVowK2WAJZAZ6UZ2hNkfnfEH5AtZgmM"/>
-<img class="w-12 h-12 rounded-full border-4 border-background-light" data-alt="Team member portrait placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCevyEDbghwEFLY3HJrY6T31XxaBeLG9vZj1RhQHIRrI1J_2LFGOR-E_HgUysywcLGX46mLNtp_rXI67V_el6WC27DOFHPor6cFI-sPuyCfSp01S7bPObLR0axGuNMaGPkzB5nZ53ozxtLM4ehGN-0leVPaeyBHLfVtsW_aGEEHz9tKYGdZJl5N1Dau3f5BLuxRmVDC02yNF_g6xDTkcI4swvUdPZbLVwAmzCBXpU7c1LI06G2CdvIjapBgoxAWdOemiB0WTwImgNY"/>
+<img class="w-12 h-12 rounded-full border-4 border-background-light" alt="Team member" src="/uploads/images/user1.jpg"/>
+<img class="w-12 h-12 rounded-full border-4 border-background-light" alt="Team member" src="/uploads/images/user2.jpg"/>
+<img class="w-12 h-12 rounded-full border-4 border-background-light" alt="Team member" src="/uploads/images/user3.jpg"/>
 <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center border-4 border-background-light text-background-dark font-bold text-xs">+45</div>
 </div>
 <div class="flex flex-col justify-center">

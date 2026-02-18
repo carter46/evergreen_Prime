@@ -34,20 +34,56 @@ if (!validateOtp($email, $otp, 'register')) {
 
 try {
     $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
-    $stmt = $pdo->prepare('SELECT id, email, role FROM users WHERE email = ? AND active = 1');
+
+    // Cleanup expired pending registrations
+    $pdo->exec("DELETE FROM pending_registrations WHERE expires_at < NOW()");
+
+    $stmt = $pdo->prepare('SELECT email, password_hash, name, phone_number, referral_code, avatar_url FROM pending_registrations WHERE email = ? AND expires_at > NOW()');
     $stmt->execute([$email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$user) {
+    $pending = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$pending) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'User not found']);
+        echo json_encode(['success' => false, 'error' => 'Registration expired or not found. Please register again.']);
         exit;
     }
-    $pdo->prepare('UPDATE users SET email_verified = 1 WHERE id = ?')->execute([$user['id']]);
+
+    // Create user only after OTP verified (email_verified = 1)
+    $cols = ['email', 'password_hash', 'name', 'role', 'email_verified', 'active'];
+    $vals = [$pending['email'], $pending['password_hash'], $pending['name'] ?? '', 'user', 1, 1];
+    $placeholders = ['?', '?', '?', '?', '?', '?'];
+
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'phone_number'");
+        if ($chk && $chk->rowCount() > 0) {
+            $cols[] = 'phone_number';
+            $vals[] = $pending['phone_number'] ?? null;
+            $placeholders[] = '?';
+        }
+    } catch (Throwable $e) {}
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'referral_code'");
+        if ($chk && $chk->rowCount() > 0) {
+            $cols[] = 'referral_code';
+            $vals[] = $pending['referral_code'] ?? null;
+            $placeholders[] = '?';
+        }
+    } catch (Throwable $e) {}
+    if (!empty($pending['avatar_url'])) {
+        $cols[] = 'avatar_url';
+        $vals[] = $pending['avatar_url'];
+        $placeholders[] = '?';
+    }
+
+    $sql = 'INSERT INTO users (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $placeholders) . ')';
+    $pdo->prepare($sql)->execute($vals);
+    $userId = (int) $pdo->lastInsertId();
+
+    $pdo->prepare('DELETE FROM pending_registrations WHERE email = ?')->execute([$email]);
 
     require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
-    $_SESSION['user_id'] = (int) $user['id'];
-    $_SESSION['email'] = $user['email'];
-    $_SESSION['role'] = $user['role'];
+    $_SESSION['user_id'] = $userId;
+    $_SESSION['email'] = $pending['email'];
+    $_SESSION['role'] = 'user';
 
     echo json_encode([
         'success' => true,

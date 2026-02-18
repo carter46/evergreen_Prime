@@ -302,6 +302,21 @@ CREATE TABLE IF NOT EXISTS email_otp_codes (
   INDEX idx_expires (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Pending registrations (no users row until email OTP verified)
+CREATE TABLE IF NOT EXISTS pending_registrations (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  name VARCHAR(255) DEFAULT '',
+  phone_number VARCHAR(50) NULL,
+  referral_code VARCHAR(50) NULL,
+  avatar_url VARCHAR(500) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME NOT NULL,
+  UNIQUE KEY uniq_email (email),
+  INDEX idx_expires (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Create kyc_submissions table
 CREATE TABLE IF NOT EXISTS kyc_submissions (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

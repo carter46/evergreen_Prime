@@ -149,9 +149,9 @@ foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['c
 </div>
 </div>
 <!-- Mid Section - Analytics -->
-<div class="grid grid-cols-1 gap-8 mb-8">
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
 <!-- Plan Distribution -->
-<div class="bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
+<div class="xl:col-span-2 bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
 <h3 class="font-bold text-lg mb-6">Investments per Plan</h3>
 <div class="space-y-6">
 <?php foreach ($planDist as $p): $pct = $planMax > 0 ? (int)((int)$p['cnt'] / $planMax * 100) : 0; ?>

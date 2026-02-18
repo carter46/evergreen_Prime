@@ -2,6 +2,8 @@
 require_once __DIR__ . '/includes/helpers.php';
 $siteName = get_site_name();
 $heroBadge = get_site_setting('hero_badge', 'AI ENGINE V4.0 NOW LIVE');
+$homepageYoutubeUrl = get_site_setting('homepage_youtube_url', '');
+$homepageEmbedUrl = get_youtube_embed_url($homepageYoutubeUrl);
 $statsAssets = get_site_setting('stats_assets', '$4.2B+');
 $statsBots = get_site_setting('stats_bots', '85k+');
 $statsUptime = get_site_setting('stats_uptime', '99.9%');
@@ -114,7 +116,13 @@ try {
 </div>
 <div class="relative">
 <div class="absolute -top-20 -right-20 w-96 h-96 bg-primary/20 blur-[120px] rounded-full"></div>
+<?php if ($homepageEmbedUrl): ?>
+<div class="relative z-10 w-full aspect-video rounded-2xl shadow-2xl border-4 border-white/50 dark:border-slate-800/50 overflow-hidden">
+<iframe class="w-full h-full" src="<?php echo htmlspecialchars($homepageEmbedUrl); ?>?rel=0" title="Bloombit demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+<?php else: ?>
 <img alt="AI Trading Interface" class="relative z-10 w-full h-auto rounded-2xl shadow-2xl border-4 border-white/50 dark:border-slate-800/50" data-alt="Futuristic 3D robot arm or abstract neural AI sphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAERFUp6io6mfsuU1xT4reC0MNfdbS-TG3S4WGzJcCZSgr20oMTW8dUmGTeXv13y8kWRb5oPvDKI71MY9ZPevM-uGRz6fdP5rwt94fPuFxrKeaT7jUgMJ9Vbc7eaMqT5j76CADhsg_voWOtIyJCJYcyKMSY_fVn5C2XOdVDDAxc9__oxwyA4PGAsGCjAAoYpnKqfXpEzSY8_0IuPOPCBU6Rn8GNYiSkYg173iJeDY9itvWtl5KgpyHI0p4yDw2MBFoiRPPEhihDvU4"/>
+<?php endif; ?>
 </div>
 </div>
 </section>
@@ -203,43 +211,43 @@ try {
 <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-5 gap-8">
 <div class="relative group">
 <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
-<span class="material-icons text-primary group-hover:text-black">account_balance_wallet</span>
+<span class="material-icons text-primary group-hover:text-black">person_add</span>
 </div>
 <div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 01</div>
-<h3 class="text-xl font-bold mb-3">Connect Wallet</h3>
-<p class="text-sm text-slate-500">Securely link your exchange or hardware wallet.</p>
+<h3 class="text-xl font-bold mb-3">Register</h3>
+<p class="text-sm text-slate-500">Create your free account in seconds.</p>
+</div>
+<div class="relative group">
+<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
+<span class="material-icons text-primary group-hover:text-black">verified_user</span>
+</div>
+<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 02</div>
+<h3 class="text-xl font-bold mb-3">Verify Account</h3>
+<p class="text-sm text-slate-500">Confirm your email with the code we send.</p>
+</div>
+<div class="relative group">
+<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
+<span class="material-icons text-primary group-hover:text-black">account_balance_wallet</span>
+</div>
+<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 03</div>
+<h3 class="text-xl font-bold mb-3">Deposit</h3>
+<p class="text-sm text-slate-500">Fund your account securely.</p>
 </div>
 <div class="relative group">
 <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
 <span class="material-icons text-primary group-hover:text-black">insights</span>
 </div>
-<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 02</div>
-<h3 class="text-xl font-bold mb-3">Select Strategy</h3>
-<p class="text-sm text-slate-500">Choose from dozens of AI-vetted models.</p>
-</div>
-<div class="relative group">
-<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
-<span class="material-icons text-primary group-hover:text-black">smart_toy</span>
-</div>
-<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 03</div>
-<h3 class="text-xl font-bold mb-3">Deploy AI Bot</h3>
-<p class="text-sm text-slate-500">Launch your customized trading algorithm.</p>
-</div>
-<div class="relative group">
-<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
-<span class="material-icons text-primary group-hover:text-black">query_stats</span>
-</div>
 <div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 04</div>
-<h3 class="text-xl font-bold mb-3">Real-time Tracking</h3>
-<p class="text-sm text-slate-500">Monitor every trade in our 24/7 dashboard.</p>
+<h3 class="text-xl font-bold mb-3">Choose Plan</h3>
+<p class="text-sm text-slate-500">Pick the strategy that fits your goals.</p>
 </div>
 <div class="relative group">
 <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
 <span class="material-icons text-primary group-hover:text-black">payments</span>
 </div>
 <div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 05</div>
-<h3 class="text-xl font-bold mb-3">Compound Gains</h3>
-<p class="text-sm text-slate-500">Watch your portfolio grow with automated reinvesting.</p>
+<h3 class="text-xl font-bold mb-3">Subscribe</h3>
+<p class="text-sm text-slate-500">Activate your plan and start earning.</p>
 </div>
 </div>
 </section><section class="py-32 bg-slate-50 dark:bg-slate-900/30">
@@ -505,44 +513,17 @@ foreach ($indexPlans as $p):
 <?php endif; ?>
 </div>
 </section>
-<!-- Footer -->
-<section class="py-32">
+<!-- TradingView News -->
+<section class="py-32 bg-white dark:bg-slate-900/30">
 <div class="max-w-7xl mx-auto px-6">
-<div class="flex justify-between items-end mb-12">
-<div>
 <h2 class="text-4xl font-bold mb-4">Market Insights</h2>
-<p class="text-slate-500">Latest crypto news analyzed by our AI system.</p>
-</div>
-<button class="text-primary font-bold hover:underline">View All News</button>
-</div>
-<div class="grid lg:grid-cols-3 gap-8">
-<div class="lg:col-span-2 group">
-<div class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
-<div class="h-80 overflow-hidden relative">
-<img alt="News" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC-F372qA9-wGfW16H5zN4V_y8RjI8_r34W_u3e7jR45"/>
-<span class="absolute top-6 left-6 bg-primary text-black text-xs font-bold px-3 py-1 rounded">MARKET TRENDS</span>
-</div>
-<div class="p-8 flex-grow">
-<h3 class="text-2xl font-bold mb-4 group-hover:text-primary transition-colors">The Rise of AI in Decentralized Finance: 2024 Outlook</h3>
-<p class="text-slate-500 mb-6">New institutional data suggests that AI-driven trading protocols now account for over 35% of total DEX volume...</p>
-<a class="font-bold flex items-center gap-2" href="#">Read Full Article <span class="material-icons text-sm">arrow_forward</span></a>
-</div>
-</div>
-</div>
-<div class="space-y-8">
-<div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
-<span class="text-xs font-bold text-primary mb-3 block">REGULATION</span>
-<h4 class="text-lg font-bold mb-3 group-hover:text-primary transition-colors">Global crypto policy shifts and what they mean for you</h4>
-<p class="text-sm text-slate-500 mb-4">Summary of the latest SEC guidelines regarding AI bots.</p>
-<a class="text-sm font-bold flex items-center gap-1" href="#">Read More <span class="material-icons text-xs">chevron_right</span></a>
-</div>
-<div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
-<span class="text-xs font-bold text-primary mb-3 block">SECURITY</span>
-<h4 class="text-lg font-bold mb-3 group-hover:text-primary transition-colors">Protecting your assets in the age of quantum computing</h4>
-<p class="text-sm text-slate-500 mb-4">Best practices for hardware wallet security in 2024.</p>
-<a class="text-sm font-bold flex items-center gap-1" href="#">Read More <span class="material-icons text-xs">chevron_right</span></a>
-</div>
-</div>
+<p class="text-slate-500 mb-8">Top stories from TradingView.</p>
+<div class="tradingview-widget-container rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm" style="height: 530px;">
+<div class="tradingview-widget-container__widget"></div>
+<div class="tradingview-widget-copyright text-xs text-slate-400 mt-2"><a href="https://www.tradingview.com/news/top-providers/tradingview/" rel="noopener nofollow" target="_blank"><span class="blue-text">Top stories</span></a><span class="trademark"> by TradingView</span></div>
+<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+{"displayMode":"regular","feedMode":"all_symbols","colorTheme":"light","isTransparent":false,"locale":"en","width":"100%","height":"100%"}
+</script>
 </div>
 </div>
 </section>

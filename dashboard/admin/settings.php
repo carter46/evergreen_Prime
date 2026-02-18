@@ -21,6 +21,8 @@ $settings = [
     'mail_imap_username' => get_site_setting('mail_imap_username', ''),
     'mail_imap_encryption' => get_site_setting('mail_imap_encryption', 'ssl'),
     'mail_imap_sent_folder' => get_site_setting('mail_imap_sent_folder', 'Sent'),
+    'homepage_youtube_url' => get_site_setting('homepage_youtube_url', ''),
+    'about_youtube_url' => get_site_setting('about_youtube_url', ''),
 ];
 $adminEmail = '';
 $adminName = '';
@@ -131,6 +133,16 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 </div>
 <input type="file" id="settings-favicon-input" accept="image/png,image/x-icon,image/ico" class="text-sm"/>
 </div>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Homepage Hero YouTube Video URL</label>
+<input id="settings-homepage-youtube" type="url" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($settings['homepage_youtube_url']); ?>" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."/>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Shown in the hero section instead of the default image. Leave empty to use the image.</p>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">About Page YouTube Video URL</label>
+<input id="settings-about-youtube" type="url" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($settings['about_youtube_url']); ?>" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."/>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Shown on the About page video section. Leave empty to hide.</p>
 </div>
 </div>
 <button type="button" id="settings-save-branding" class="mt-4 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Save Branding</button>
@@ -307,13 +319,15 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
   document.getElementById('settings-save-branding').addEventListener('click', function(){
     var siteName = document.getElementById('settings-site-name').value.trim();
     var contactEmail = document.getElementById('settings-contact-email').value.trim();
+    var homepageYoutube = document.getElementById('settings-homepage-youtube').value.trim();
+    var aboutYoutube = document.getElementById('settings-about-youtube').value.trim();
     var btn = this;
     btn.disabled = true;
     fetch('/api/admin/site-settings.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ site_name: siteName || 'Bloombit', contact_email: contactEmail || '' })
+      body: JSON.stringify({ site_name: siteName || 'Bloombit', contact_email: contactEmail || '', homepage_youtube_url: homepageYoutube || '', about_youtube_url: aboutYoutube || '' })
     }).then(function(r){ return r.json(); }).then(function(res){
       showMsg(document.getElementById('settings-branding-msg'), res.success ? 'Branding saved.' : (res.error || 'Failed'), res.success);
       btn.disabled = false;

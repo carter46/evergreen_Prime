@@ -37,6 +37,8 @@ $allowedKeys = [
     'mail_imap_password',
     'mail_imap_encryption',
     'mail_imap_sent_folder',
+    'homepage_youtube_url',
+    'about_youtube_url',
 ];
 $sensitiveKeys = ['mail_smtp_password', 'mail_imap_password'];
 
@@ -72,6 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'mail_imap_username' => '',
         'mail_imap_encryption' => 'ssl',
         'mail_imap_sent_folder' => 'Sent',
+        'homepage_youtube_url' => '',
+        'about_youtube_url' => '',
         // write-only flags
         'mail_smtp_password_set' => '0',
         'mail_imap_password_set' => '0',

@@ -31,13 +31,19 @@ try {
     exit;
 }
 
-$stmt = $pdo->prepare('SELECT id, email, password_hash, role, name, two_factor_enabled FROM users WHERE email = ? AND active = 1');
+$stmt = $pdo->prepare('SELECT id, email, password_hash, role, name, two_factor_enabled, email_verified FROM users WHERE email = ? AND active = 1');
 $stmt->execute([$email]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user || !password_verify($password, $user['password_hash'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Invalid email or password']);
+    exit;
+}
+
+if (empty($user['email_verified'])) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'error' => 'Please verify your email before logging in.', 'needs_verification' => true]);
     exit;
 }
 

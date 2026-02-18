@@ -9,7 +9,7 @@ $userEmail = $u['email'] ?? '';
 $avatarUrl = $u['avatar_url'] ?? null;
 $initials = strtoupper(substr($userName ?: 'U', 0, 2));
 ?>
-<header class="bg-white dark:bg-background-dark border-b border-primary/10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 mb-6 sm:mb-8">
+<header class="bg-white dark:bg-background-dark border-b border-primary/10 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 mb-6 sm:mb-8">
     <div class="flex items-center justify-between gap-3 min-w-0">
         <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <button type="button" id="user-sidebar-toggle" class="lg:hidden flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl hover:bg-primary/10 transition-colors min-h-[44px] min-w-[44px]" aria-label="Toggle menu">
