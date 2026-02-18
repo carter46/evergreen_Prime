@@ -28,6 +28,12 @@ try {
     $pendingDepositsSum = (float) $row[1];
     $r = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'deposit' AND status = 'completed'")->fetchColumn();
     $totalDeposits = (float) $r;
+    $withSumCol = 'amount';
+    try { if (($chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'")) && $chk->rowCount() > 0) $withSumCol = 'COALESCE(amount_usd, amount)'; } catch (Throwable $e) {}
+    $stmtWith = $pdo->query("SELECT COUNT(*), COALESCE(SUM($withSumCol), 0) FROM transactions WHERE type = 'withdrawal' AND status = 'pending'");
+    $rowWith = $stmtWith->fetch(PDO::FETCH_NUM);
+    $pendingWithdrawalsCount = (int) $rowWith[0];
+    $pendingWithdrawalsSum = (float) $rowWith[1];
     $stmt = $pdo->query('SELECT p.name, ui.plan_id, COUNT(*) AS cnt, COALESCE(SUM(ui.amount), 0) AS cap FROM user_investments ui JOIN plans p ON p.id = ui.plan_id GROUP BY ui.plan_id, p.name');
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $planDist[] = $row;
@@ -51,10 +57,12 @@ try {
     $stmt = $pdo->query("SELECT 'plan_activated' AS type, u.name, ui.created_at, ui.amount, p.name AS plan_name FROM user_investments ui JOIN users u ON u.id = ui.user_id JOIN plans p ON p.id = ui.plan_id ORDER BY ui.created_at DESC LIMIT 5");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { $activities[] = $row; }
     usort($activities, function ($a, $b) { return strtotime($b['created_at']) - strtotime($a['created_at']); });
-    $recentActivity = array_slice($activities, 0, 15);
+    $recentActivity = array_slice($activities, 0, 10);
 } catch (Throwable $e) {
     // DB unavailable - use defaults
 }
+$pendingWithdrawalsCount = $pendingWithdrawalsCount ?? 0;
+$pendingWithdrawalsSum = $pendingWithdrawalsSum ?? 0;
 $planMax = 1;
 foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['cnt']; }
 ?>
@@ -131,13 +139,13 @@ foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['c
 </div>
 <p class="text-2xl font-bold text-primary">$<?php echo number_format($pendingDepositsSum); ?></p>
 </div>
-<!-- Card 5 -->
-<div class="bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
+<!-- Card 5: Pending Withdrawals -->
+<div class="bg-amber-50 dark:bg-amber-900/10 p-6 rounded-xl border border-amber-200 dark:border-amber-800/30 shadow-sm">
 <div class="flex items-center justify-between mb-2">
-<span class="text-slate-500 text-xs font-medium uppercase tracking-wider">Total Deposits</span>
-<span class="text-emerald-500 text-[10px] font-bold flex items-center"><span class="material-icons text-[12px]">trending_up</span></span>
+<span class="text-amber-700 dark:text-amber-400 text-xs font-medium uppercase tracking-wider">Pending Withdrawals</span>
+<?php if ($pendingWithdrawalsCount > 0): ?><span class="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold"><?php echo (int)$pendingWithdrawalsCount; ?></span><?php endif; ?>
 </div>
-<p class="text-2xl font-bold">$<?php echo number_format($totalDeposits); ?></p>
+<p class="text-2xl font-bold text-amber-700 dark:text-amber-400">$<?php echo number_format($pendingWithdrawalsSum); ?></p>
 </div>
 </div>
 <!-- Mid Section - Analytics -->
@@ -338,7 +346,7 @@ foreach ($recentActivity as $i => $a):
 <?php endif; ?>
 </div>
 <div class="p-4 bg-background-light dark:bg-white/5 text-center">
-<button class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase">View System Log</button>
+<a href="/dashboard/admin/activity-log" class="inline-block text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase">View System Log</a>
 </div>
 </div>
 </div>

@@ -127,8 +127,8 @@ $coinNames = ['BTC'=>'Bitcoin','ETH'=>'Ethereum','USDT'=>'Tether','USDC'=>'USD C
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
 <div class="flex-1 max-w-[1440px] w-full mx-auto">
 <div class="grid grid-cols-12 gap-8">
-<!-- Row 1: Full-width Total Estimated Balance -->
-<div class="col-span-12">
+<!-- Row 1: USD Balance (65%) | Security Checklist (35%) -->
+<div class="col-span-12 grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-6">
 <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
@@ -172,10 +172,22 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 </div>
 </div>
 </div>
+<!-- Security Checklist (35%) -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex gap-4 self-stretch">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center">
+<span class="material-icons text-primary">gpp_maybe</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white">Security Checklist</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                            Ensure 2FA is active before withdrawing. Double-check the recipient address; crypto transfers are irreversible.
+                        </p>
+</div>
+</div>
 </div>
 
-<!-- Row 2: Assets (50%) + Security (25%) + Coming Soon (25%) -->
-<div class="col-span-12 grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr] gap-6">
+<!-- Row 2: Your Assets (65%) | Coming Soon (35%) -->
+<div class="col-span-12 grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-6">
 <!-- Your Assets -->
 <div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm min-w-0">
 <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
@@ -241,18 +253,6 @@ $<?php echo number_format((float)$b['usd_value'], 2); ?>
 <?php endif; ?>
 </tbody>
 </table>
-</div>
-</div>
-<!-- Security Checklist -->
-<div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex gap-4">
-<div class="w-10 h-10 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center">
-<span class="material-icons text-primary">gpp_maybe</span>
-</div>
-<div>
-<h4 class="text-sm font-bold text-slate-900 dark:text-white">Security Checklist</h4>
-<p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                            Ensure 2FA is active before withdrawing. Double-check the recipient address; crypto transfers are irreversible.
-                        </p>
 </div>
 </div>
 <!-- Coming Soon -->
