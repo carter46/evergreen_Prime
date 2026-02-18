@@ -113,6 +113,11 @@ $coinNames = ['BTC'=>'Bitcoin','ETH'=>'Ethereum','USDT'=>'Tether','USDC'=>'USD C
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        /* Deposit/Withdraw drawer: bolder, more readable on desktop */
+        @media (min-width: 640px) {
+            .wallet-drawer-content label { font-size: 0.9375rem; }
+            #deposit-coin-quote, #withdraw-coin-quote { font-size: 1.125rem; font-weight: 700; }
+        }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display overflow-x-hidden">
@@ -320,76 +325,75 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 </div>
 
 <div id="wallet-drawer-backdrop" class="fixed inset-0 bg-black/50 z-[45] hidden" aria-hidden="true" style="backdrop-filter:blur(2px)"></div>
-<div id="deposit-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[480px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-[50] border-l border-slate-200 dark:border-zinc-800 flex flex-col transition-transform duration-300 ease-out" style="transform:translateX(100%)">
+<div id="deposit-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[520px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-[50] border-l border-slate-200 dark:border-zinc-800 flex flex-col transition-transform duration-300 ease-out" style="transform:translateX(100%)">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
-<h2 class="text-lg font-bold">Deposit Crypto</h2>
+<h2 class="text-xl font-bold">Deposit Crypto</h2>
 <button type="button" id="deposit-drawer-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors"><span class="material-icons text-lg">close</span></button>
 </div>
-<div class="flex-1 overflow-y-auto p-6">
+<div class="flex-1 overflow-y-auto p-6 wallet-drawer-content">
 <div id="deposit-form-step1">
-<div class="space-y-4">
+<div class="space-y-5">
 <div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Amount (USD)</label>
-<input type="number" id="deposit-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="0.00"/>
-<p class="text-xs text-slate-400 mt-1" id="deposit-coin-quote">—</p>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Amount (USD)</label>
+<input type="number" id="deposit-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-semibold" placeholder="0.00"/>
 </div>
 <div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Select Currency</label>
-<select id="deposit-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700">
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Select Currency</label>
+<select id="deposit-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
 <option value="">Loading...</option>
 </select>
+<p class="mt-3 text-base sm:text-lg font-bold text-primary dark:text-primary min-h-[1.5em]" id="deposit-coin-quote">—</p>
 </div>
 <div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Reference / TX Hash <span class="text-slate-400 font-normal">(Optional)</span></label>
-<input type="text" id="deposit-reference" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="Transaction hash or reference"/>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Reference / TX Hash <span class="text-slate-400 font-normal">(Optional)</span></label>
+<input type="text" id="deposit-reference" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700" placeholder="Transaction hash or reference"/>
 </div>
 <div id="deposit-error" class="text-sm text-red-500 hidden"></div>
-<button type="button" id="deposit-submit-btn" class="w-full py-2 bg-primary text-black font-bold rounded-lg text-sm">Submit Deposit Request</button>
+<button type="button" id="deposit-submit-btn" class="w-full py-3 bg-primary text-black font-bold rounded-lg text-base">Submit Deposit Request</button>
 </div>
 </div>
 <div id="deposit-form-step2" class="hidden">
-<div class="space-y-4">
+<div class="space-y-5">
 <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
-<p class="text-sm font-medium text-emerald-700 dark:text-emerald-300 mb-2">Deposit request submitted!</p>
-<p class="text-xs text-emerald-600 dark:text-emerald-400">Please send your funds to the address below. Your deposit will be credited after admin approval.</p>
+<p class="text-base font-bold text-emerald-700 dark:text-emerald-300 mb-2">Deposit request submitted!</p>
+<p class="text-sm text-emerald-600 dark:text-emerald-400">Please send your funds to the address below. Your deposit will be credited after admin approval.</p>
 </div>
 <div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Send to Address</label>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Send to Address</label>
 <div class="flex items-center gap-2">
-<input type="text" id="deposit-address-display" readonly class="flex-1 bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700 font-mono text-xs"/>
-<button type="button" id="deposit-copy-addr" class="px-3 py-2 bg-primary text-black font-bold rounded-lg text-xs">Copy</button>
+<input type="text" id="deposit-address-display" readonly class="flex-1 bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-sm font-mono border border-slate-200 dark:border-zinc-700"/>
+<button type="button" id="deposit-copy-addr" class="px-4 py-3 bg-primary text-black font-bold rounded-lg text-sm">Copy</button>
 </div>
 </div>
 <div class="pt-4 border-t border-slate-200 dark:border-zinc-800">
-<p class="text-xs text-slate-500 mb-2">Selected Currency: <span id="deposit-selected-currency" class="font-bold"></span></p>
-<p class="text-xs text-slate-500">Amount: <span id="deposit-selected-amount" class="font-bold"></span></p>
+<p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Selected Currency: <span id="deposit-selected-currency" class="font-bold"></span></p>
+<p class="text-sm text-slate-600 dark:text-slate-400">Amount: <span id="deposit-selected-amount" class="font-bold"></span></p>
 </div>
-<button type="button" id="deposit-close-btn" class="w-full py-2 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-sm mt-4">Close</button>
+<button type="button" id="deposit-close-btn" class="w-full py-3 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-base mt-4">Close</button>
 </div>
 </div>
-</div>
-
 </div>
 
-<div id="withdraw-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[480px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-[50] border-l border-slate-200 dark:border-zinc-800 flex flex-col transition-transform duration-300 ease-out" style="transform:translateX(100%)">
+</div>
+
+<div id="withdraw-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[520px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-[50] border-l border-slate-200 dark:border-zinc-800 flex flex-col transition-transform duration-300 ease-out" style="transform:translateX(100%)">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
-<h2 class="text-lg font-bold">Withdraw Funds</h2>
+<h2 class="text-xl font-bold">Withdraw Funds</h2>
 <button type="button" id="withdraw-drawer-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors"><span class="material-icons text-lg">close</span></button>
 </div>
-<div class="flex-1 overflow-y-auto p-6">
-<form id="withdrawal-form" class="space-y-4">
+<div class="flex-1 overflow-y-auto p-6 wallet-drawer-content">
+<form id="withdrawal-form" class="space-y-5">
 <div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Amount (USD)</label>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Amount (USD)</label>
 <div class="relative">
-<input name="amount_usd" id="withdraw-amount" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="0.00" step="any" type="number" required/>
-<span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">USD</span>
+<input name="amount_usd" id="withdraw-amount" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-semibold" placeholder="0.00" step="any" type="number" required/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500">USD</span>
 </div>
-<p class="text-xs text-slate-400 mt-1" id="withdraw-coin-quote">—</p>
 <?php
   $minW = get_site_setting('min_withdrawal_limit', '10');
   $maxW = get_site_setting('max_withdrawal_limit', '');
 ?>
-<p class="text-xs text-amber-600 dark:text-amber-400 mt-1" id="withdraw-limit-hint">
+<p class="text-sm text-amber-600 dark:text-amber-400 mt-2 font-medium" id="withdraw-limit-hint">
   Min: $<span id="withdraw-min-limit"><?php echo htmlspecialchars($minW); ?></span> USD
   <?php if (!empty($maxW) && (float)$maxW > 0): ?>
     <span class="mx-1">•</span> Max: $<span id="withdraw-max-limit"><?php echo htmlspecialchars($maxW); ?></span> USD
@@ -397,19 +401,20 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 </p>
 </div>
 <div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Select Currency</label>
-<select name="currency" id="withdraw-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700">
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Select Currency</label>
+<select name="currency" id="withdraw-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
 <option value="">Loading...</option>
 </select>
-<p class="text-xs text-slate-400 mt-1">Available: <span id="withdraw-available">—</span></p>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Available: <span id="withdraw-available" class="font-semibold">—</span></p>
+<p class="mt-3 text-base sm:text-lg font-bold text-primary dark:text-primary min-h-[1.5em]" id="withdraw-coin-quote">—</p>
 </div>
 <div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Recipient Address</label>
-<input name="address" id="withdraw-address" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="Paste external wallet address" type="text" required/>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Recipient Address</label>
+<input name="address" id="withdraw-address" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700" placeholder="Paste external wallet address" type="text" required/>
 </div>
 <div id="withdrawal-message" class="text-sm hidden"></div>
-<button type="submit" class="w-full py-2 bg-primary text-black font-bold rounded-lg text-sm flex items-center justify-center gap-2">
-Withdraw Now <span class="material-icons text-sm">arrow_forward</span>
+<button type="submit" class="w-full py-3 bg-primary text-black font-bold rounded-lg text-base flex items-center justify-center gap-2">
+Withdraw Now <span class="material-icons text-base">arrow_forward</span>
 </button>
 </form>
 </div>
