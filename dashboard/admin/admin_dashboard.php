@@ -32,7 +32,9 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $planDist[] = $row;
     }
-    $stmt = $pdo->query("SELECT t.id, t.amount, t.currency, t.status, u.name, u.id AS user_id FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'deposit' AND t.status = 'pending' ORDER BY t.created_at DESC LIMIT 10");
+    $txCols = 't.id, t.amount, t.currency, t.status, u.name, u.id AS user_id';
+    try { if (($chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'")) && $chk->rowCount() > 0) $txCols .= ', t.amount_usd'; } catch (Throwable $e) {}
+    $stmt = $pdo->query("SELECT $txCols FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'deposit' AND t.status = 'pending' ORDER BY t.created_at DESC LIMIT 10");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $pendingList[] = $row;
     }
@@ -40,9 +42,11 @@ try {
     $activities = [];
     $stmt = $pdo->query("SELECT 'registration' AS type, u.name, u.created_at, NULL AS amount, NULL AS plan_name FROM users u WHERE u.role = 'user' ORDER BY u.created_at DESC LIMIT 5");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { $activities[] = $row; }
-    $stmt = $pdo->query("SELECT 'withdrawal' AS type, u.name, t.created_at, t.amount, NULL AS plan_name FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'withdrawal' ORDER BY t.created_at DESC LIMIT 5");
+    $actCols = 'u.name, t.created_at, t.amount, NULL AS plan_name';
+    try { if (($chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'")) && $chk->rowCount() > 0) $actCols = 'u.name, t.created_at, t.amount, t.amount_usd, NULL AS plan_name'; } catch (Throwable $e) {}
+    $stmt = $pdo->query("SELECT 'withdrawal' AS type, $actCols FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'withdrawal' ORDER BY t.created_at DESC LIMIT 5");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { $activities[] = $row; }
-    $stmt = $pdo->query("SELECT 'deposit' AS type, u.name, t.created_at, t.amount, NULL AS plan_name FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'deposit' AND t.status = 'completed' ORDER BY t.created_at DESC LIMIT 5");
+    $stmt = $pdo->query("SELECT 'deposit' AS type, $actCols FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'deposit' AND t.status = 'completed' ORDER BY t.created_at DESC LIMIT 5");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { $activities[] = $row; }
     $stmt = $pdo->query("SELECT 'plan_activated' AS type, u.name, ui.created_at, ui.amount, p.name AS plan_name FROM user_investments ui JOIN users u ON u.id = ui.user_id JOIN plans p ON p.id = ui.plan_id ORDER BY ui.created_at DESC LIMIT 5");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { $activities[] = $row; }
@@ -262,7 +266,11 @@ foreach ($pendingList as $tx):
 </div>
 </div>
 </td>
-<td class="px-6 py-4 text-sm font-bold">$<?php echo number_format((float)$tx['amount'], 2); ?></td>
+<td class="px-6 py-4 text-sm">
+<?php $usdAmt = isset($tx['amount_usd']) && $tx['amount_usd'] !== null ? (float)$tx['amount_usd'] : null; $coinAmt = (float)$tx['amount']; ?>
+<div class="font-bold"><?php echo $usdAmt !== null ? '$' . number_format($usdAmt, 2) . ' USD' : '$' . number_format($coinAmt, 2); ?></div>
+<?php if ($usdAmt !== null): ?><div class="text-xs text-slate-500"><?php echo ($coinAmt >= 1 ? number_format($coinAmt, 4) : number_format($coinAmt, 6)) . ' ' . htmlspecialchars($tx['currency']); ?></div><?php endif; ?>
+</td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-1.5">
 <?php if ($logo): ?><img alt="<?php echo $cu; ?>" class="w-5 h-5" src="<?php echo htmlspecialchars($logo); ?>"/><?php endif; ?>
@@ -303,8 +311,13 @@ foreach ($recentActivity as $i => $a):
     $color = $actColors[$type] ?? 'bg-slate-300';
     $name = $a['name'] ?: 'User';
     if ($type === 'registration') $desc = $name . ' just joined ' . $siteNameAct . '.';
-    elseif ($type === 'withdrawal') $desc = $name . ' requested a $' . number_format((float)$a['amount'], 0) . ' payout.';
-    elseif ($type === 'deposit') $desc = $name . ' deposited $' . number_format((float)$a['amount'], 0) . '.';
+    elseif ($type === 'withdrawal') {
+        $amt = isset($a['amount_usd']) && $a['amount_usd'] !== null ? (float)$a['amount_usd'] : (float)$a['amount'];
+        $desc = $name . ' requested a $' . number_format($amt, 0) . ' payout.';
+    } elseif ($type === 'deposit') {
+        $amt = isset($a['amount_usd']) && $a['amount_usd'] !== null ? (float)$a['amount_usd'] : (float)$a['amount'];
+        $desc = $name . ' deposited $' . number_format($amt, 0) . '.';
+    }
     elseif ($type === 'plan_activated') $desc = ($a['plan_name'] ?? 'Plan') . ' started for ' . $name . ' ($' . number_format((float)$a['amount'], 0) . ').';
     else $desc = $name;
 ?>

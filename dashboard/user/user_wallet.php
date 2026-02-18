@@ -329,15 +329,15 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 <div id="deposit-form-step1">
 <div class="space-y-4">
 <div>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Amount (USD)</label>
+<input type="number" id="deposit-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="0.00"/>
+<p class="text-xs text-slate-400 mt-1" id="deposit-coin-quote">—</p>
+</div>
+<div>
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Select Currency</label>
 <select id="deposit-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700">
 <option value="">Loading...</option>
 </select>
-</div>
-<div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Amount</label>
-<input type="number" id="deposit-amount" step="any" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="0.00"/>
-<p class="text-xs text-slate-400 mt-1" id="deposit-usd-value">—</p>
 </div>
 <div>
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Reference / TX Hash <span class="text-slate-400 font-normal">(Optional)</span></label>
@@ -379,23 +379,12 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 <div class="flex-1 overflow-y-auto p-6">
 <form id="withdrawal-form" class="space-y-4">
 <div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Select Currency</label>
-<select name="currency" id="withdraw-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700">
-<option value="">Loading...</option>
-</select>
-</div>
-<div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Recipient Address</label>
-<input name="address" id="withdraw-address" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="Paste external wallet address" type="text" required/>
-</div>
-<div>
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Amount</label>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Amount (USD)</label>
 <div class="relative">
-<input name="amount" id="withdraw-amount" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="0.00" step="any" type="number" required/>
-<span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400" id="withdraw-currency-label">—</span>
+<input name="amount_usd" id="withdraw-amount" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="0.00" step="any" type="number" required/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">USD</span>
 </div>
-<p class="text-xs text-slate-400 mt-1">Available: <span id="withdraw-available">—</span></p>
-<p class="text-xs text-slate-400 mt-1" id="withdraw-usd-value">—</p>
+<p class="text-xs text-slate-400 mt-1" id="withdraw-coin-quote">—</p>
 <?php
   $minW = get_site_setting('min_withdrawal_limit', '10');
   $maxW = get_site_setting('max_withdrawal_limit', '');
@@ -406,6 +395,17 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
     <span class="mx-1">•</span> Max: $<span id="withdraw-max-limit"><?php echo htmlspecialchars($maxW); ?></span> USD
   <?php endif; ?>
 </p>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Select Currency</label>
+<select name="currency" id="withdraw-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700">
+<option value="">Loading...</option>
+</select>
+<p class="text-xs text-slate-400 mt-1">Available: <span id="withdraw-available">—</span></p>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Recipient Address</label>
+<input name="address" id="withdraw-address" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" placeholder="Paste external wallet address" type="text" required/>
 </div>
 <div id="withdrawal-message" class="text-sm hidden"></div>
 <button type="submit" class="w-full py-2 bg-primary text-black font-bold rounded-lg text-sm flex items-center justify-center gap-2">
@@ -469,11 +469,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ')</option>';
             }).join('');
             if (depositSelect) depositSelect.innerHTML = depositOptions;
-            // Withdraw: stable settlement currencies only (no FX assumptions)
-            var stable = ['USDT','USDC','BUSD','USD','DAI'];
+            // Withdraw: all coins user has balance for (not stable-only)
             var withdrawAddresses = d.addresses.filter(function(a){
                 var sym = (a.symbol || '').toUpperCase();
-                if (stable.indexOf(sym) < 0) return false;
                 var b = userBalances[sym] || userBalances[a.symbol];
                 return b && parseFloat(b.amount) > 0;
             });
@@ -487,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (withdrawSelect) {
                 withdrawSelect.innerHTML = withdrawOptions;
                 updateWithdrawBalance();
-                updateWithdrawUsdValue();
+                updateWithdrawCoinQuote();
             }
             // Auto-open drawer if redirected from dashboard with action param
             if (urlAction === 'deposit' && depositDrawer) {
@@ -499,6 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 history.replaceState({}, '', window.location.pathname);
             } else if (urlAction === 'withdraw' && withdrawDrawer) {
                 updateWithdrawBalance();
+                updateWithdrawCoinQuote();
                 openDrawer(withdrawDrawer);
                 history.replaceState({}, '', window.location.pathname);
             }
@@ -511,13 +510,56 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('deposit-close-btn').addEventListener('click', function(){ closeDrawer(depositDrawer); window.location.reload(); });
     if (backdrop) backdrop.addEventListener('click', closeAllDrawers);
 
+    function updateDepositCoinQuote() {
+        var amountUsd = parseFloat(document.getElementById('deposit-amount').value) || 0;
+        var currency = document.getElementById('deposit-currency').value;
+        var el = document.getElementById('deposit-coin-quote');
+        if (!el) return;
+        if (!currency || amountUsd <= 0) { el.textContent = '—'; return; }
+        el.textContent = 'Fetching rate…';
+        var coinKey = (function(){
+            var sel = document.getElementById('deposit-currency');
+            if (!sel || !sel.options[sel.selectedIndex]) return null;
+            return sel.options[sel.selectedIndex].getAttribute('data-coin-key') || null;
+        })();
+        if (!coinKey && window.BloombitCryptoConfig && window.BloombitCryptoConfig.getCoinIdBySymbol) {
+            coinKey = window.BloombitCryptoConfig.getCoinIdBySymbol(currency);
+        }
+        var stablecoins = ['USDT','USDC','BUSD','USD','DAI'];
+        var price = stablecoins.indexOf((currency || '').toUpperCase()) >= 0 ? 1 : null;
+        var fetchPrice = price === null && window.BloombitCryptoPrices && window.BloombitCryptoPrices.fetch;
+        (fetchPrice ? window.BloombitCryptoPrices.fetch([coinKey || 'bitcoin']) : Promise.resolve(price !== null ? { [coinKey || 'tether']: { usd: 1 } } : {}))
+            .then(function(prices){
+                if (price === null && prices && coinKey && prices[coinKey] && prices[coinKey].usd != null) {
+                    price = prices[coinKey].usd;
+                } else if (price === null && stablecoins.indexOf((currency || '').toUpperCase()) >= 0) {
+                    price = 1;
+                }
+                if (price != null && price > 0) {
+                    var coinAmt = amountUsd / price;
+                    var disp = coinAmt >= 1 ? coinAmt.toFixed(4) : (coinAmt >= 0.01 ? coinAmt.toFixed(6) : coinAmt.toFixed(8));
+                    el.textContent = 'You will send: ' + disp + ' ' + currency + (price !== 1 ? ' (Rate: $' + price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 4}) + '/' + currency + ')' : '');
+                } else {
+                    el.textContent = 'Unable to fetch rate';
+                }
+            }).catch(function(){ el.textContent = 'Unable to fetch rate'; });
+    }
+
+    if (document.getElementById('deposit-amount')) {
+        document.getElementById('deposit-amount').addEventListener('input', updateDepositCoinQuote);
+        document.getElementById('deposit-amount').addEventListener('change', updateDepositCoinQuote);
+    }
+    if (document.getElementById('deposit-currency')) {
+        document.getElementById('deposit-currency').addEventListener('change', updateDepositCoinQuote);
+    }
+
     document.getElementById('deposit-submit-btn').addEventListener('click', function(){
         var currency = document.getElementById('deposit-currency').value;
-        var amount = parseFloat(document.getElementById('deposit-amount').value) || 0;
+        var amountUsd = parseFloat(document.getElementById('deposit-amount').value) || 0;
         var reference = document.getElementById('deposit-reference').value.trim();
         var errEl = document.getElementById('deposit-error');
-        if (!currency || amount <= 0) {
-            errEl.textContent = 'Please select a currency and enter a valid amount';
+        if (!currency || amountUsd <= 0) {
+            errEl.textContent = 'Please enter a USD amount and select a currency';
             errEl.classList.remove('hidden');
             return;
         }
@@ -525,13 +567,14 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/user/deposit.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ currency: currency, amount: amount, reference: reference || null })
+            body: JSON.stringify({ currency: currency, amount_usd: amountUsd, reference: reference || null })
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
-                var addr = addressesData.find(function(a){ return a.symbol === currency; });
+                var addr = addressesData ? addressesData.find(function(a){ return (a.symbol || '').toUpperCase() === (currency || '').toUpperCase(); }) : null;
                 document.getElementById('deposit-address-display').value = addr ? addr.address : '';
                 document.getElementById('deposit-selected-currency').textContent = currency;
-                document.getElementById('deposit-selected-amount').textContent = amount;
+                var coinAmt = res.data && res.data.coin_amount != null ? res.data.coin_amount : amountUsd;
+                document.getElementById('deposit-selected-amount').textContent = (typeof coinAmt === 'number' ? coinAmt.toFixed(8) : coinAmt) + ' ' + currency;
                 depositStep1.classList.add('hidden');
                 depositStep2.classList.remove('hidden');
             } else {
@@ -559,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (withdrawDrawer) {
                 openDrawer(withdrawDrawer); 
                 updateWithdrawBalance();
-                updateWithdrawUsdValue();
+                updateWithdrawCoinQuote();
             }
         });
     }
@@ -571,76 +614,63 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateWithdrawBalance() {
         var sel = document.getElementById('withdraw-currency');
-        var lbl = document.getElementById('withdraw-currency-label');
         var availEl = document.getElementById('withdraw-available');
-        if (!sel || !lbl || !availEl) return;
+        if (!sel || !availEl) return;
         var currency = sel.value || '';
-        lbl.textContent = currency || '—';
         var balance = userBalances[currency];
         var avail = balance ? parseFloat(balance.amount) : 0;
         availEl.textContent = avail.toFixed(8) + ' ' + (currency || '');
     }
 
-    function getUsdPricePerUnit(symbol, coinKey) {
-        var stablecoins = ['USDT','USDC','BUSD','USD','DAI'];
-        if (stablecoins.indexOf((symbol || '').toUpperCase()) >= 0) return Promise.resolve(1);
-        var coinId = coinKey || (window.BloombitCryptoConfig && window.BloombitCryptoConfig.getCoinIdBySymbol ? window.BloombitCryptoConfig.getCoinIdBySymbol(symbol) : null);
-        if (!coinId) return Promise.resolve(null);
-        if (!window.BloombitCryptoPrices || !window.BloombitCryptoPrices.fetch) return Promise.resolve(null);
-        return window.BloombitCryptoPrices.fetch([coinId]).then(function(prices){ return prices && prices[coinId] ? prices[coinId].usd : null; });
-    }
-
-    function getSelectedCoinKey(selectId) {
-        var sel = document.getElementById(selectId);
-        if (!sel || !sel.options[sel.selectedIndex]) return null;
-        return sel.options[sel.selectedIndex].getAttribute('data-coin-key') || null;
-    }
-
-    function updateDepositUsdValue() {
-        var currency = document.getElementById('deposit-currency').value;
-        var amount = parseFloat(document.getElementById('deposit-amount').value) || 0;
-        var el = document.getElementById('deposit-usd-value');
-        if (!el) return;
-        if (!currency || amount <= 0) { el.textContent = '—'; return; }
-        el.textContent = '≈ $—';
-        var coinKey = getSelectedCoinKey('deposit-currency');
-        getUsdPricePerUnit(currency, coinKey).then(function(price){
-            if (price != null) el.textContent = '≈ $' + (amount * price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USD';
-            else el.textContent = '—';
-        });
-    }
-
-    function updateWithdrawUsdValue() {
+    function updateWithdrawCoinQuote() {
+        var amountUsd = parseFloat(document.getElementById('withdraw-amount').value) || 0;
         var currency = document.getElementById('withdraw-currency').value;
-        var amount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
-        var el = document.getElementById('withdraw-usd-value');
+        var el = document.getElementById('withdraw-coin-quote');
         if (!el) return;
-        if (!currency || amount <= 0) { el.textContent = '—'; return; }
-        // Stable settlement currencies are 1:1
-        el.textContent = '≈ $' + amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USD';
+        if (!currency || amountUsd <= 0) { el.textContent = '—'; return; }
+        el.textContent = 'Fetching rate…';
+        var coinKey = (function(){
+            var sel = document.getElementById('withdraw-currency');
+            if (!sel || !sel.options[sel.selectedIndex]) return null;
+            return sel.options[sel.selectedIndex].getAttribute('data-coin-key') || null;
+        })();
+        if (!coinKey && window.BloombitCryptoConfig && window.BloombitCryptoConfig.getCoinIdBySymbol) {
+            coinKey = window.BloombitCryptoConfig.getCoinIdBySymbol(currency);
+        }
+        var stablecoins = ['USDT','USDC','BUSD','USD','DAI'];
+        var price = stablecoins.indexOf((currency || '').toUpperCase()) >= 0 ? 1 : null;
+        var fetchPrice = price === null && window.BloombitCryptoPrices && window.BloombitCryptoPrices.fetch;
+        (fetchPrice ? window.BloombitCryptoPrices.fetch([coinKey || 'bitcoin']) : Promise.resolve(price !== null ? { [coinKey || 'tether']: { usd: 1 } } : {}))
+            .then(function(prices){
+                if (price === null && prices && coinKey && prices[coinKey] && prices[coinKey].usd != null) {
+                    price = prices[coinKey].usd;
+                } else if (price === null && stablecoins.indexOf((currency || '').toUpperCase()) >= 0) {
+                    price = 1;
+                }
+                if (price != null && price > 0) {
+                    var coinAmt = amountUsd / price;
+                    var disp = coinAmt >= 1 ? coinAmt.toFixed(4) : (coinAmt >= 0.01 ? coinAmt.toFixed(6) : coinAmt.toFixed(8));
+                    el.textContent = 'You will debit: ' + disp + ' ' + currency + (price !== 1 ? ' (Rate: $' + price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 4}) + '/' + currency + ')' : '');
+                } else {
+                    el.textContent = 'Unable to fetch rate';
+                }
+            }).catch(function(){ el.textContent = 'Unable to fetch rate'; });
     }
 
-    if (document.getElementById('deposit-amount')) {
-        document.getElementById('deposit-amount').addEventListener('input', updateDepositUsdValue);
-        document.getElementById('deposit-amount').addEventListener('change', updateDepositUsdValue);
-    }
-    if (document.getElementById('deposit-currency')) {
-        document.getElementById('deposit-currency').addEventListener('change', updateDepositUsdValue);
-    }
     if (document.getElementById('withdraw-amount')) {
-        document.getElementById('withdraw-amount').addEventListener('input', updateWithdrawUsdValue);
-        document.getElementById('withdraw-amount').addEventListener('change', updateWithdrawUsdValue);
+        document.getElementById('withdraw-amount').addEventListener('input', updateWithdrawCoinQuote);
+        document.getElementById('withdraw-amount').addEventListener('change', updateWithdrawCoinQuote);
     }
     if (document.getElementById('withdraw-currency')) {
-        document.getElementById('withdraw-currency').addEventListener('change', function(){ updateWithdrawBalance(); updateWithdrawUsdValue(); });
+        document.getElementById('withdraw-currency').addEventListener('change', function(){ updateWithdrawBalance(); updateWithdrawCoinQuote(); });
     }
     document.getElementById('withdrawal-form').addEventListener('submit', function(e){
         e.preventDefault();
         var currency = document.getElementById('withdraw-currency').value;
-        var amount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
+        var amountUsd = parseFloat(document.getElementById('withdraw-amount').value) || 0;
         var address = document.getElementById('withdraw-address').value.trim();
         var msgEl = document.getElementById('withdrawal-message');
-        if (!currency || amount <= 0 || !address) {
+        if (!currency || amountUsd <= 0 || !address) {
             msgEl.textContent = 'Please fill all fields';
             msgEl.className = 'text-sm text-red-500';
             msgEl.classList.remove('hidden');
@@ -649,13 +679,13 @@ document.addEventListener('DOMContentLoaded', function() {
         msgEl.classList.add('hidden');
         var maxWithdrawLimitEl = document.getElementById('withdraw-max-limit');
         var maxWithdrawLimitUsd = parseFloat(maxWithdrawLimitEl ? maxWithdrawLimitEl.textContent : '') || 0;
-        if (amount < minWithdrawLimitUsd) {
+        if (amountUsd < minWithdrawLimitUsd) {
             msgEl.textContent = 'Minimum withdrawal is $' + minWithdrawLimitUsd.toFixed(2) + ' USD.';
             msgEl.className = 'text-sm text-red-500';
             msgEl.classList.remove('hidden');
             return;
         }
-        if (maxWithdrawLimitUsd > 0 && amount > maxWithdrawLimitUsd) {
+        if (maxWithdrawLimitUsd > 0 && amountUsd > maxWithdrawLimitUsd) {
             msgEl.textContent = 'Maximum withdrawal is $' + maxWithdrawLimitUsd.toFixed(2) + ' USD.';
             msgEl.className = 'text-sm text-red-500';
             msgEl.classList.remove('hidden');
@@ -664,7 +694,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/user/withdraw.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ currency: currency, amount: amount, address: address })
+            body: JSON.stringify({ currency: currency, amount_usd: amountUsd, address: address })
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
                 msgEl.textContent = res.data.message || 'Withdrawal request submitted';

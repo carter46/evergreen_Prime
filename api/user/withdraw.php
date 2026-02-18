@@ -22,35 +22,13 @@ if (!isset($_SESSION['user_id'])) {
 
 $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 $currency = strtoupper(trim($input['currency'] ?? ''));
-$amount = (float) ($input['amount'] ?? 0);
+$amountUsd = isset($input['amount_usd']) ? (float) $input['amount_usd'] : null;
+$amountCoin = isset($input['amount']) ? (float) $input['amount'] : null;
 $address = trim($input['address'] ?? '');
 
-if (empty($currency) || $amount <= 0 || empty($address)) {
+if (empty($currency) || empty($address)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Currency, amount, and address are required']);
-    exit;
-}
-
-// Stable settlement currencies only (no live FX pricing dependencies)
-if (!in_array($currency, ['USDT', 'USDC', 'BUSD', 'USD', 'DAI'], true)) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Withdrawals are currently supported for USDT, USDC, USD, BUSD, or DAI only.']);
-    exit;
-}
-
-// Validate min withdrawal limit (USD)
-$minUsd = (float) (get_site_setting('min_withdrawal_limit', '10') ?: '10');
-$amountUsd = $amount;
-if ($amountUsd < $minUsd) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Minimum withdrawal is $' . number_format($minUsd, 2) . ' USD.']);
-    exit;
-}
-
-$maxUsd = (float) (get_site_setting('max_withdrawal_limit', '') ?: 0);
-if ($maxUsd > 0 && $amountUsd > $maxUsd) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Maximum withdrawal is $' . number_format($maxUsd, 2) . ' USD.']);
+    echo json_encode(['success' => false, 'error' => 'Currency and address are required']);
     exit;
 }
 
@@ -59,6 +37,44 @@ try {
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Database unavailable']);
+    exit;
+}
+
+$amount = null;
+$amountUsdVal = null;
+
+if ($amountUsd !== null && $amountUsd > 0) {
+    $quote = quote_coin_amount_from_usd($pdo, $currency, $amountUsd);
+    if (empty($quote)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Unable to get price for ' . $currency . '. Please try again later.']);
+        exit;
+    }
+    $amountStr = $quote['coin_amount'];
+    $amount = (float) $amountStr;
+    $amountUsdVal = round($amountUsd, 2);
+} elseif ($amountCoin !== null && $amountCoin > 0) {
+    $amount = (float) $amountCoin;
+    $amountStr = number_format($amount, 18, '.', '');
+} else {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Enter a valid USD amount or coin amount']);
+    exit;
+}
+
+// Validate min withdrawal limit (USD)
+$minUsd = (float) (get_site_setting('min_withdrawal_limit', '10') ?: '10');
+$checkUsd = $amountUsdVal !== null ? $amountUsdVal : ($amount * (get_coin_usd_price($pdo, $currency) ?? 1));
+if ($checkUsd < $minUsd) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Minimum withdrawal is $' . number_format($minUsd, 2) . ' USD.']);
+    exit;
+}
+
+$maxUsd = (float) (get_site_setting('max_withdrawal_limit', '') ?: 0);
+if ($maxUsd > 0 && $checkUsd > $maxUsd) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Maximum withdrawal is $' . number_format($maxUsd, 2) . ' USD.']);
     exit;
 }
 
@@ -100,10 +116,21 @@ try {
         echo json_encode(['success' => false, 'error' => 'Insufficient balance']);
         exit;
     }
+
+    $hasAmountUsdCol = false;
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
+        $hasAmountUsdCol = $chk && $chk->rowCount() > 0;
+    } catch (Throwable $e) {}
     
     // Create transaction record
-    $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$userId, 'withdrawal', $amount, $currency, 'pending', $address]);
+    if ($hasAmountUsdCol && $amountUsdVal !== null) {
+        $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$userId, 'withdrawal', $amountStr, $amountUsdVal, $currency, 'pending', $address]);
+    } else {
+        $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$userId, 'withdrawal', $amountStr, $currency, 'pending', $address]);
+    }
     $txId = (int) $pdo->lastInsertId();
 
     // Debit user balance immediately (admin will credit back on reject)
@@ -111,12 +138,16 @@ try {
     $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, -?) ON DUPLICATE KEY UPDATE amount = amount - ?')
         ->execute([$userId, $currency, $amount, $amount]);
 
-    // Update cached USD balance snapshot (stable currencies only bump 1:1)
-    $cur = strtoupper($currency);
-    if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
-        bump_user_last_balance_usd($pdo, $userId, -1 * (float)$amount);
+    // Update cached USD balance using user-entered USD amount when available
+    if ($amountUsdVal !== null) {
+        bump_user_last_balance_usd($pdo, $userId, -1 * (float)$amountUsdVal);
     } else {
-        refresh_user_last_balance_usd($pdo, $userId);
+        $cur = strtoupper($currency);
+        if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
+            bump_user_last_balance_usd($pdo, $userId, -1 * (float)$amount);
+        } else {
+            refresh_user_last_balance_usd($pdo, $userId);
+        }
     }
 
     $pdo->commit();

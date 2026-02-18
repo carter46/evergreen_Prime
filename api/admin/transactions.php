@@ -37,8 +37,13 @@ if (!in_array($action, ['approve', 'reject'], true) || $transactionId <= 0) {
     exit;
 }
 
-// Fetch transaction
-$stmt = $pdo->prepare('SELECT id, user_id, type, amount, currency, status FROM transactions WHERE id = ?');
+// Fetch transaction (include amount_usd when column exists)
+$cols = 'id, user_id, type, amount, currency, status';
+try {
+    $chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
+    if ($chk && $chk->rowCount() > 0) $cols .= ', amount_usd';
+} catch (Throwable $e) {}
+$stmt = $pdo->prepare("SELECT $cols FROM transactions WHERE id = ?");
 $stmt->execute([$transactionId]);
 $tx = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -65,11 +70,15 @@ try {
             $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
                 ->execute([$tx['user_id'], $tx['currency'], $tx['amount']]);
             require_once dirname(__DIR__, 2) . '/includes/helpers.php';
-            $cur = strtoupper((string) $tx['currency']);
-            if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
-                bump_user_last_balance_usd($pdo, (int)$tx['user_id'], (float)$tx['amount']);
+            if (isset($tx['amount_usd']) && $tx['amount_usd'] !== null && (float)$tx['amount_usd'] > 0) {
+                bump_user_last_balance_usd($pdo, (int)$tx['user_id'], (float)$tx['amount_usd']);
             } else {
-                refresh_user_last_balance_usd($pdo, (int)$tx['user_id']);
+                $cur = strtoupper((string) $tx['currency']);
+                if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
+                    bump_user_last_balance_usd($pdo, (int)$tx['user_id'], (float)$tx['amount']);
+                } else {
+                    refresh_user_last_balance_usd($pdo, (int)$tx['user_id']);
+                }
             }
         }
         // For withdrawals, status update is sufficient (balance already debited on request)
@@ -88,11 +97,15 @@ try {
             $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
                 ->execute([$tx['user_id'], $tx['currency'], $tx['amount']]);
             require_once dirname(__DIR__, 2) . '/includes/helpers.php';
-            $cur = strtoupper((string) $tx['currency']);
-            if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
-                bump_user_last_balance_usd($pdo, (int)$tx['user_id'], (float)$tx['amount']);
+            if (isset($tx['amount_usd']) && $tx['amount_usd'] !== null && (float)$tx['amount_usd'] > 0) {
+                bump_user_last_balance_usd($pdo, (int)$tx['user_id'], (float)$tx['amount_usd']);
             } else {
-                refresh_user_last_balance_usd($pdo, (int)$tx['user_id']);
+                $cur = strtoupper((string) $tx['currency']);
+                if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
+                    bump_user_last_balance_usd($pdo, (int)$tx['user_id'], (float)$tx['amount']);
+                } else {
+                    refresh_user_last_balance_usd($pdo, (int)$tx['user_id']);
+                }
             }
         }
         // For deposits, no balance change needed (user hasn't been credited yet)

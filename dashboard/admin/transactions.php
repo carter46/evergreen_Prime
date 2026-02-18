@@ -16,9 +16,14 @@ $type = $_GET['type'] ?? 'deposit';
 
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
+    $cols = 't.id, t.user_id, t.type, t.amount, t.currency, t.status, t.reference, t.created_at, u.name, u.email';
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
+        if ($chk && $chk->rowCount() > 0) $cols .= ', t.amount_usd';
+    } catch (Throwable $e) {}
     
     // Fetch all deposits
-    $stmt = $pdo->query("SELECT t.id, t.user_id, t.type, t.amount, t.currency, t.status, t.reference, t.created_at, u.name, u.email FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'deposit' ORDER BY t.created_at DESC LIMIT 200");
+    $stmt = $pdo->query("SELECT $cols FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'deposit' ORDER BY t.created_at DESC LIMIT 200");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         if ($row['status'] === 'pending') $pendingDeposits[] = $row;
         elseif ($row['status'] === 'completed') $completedDeposits[] = $row;
@@ -26,7 +31,7 @@ try {
     }
     
     // Fetch all withdrawals
-    $stmt = $pdo->query("SELECT t.id, t.user_id, t.type, t.amount, t.currency, t.status, t.reference, t.created_at, u.name, u.email FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'withdrawal' ORDER BY t.created_at DESC LIMIT 200");
+    $stmt = $pdo->query("SELECT $cols FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'withdrawal' ORDER BY t.created_at DESC LIMIT 200");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         if ($row['status'] === 'pending') $pendingWithdrawals[] = $row;
         elseif ($row['status'] === 'completed') $completedWithdrawals[] = $row;
@@ -153,7 +158,20 @@ $currentTransactions = getTransactionsForFilter($filter, $type, $pendingDeposits
 <p class="text-[10px] text-slate-500"><?php echo htmlspecialchars($tx['email'] ?? ''); ?></p>
 </div>
 </td>
-<td class="px-6 py-4 text-sm font-bold">$<?php echo number_format((float)$tx['amount'], 2); ?></td>
+<td class="px-6 py-4 text-sm">
+<?php 
+$usdAmt = isset($tx['amount_usd']) && $tx['amount_usd'] !== null ? (float)$tx['amount_usd'] : null;
+$coinAmt = (float)$tx['amount'];
+?>
+<div class="font-bold"><?php echo $usdAmt !== null ? '$' . number_format($usdAmt, 2) . ' USD' : '$' . number_format($coinAmt, 2); ?></div>
+<div class="text-xs text-slate-500">
+<?php if ($logo): ?><img alt="<?php echo htmlspecialchars($tx['currency']); ?>" class="inline w-4 h-4 align-middle mr-0.5" src="<?php echo htmlspecialchars($logo); ?>"/><?php endif; ?>
+<?php 
+$fmt = $coinAmt >= 1 ? number_format($coinAmt, 4) : ($coinAmt >= 0.01 ? number_format($coinAmt, 6) : number_format($coinAmt, 8));
+echo $fmt . ' ' . htmlspecialchars($tx['currency']); 
+?>
+</div>
+</td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-1.5">
 <?php if ($logo): ?><img alt="<?php echo htmlspecialchars($tx['currency']); ?>" class="w-5 h-5" src="<?php echo htmlspecialchars($logo); ?>"/><?php endif; ?>

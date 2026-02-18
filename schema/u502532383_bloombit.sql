@@ -195,6 +195,7 @@ CREATE TABLE `transactions` (
   `user_id` int(10) UNSIGNED NOT NULL,
   `type` enum('deposit','withdrawal','payout','investment') NOT NULL,
   `amount` decimal(36,18) NOT NULL,
+  `amount_usd` decimal(18,2) DEFAULT NULL,
   `currency` varchar(20) NOT NULL DEFAULT 'USD',
   `status` enum('pending','completed','rejected','cancelled') NOT NULL DEFAULT 'pending',
   `reference` varchar(255) DEFAULT NULL,

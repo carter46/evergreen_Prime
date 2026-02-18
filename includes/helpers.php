@@ -182,6 +182,68 @@ function get_prices_usd_snapshot_no_fetch(): array {
 }
 
 /**
+ * Get USD price for a single coin (for deposit/withdraw USD-to-coin quoting).
+ * Resolves coin_key from DB (coins table) or fallback map. Stablecoins return 1.0.
+ * Uses short file cache (60s) to reduce CoinGecko rate limits.
+ * Returns null if price unavailable.
+ */
+function get_coin_usd_price(PDO $pdo, string $symbol): ?float {
+    $symbol = strtoupper(trim($symbol));
+    if (empty($symbol)) return null;
+    $stable = ['USD', 'USDT', 'USDC', 'BUSD', 'DAI'];
+    if (in_array($symbol, $stable, true)) return 1.0;
+
+    $coinKey = null;
+    try {
+        $stmt = $pdo->prepare('SELECT coin_key FROM coins WHERE UPPER(symbol) = ? AND enabled = 1 LIMIT 1');
+        $stmt->execute([$symbol]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row && !empty($row['coin_key'])) $coinKey = $row['coin_key'];
+    } catch (Throwable $e) {}
+    if (!$coinKey) $coinKey = currency_to_coingecko($symbol);
+    if (!$coinKey) return null;
+
+    $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'bloombit_price_' . preg_replace('/[^a-z0-9_-]/', '', strtolower($coinKey)) . '.json';
+    $cacheMaxAge = 60;
+    if (is_file($cacheFile) && (time() - filemtime($cacheFile)) <= $cacheMaxAge) {
+        $cached = json_decode((string) @file_get_contents($cacheFile), true);
+        if (isset($cached['usd']) && (float)$cached['usd'] > 0) return (float) $cached['usd'];
+    }
+
+    $url = 'https://api.coingecko.com/api/v3/simple/price?ids=' . rawurlencode($coinKey) . '&vs_currencies=usd';
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 8,
+        CURLOPT_HTTPHEADER => ['Accept: application/json', 'User-Agent: bloombit-server'],
+    ]);
+    $json = curl_exec($ch);
+    curl_close($ch);
+    if (!$json) return null;
+    $data = json_decode($json, true);
+    if (!is_array($data) || empty($data[$coinKey]['usd'])) return null;
+    $price = (float) $data[$coinKey]['usd'];
+    if ($price <= 0) return null;
+    @file_put_contents($cacheFile, json_encode(['usd' => $price, 'ts' => time()]));
+    return $price;
+}
+
+/**
+ * Quote coin amount from USD amount (for deposit/withdraw).
+ * Returns ['coin_amount' => string (18 decimals), 'price_usd' => float] or empty array on failure.
+ */
+function quote_coin_amount_from_usd(PDO $pdo, string $symbol, float $usd): array {
+    if ($usd <= 0) return [];
+    $price = get_coin_usd_price($pdo, $symbol);
+    if ($price === null || $price <= 0) return [];
+    $coinAmount = $usd / $price;
+    return [
+        'coin_amount' => number_format($coinAmount, 18, '.', ''),
+        'price_usd' => $price,
+    ];
+}
+
+/**
  * Map wallet currency code to CoinGecko price key.
  */
 function currency_to_coingecko(string $currency): ?string {

@@ -264,6 +264,16 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- Add transactions.amount_usd for USD-first deposit/withdraw flows
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'amount_usd');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE transactions ADD COLUMN amount_usd DECIMAL(18,2) NULL AFTER amount',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 -- Create kyc_submissions table
 CREATE TABLE IF NOT EXISTS kyc_submissions (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
