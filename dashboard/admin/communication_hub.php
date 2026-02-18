@@ -3,29 +3,10 @@ require_once __DIR__ . '/../../includes/admin-check.php';
 require_once __DIR__ . '/../../includes/helpers.php';
 $siteName = get_site_name();
 $currentPage = 'communication';
-$inbox = [];
-$sentMail = [];
 $usersList = [];
-$selectedMail = null;
-$selectedBox = '';
+$imapSentFolder = (string) (trim((string)(get_site_setting('mail_imap_sent_folder', '') ?? '')) ?: 'Sent');
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
-    $chk2 = $pdo->query("SHOW TABLES LIKE 'admin_mailbox'");
-    if ($chk2 && $chk2->rowCount() > 0) {
-        $stmt = $pdo->query("SELECT id, source, from_email, from_name, subject, status, created_at FROM admin_mailbox WHERE direction = 'in' ORDER BY created_at DESC LIMIT 20");
-        $inbox = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
-        $stmt = $pdo->query("SELECT id, source, to_emails, subject, status, created_at FROM admin_mailbox WHERE direction = 'out' ORDER BY created_at DESC LIMIT 20");
-        $sentMail = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
-
-        $selectedBox = (string)($_GET['box'] ?? '');
-        $selectedId = (int)($_GET['id'] ?? 0);
-        if ($selectedId > 0 && in_array($selectedBox, ['in', 'out'], true)) {
-            $stmt = $pdo->prepare('SELECT * FROM admin_mailbox WHERE id = ? AND direction = ? LIMIT 1');
-            $stmt->execute([$selectedId, $selectedBox]);
-            $selectedMail = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
-        }
-    }
-    // Registered users for "Single user" picker
     $stmt = $pdo->query("SELECT id, name, email FROM users WHERE role = 'user' AND active = 1 ORDER BY id DESC LIMIT 500");
     $usersList = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 } catch (Throwable $e) {}
@@ -72,51 +53,20 @@ try {
 <main class="flex-1 overflow-y-auto min-w-0">
 <?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
 <div class="p-4 sm:p-6 lg:p-8 min-h-screen">
-<?php if (!empty($selectedMail)): ?>
-<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+<div id="mail-modal" class="fixed inset-0 bg-black/50 z-50 p-4 flex items-center justify-center hidden">
   <div class="w-full max-w-3xl bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden">
     <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between gap-4">
       <div class="min-w-0">
-        <p class="text-xs text-slate-500 dark:text-slate-400"><?php echo $selectedMail['direction'] === 'in' ? 'Inbox' : 'Sent'; ?></p>
-        <h3 class="text-lg font-bold text-slate-900 dark:text-white truncate"><?php echo htmlspecialchars($selectedMail['subject'] ?? ''); ?></h3>
+        <p id="mail-modal-label" class="text-xs text-slate-500 dark:text-slate-400"></p>
+        <h3 id="mail-modal-subject" class="text-lg font-bold text-slate-900 dark:text-white truncate"></h3>
       </div>
-      <a href="/dashboard/admin/communication_hub" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800">Close</a>
+      <button type="button" id="mail-modal-close" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800">Close</button>
     </div>
-    <div class="p-4 space-y-3">
-      <?php if (($selectedMail['direction'] ?? '') === 'in'): ?>
-        <div class="text-sm text-slate-700 dark:text-slate-300 space-y-1">
-          <div><span class="font-bold">From:</span> <?php echo htmlspecialchars(trim(($selectedMail['from_name'] ?? '') . ' <' . ($selectedMail['from_email'] ?? '') . '>')); ?></div>
-          <div><span class="font-bold">To:</span> <?php echo htmlspecialchars($selectedMail['to_emails'] ?? (get_site_setting('contact_email', '') ?? '')); ?></div>
-        </div>
-      <?php else: ?>
-        <div class="text-sm text-slate-700 dark:text-slate-300 space-y-1">
-          <div><span class="font-bold">To:</span> <?php echo htmlspecialchars($selectedMail['to_emails'] ?? ''); ?></div>
-        </div>
-      <?php endif; ?>
-      <div class="text-xs text-slate-500 dark:text-slate-400"><?php echo htmlspecialchars($selectedMail['created_at'] ?? ''); ?></div>
-      <div class="text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
-        <?php
-          $bt = (string)($selectedMail['body_text'] ?? '');
-          echo $bt !== '' ? nl2br(htmlspecialchars($bt)) : '<span class="text-slate-500">No message body stored.</span>';
-        ?>
-      </div>
-      <?php if (($selectedMail['direction'] ?? '') === 'in' && !empty($selectedMail['from_email'])): ?>
-        <div class="pt-2 border-t border-slate-100 dark:border-zinc-700">
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Reply</label>
-          <textarea id="reply-body" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg p-3 text-sm" rows="5" placeholder="Type your reply..."></textarea>
-          <div class="flex items-center gap-3 mt-3">
-            <button type="button" id="reply-send" data-reply-id="<?php echo (int)$selectedMail['id']; ?>" class="px-4 py-2 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Send Reply</button>
-            <div id="reply-msg" class="text-sm hidden"></div>
-          </div>
-        </div>
-      <?php endif; ?>
-      <?php if (!empty($selectedMail['error_text'])): ?>
-        <div class="text-xs text-red-600">Error: <?php echo htmlspecialchars($selectedMail['error_text']); ?></div>
-      <?php endif; ?>
+    <div id="mail-modal-body" class="p-4 space-y-3">
+      <div class="text-center py-8 text-slate-500"><span class="material-icons-outlined animate-spin">sync</span> Loading...</div>
     </div>
   </div>
 </div>
-<?php endif; ?>
 <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
 <div>
 <nav class="flex text-xs text-slate-400 gap-2 mb-1">
@@ -183,9 +133,10 @@ try {
 <div id="broadcast-message" class="text-sm hidden"></div>
 <div id="mail-sync-msg" class="text-sm hidden"></div>
 <div class="flex flex-col sm:flex-row gap-3">
-  <button type="button" id="mail-sync" class="sm:w-auto px-6 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
-    <span class="material-icons-outlined text-base">sync</span> Sync Mailbox
+  <button type="button" id="mail-refresh-all" class="sm:w-auto px-6 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+    <span class="material-icons-outlined text-base">sync</span> Refresh Mailbox
   </button>
+  <button type="button" id="mail-archive-db" class="sm:w-auto px-4 py-2 text-sm text-slate-500 hover:text-slate-700" title="Import to database">Archive to DB</button>
   <button type="submit" class="sm:w-auto px-6 py-2 bg-primary text-slate-900 font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
     <span class="material-icons-outlined text-base">send</span> Send Email
   </button>
@@ -195,10 +146,11 @@ try {
 </div>
 
 <!-- Mailbox -->
-<div class="col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-6">
+<div class="col-span-12 w-full min-w-0 grid grid-cols-1 xl:grid-cols-2 gap-6">
   <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
     <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between">
-      <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-icons-outlined text-base">inbox</span> Inbox (Contact Form)</h3>
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-icons-outlined text-base">inbox</span> Inbox</h3>
+      <button type="button" id="inbox-refresh" class="text-xs font-bold text-primary hover:underline flex items-center gap-1"><span class="material-icons-outlined text-sm">refresh</span> Refresh</button>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-left">
@@ -210,17 +162,8 @@ try {
             <th class="px-4 py-3 text-right"> </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-zinc-700">
-        <?php if (empty($inbox)): ?>
-          <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">No inbox messages yet.</td></tr>
-        <?php else: foreach ($inbox as $m): ?>
-          <tr class="hover:bg-slate-50/50 dark:hover:bg-zinc-800/50">
-            <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300"><?php echo htmlspecialchars(($m['from_name'] ?: $m['from_email']) ?? ''); ?></td>
-            <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars($m['subject'] ?? ''); ?></td>
-            <td class="px-4 py-3 text-xs text-slate-500 dark:text-slate-400"><?php echo time_ago($m['created_at']); ?></td>
-            <td class="px-4 py-3 text-right"><a class="text-xs font-bold text-primary hover:underline" href="/dashboard/admin/communication_hub?box=in&amp;id=<?php echo (int)$m['id']; ?>">Open</a></td>
-          </tr>
-        <?php endforeach; endif; ?>
+        <tbody id="inbox-tbody" class="divide-y divide-slate-100 dark:divide-zinc-700">
+          <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">Click Refresh to load inbox</td></tr>
         </tbody>
       </table>
     </div>
@@ -229,6 +172,7 @@ try {
   <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
     <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between">
       <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-icons-outlined text-base">send</span> Sent</h3>
+      <button type="button" id="sent-refresh" class="text-xs font-bold text-primary hover:underline flex items-center gap-1"><span class="material-icons-outlined text-sm">refresh</span> Refresh</button>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-left">
@@ -240,17 +184,8 @@ try {
             <th class="px-4 py-3 text-right"> </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-zinc-700">
-        <?php if (empty($sentMail)): ?>
-          <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">No sent emails yet.</td></tr>
-        <?php else: foreach ($sentMail as $m): ?>
-          <tr class="hover:bg-slate-50/50 dark:hover:bg-zinc-800/50">
-            <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-300"><?php echo htmlspecialchars($m['to_emails'] ?? ''); ?></td>
-            <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars($m['subject'] ?? ''); ?></td>
-            <td class="px-4 py-3 text-xs text-slate-500 dark:text-slate-400"><?php echo time_ago($m['created_at']); ?></td>
-            <td class="px-4 py-3 text-right"><a class="text-xs font-bold text-primary hover:underline" href="/dashboard/admin/communication_hub?box=out&amp;id=<?php echo (int)$m['id']; ?>">Open</a></td>
-          </tr>
-        <?php endforeach; endif; ?>
+        <tbody id="sent-tbody" class="divide-y divide-slate-100 dark:divide-zinc-700">
+          <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">Click Refresh to load sent</td></tr>
         </tbody>
       </table>
     </div>
@@ -266,7 +201,7 @@ try {
 (function(){
   var form = document.getElementById('broadcast-form');
   var msgEl = document.getElementById('broadcast-message');
-  var syncBtn = document.getElementById('mail-sync');
+  var refreshBtn = document.getElementById('mail-refresh-all');
   var syncMsg = document.getElementById('mail-sync-msg');
   var audienceSel = document.getElementById('compose-audience');
   var userWrap = document.getElementById('compose-user-wrap');
@@ -280,28 +215,118 @@ try {
     el.className = 'text-sm ' + (ok ? 'text-green-600' : 'text-red-600');
     el.classList.remove('hidden');
   }
+  var sentFolder = <?php echo json_encode($imapSentFolder); ?>;
+  function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+  function fmtDate(d){ try{ var t=new Date(d); return t.toLocaleDateString()+' '+t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }catch(e){ return d||''; } }
+  function loadInbox(){
+    var tbody=document.getElementById('inbox-tbody'); if(!tbody) return;
+    tbody.innerHTML='<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500"><span class="material-icons-outlined animate-spin">sync</span> Loading…</td></tr>';
+    fetch('/api/admin/imap-list.php?folder=INBOX&limit=20').then(function(r){return r.json();}).then(function(res){
+      if(!res.success){ tbody.innerHTML='<tr><td colspan="4" class="px-4 py-8 text-center text-red-600">'+(res.error||'Failed')+'</td></tr>'; return; }
+      var emails=res.emails||[];
+      if(emails.length===0){ tbody.innerHTML='<tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">No messages</td></tr>'; return; }
+      tbody.innerHTML=emails.map(function(m){
+        var from=(m.from&&m.from.name)?m.from.name:(m.from&&m.from.email?m.from.email:'');
+        return '<tr class="hover:bg-slate-50/50"><td class="px-4 py-3 text-sm">'+esc(from)+'</td><td class="px-4 py-3 text-sm font-medium">'+esc(m.subject||'')+'</td><td class="px-4 py-3 text-xs text-slate-500">'+esc(fmtDate(m.date))+'</td><td class="px-4 py-3 text-right"><button type="button" class="text-xs font-bold text-primary hover:underline mail-open" data-folder="INBOX" data-uid="'+(m.uid||'')+'">Open</button></td></tr>';
+      }).join('');
+    }).catch(function(){ tbody.innerHTML='<tr><td colspan="4" class="px-4 py-8 text-center text-red-600">Request failed</td></tr>'; });
+  }
+  function loadSent(){
+    var tbody=document.getElementById('sent-tbody'); if(!tbody) return;
+    tbody.innerHTML='<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500"><span class="material-icons-outlined animate-spin">sync</span> Loading…</td></tr>';
+    fetch('/api/admin/imap-list.php?folder='+encodeURIComponent(sentFolder)+'&limit=20').then(function(r){return r.json();}).then(function(res){
+      if(!res.success){ tbody.innerHTML='<tr><td colspan="4" class="px-4 py-8 text-center text-red-600">'+(res.error||'Failed')+'</td></tr>'; return; }
+      var emails=res.emails||[];
+      if(emails.length===0){ tbody.innerHTML='<tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">No sent messages</td></tr>'; return; }
+      tbody.innerHTML=emails.map(function(m){
+        var to=(m.to||[]).join(', ');
+        return '<tr class="hover:bg-slate-50/50"><td class="px-4 py-3 text-xs">'+esc(to)+'</td><td class="px-4 py-3 text-sm font-medium">'+esc(m.subject||'')+'</td><td class="px-4 py-3 text-xs text-slate-500">'+esc(fmtDate(m.date))+'</td><td class="px-4 py-3 text-right"><button type="button" class="text-xs font-bold text-primary hover:underline mail-open" data-folder="'+esc(sentFolder)+'" data-uid="'+(m.uid||'')+'">Open</button></td></tr>';
+      }).join('');
+    }).catch(function(){ tbody.innerHTML='<tr><td colspan="4" class="px-4 py-8 text-center text-red-600">Request failed</td></tr>'; });
+  }
 
-  if (syncBtn) {
-    syncBtn.addEventListener('click', function(){
-      syncBtn.disabled = true;
-      showInline(syncMsg, 'Syncing mailbox…', true);
-      fetch('/api/admin/mail-sync.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ limit: 30 })
-      }).then(function(r){ return r.json(); }).then(function(res){
-        if (res && res.success) {
-          showInline(syncMsg, 'Mailbox synced. Imported ' + (res.data && res.data.imported) + ' message(s).', true);
-          setTimeout(function(){ location.reload(); }, 800);
-        } else {
-          showInline(syncMsg, (res && res.error) ? res.error : 'Sync failed.', false);
-          syncBtn.disabled = false;
+  function closeModal(){
+    var m = document.getElementById('mail-modal');
+    if (m) { m.classList.add('hidden'); }
+  }
+  function openMessage(folder, uid){
+    var modal = document.getElementById('mail-modal');
+    var lbl = document.getElementById('mail-modal-label');
+    var subj = document.getElementById('mail-modal-subject');
+    var body = document.getElementById('mail-modal-body');
+    if (!modal || !lbl || !subj || !body) return;
+    lbl.textContent = folder === 'INBOX' ? 'Inbox' : 'Sent';
+    subj.textContent = 'Loading…';
+    body.innerHTML = '<div class="text-center py-8 text-slate-500"><span class="material-icons-outlined animate-spin">sync</span> Loading…</div>';
+    modal.classList.remove('hidden');
+    fetch('/api/admin/imap-message.php?folder=' + encodeURIComponent(folder) + '&uid=' + encodeURIComponent(uid))
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if (!res.success) {
+          body.innerHTML = '<div class="text-red-600">' + (res.error || 'Failed') + '</div>';
+          subj.textContent = 'Error';
+          return;
         }
-      }).catch(function(){
-        showInline(syncMsg, 'Sync failed.', false);
-        syncBtn.disabled = false;
-      });
+        var e = res.email || {};
+        subj.textContent = e.subject || '(no subject)';
+        var fromName = (e.from && e.from.name) ? e.from.name : (e.from && e.from.email ? e.from.email : '');
+        var fromEmail = (e.from && e.from.email) || '';
+        var fromStr = esc(fromName) + ' &lt;' + esc(fromEmail) + '&gt;';
+        var toStr = esc((e.to || []).join(', '));
+        var bodyContent = e.is_html ? (e.body || '') : esc(e.body || '').replace(/\n/g, '<br>');
+        var html = '<div class="text-sm text-slate-700 dark:text-slate-300 space-y-1"><div><span class="font-bold">From:</span> ' + fromStr + '</div><div><span class="font-bold">To:</span> ' + toStr + '</div></div><div class="text-xs text-slate-500">' + esc(e.date || '') + '</div><div class="text-sm text-slate-800 dark:text-slate-200 leading-relaxed" id="mail-modal-content">' + bodyContent + '</div>';
+        if (folder === 'INBOX' && ((e.reply_to && e.reply_to.email) || (e.from && e.from.email))) {
+          html += '<div class="pt-2 border-t border-slate-100 dark:border-zinc-700" data-reply-folder="INBOX" data-reply-uid="' + esc(String(uid)) + '"><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Reply</label><textarea id="reply-body" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg p-3 text-sm" rows="5" placeholder="Type your reply…"></textarea><div class="flex items-center gap-3 mt-3"><button type="button" id="reply-send" class="px-4 py-2 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Send Reply</button><div id="reply-msg" class="text-sm hidden"></div></div>';
+        }
+        body.innerHTML = html;
+      })
+      .catch(function(){ body.innerHTML = '<div class="text-red-600">Request failed</div>'; subj.textContent = 'Error'; });
+  }
+
+  document.getElementById('mail-modal-close') && document.getElementById('mail-modal-close').addEventListener('click', closeModal);
+  document.getElementById('mail-modal') && document.getElementById('mail-modal').addEventListener('click', function(ev){ if (ev.target === document.getElementById('mail-modal')) closeModal(); });
+  document.body.addEventListener('click', function(ev){
+    var openBtn = ev.target.closest('.mail-open');
+    if (openBtn && openBtn.dataset.folder && openBtn.dataset.uid) { ev.preventDefault(); openMessage(openBtn.dataset.folder, openBtn.dataset.uid); }
+    var replyBtn = ev.target.closest('#reply-send');
+    if (replyBtn) {
+      var wrap = replyBtn.closest('[data-reply-folder]');
+      if (!wrap) return;
+      var rb = document.getElementById('reply-body');
+      var rm = document.getElementById('reply-msg');
+      var b = (rb && rb.value || '').trim();
+      if (!b) { if (rm) { rm.textContent = 'Reply body required.'; rm.className = 'text-sm text-red-600'; rm.classList.remove('hidden'); } return; }
+      replyBtn.disabled = true;
+      fetch('/api/admin/imap-reply.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ folder: wrap.dataset.replyFolder, uid: parseInt(wrap.dataset.replyUid, 10), body: b }) })
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          if (rm) { rm.textContent = (res && res.success) ? 'Reply sent.' : (res && res.error || 'Failed'); rm.className = 'text-sm ' + ((res && res.success) ? 'text-green-600' : 'text-red-600'); rm.classList.remove('hidden'); }
+          replyBtn.disabled = false;
+          if (res && res.success) { setTimeout(function(){ closeModal(); loadInbox(); loadSent(); }, 800); }
+        })
+        .catch(function(){ if (rm) { rm.textContent = 'Request failed'; rm.className = 'text-sm text-red-600'; rm.classList.remove('hidden'); } replyBtn.disabled = false; });
+    }
+  });
+
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function(){
+      showInline(syncMsg, 'Refreshing…', true);
+      loadInbox(); loadSent();
+      setTimeout(function(){ syncMsg.classList.add('hidden'); }, 1500);
+    });
+  }
+  var archiveBtn = document.getElementById('mail-archive-db');
+  if (archiveBtn) {
+    archiveBtn.addEventListener('click', function(){
+      archiveBtn.disabled = true;
+      showInline(syncMsg, 'Archiving to DB…', true);
+      fetch('/api/admin/mail-sync.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ limit: 50 }) })
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          showInline(syncMsg, res && res.success ? 'Archived ' + (res.data && res.data.imported || 0) + ' message(s).' : (res && res.error || 'Failed'), !!(res && res.success));
+          archiveBtn.disabled = false;
+        })
+        .catch(function(){ showInline(syncMsg, 'Failed', false); archiveBtn.disabled = false; });
     });
   }
 
@@ -372,33 +397,14 @@ try {
   document.querySelectorAll('button[data-insert-placeholder]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var ta = form.querySelector('[name="body"]');
-      if (ta) ta.value += ' ' + btn.dataset.insertPlaceholder;
+      if (ta) ta.value += ' ' + (btn.dataset.insertPlaceholder || '');
     });
   });
 
-  var replySend = document.getElementById('reply-send');
-  if (replySend) {
-    replySend.addEventListener('click', function(){
-      var id = parseInt(replySend.getAttribute('data-reply-id') || '0', 10);
-      var body = (document.getElementById('reply-body') || {}).value || '';
-      var rMsg = document.getElementById('reply-msg');
-      if (!id || !body.trim()) { showInline(rMsg, 'Reply body is required.', false); return; }
-      replySend.disabled = true;
-      fetch('/api/admin/mail-reply.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ id: id, body: body.trim() })
-      }).then(function(r){ return r.json(); }).then(function(res){
-        showInline(rMsg, res && res.success ? 'Reply sent.' : ((res && res.error) || 'Failed to send reply.'), !!(res && res.success));
-        if (res && res.success) setTimeout(function(){ location.href = '/dashboard/admin/communication_hub'; }, 800);
-        replySend.disabled = false;
-      }).catch(function(){
-        showInline(rMsg, 'Failed to send reply.', false);
-        replySend.disabled = false;
-      });
-    });
-  }
+  document.getElementById('inbox-refresh') && document.getElementById('inbox-refresh').addEventListener('click', loadInbox);
+  document.getElementById('sent-refresh') && document.getElementById('sent-refresh').addEventListener('click', loadSent);
+  loadInbox();
+  loadSent();
 })();
 </script>
 </body></html>

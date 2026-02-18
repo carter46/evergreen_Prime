@@ -57,6 +57,9 @@ try {
 
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
 require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
+if (function_exists('imap_open')) {
+    require_once dirname(__DIR__, 2) . '/includes/imap.php';
+}
 
 // Parse external recipients
 $externalEmails = [];
@@ -162,6 +165,12 @@ foreach ($uniqueTargets as $t) {
         $mail->isHTML(true);
         $mail->send();
         $sent++;
+        if (!$testOnly && function_exists('bloombit_imap_append_to_sent')) {
+            $mime = $mail->getSentMIMEMessage();
+            if ($mime !== '') {
+                bloombit_imap_append_to_sent($mime);
+            }
+        }
     } catch (Throwable $e) {
         $errors[] = $t['email'] . ': ' . $e->getMessage();
     }
