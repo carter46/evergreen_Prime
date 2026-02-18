@@ -143,7 +143,7 @@ $currentTransactions = getTransactionsForFilter($filter, $type, $pendingDeposits
 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Amount</th>
 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Currency</th>
 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Date</th>
-<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Reference</th>
+<?php if ($type !== 'withdrawal'): ?><th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Reference</th><?php endif; ?>
 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Actions</th>
 </tr>
 </thead>
@@ -179,12 +179,15 @@ echo $fmt . ' ' . htmlspecialchars($tx['currency']);
 </div>
 </td>
 <td class="px-6 py-4 text-xs text-slate-500"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></td>
-<td class="px-6 py-4 font-mono text-[10px] text-slate-400"><?php echo $tx['reference'] ? substr($tx['reference'], 0, 8) . '...' : '—'; ?></td>
+<?php if ($type !== 'withdrawal'): ?><td class="px-6 py-4 font-mono text-[10px] text-slate-400"><?php echo $tx['reference'] ? substr($tx['reference'], 0, 8) . '...' : '—'; ?></td><?php endif; ?>
 <td class="px-6 py-4 text-right">
 <?php if ($tx['status'] === 'pending'): ?>
-<div class="flex justify-end gap-2">
-<button type="button" data-tx-id="<?php echo (int)$tx['id']; ?>" data-action="approve" class="px-3 py-1.5 bg-primary text-black text-[10px] font-bold rounded-lg hover:bg-primary/90 transition-colors">APPROVE</button>
-<button type="button" data-tx-id="<?php echo (int)$tx['id']; ?>" data-action="reject" class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors">REJECT</button>
+<div class="relative inline-block">
+<button type="button" class="tx-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" data-tx-id="<?php echo (int)$tx['id']; ?>" aria-label="Actions"><span class="material-icons text-lg">more_vert</span></button>
+<div class="tx-actions-dropdown hidden absolute right-0 top-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 min-w-[100px]">
+<button type="button" class="tx-action-approve block w-full text-left px-3 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-zinc-700" data-tx-id="<?php echo (int)$tx['id']; ?>">Approve</button>
+<button type="button" class="tx-action-reject block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-tx-id="<?php echo (int)$tx['id']; ?>">Reject</button>
+</div>
 </div>
 <?php else: ?>
 <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase <?php echo $tx['status'] === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'; ?>"><?php echo htmlspecialchars($tx['status']); ?></span>
@@ -193,7 +196,7 @@ echo $fmt . ' ' . htmlspecialchars($tx['currency']);
 </tr>
 <?php endforeach; ?>
 <?php if (empty($currentTransactions)): ?>
-<tr><td class="px-6 py-8 text-center text-slate-500" colspan="6">No <?php echo htmlspecialchars($filter); ?> <?php echo htmlspecialchars($type); ?>s found.</td></tr>
+<tr><td class="px-6 py-8 text-center text-slate-500" colspan="<?php echo $type === 'withdrawal' ? 5 : 6; ?>">No <?php echo htmlspecialchars($filter); ?> <?php echo htmlspecialchars($type); ?>s found.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>
@@ -209,29 +212,49 @@ echo $fmt . ' ' . htmlspecialchars($tx['currency']);
 <script src="/js/app.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[data-action="approve"], [data-action="reject"]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var txId = this.getAttribute('data-tx-id');
-            var action = this.getAttribute('data-action');
-            var row = this.closest('tr');
-            
-            fetch('/api/admin/transactions.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: action, transaction_id: parseInt(txId, 10) })
-            }).then(function(r){ return r.json(); }).then(function(res){
-                if (res.success) {
-                    var toast = document.getElementById('tx-toast');
-                    if (toast) {
-                        toast.textContent = res.data.message || 'Transaction updated';
-                        toast.classList.remove('hidden');
-                        setTimeout(function(){ toast.classList.add('hidden'); }, 2000);
-                    }
-                    setTimeout(function(){ window.location.reload(); }, 500);
-                } else {
-                    alert(res.error || 'Failed to update transaction');
+    function closeTxDropdowns() {
+        document.querySelectorAll('.tx-actions-dropdown').forEach(function(d){ d.classList.add('hidden'); });
+    }
+    document.querySelectorAll('.tx-actions-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeTxDropdowns();
+            var dd = btn.nextElementSibling;
+            if (dd) dd.classList.toggle('hidden');
+        });
+    });
+    document.addEventListener('click', closeTxDropdowns);
+    function doTxAction(txId, action) {
+        fetch('/api/admin/transactions.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: action, transaction_id: parseInt(txId, 10) })
+        }).then(function(r){ return r.json(); }).then(function(res){
+            if (res.success) {
+                var toast = document.getElementById('tx-toast');
+                if (toast) {
+                    toast.textContent = res.data.message || 'Transaction updated';
+                    toast.classList.remove('hidden');
+                    setTimeout(function(){ toast.classList.add('hidden'); }, 2000);
                 }
-            }).catch(function(){ alert('Request failed'); });
+                setTimeout(function(){ window.location.reload(); }, 500);
+            } else {
+                alert(res.error || 'Failed to update transaction');
+            }
+        }).catch(function(){ alert('Request failed'); });
+    }
+    document.querySelectorAll('.tx-action-approve').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            doTxAction(btn.getAttribute('data-tx-id'), 'approve');
+            closeTxDropdowns();
+        });
+    });
+    document.querySelectorAll('.tx-action-reject').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            doTxAction(btn.getAttribute('data-tx-id'), 'reject');
+            closeTxDropdowns();
         });
     });
 });

@@ -36,7 +36,7 @@ body { font-family: 'Inter', sans-serif; }
 <h1 class="text-2xl font-bold">Wallet Addresses</h1>
 <p class="text-slate-500 dark:text-zinc-400">Manage deposit addresses for each supported coin. Users will send crypto to these addresses.</p>
 </div>
-<button type="button" id="add-address-btn" class="bg-primary text-zinc-900 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:shadow-lg transition-all">
+<button type="button" id="add-address-btn" class="w-fit shrink-0 bg-primary text-zinc-900 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:shadow-lg transition-all">
 <span class="material-icons-round text-lg">add</span> Add New Address
 </button>
 </header>
@@ -53,22 +53,22 @@ body { font-family: 'Inter', sans-serif; }
 <!-- Modal -->
 <div id="address-modal" class="fixed inset-0 z-50 hidden">
 <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" id="address-modal-backdrop"></div>
-<div class="absolute inset-0 flex items-center justify-center p-4">
-<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-zinc-800">
+<div id="address-modal-overlay" class="absolute inset-0 flex items-center justify-center p-4">
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-zinc-800 overflow-hidden relative">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800">
 <h2 id="address-modal-title" class="text-xl font-bold">Add Wallet Address</h2>
 </div>
 <form id="address-form" class="p-6 space-y-4">
 <div>
 <label class="block text-sm font-medium mb-2">Coin</label>
-<div class="flex items-center gap-3">
-<select id="address-coin-id" required class="flex-1 bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2"></select>
+<div class="flex items-center gap-3 min-w-0">
+<select id="address-coin-id" required class="flex-1 min-w-0 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2"></select>
 <div id="address-coin-logo" class="w-10 h-10 rounded-full overflow-hidden bg-slate-100 dark:bg-zinc-800 shrink-0 hidden"></div>
 </div>
 </div>
 <div>
 <label class="block text-sm font-medium mb-2">Wallet Address</label>
-<input type="text" id="address-value" required class="w-full bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2 font-mono text-sm" placeholder="Enter wallet address"/>
+<input type="text" id="address-value" required class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2 font-mono text-sm" placeholder="Enter wallet address"/>
 </div>
 <div class="flex gap-3 pt-4">
 <button type="button" id="address-modal-cancel" class="flex-1 px-4 py-2 border border-slate-200 dark:border-zinc-700 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-zinc-800">Cancel</button>
@@ -120,6 +120,10 @@ function loadAddresses() {
   });
 }
 
+function closeAllDropdowns() {
+  document.querySelectorAll('.addr-actions-dropdown').forEach(function(d){ d.classList.add('hidden'); });
+}
+
 function renderAddresses(addresses) {
   var c = document.getElementById('addressesContainer');
   if (!addresses || addresses.length === 0) {
@@ -129,17 +133,21 @@ function renderAddresses(addresses) {
   function safeLogo(url) { return (url && /^https?:\/\//i.test(url)) ? '<img src="' + url.replace(/"/g,'&quot;') + '" alt="" class="w-8 h-8 rounded-full object-cover shrink-0"/>' : ''; }
   var rows = addresses.map(function(a){
     var logo = safeLogo(a.logo);
+    var actionsHtml = '<div class="relative inline-block"><button type="button" class="addr-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" data-id="' + a.id + '" aria-label="Actions"><span class="material-icons text-lg">more_vert</span></button><div class="addr-actions-dropdown hidden absolute right-0 top-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 min-w-[100px]"><button type="button" class="addr-action-edit block w-full text-left px-3 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + a.id + '">Edit</button><button type="button" class="addr-action-delete block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + a.id + '">Delete</button></div></div>';
     return '<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/50">' +
       '<td class="px-4 sm:px-6 py-3 text-sm">' + a.id + '</td>' +
       '<td class="px-4 sm:px-6 py-3 text-sm"><div class="flex items-center gap-3">' + logo + '<span><span class="font-semibold">' + escapeHtml(a.display_name || a.coin_key) + '</span> <span class="text-slate-500">' + escapeHtml(a.symbol || '') + '</span></span></div></td>' +
       '<td class="px-4 sm:px-6 py-3 text-sm font-mono text-xs break-all max-w-xs">' + escapeHtml(a.address) + '</td>' +
-      '<td class="px-4 sm:px-6 py-3 text-xs text-slate-500">' + (a.created_at ? new Date(a.created_at).toLocaleDateString() : '') + '</td>' +
-      '<td class="px-4 sm:px-6 py-3"><button type="button" class="text-primary hover:underline text-sm mr-3" data-edit="' + a.id + '">Edit</button><button type="button" class="text-red-600 hover:underline text-sm" data-delete="' + a.id + '">Delete</button></td>' +
+      '<td class="px-4 sm:px-6 py-3 text-right">' + actionsHtml + '</td>' +
     '</tr>';
   }).join('');
-  c.innerHTML = '<div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Coin</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Address</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Created</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
-  c.querySelectorAll('[data-edit]').forEach(function(b){ b.addEventListener('click', function(){ openEdit(parseInt(b.getAttribute('data-edit'), 10)); }); });
-  c.querySelectorAll('[data-delete]').forEach(function(b){ b.addEventListener('click', function(){ confirmDelete(parseInt(b.getAttribute('data-delete'), 10)); }); });
+  c.innerHTML = '<div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Coin</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Address</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
+  c.querySelectorAll('.addr-actions-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){ e.stopPropagation(); closeAllDropdowns(); var dd = btn.nextElementSibling; dd.classList.toggle('hidden'); });
+  });
+  document.addEventListener('click', function(){ closeAllDropdowns(); });
+  c.querySelectorAll('.addr-action-edit').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); openEdit(parseInt(b.getAttribute('data-id'), 10)); closeAllDropdowns(); }); });
+  c.querySelectorAll('.addr-action-delete').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); confirmDelete(parseInt(b.getAttribute('data-id'), 10)); closeAllDropdowns(); }); });
 }
 
 function getCoinsAlreadyUsed() {
@@ -234,6 +242,8 @@ function confirmDelete(id) {
 
 document.getElementById('add-address-btn').addEventListener('click', openAdd);
 document.getElementById('address-modal-backdrop').addEventListener('click', closeModal);
+var overlayEl = document.getElementById('address-modal-overlay');
+if (overlayEl) overlayEl.addEventListener('click', function(ev){ if (ev.target === overlayEl) closeModal(); });
 document.getElementById('address-modal-cancel').addEventListener('click', closeModal);
 document.getElementById('address-form').addEventListener('submit', saveAddress);
 

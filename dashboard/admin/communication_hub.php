@@ -131,12 +131,7 @@ try {
 <textarea name="body" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary p-4 text-slate-700 dark:text-slate-200 leading-relaxed" placeholder="Write your message here. Use placeholders for dynamic content..." rows="10" required></textarea>
 </div>
 <div id="broadcast-message" class="text-sm hidden"></div>
-<div id="mail-sync-msg" class="text-sm hidden"></div>
 <div class="flex flex-col sm:flex-row gap-3">
-  <button type="button" id="mail-refresh-all" class="sm:w-auto px-6 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
-    <span class="material-icons-outlined text-base">sync</span> Refresh Mailbox
-  </button>
-  <button type="button" id="mail-archive-db" class="sm:w-auto px-4 py-2 text-sm text-slate-500 hover:text-slate-700" title="Import to database">Archive to DB</button>
   <button type="submit" class="sm:w-auto px-6 py-2 bg-primary text-slate-900 font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
     <span class="material-icons-outlined text-base">send</span> Send Email
   </button>
@@ -145,9 +140,18 @@ try {
 </div>
 </div>
 
+<!-- Mailbox Actions (Refresh / Archive) -->
+<div class="col-span-12 flex flex-wrap items-center gap-3 mb-4">
+  <button type="button" id="mail-refresh-all" class="w-fit shrink-0 px-6 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+    <span class="material-icons-outlined text-base">sync</span> Refresh Mailbox
+  </button>
+  <button type="button" id="mail-archive-db" class="w-fit shrink-0 px-4 py-2 text-sm text-slate-500 hover:text-slate-700" title="Import to database">Archive to DB</button>
+  <span id="mail-sync-msg" class="text-sm hidden"></span>
+</div>
+
 <!-- Mailbox -->
-<div class="col-span-12 w-full min-w-0 grid grid-cols-1 xl:grid-cols-2 gap-6">
-  <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
+<div class="col-span-12 w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
+  <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden min-w-[280px]">
     <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between">
       <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-icons-outlined text-base">inbox</span> Inbox</h3>
       <button type="button" id="inbox-refresh" class="text-xs font-bold text-primary hover:underline flex items-center gap-1"><span class="material-icons-outlined text-sm">refresh</span> Refresh</button>
@@ -169,7 +173,7 @@ try {
     </div>
   </div>
 
-  <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
+  <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden min-w-[280px]">
     <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between">
       <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-icons-outlined text-base">send</span> Sent</h3>
       <button type="button" id="sent-refresh" class="text-xs font-bold text-primary hover:underline flex items-center gap-1"><span class="material-icons-outlined text-sm">refresh</span> Refresh</button>

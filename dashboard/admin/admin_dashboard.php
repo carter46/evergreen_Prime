@@ -57,7 +57,7 @@ try {
     $stmt = $pdo->query("SELECT 'plan_activated' AS type, u.name, ui.created_at, ui.amount, p.name AS plan_name FROM user_investments ui JOIN users u ON u.id = ui.user_id JOIN plans p ON p.id = ui.plan_id ORDER BY ui.created_at DESC LIMIT 5");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { $activities[] = $row; }
     usort($activities, function ($a, $b) { return strtotime($b['created_at']) - strtotime($a['created_at']); });
-    $recentActivity = array_slice($activities, 0, 10);
+    $recentActivity = array_slice($activities, 0, 5);
 } catch (Throwable $e) {
     // DB unavailable - use defaults
 }
@@ -106,7 +106,7 @@ foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['c
 <?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
 <div class="p-4 sm:p-6 lg:p-8">
 <!-- Top Stats Row -->
-<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
 <!-- Card 1 -->
 <div class="bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
 <div class="flex items-center justify-between mb-2">
@@ -149,65 +149,7 @@ foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['c
 </div>
 </div>
 <!-- Mid Section - Analytics -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-<!-- Platform Growth Chart -->
-<div class="lg:col-span-2 bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
-<div class="flex items-center justify-between mb-6">
-<div>
-<h3 class="font-bold text-lg">Platform Growth vs. Payouts</h3>
-<p class="text-xs text-slate-500">Historical performance tracking over the last 30 days</p>
-</div>
-<div class="flex gap-4">
-<div class="flex items-center gap-1.5">
-<div class="w-3 h-3 rounded-full bg-primary"></div>
-<span class="text-[10px] font-bold text-slate-500">GROWTH</span>
-</div>
-<div class="flex items-center gap-1.5">
-<div class="w-3 h-3 rounded-full bg-slate-300"></div>
-<span class="text-[10px] font-bold text-slate-500">PAYOUTS</span>
-</div>
-</div>
-</div>
-<!-- Chart Placeholder -->
-<div class="h-64 flex items-end justify-between gap-1 mt-4 relative">
-<div class="absolute inset-0 flex flex-col justify-between">
-<div class="border-b border-slate-100 dark:border-white/5 w-full h-0"></div>
-<div class="border-b border-slate-100 dark:border-white/5 w-full h-0"></div>
-<div class="border-b border-slate-100 dark:border-white/5 w-full h-0"></div>
-<div class="border-b border-slate-100 dark:border-white/5 w-full h-0"></div>
-<div class="border-b border-slate-100 dark:border-white/5 w-full h-0"></div>
-</div>
-<!-- Bars Representation -->
-<div class="flex-1 flex flex-col justify-end items-center gap-1 z-0">
-<div class="w-full bg-primary/20 rounded-t h-[40%]"></div>
-<div class="w-full bg-primary rounded-t h-[60%]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end items-center gap-1 z-0">
-<div class="w-full bg-primary/20 rounded-t h-[35%]"></div>
-<div class="w-full bg-primary rounded-t h-[55%]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end items-center gap-1 z-0">
-<div class="w-full bg-primary/20 rounded-t h-[50%]"></div>
-<div class="w-full bg-primary rounded-t h-[70%]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end items-center gap-1 z-0">
-<div class="w-full bg-primary/20 rounded-t h-[45%]"></div>
-<div class="w-full bg-primary rounded-t h-[80%]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end items-center gap-1 z-0">
-<div class="w-full bg-primary/20 rounded-t h-[55%]"></div>
-<div class="w-full bg-primary rounded-t h-[65%]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end items-center gap-1 z-0">
-<div class="w-full bg-primary/20 rounded-t h-[60%]"></div>
-<div class="w-full bg-primary rounded-t h-[90%]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end items-center gap-1 z-0">
-<div class="w-full bg-primary/20 rounded-t h-[50%]"></div>
-<div class="w-full bg-primary rounded-t h-[75%]"></div>
-</div>
-</div>
-</div>
+<div class="grid grid-cols-1 gap-8 mb-8">
 <!-- Plan Distribution -->
 <div class="bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
 <h3 class="font-bold text-lg mb-6">Investments per Plan</h3>
@@ -289,9 +231,12 @@ foreach ($pendingList as $tx):
 <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>
 <td class="px-6 py-4 text-right">
-<div class="flex justify-end gap-2">
-<button class="px-3 py-1.5 bg-primary text-white text-[10px] font-bold rounded-lg hover:bg-primary/90">APPROVE</button>
-<button class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors">REJECT</button>
+<div class="relative inline-block">
+<button type="button" class="pd-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" aria-label="Actions"><span class="material-icons text-lg">more_vert</span></button>
+<div class="pd-actions-dropdown hidden absolute right-0 top-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 min-w-[100px]">
+<button type="button" class="pd-action-approve block w-full text-left px-3 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-zinc-700" data-tx-id="<?php echo (int)$tx['id']; ?>">Approve</button>
+<button type="button" class="pd-action-reject block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-tx-id="<?php echo (int)$tx['id']; ?>">Reject</button>
+</div>
 </div>
 </td>
 </tr>
@@ -354,4 +299,36 @@ foreach ($recentActivity as $i => $a):
 </main>
 </div>
 <script src="/js/app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  function closePdDropdowns() {
+    document.querySelectorAll('.pd-actions-dropdown').forEach(function(d){ d.classList.add('hidden'); });
+  }
+  document.querySelectorAll('.pd-actions-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      closePdDropdowns();
+      var dd = btn.nextElementSibling;
+      if (dd) dd.classList.toggle('hidden');
+    });
+  });
+  document.addEventListener('click', closePdDropdowns);
+  function doPdAction(txId, action) {
+    fetch('/api/admin/transactions.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: action, transaction_id: parseInt(txId, 10) })
+    }).then(function(r){ return r.json(); }).then(function(res){
+      if (res.success) window.location.reload();
+      else alert(res.error || 'Failed to update transaction');
+    }).catch(function(){ alert('Request failed'); });
+  }
+  document.querySelectorAll('.pd-action-approve').forEach(function(btn){
+    btn.addEventListener('click', function(e){ e.stopPropagation(); closePdDropdowns(); doPdAction(btn.getAttribute('data-tx-id'), 'approve'); });
+  });
+  document.querySelectorAll('.pd-action-reject').forEach(function(btn){
+    btn.addEventListener('click', function(e){ e.stopPropagation(); closePdDropdowns(); doPdAction(btn.getAttribute('data-tx-id'), 'reject'); });
+  });
+});
+</script>
 </body></html>

@@ -78,9 +78,14 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <td class="px-6 py-4 text-xs text-slate-500"><?php echo date('M j, Y H:i', strtotime($k['created_at'])); ?></td>
 <td class="px-6 py-4 text-right">
 <?php if ($k['status'] === 'pending'): ?>
-<button type="button" data-view data-id="<?php echo (int)$k['id']; ?>" data-front="<?php echo htmlspecialchars($k['front_path']); ?>" data-back="<?php echo htmlspecialchars($k['back_path'] ?? ''); ?>" data-name="<?php echo htmlspecialchars($k['full_name']); ?>" data-dob="<?php echo htmlspecialchars($k['date_of_birth'] ?? ''); ?>" data-address="<?php echo htmlspecialchars($k['address'] ?? ''); ?>" class="px-3 py-1.5 text-[10px] font-bold rounded bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-primary hover:text-black">View</button>
-<button type="button" data-approve data-id="<?php echo (int)$k['id']; ?>" class="px-3 py-1.5 text-[10px] font-bold rounded bg-green-600 text-white hover:bg-green-700">Approve</button>
-<button type="button" data-reject data-id="<?php echo (int)$k['id']; ?>" class="px-3 py-1.5 text-[10px] font-bold rounded bg-red-500/20 text-red-600 hover:bg-red-500 hover:text-white">Reject</button>
+<div class="relative inline-block">
+<button type="button" class="kyc-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" aria-label="Actions"><span class="material-icons text-lg">more_vert</span></button>
+<div class="kyc-actions-dropdown hidden absolute right-0 top-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 min-w-[100px]">
+<button type="button" class="kyc-action-view block w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="<?php echo (int)$k['id']; ?>" data-front="<?php echo htmlspecialchars($k['front_path']); ?>" data-back="<?php echo htmlspecialchars($k['back_path'] ?? ''); ?>" data-name="<?php echo htmlspecialchars($k['full_name']); ?>" data-dob="<?php echo htmlspecialchars($k['date_of_birth'] ?? ''); ?>" data-address="<?php echo htmlspecialchars($k['address'] ?? ''); ?>">View</button>
+<button type="button" class="kyc-action-approve block w-full text-left px-3 py-2 text-sm text-green-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="<?php echo (int)$k['id']; ?>">Approve</button>
+<button type="button" class="kyc-action-reject block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="<?php echo (int)$k['id']; ?>">Reject</button>
+</div>
+</div>
 <?php elseif ($k['status'] === 'rejected' && !empty($k['rejection_reason'])): ?>
 <span class="text-xs text-slate-500" title="<?php echo htmlspecialchars($k['rejection_reason']); ?>"><?php echo htmlspecialchars(strlen($k['rejection_reason']) > 30 ? substr($k['rejection_reason'], 0, 30) . '...' : $k['rejection_reason']); ?></span>
 <?php else: ?>
@@ -149,41 +154,57 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
   var currentRejectId = null;
   var baseUrl = '/api/admin/kyc-view.php?path=';
 
-  document.querySelectorAll('[data-view]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var front = btn.getAttribute('data-front');
-      var back = btn.getAttribute('data-back');
-      var name = btn.getAttribute('data-name');
-      var dob = btn.getAttribute('data-dob');
-      var addr = btn.getAttribute('data-address');
-      viewDetails.innerHTML = '<p><strong>Name:</strong> ' + (name || '-') + '</p><p><strong>DOB:</strong> ' + (dob || '-') + '</p><p><strong>Address:</strong> ' + (addr || '-') + '</p>';
-      if (front) {
-        var url = baseUrl + encodeURIComponent(front);
-        viewFrontWrap.style.display = '';
-        viewFrontLink.href = url;
-        if (/\.(jpg|jpeg|png|gif|webp)$/i.test(front)) {
-          viewFrontImg.src = url;
-          viewFrontImg.style.display = '';
-        } else {
-          viewFrontImg.style.display = 'none';
-          viewFrontLink.textContent = 'View PDF';
-        }
-      } else viewFrontWrap.style.display = 'none';
-      if (back) {
-        var urlB = baseUrl + encodeURIComponent(back);
-        viewBackWrap.style.display = '';
-        viewBackLink.href = urlB;
-        if (/\.(jpg|jpeg|png|gif|webp)$/i.test(back)) {
-          viewBackImg.src = urlB;
-          viewBackImg.style.display = '';
-        } else {
-          viewBackImg.style.display = 'none';
-          viewBackLink.textContent = 'View PDF';
-        }
-      } else viewBackWrap.style.display = 'none';
-      viewModal.classList.remove('hidden');
-      viewModal.classList.add('flex');
+  function openView(btn) {
+    var front = btn.getAttribute('data-front');
+    var back = btn.getAttribute('data-back');
+    var name = btn.getAttribute('data-name');
+    var dob = btn.getAttribute('data-dob');
+    var addr = btn.getAttribute('data-address');
+    viewDetails.innerHTML = '<p><strong>Name:</strong> ' + (name || '-') + '</p><p><strong>DOB:</strong> ' + (dob || '-') + '</p><p><strong>Address:</strong> ' + (addr || '-') + '</p>';
+    if (front) {
+      var url = baseUrl + encodeURIComponent(front);
+      viewFrontWrap.style.display = '';
+      viewFrontLink.href = url;
+      if (/\.(jpg|jpeg|png|gif|webp)$/i.test(front)) {
+        viewFrontImg.src = url;
+        viewFrontImg.style.display = '';
+      } else {
+        viewFrontImg.style.display = 'none';
+        viewFrontLink.textContent = 'View PDF';
+      }
+    } else viewFrontWrap.style.display = 'none';
+    if (back) {
+      var urlB = baseUrl + encodeURIComponent(back);
+      viewBackWrap.style.display = '';
+      viewBackLink.href = urlB;
+      if (/\.(jpg|jpeg|png|gif|webp)$/i.test(back)) {
+        viewBackImg.src = urlB;
+        viewBackImg.style.display = '';
+      } else {
+        viewBackImg.style.display = 'none';
+        viewBackLink.textContent = 'View PDF';
+      }
+    } else viewBackWrap.style.display = 'none';
+    viewModal.classList.remove('hidden');
+    viewModal.classList.add('flex');
+  }
+
+  function closeKycDropdowns() {
+    document.querySelectorAll('.kyc-actions-dropdown').forEach(function(d){ d.classList.add('hidden'); });
+  }
+
+  document.querySelectorAll('.kyc-actions-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      closeKycDropdowns();
+      var dd = btn.nextElementSibling;
+      if (dd) dd.classList.toggle('hidden');
     });
+  });
+  document.addEventListener('click', closeKycDropdowns);
+
+  document.querySelectorAll('.kyc-action-view').forEach(function(btn){
+    btn.addEventListener('click', function(e){ e.stopPropagation(); closeKycDropdowns(); openView(btn); });
   });
 
   if (viewClose) viewClose.addEventListener('click', function(){ viewModal.classList.add('hidden'); viewModal.classList.remove('flex'); });
@@ -198,11 +219,11 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
       .then(function(r){ return r.json(); }).then(function(res){ if (res.success) location.reload(); else alert(res.error || 'Failed'); }).catch(function(){ alert('Network error'); });
   }
 
-  document.querySelectorAll('[data-approve]').forEach(function(btn){
-    btn.addEventListener('click', function(){ if (confirm('Approve this KYC submission?')) doApprove(parseInt(btn.getAttribute('data-id'), 10)); });
+  document.querySelectorAll('.kyc-action-approve').forEach(function(btn){
+    btn.addEventListener('click', function(e){ e.stopPropagation(); closeKycDropdowns(); if (confirm('Approve this KYC submission?')) doApprove(parseInt(btn.getAttribute('data-id'), 10)); });
   });
-  document.querySelectorAll('[data-reject]').forEach(function(btn){
-    btn.addEventListener('click', function(){ currentRejectId = parseInt(btn.getAttribute('data-id'), 10); rejectReason.value = ''; rejectModal.classList.remove('hidden'); rejectModal.classList.add('flex'); });
+  document.querySelectorAll('.kyc-action-reject').forEach(function(btn){
+    btn.addEventListener('click', function(e){ e.stopPropagation(); currentRejectId = parseInt(btn.getAttribute('data-id'), 10); rejectReason.value = ''; rejectModal.classList.remove('hidden'); rejectModal.classList.add('flex'); closeKycDropdowns(); });
   });
   if (rejectCancel) rejectCancel.addEventListener('click', function(){ rejectModal.classList.add('hidden'); rejectModal.classList.remove('flex'); currentRejectId = null; });
   if (rejectConfirm) rejectConfirm.addEventListener('click', function(){

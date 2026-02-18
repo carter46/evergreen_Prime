@@ -67,7 +67,7 @@ $navClass = function ($page) use ($current) {
 </aside>
 <div class="hidden lg:block w-64 shrink-0 flex-none" aria-hidden="true"></div>
 <script>
-(function(){
+document.addEventListener('DOMContentLoaded',function(){
     var overlay=document.getElementById('admin-sidebar-overlay');
     var sidebar=document.getElementById('admin-sidebar');
     var toggleBtn=document.getElementById('admin-sidebar-toggle');
@@ -76,5 +76,5 @@ $navClass = function ($page) use ($current) {
     if(overlay) overlay.addEventListener('click',close);
     if(toggleBtn) toggleBtn.addEventListener('click',function(){ sidebar.classList.contains('-translate-x-full')?open():close(); });
     document.querySelectorAll('#admin-sidebar a, #admin-sidebar button').forEach(function(el){ el.addEventListener('click',function(){ if(window.innerWidth<1024) close(); }); });
-})();
+});
 </script>
