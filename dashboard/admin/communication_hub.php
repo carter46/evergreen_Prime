@@ -3,13 +3,26 @@ require_once __DIR__ . '/../../includes/admin-check.php';
 require_once __DIR__ . '/../../includes/helpers.php';
 $siteName = get_site_name();
 $currentPage = 'communication';
-$broadcastHistory = [];
+$inbox = [];
+$sentMail = [];
+$selectedMail = null;
+$selectedBox = '';
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
-    $chk = $pdo->query("SHOW TABLES LIKE 'broadcast_campaigns'");
-    if ($chk && $chk->rowCount() > 0) {
-        $stmt = $pdo->query('SELECT id, subject, recipients_filter, total_recipients, status, sent_at FROM broadcast_campaigns ORDER BY sent_at DESC LIMIT 20');
-        $broadcastHistory = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    $chk2 = $pdo->query("SHOW TABLES LIKE 'admin_mailbox'");
+    if ($chk2 && $chk2->rowCount() > 0) {
+        $stmt = $pdo->query("SELECT id, source, from_email, from_name, subject, status, created_at FROM admin_mailbox WHERE direction = 'in' ORDER BY created_at DESC LIMIT 20");
+        $inbox = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        $stmt = $pdo->query("SELECT id, source, to_emails, subject, status, created_at FROM admin_mailbox WHERE direction = 'out' ORDER BY created_at DESC LIMIT 20");
+        $sentMail = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+        $selectedBox = (string)($_GET['box'] ?? '');
+        $selectedId = (int)($_GET['id'] ?? 0);
+        if ($selectedId > 0 && in_array($selectedBox, ['in', 'out'], true)) {
+            $stmt = $pdo->prepare('SELECT * FROM admin_mailbox WHERE id = ? AND direction = ? LIMIT 1');
+            $stmt->execute([$selectedId, $selectedBox]);
+            $selectedMail = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        }
     }
 } catch (Throwable $e) {}
 ?>
@@ -44,7 +57,6 @@ try {
     </script>
 <style>
         body { font-family: 'Inter', sans-serif; }
-        .editor-toolbar button:hover { background-color: rgba(249, 189, 11, 0.2); }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
@@ -56,6 +68,51 @@ try {
 <main class="flex-1 overflow-y-auto min-w-0">
 <?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
 <div class="p-4 sm:p-6 lg:p-8 min-h-screen">
+<?php if (!empty($selectedMail)): ?>
+<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="w-full max-w-3xl bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden">
+    <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between gap-4">
+      <div class="min-w-0">
+        <p class="text-xs text-slate-500 dark:text-slate-400"><?php echo $selectedMail['direction'] === 'in' ? 'Inbox' : 'Sent'; ?></p>
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white truncate"><?php echo htmlspecialchars($selectedMail['subject'] ?? ''); ?></h3>
+      </div>
+      <a href="/dashboard/admin/communication_hub" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800">Close</a>
+    </div>
+    <div class="p-4 space-y-3">
+      <?php if (($selectedMail['direction'] ?? '') === 'in'): ?>
+        <div class="text-sm text-slate-700 dark:text-slate-300 space-y-1">
+          <div><span class="font-bold">From:</span> <?php echo htmlspecialchars(trim(($selectedMail['from_name'] ?? '') . ' <' . ($selectedMail['from_email'] ?? '') . '>')); ?></div>
+          <div><span class="font-bold">To:</span> <?php echo htmlspecialchars($selectedMail['to_emails'] ?? (get_site_setting('contact_email', '') ?? '')); ?></div>
+        </div>
+      <?php else: ?>
+        <div class="text-sm text-slate-700 dark:text-slate-300 space-y-1">
+          <div><span class="font-bold">To:</span> <?php echo htmlspecialchars($selectedMail['to_emails'] ?? ''); ?></div>
+        </div>
+      <?php endif; ?>
+      <div class="text-xs text-slate-500 dark:text-slate-400"><?php echo htmlspecialchars($selectedMail['created_at'] ?? ''); ?></div>
+      <div class="text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
+        <?php
+          $bt = (string)($selectedMail['body_text'] ?? '');
+          echo $bt !== '' ? nl2br(htmlspecialchars($bt)) : '<span class="text-slate-500">No message body stored.</span>';
+        ?>
+      </div>
+      <?php if (($selectedMail['direction'] ?? '') === 'in' && !empty($selectedMail['from_email'])): ?>
+        <div class="pt-2 border-t border-slate-100 dark:border-zinc-700">
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Reply</label>
+          <textarea id="reply-body" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg p-3 text-sm" rows="5" placeholder="Type your reply..."></textarea>
+          <div class="flex items-center gap-3 mt-3">
+            <button type="button" id="reply-send" data-reply-id="<?php echo (int)$selectedMail['id']; ?>" class="px-4 py-2 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Send Reply</button>
+            <div id="reply-msg" class="text-sm hidden"></div>
+          </div>
+        </div>
+      <?php endif; ?>
+      <?php if (!empty($selectedMail['error_text'])): ?>
+        <div class="text-xs text-red-600">Error: <?php echo htmlspecialchars($selectedMail['error_text']); ?></div>
+      <?php endif; ?>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
 <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
 <div>
 <nav class="flex text-xs text-slate-400 gap-2 mb-1">
@@ -66,30 +123,44 @@ try {
 <h1 class="text-2xl font-bold text-slate-900">Broadcast &amp; Communication Hub</h1>
 </div>
 <div class="flex items-center gap-3">
+<button type="button" id="mail-sync" class="px-4 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 rounded-lg flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+<span class="material-icons-outlined text-base">sync</span> Sync Mailbox
+</button>
 <button type="submit" form="broadcast-form" class="px-6 py-2 bg-primary text-slate-900 font-bold rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity">
 <span class="material-icons-outlined text-base">send</span> Send Broadcast
                 </button>
 </div>
 </header>
+<div id="mail-sync-msg" class="text-sm hidden mb-4"></div>
 <div class="grid grid-cols-12 gap-8">
 <!-- Composition Area -->
 <div class="col-span-12 space-y-6">
 <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
 <div class="px-6 py-4 border-b border-slate-100 dark:border-zinc-700 flex items-center gap-2">
 <span class="material-icons-outlined text-xl text-primary">email</span>
-<h2 class="text-base font-bold text-slate-900 dark:text-white">Email Broadcast</h2>
+<h2 class="text-base font-bold text-slate-900 dark:text-white">Compose Email</h2>
 </div>
 <form id="broadcast-form" class="p-6 space-y-6">
-<!-- Message Metadata -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<div class="space-y-2">
-<label class="text-sm font-semibold text-slate-600 uppercase tracking-wider">Campaign Name</label>
-<input name="campaign" class="w-full bg-slate-50 border-slate-200 rounded-lg focus:ring-primary focus:border-primary" placeholder="e.g. Q4 Growth Update" type="text"/>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 space-y-2">
+<label class="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">To (External Emails)</label>
+<input name="to" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" placeholder="e.g. user@gmail.com, partner@company.com" type="text"/>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Comma or space separated. Leave empty if sending only to registered users.</p>
 </div>
 <div class="space-y-2">
-<label class="text-sm font-semibold text-slate-600 uppercase tracking-wider">Subject Line</label>
-<input name="subject" class="w-full bg-slate-50 border-slate-200 rounded-lg focus:ring-primary focus:border-primary" placeholder="Exciting updates for your Bloombit portfolio" type="text" required/>
+<label class="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Send To Registered Users</label>
+<select name="recipients" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary">
+  <option value="">No (external only)</option>
+  <option value="all">All Users</option>
+  <option value="active_investors">Active Investors</option>
+  <option value="kyc_verified">KYC Verified</option>
+</select>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Choose a segment to include users.</p>
 </div>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-600 uppercase tracking-wider">Subject</label>
+<input name="subject" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary" placeholder="Subject line" type="text" required/>
 </div>
 <!-- Rich Text Editor -->
 <div class="space-y-2">
@@ -100,17 +171,7 @@ try {
 <button type="button" class="px-2 py-1 bg-slate-100 dark:bg-zinc-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 rounded hover:bg-slate-200 dark:hover:bg-zinc-600 uppercase tracking-tighter" data-insert-placeholder="{balance}">Insert {balance}</button>
 </div>
 </div>
-<div class="border border-slate-200 rounded-lg overflow-hidden">
-<div class="editor-toolbar bg-slate-50 border-b border-slate-200 p-2 flex gap-1">
-<button class="p-1.5 rounded hover:bg-slate-200 text-slate-600"><span class="material-icons-outlined text-sm">format_bold</span></button>
-<button class="p-1.5 rounded hover:bg-slate-200 text-slate-600"><span class="material-icons-outlined text-sm">format_italic</span></button>
-<button class="p-1.5 rounded hover:bg-slate-200 text-slate-600"><span class="material-icons-outlined text-sm">format_list_bulleted</span></button>
-<div class="w-px h-4 bg-slate-300 mx-1 self-center"></div>
-<button class="p-1.5 rounded hover:bg-slate-200 text-slate-600"><span class="material-icons-outlined text-sm">link</span></button>
-<button class="p-1.5 rounded hover:bg-slate-200 text-slate-600"><span class="material-icons-outlined text-sm">image</span></button>
-</div>
-<textarea name="body" class="w-full border-none focus:ring-0 p-4 text-slate-700 leading-relaxed" placeholder="Write your message here. Use placeholders for dynamic content..." rows="8" required></textarea>
-</div>
+<textarea name="body" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary p-4 text-slate-700 dark:text-slate-200 leading-relaxed" placeholder="Write your message here. Use placeholders for dynamic content..." rows="10" required></textarea>
 </div>
 <div id="broadcast-message" class="text-sm hidden"></div>
 <div class="flex flex-col sm:flex-row gap-3">
@@ -124,61 +185,70 @@ try {
 </form>
 </div>
 </div>
-<!-- History Table -->
-<div class="col-span-12">
-<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
-<div class="p-6 border-b border-slate-100 flex items-center justify-between">
-<h3 class="text-lg font-bold text-slate-900">Broadcast History</h3>
-<div class="flex gap-2">
-<div class="relative">
-<span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-<input class="pl-9 pr-4 py-1.5 text-xs bg-slate-50 border-slate-200 rounded-lg" placeholder="Search campaigns..." type="text"/>
+
+<!-- Mailbox -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+  <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
+    <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between">
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-icons-outlined text-base">inbox</span> Inbox (Contact Form)</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 dark:bg-zinc-800 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          <tr>
+            <th class="px-4 py-3">From</th>
+            <th class="px-4 py-3">Subject</th>
+            <th class="px-4 py-3">When</th>
+            <th class="px-4 py-3 text-right"> </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-zinc-700">
+        <?php if (empty($inbox)): ?>
+          <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">No inbox messages yet.</td></tr>
+        <?php else: foreach ($inbox as $m): ?>
+          <tr class="hover:bg-slate-50/50 dark:hover:bg-zinc-800/50">
+            <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300"><?php echo htmlspecialchars(($m['from_name'] ?: $m['from_email']) ?? ''); ?></td>
+            <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars($m['subject'] ?? ''); ?></td>
+            <td class="px-4 py-3 text-xs text-slate-500 dark:text-slate-400"><?php echo time_ago($m['created_at']); ?></td>
+            <td class="px-4 py-3 text-right"><a class="text-xs font-bold text-primary hover:underline" href="/dashboard/admin/communication_hub?box=in&amp;id=<?php echo (int)$m['id']; ?>">Open</a></td>
+          </tr>
+        <?php endforeach; endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
+    <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between">
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-icons-outlined text-base">send</span> Sent</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 dark:bg-zinc-800 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          <tr>
+            <th class="px-4 py-3">To</th>
+            <th class="px-4 py-3">Subject</th>
+            <th class="px-4 py-3">When</th>
+            <th class="px-4 py-3 text-right"> </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-zinc-700">
+        <?php if (empty($sentMail)): ?>
+          <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">No sent emails yet.</td></tr>
+        <?php else: foreach ($sentMail as $m): ?>
+          <tr class="hover:bg-slate-50/50 dark:hover:bg-zinc-800/50">
+            <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-300"><?php echo htmlspecialchars($m['to_emails'] ?? ''); ?></td>
+            <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars($m['subject'] ?? ''); ?></td>
+            <td class="px-4 py-3 text-xs text-slate-500 dark:text-slate-400"><?php echo time_ago($m['created_at']); ?></td>
+            <td class="px-4 py-3 text-right"><a class="text-xs font-bold text-primary hover:underline" href="/dashboard/admin/communication_hub?box=out&amp;id=<?php echo (int)$m['id']; ?>">Open</a></td>
+          </tr>
+        <?php endforeach; endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
-</div>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-<tr>
-<th class="px-6 py-4">Campaign Name &amp; Type</th>
-<th class="px-6 py-4">Total Recipients</th>
-<th class="px-6 py-4">Performance</th>
-<th class="px-6 py-4">Status</th>
-<th class="px-6 py-4">Date Sent</th>
-<th class="px-6 py-4 text-right">Actions</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-slate-100 dark:divide-zinc-700">
-<?php if (empty($broadcastHistory)): ?>
-<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">No broadcasts sent yet.</td></tr>
-<?php else: ?>
-<?php foreach ($broadcastHistory as $bc): ?>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-zinc-800/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="p-2 bg-primary/10 text-primary rounded-lg"><span class="material-icons-outlined text-sm">email</span></div>
-<div>
-<p class="text-sm font-semibold text-slate-900 dark:text-white"><?php echo htmlspecialchars($bc['subject']); ?></p>
-<p class="text-xs text-slate-400"><?php echo htmlspecialchars($bc['recipients_filter']); ?></p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4"><span class="text-sm font-medium text-slate-700 dark:text-slate-300"><?php echo (int)$bc['total_recipients']; ?></span></td>
-<td class="px-6 py-4">—</td>
-<td class="px-6 py-4"><span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold rounded-full uppercase">Sent</span></td>
-<td class="px-6 py-4"><p class="text-xs text-slate-600 dark:text-slate-400"><?php echo date('M j, Y', strtotime($bc['sent_at'])); ?></p><p class="text-[10px] text-slate-400"><?php echo date('g:i A', strtotime($bc['sent_at'])); ?></p></td>
-<td class="px-6 py-4 text-right"></td>
-</tr>
-<?php endforeach; ?>
-<?php endif; ?>
-</tbody>
-</table>
-</div>
-<div class="p-4 border-t border-slate-100 dark:border-zinc-700">
-<p class="text-xs text-slate-500 dark:text-slate-400 font-medium"><?php echo count($broadcastHistory); ?> campaign(s)</p>
-</div>
-</div>
-</div>
+
 </div>
 </div>
 </main>
@@ -189,15 +259,55 @@ try {
   var form = document.getElementById('broadcast-form');
   var msgEl = document.getElementById('broadcast-message');
   var testBtn = document.getElementById('broadcast-send-test');
+  var syncBtn = document.getElementById('mail-sync');
+  var syncMsg = document.getElementById('mail-sync-msg');
+
+  function showInline(el, text, ok){
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'text-sm ' + (ok ? 'text-green-600' : 'text-red-600');
+    el.classList.remove('hidden');
+  }
+
+  if (syncBtn) {
+    syncBtn.addEventListener('click', function(){
+      syncBtn.disabled = true;
+      showInline(syncMsg, 'Syncing mailbox…', true);
+      fetch('/api/admin/mail-sync.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ limit: 30 })
+      }).then(function(r){ return r.json(); }).then(function(res){
+        if (res && res.success) {
+          showInline(syncMsg, 'Mailbox synced. Imported ' + (res.data && res.data.imported) + ' message(s).', true);
+          setTimeout(function(){ location.reload(); }, 800);
+        } else {
+          showInline(syncMsg, (res && res.error) ? res.error : 'Sync failed.', false);
+          syncBtn.disabled = false;
+        }
+      }).catch(function(){
+        showInline(syncMsg, 'Sync failed.', false);
+        syncBtn.disabled = false;
+      });
+    });
+  }
 
   function doBroadcast(isTest){
     var subj = form.querySelector('[name="subject"]').value.trim();
     var body = form.querySelector('[name="body"]').value.trim();
+    var to = (form.querySelector('[name="to"]') || {}).value || '';
+    var recSel = form.querySelector('[name="recipients"]');
+    var rec = recSel ? (recSel.value || '') : '';
     if (!subj || !body) { if (msgEl) { msgEl.textContent = 'Subject and body required.'; msgEl.className = 'text-sm text-red-600'; msgEl.classList.remove('hidden'); } return; }
+    if (!isTest && !(to && to.trim()) && !rec) { if (msgEl) { msgEl.textContent = 'Add at least one recipient (external emails or a user segment).'; msgEl.className = 'text-sm text-red-600'; msgEl.classList.remove('hidden'); } return; }
     if (msgEl) msgEl.classList.add('hidden');
     var btn = form.querySelector('button[type="submit"]');
     if (btn) btn.disabled = true;
     var payload = { subject: subj, body: body };
+    if (to && to.trim()) payload.to = to.trim();
+    if (rec) { payload.recipients = rec; payload.include_users = true; }
+    else { payload.include_users = false; }
     if (isTest) payload.test = true;
     fetch('/api/admin/broadcast.php', {
       method: 'POST',
@@ -241,6 +351,30 @@ try {
       if (ta) ta.value += ' ' + btn.dataset.insertPlaceholder;
     });
   });
+
+  var replySend = document.getElementById('reply-send');
+  if (replySend) {
+    replySend.addEventListener('click', function(){
+      var id = parseInt(replySend.getAttribute('data-reply-id') || '0', 10);
+      var body = (document.getElementById('reply-body') || {}).value || '';
+      var rMsg = document.getElementById('reply-msg');
+      if (!id || !body.trim()) { showInline(rMsg, 'Reply body is required.', false); return; }
+      replySend.disabled = true;
+      fetch('/api/admin/mail-reply.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ id: id, body: body.trim() })
+      }).then(function(r){ return r.json(); }).then(function(res){
+        showInline(rMsg, res && res.success ? 'Reply sent.' : ((res && res.error) || 'Failed to send reply.'), !!(res && res.success));
+        if (res && res.success) setTimeout(function(){ location.href = '/dashboard/admin/communication_hub'; }, 800);
+        replySend.disabled = false;
+      }).catch(function(){
+        showInline(rMsg, 'Failed to send reply.', false);
+        replySend.disabled = false;
+      });
+    });
+  }
 })();
 </script>
 </body></html>

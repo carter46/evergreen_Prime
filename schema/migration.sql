@@ -245,7 +245,22 @@ INSERT INTO site_settings (`key`, value) VALUES
   ('max_withdrawal_limit', '50000'),
   ('earnings_paused', '0'),
   ('distribution_interval', 'daily'),
-  ('distribution_start_time', '09:00:00')
+  ('distribution_start_time', '09:00:00'),
+  ('contact_email', 'support@bloombit.com'),
+  ('mail_smtp_host', ''),
+  ('mail_smtp_port', '587'),
+  ('mail_smtp_username', ''),
+  ('mail_smtp_password', ''),
+  ('mail_smtp_encryption', 'tls'),
+  ('mail_from_email', 'noreply@bloombit.com'),
+  ('mail_from_name', 'Bloombit'),
+  ('mail_reply_to', 'support@bloombit.com'),
+  ('mail_imap_host', ''),
+  ('mail_imap_port', '993'),
+  ('mail_imap_username', ''),
+  ('mail_imap_password', ''),
+  ('mail_imap_encryption', 'ssl'),
+  ('mail_imap_sent_folder', 'Sent')
 ON DUPLICATE KEY UPDATE value = value;
 
 -- Ensure transactions.amount supports fractional USDT payouts (DECIMAL 36,18)
@@ -317,3 +332,79 @@ CREATE TABLE IF NOT EXISTS broadcast_campaigns (
   sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Admin mailbox (inbox/outbox storage for contact form + admin sent emails)
+CREATE TABLE IF NOT EXISTS admin_mailbox (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  direction ENUM('in','out') NOT NULL,
+  source VARCHAR(32) NOT NULL DEFAULT 'system',
+  from_email VARCHAR(255) NULL,
+  from_name VARCHAR(255) NULL,
+  to_emails TEXT NULL,
+  subject VARCHAR(255) NOT NULL,
+  body_html LONGTEXT NULL,
+  body_text LONGTEXT NULL,
+  status ENUM('received','sent','failed') NOT NULL DEFAULT 'sent',
+  error_text TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_direction_created (direction, created_at),
+  INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- IMAP sync / threading columns for admin_mailbox
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_mailbox' AND COLUMN_NAME = 'mailbox_folder');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE admin_mailbox ADD COLUMN mailbox_folder VARCHAR(255) NULL AFTER source',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_mailbox' AND COLUMN_NAME = 'imap_uid');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE admin_mailbox ADD COLUMN imap_uid BIGINT UNSIGNED NULL AFTER mailbox_folder',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_mailbox' AND COLUMN_NAME = 'message_id');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE admin_mailbox ADD COLUMN message_id VARCHAR(255) NULL AFTER imap_uid',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_mailbox' AND COLUMN_NAME = 'in_reply_to');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE admin_mailbox ADD COLUMN in_reply_to VARCHAR(255) NULL AFTER message_id',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_mailbox' AND COLUMN_NAME = 'references');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE admin_mailbox ADD COLUMN `references` TEXT NULL AFTER in_reply_to',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_mailbox' AND COLUMN_NAME = 'mail_date');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE admin_mailbox ADD COLUMN mail_date DATETIME NULL AFTER `references`',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- Uniqueness to avoid duplicate IMAP imports
+SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_mailbox' AND INDEX_NAME = 'uniq_folder_uid');
+SET @sql = IF(@idx_exists = 0,
+    'ALTER TABLE admin_mailbox ADD UNIQUE KEY uniq_folder_uid (mailbox_folder, imap_uid)',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_mailbox' AND INDEX_NAME = 'idx_message_id');
+SET @sql = IF(@idx_exists = 0,
+    'ALTER TABLE admin_mailbox ADD INDEX idx_message_id (message_id)',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;

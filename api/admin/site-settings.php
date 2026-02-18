@@ -14,7 +14,31 @@ if (($_SESSION['role'] ?? '') !== 'admin') {
     exit;
 }
 
-$allowedKeys = ['max_active_plans_per_user', 'compounding_enabled', 'site_name', 'site_logo', 'site_favicon'];
+$allowedKeys = [
+    'max_active_plans_per_user',
+    'compounding_enabled',
+    'site_name',
+    'site_logo',
+    'site_favicon',
+    'contact_email',
+    // Mail (SMTP + identity)
+    'mail_smtp_host',
+    'mail_smtp_port',
+    'mail_smtp_username',
+    'mail_smtp_password',
+    'mail_smtp_encryption',
+    'mail_from_email',
+    'mail_from_name',
+    'mail_reply_to',
+    // Mail receiving (IMAP) - stored for future sync tools
+    'mail_imap_host',
+    'mail_imap_port',
+    'mail_imap_username',
+    'mail_imap_password',
+    'mail_imap_encryption',
+    'mail_imap_sent_folder',
+];
+$sensitiveKeys = ['mail_smtp_password', 'mail_imap_password'];
 
 try {
     $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
@@ -35,9 +59,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'site_name' => '',
         'site_logo' => '',
         'site_favicon' => '',
+        'contact_email' => '',
+        'mail_smtp_host' => '',
+        'mail_smtp_port' => '587',
+        'mail_smtp_username' => '',
+        'mail_smtp_encryption' => 'tls',
+        'mail_from_email' => '',
+        'mail_from_name' => '',
+        'mail_reply_to' => '',
+        'mail_imap_host' => '',
+        'mail_imap_port' => '993',
+        'mail_imap_username' => '',
+        'mail_imap_encryption' => 'ssl',
+        'mail_imap_sent_folder' => 'Sent',
+        // write-only flags
+        'mail_smtp_password_set' => '0',
+        'mail_imap_password_set' => '0',
     ];
     foreach ($rows as $r) {
         if (in_array($r['key'], $allowedKeys, true)) {
+            if (in_array($r['key'], $sensitiveKeys, true)) {
+                if (!empty($r['value'])) {
+                    if ($r['key'] === 'mail_smtp_password') $data['mail_smtp_password_set'] = '1';
+                    if ($r['key'] === 'mail_imap_password') $data['mail_imap_password_set'] = '1';
+                }
+                continue;
+            }
             $data[$r['key']] = $r['value'] ?? '';
         }
     }
@@ -51,8 +98,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($allowedKeys as $k) {
         if (!array_key_exists($k, $input)) continue;
         $v = trim((string) $input[$k]);
+        if (in_array($k, $sensitiveKeys, true)) {
+            // Passwords are write-only; blank means "keep existing"
+            if ($v === '') continue;
+        }
         if ($k === 'compounding_enabled') {
             $v = in_array(strtolower($v), ['1', 'true', 'yes', 'on'], true) ? '1' : '0';
+        }
+        if (in_array($k, ['mail_smtp_port', 'mail_imap_port'], true)) {
+            $port = (int) $v;
+            if ($port <= 0 || $port > 65535) continue;
+            $v = (string) $port;
+        }
+        if (in_array($k, ['mail_smtp_encryption', 'mail_imap_encryption'], true)) {
+            $vv = strtolower($v);
+            if ($vv === 'starttls') $vv = 'tls';
+            if (!in_array($vv, ['tls', 'ssl', 'none'], true)) continue;
+            $v = $vv;
         }
         $updates[$k] = $v;
     }

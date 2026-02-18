@@ -32,24 +32,47 @@ if (!empty($errors)) {
 }
 
 try {
+    require_once dirname(__DIR__, 2) . '/includes/helpers.php';
     require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
     $mail = require dirname(__DIR__, 2) . '/includes/mailer.php';
     $config = include dirname(__DIR__, 2) . '/config.php';
-    $replyTo = $config['mail']['reply_to'] ?? 'support@bloombit.com';
+    $replyTo = get_site_setting('contact_email', $config['mail']['reply_to'] ?? 'support@bloombit.com') ?: ($config['mail']['reply_to'] ?? 'support@bloombit.com');
 
     $mail->addAddress($replyTo);
     $mail->Subject = '[Bloombit Contact] ' . $subject;
-    $mail->Body = renderEmailTemplate('contact-notification.php', [
+    $htmlBody = renderEmailTemplate('contact-notification.php', [
         'name' => $name,
         'email' => $email,
         'subject' => $subject,
         'message' => $message
     ]);
+    $mail->Body = $htmlBody;
     $mail->AltBody = "Name: $name\nEmail: $email\nSubject: $subject\n\nMessage:\n$message";
     $mail->isHTML(true);
     $mail->addReplyTo($email, $name);
 
     $mail->send();
+
+    // Store in admin mailbox (inbox)
+    try {
+        $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
+        $chk = $pdo->query("SHOW TABLES LIKE 'admin_mailbox'");
+        if ($chk && $chk->rowCount() > 0) {
+            $stmt = $pdo->prepare('INSERT INTO admin_mailbox (direction, source, from_email, from_name, to_emails, subject, body_html, body_text, status) VALUES (?,?,?,?,?,?,?,?,?)');
+            $stmt->execute([
+                'in',
+                'contact_form',
+                $email,
+                $name,
+                $replyTo,
+                $subject,
+                $htmlBody,
+                "Name: $name\nEmail: $email\nSubject: $subject\n\nMessage:\n$message",
+                'received',
+            ]);
+        }
+    } catch (Throwable $e) {}
+
     echo json_encode(['success' => true, 'message' => 'Message sent successfully']);
 } catch (Exception $e) {
     $config = include dirname(__DIR__, 2) . '/config.php';

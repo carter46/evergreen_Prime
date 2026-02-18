@@ -103,7 +103,7 @@
 </div>
 <h3 class="font-bold text-lg">Email Support</h3>
 <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Response within 2 hours</p>
-<p class="mt-4 font-medium text-primary">support@bloombit.com</p>
+<p class="mt-4 font-medium text-primary"><?php echo htmlspecialchars($contactEmail); ?></p>
 </div>
 <div class="bg-white dark:bg-zinc-900/50 p-6 rounded-2xl border border-slate-100 dark:border-white/5 hover:border-primary/50 transition-colors group">
 <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary group-hover:bg-primary group-hover:text-white transition-all">

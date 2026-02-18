@@ -8,6 +8,19 @@ $settings = [
     'site_name' => get_site_setting('site_name', $siteName),
     'site_logo' => get_site_setting('site_logo', ''),
     'site_favicon' => get_site_setting('site_favicon', ''),
+    'contact_email' => get_site_setting('contact_email', ''),
+    'mail_smtp_host' => get_site_setting('mail_smtp_host', ''),
+    'mail_smtp_port' => get_site_setting('mail_smtp_port', '587'),
+    'mail_smtp_username' => get_site_setting('mail_smtp_username', ''),
+    'mail_smtp_encryption' => get_site_setting('mail_smtp_encryption', 'tls'),
+    'mail_from_email' => get_site_setting('mail_from_email', ''),
+    'mail_from_name' => get_site_setting('mail_from_name', ''),
+    'mail_reply_to' => get_site_setting('mail_reply_to', ''),
+    'mail_imap_host' => get_site_setting('mail_imap_host', ''),
+    'mail_imap_port' => get_site_setting('mail_imap_port', '993'),
+    'mail_imap_username' => get_site_setting('mail_imap_username', ''),
+    'mail_imap_encryption' => get_site_setting('mail_imap_encryption', 'ssl'),
+    'mail_imap_sent_folder' => get_site_setting('mail_imap_sent_folder', 'Sent'),
 ];
 $adminEmail = '';
 $adminName = '';
@@ -57,6 +70,11 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <div>
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Site Name</label>
 <input id="settings-site-name" type="text" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($settings['site_name']); ?>" placeholder="Bloombit"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Support / Contact Email</label>
+<input id="settings-contact-email" type="email" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($settings['contact_email']); ?>" placeholder="support@yourdomain.com"/>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">Help Centre contact form submissions will be emailed here.</p>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Logo</label>
@@ -119,6 +137,109 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 </div>
 <div id="settings-test-msg" class="text-sm mt-2 hidden"></div>
 </section>
+
+<!-- Email Configuration -->
+<section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">mail</span> Email Configuration</h2>
+<p class="text-sm text-slate-500 dark:text-zinc-400 mb-6">Configure SMTP for sending and IMAP for receiving. Passwords are write-only (leave blank to keep current).</p>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-xl p-5">
+    <h3 class="font-bold mb-4">SMTP (Sending)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">SMTP Host</label>
+        <input id="settings-smtp-host" type="text" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_smtp_host']); ?>" placeholder="smtp.yourdomain.com"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">SMTP Port</label>
+        <input id="settings-smtp-port" type="number" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_smtp_port']); ?>" placeholder="587"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Encryption</label>
+        <select id="settings-smtp-encryption" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5">
+          <?php $smtpEnc = $settings['mail_smtp_encryption'] ?: 'tls'; ?>
+          <option value="tls" <?php echo $smtpEnc==='tls'?'selected':''; ?>>TLS</option>
+          <option value="ssl" <?php echo $smtpEnc==='ssl'?'selected':''; ?>>SSL</option>
+          <option value="none" <?php echo $smtpEnc==='none'?'selected':''; ?>>None</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">SMTP Username</label>
+        <input id="settings-smtp-username" type="text" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_smtp_username']); ?>" placeholder="user@yourdomain.com"/>
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300">SMTP Password</label>
+          <span id="settings-smtp-pass-status" class="text-[11px] font-bold text-slate-500 dark:text-zinc-400"></span>
+        </div>
+        <input id="settings-smtp-password" type="password" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="" placeholder="Leave blank to keep"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-xl p-5">
+    <h3 class="font-bold mb-4">From / Reply-To</h3>
+    <div class="grid grid-cols-1 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">From Email</label>
+        <input id="settings-mail-from-email" type="email" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_from_email']); ?>" placeholder="noreply@yourdomain.com"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">From Name</label>
+        <input id="settings-mail-from-name" type="text" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_from_name']); ?>" placeholder="Bloombit"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Reply-To Email</label>
+        <input id="settings-mail-reply-to" type="email" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_reply_to']); ?>" placeholder="support@yourdomain.com"/>
+        <p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">Help Centre emails will be sent using the From above, and will reply back to this address.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-xl p-5 lg:col-span-2">
+    <h3 class="font-bold mb-4">IMAP (Receiving) — optional</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">IMAP Host</label>
+        <input id="settings-imap-host" type="text" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_imap_host']); ?>" placeholder="imap.yourdomain.com"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">IMAP Port</label>
+        <input id="settings-imap-port" type="number" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_imap_port']); ?>" placeholder="993"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">IMAP Username</label>
+        <input id="settings-imap-username" type="text" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_imap_username']); ?>" placeholder="inbox@yourdomain.com"/>
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300">IMAP Password</label>
+          <span id="settings-imap-pass-status" class="text-[11px] font-bold text-slate-500 dark:text-zinc-400"></span>
+        </div>
+        <input id="settings-imap-password" type="password" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="" placeholder="Leave blank to keep"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Encryption</label>
+        <select id="settings-imap-encryption" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5">
+          <?php $imapEnc = $settings['mail_imap_encryption'] ?: 'ssl'; ?>
+          <option value="ssl" <?php echo $imapEnc==='ssl'?'selected':''; ?>>SSL</option>
+          <option value="tls" <?php echo $imapEnc==='tls'?'selected':''; ?>>TLS</option>
+          <option value="none" <?php echo $imapEnc==='none'?'selected':''; ?>>None</option>
+        </select>
+      </div>
+      <div class="md:col-span-3">
+        <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Sent Folder Name</label>
+        <input id="settings-imap-sent-folder" type="text" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_imap_sent_folder']); ?>" placeholder="Sent (or [Gmail]/Sent Mail)"/>
+        <p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">Used for syncing your mailbox “Sent” items. Common values: <code>Sent</code>, <code>Sent Items</code>, <code>[Gmail]/Sent Mail</code>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button type="button" id="settings-save-email" class="mt-6 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Save Email Settings</button>
+<div id="settings-email-msg" class="text-sm mt-2 hidden"></div>
+</section>
 </div>
 </div>
 </main>
@@ -134,13 +255,14 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 
   document.getElementById('settings-save-branding').addEventListener('click', function(){
     var siteName = document.getElementById('settings-site-name').value.trim();
+    var contactEmail = document.getElementById('settings-contact-email').value.trim();
     var btn = this;
     btn.disabled = true;
     fetch('/api/admin/site-settings.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ site_name: siteName || 'Bloombit' })
+      body: JSON.stringify({ site_name: siteName || 'Bloombit', contact_email: contactEmail || '' })
     }).then(function(r){ return r.json(); }).then(function(res){
       showMsg(document.getElementById('settings-branding-msg'), res.success ? 'Branding saved.' : (res.error || 'Failed'), res.success);
       btn.disabled = false;
@@ -230,6 +352,69 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
         showMsg(msgEl, 'Request failed.', false);
         btn.disabled = false;
       });
+  });
+
+  // Load password-set flags (write-only fields)
+  fetch('/api/admin/site-settings.php', { credentials: 'same-origin' })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.success || !res.data) return;
+      var smtpSet = (res.data.mail_smtp_password_set === '1');
+      var imapSet = (res.data.mail_imap_password_set === '1');
+      var smtpEl = document.getElementById('settings-smtp-pass-status');
+      var imapEl = document.getElementById('settings-imap-pass-status');
+      if (smtpEl) smtpEl.textContent = smtpSet ? 'Password set' : 'Not set';
+      if (imapEl) imapEl.textContent = imapSet ? 'Password set' : 'Not set';
+    }).catch(function(){});
+
+  document.getElementById('settings-save-email').addEventListener('click', function(){
+    var msgEl = document.getElementById('settings-email-msg');
+    var btn = this;
+    var payload = {
+      mail_smtp_host: document.getElementById('settings-smtp-host').value.trim(),
+      mail_smtp_port: document.getElementById('settings-smtp-port').value.trim(),
+      mail_smtp_encryption: document.getElementById('settings-smtp-encryption').value,
+      mail_smtp_username: document.getElementById('settings-smtp-username').value.trim(),
+      mail_smtp_password: document.getElementById('settings-smtp-password').value,
+      mail_from_email: document.getElementById('settings-mail-from-email').value.trim(),
+      mail_from_name: document.getElementById('settings-mail-from-name').value.trim(),
+      mail_reply_to: document.getElementById('settings-mail-reply-to').value.trim(),
+      mail_imap_host: document.getElementById('settings-imap-host').value.trim(),
+      mail_imap_port: document.getElementById('settings-imap-port').value.trim(),
+      mail_imap_encryption: document.getElementById('settings-imap-encryption').value,
+      mail_imap_username: document.getElementById('settings-imap-username').value.trim(),
+      mail_imap_password: document.getElementById('settings-imap-password').value,
+      mail_imap_sent_folder: document.getElementById('settings-imap-sent-folder').value.trim(),
+    };
+    // Don't send blank passwords (keeps existing)
+    if (!payload.mail_smtp_password) delete payload.mail_smtp_password;
+    if (!payload.mail_imap_password) delete payload.mail_imap_password;
+    btn.disabled = true;
+    fetch('/api/admin/site-settings.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(payload)
+    }).then(function(r){ return r.json(); }).then(function(res){
+      showMsg(msgEl, res.success ? 'Email settings saved.' : (res.error || 'Failed'), res.success);
+      // clear password fields after save
+      var sp = document.getElementById('settings-smtp-password'); if (sp) sp.value = '';
+      var ip = document.getElementById('settings-imap-password'); if (ip) ip.value = '';
+      btn.disabled = false;
+      if (res && res.success) {
+        // refresh password-set flags
+        fetch('/api/admin/site-settings.php', { credentials: 'same-origin' }).then(function(r){ return r.json(); }).then(function(r2){
+          if (!r2 || !r2.success || !r2.data) return;
+          var smtpEl = document.getElementById('settings-smtp-pass-status');
+          var imapEl = document.getElementById('settings-imap-pass-status');
+          if (smtpEl) smtpEl.textContent = (r2.data.mail_smtp_password_set === '1') ? 'Password set' : 'Not set';
+          if (imapEl) imapEl.textContent = (r2.data.mail_imap_password_set === '1') ? 'Password set' : 'Not set';
+        }).catch(function(){});
+      }
+    }).catch(function(){
+      showMsg(msgEl, 'Request failed.', false);
+      btn.disabled = false;
+    });
   });
 })();
 </script>
