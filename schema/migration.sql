@@ -271,7 +271,8 @@ INSERT INTO site_settings (`key`, value) VALUES
   ('mail_imap_encryption', 'ssl'),
   ('mail_imap_sent_folder', 'Sent'),
   ('homepage_youtube_url', ''),
-  ('about_youtube_url', '')
+  ('about_youtube_url', ''),
+  ('homepage_modal_image', '')
 ON DUPLICATE KEY UPDATE value = value;
 
 -- Ensure transactions.amount supports fractional USDT payouts (DECIMAL 36,18)

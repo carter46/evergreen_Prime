@@ -145,6 +145,16 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <input id="settings-about-youtube" type="url" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($settings['about_youtube_url']); ?>" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."/>
 <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Shown on the About page video section. Leave empty to hide.</p>
 </div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Homepage Floating Modal Image</label>
+<div class="flex items-center gap-4">
+<div id="settings-modal-image-preview" class="w-32 h-32 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-slate-200 dark:border-zinc-700">
+<?php if (!empty($settings['homepage_modal_image'])): ?><img src="<?php echo htmlspecialchars($settings['homepage_modal_image']); ?>" alt="Modal Image" class="w-full h-full object-contain"/><?php else: ?><span class="material-icons text-slate-400">image</span><?php endif; ?>
+</div>
+<input type="file" id="settings-modal-image-input" accept="image/png,image/jpeg,image/webp,image/jpg" class="text-sm"/>
+</div>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">Image shown in the floating button modal on homepage. Leave empty to hide the button.</p>
+</div>
 </div>
 <button type="button" id="settings-save-branding" class="mt-4 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Save Branding</button>
 <div id="settings-branding-msg" class="text-sm mt-2 hidden"></div>
