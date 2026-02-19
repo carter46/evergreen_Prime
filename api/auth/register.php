@@ -54,6 +54,7 @@ $referral = trim($input['referral'] ?? '');
     'location' => 'api/auth/register.php:parsed',
     'message' => 'Parsed registration fields (no PII)',
     'data' => [
+        'emailHash8' => substr(sha1($email), 0, 8),
         'hasName' => ($name !== ''),
         'nameLen' => strlen($name),
         'nameIsDbName' => ($name === 'u502532383_bloombit'),
@@ -134,6 +135,28 @@ $expiresAt = date('Y-m-d H:i:s', time() + 24 * 3600);
 try {
     $pdo->prepare('INSERT INTO pending_registrations (email, password_hash, name, phone_number, referral_code, avatar_url, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), name = VALUES(name), phone_number = VALUES(phone_number), referral_code = VALUES(referral_code), avatar_url = VALUES(avatar_url), expires_at = VALUES(expires_at)')
         ->execute([$email, $passwordHash, $name, $phone ?: null, $referral ?: null, $avatarUrl, $expiresAt]);
+    // #region agent log
+    try {
+        $s = $pdo->prepare('SELECT name FROM pending_registrations WHERE email = ?');
+        $s->execute([$email]);
+        $r = $s->fetch(PDO::FETCH_ASSOC);
+        $stored = is_array($r) ? (string)($r['name'] ?? '') : '';
+        @file_put_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
+            'sessionId' => 'e091ef',
+            'runId' => 'pre-fix',
+            'hypothesisId' => 'H6',
+            'location' => 'api/auth/register.php:pending_check',
+            'message' => 'Pending registration stored name check (no PII)',
+            'data' => [
+                'emailHash8' => substr(sha1($email), 0, 8),
+                'storedNameLen' => strlen($stored),
+                'storedNameIsDbName' => ($stored === 'u502532383_bloombit'),
+                'storedNameMatchesInput' => ($stored === $name),
+            ],
+            'timestamp' => (int) round(microtime(true) * 1000),
+        ]) . "\n", FILE_APPEND);
+    } catch (Throwable $e) {}
+    // #endregion
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Registration failed']);

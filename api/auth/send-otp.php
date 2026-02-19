@@ -8,6 +8,16 @@
 
 header('Content-Type: application/json');
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+    exit;
+}
+
+$input = json_decode(file_get_contents('php://input'), true) ?? $_POST ?? [];
+$email = trim($input['email'] ?? '');
+$purpose = trim($input['purpose'] ?? '');
+
 // #region agent log
 @file_put_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
     'sessionId' => 'e091ef',
@@ -18,20 +28,12 @@ header('Content-Type: application/json');
     'data' => [
         'method' => $_SERVER['REQUEST_METHOD'] ?? null,
         'contentType' => $_SERVER['CONTENT_TYPE'] ?? null,
+        'purpose' => $purpose,
+        'emailHash8' => substr(sha1($email), 0, 8),
     ],
     'timestamp' => (int) round(microtime(true) * 1000),
 ]) . "\n", FILE_APPEND);
 // #endregion
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
-    exit;
-}
-
-$input = json_decode(file_get_contents('php://input'), true) ?? $_POST ?? [];
-$email = trim($input['email'] ?? '');
-$purpose = trim($input['purpose'] ?? '');
 
 $allowed = ['register', 'login', 'disable_2fa'];
 if (!in_array($purpose, $allowed, true)) {
@@ -100,6 +102,7 @@ if ($purpose === 'register' || $purpose === 'login') {
     'message' => 'Resolved name for OTP (no PII)',
     'data' => [
         'purpose' => $purpose,
+        'emailHash8' => substr(sha1($email), 0, 8),
         'hasName' => ($name !== null && $name !== ''),
         'nameLen' => is_string($name) ? strlen($name) : null,
         'nameIsDbName' => ($name === 'u502532383_bloombit'),
