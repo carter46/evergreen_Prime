@@ -13,6 +13,7 @@ $volume24h = get_site_setting('volume_24h', '$84.2B');
 $btcDominance = get_site_setting('btc_dominance', '52.4%');
 $activeTraders = get_site_setting('active_traders', '12.8M+');
 $indexPlans = [];
+$orbitCoins = [];
 try {
     $pdo = require __DIR__ . '/includes/db.php';
     $stmt = $pdo->query('SELECT name, slug, min_deposit, max_deposit, yield_min, yield_max, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id LIMIT 3');
@@ -20,7 +21,23 @@ try {
         $row['features'] = $row['features_json'] ? json_decode($row['features_json'], true) : [];
         $indexPlans[] = $row;
     }
+    $stmt = $pdo->query('SELECT symbol, logo FROM coins WHERE enabled = 1 AND logo IS NOT NULL AND logo != "" ORDER BY sort_order, id LIMIT 14');
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $orbitCoins[] = $row;
+    }
 } catch (Throwable $e) { }
+if (empty($orbitCoins)) {
+    $orbitCoins = [
+        ['symbol' => 'BTC', 'logo' => 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png'],
+        ['symbol' => 'ETH', 'logo' => 'https://assets.coingecko.com/coins/images/279/large/ethereum.png'],
+        ['symbol' => 'USDT', 'logo' => 'https://assets.coingecko.com/coins/images/325/large/Tether.png'],
+        ['symbol' => 'BNB', 'logo' => 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png'],
+        ['symbol' => 'SOL', 'logo' => 'https://assets.coingecko.com/coins/images/4128/large/solana.png'],
+        ['symbol' => 'XRP', 'logo' => 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png'],
+        ['symbol' => 'ADA', 'logo' => 'https://assets.coingecko.com/coins/images/975/large/cardano.png'],
+        ['symbol' => 'DOGE', 'logo' => 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png'],
+    ];
+}
 ?>
 <!DOCTYPE html>
 
@@ -101,7 +118,7 @@ try {
 </span>
                     <?php echo htmlspecialchars($heroBadge); ?>
                 </div>
-<h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6 sm:mb-8">
+<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6 sm:mb-8">
                     Smarter Crypto Investing Powered by <span class="text-primary">Advanced AI</span>
 </h1>
 <p class="text-base sm:text-lg lg:text-xl text-slate-500 dark:text-slate-400 mb-8 sm:mb-10 max-w-lg leading-relaxed">
@@ -114,15 +131,19 @@ try {
                     </button>
 </div>
 </div>
+<?php
+$heroPlaceholderImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAERFUp6io6mfsuU1xT4reC0MNfdbS-TG3S4WGzJcCZSgr20oMTW8dUmGTeXv13y8kWRb5oPvDKI71MY9ZPevM-uGRz6fdP5rwt94fPuFxrKeaT7jUgMJ9Vbc7eaMqT5j76CADhsg_voWOtIyJCJYcyKMSY_fVn5C2XOdVDDAxc9__oxwyA4PGAsGCjAAoYpnKqfXpEzSY8_0IuPOPCBU6Rn8GNYiSkYg173iJeDY9itvWtl5KgpyHI0p4yDw2MBFoiRPPEhihDvU4';
+?>
 <div class="relative">
 <div class="absolute -top-20 -right-20 w-96 h-96 bg-primary/20 blur-[120px] rounded-full"></div>
+<div class="relative z-10 w-full rounded-2xl shadow-2xl border-4 border-white/50 dark:border-slate-800/50 overflow-hidden bg-slate-900/50 h-[350px] sm:h-[400px] md:h-[450px] lg:h-[500px]">
 <?php if ($homepageEmbedUrl): ?>
-<div class="relative z-10 w-full aspect-video rounded-2xl shadow-2xl border-4 border-white/50 dark:border-slate-800/50 overflow-hidden">
-<iframe class="w-full h-full" src="<?php echo htmlspecialchars($homepageEmbedUrl); ?>?rel=0" title="Bloombit demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</div>
+<img alt="" class="hero-video-poster absolute inset-0 w-full h-full object-cover rounded-2xl" src="<?php echo htmlspecialchars($heroPlaceholderImg); ?>" aria-hidden="true"/>
+<iframe class="absolute inset-0 w-full h-full rounded-2xl" src="<?php echo htmlspecialchars($homepageEmbedUrl); ?>?rel=0" title="Bloombit demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 <?php else: ?>
-<img alt="AI Trading Interface" class="relative z-10 w-full h-auto rounded-2xl shadow-2xl border-4 border-white/50 dark:border-slate-800/50" data-alt="Futuristic 3D robot arm or abstract neural AI sphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAERFUp6io6mfsuU1xT4reC0MNfdbS-TG3S4WGzJcCZSgr20oMTW8dUmGTeXv13y8kWRb5oPvDKI71MY9ZPevM-uGRz6fdP5rwt94fPuFxrKeaT7jUgMJ9Vbc7eaMqT5j76CADhsg_voWOtIyJCJYcyKMSY_fVn5C2XOdVDDAxc9__oxwyA4PGAsGCjAAoYpnKqfXpEzSY8_0IuPOPCBU6Rn8GNYiSkYg173iJeDY9itvWtl5KgpyHI0p4yDw2MBFoiRPPEhihDvU4"/>
+<img alt="AI Trading Interface" class="absolute inset-0 w-full h-full object-cover rounded-2xl" src="<?php echo htmlspecialchars($heroPlaceholderImg); ?>"/>
 <?php endif; ?>
+</div>
 </div>
 </div>
 </section>
@@ -413,15 +434,26 @@ try {
 <div class="max-w-7xl mx-auto px-6 text-center">
 <h2 class="text-3xl font-bold text-white mb-20">AI Market Intelligence Orbit</h2>
 <div class="relative flex items-center justify-center h-[500px]">
-<!-- Rotating Rings -->
+<?php
+$ring1 = array_slice($orbitCoins, 0, 6);
+$ring2 = array_slice($orbitCoins, 6, 4);
+?>
+<!-- Orbit rings: real coin logos from DB or fallback -->
 <div class="absolute w-[450px] h-[450px] border border-primary/20 rounded-full animate-[spin_20s_linear_infinite]">
-<span class="material-icons absolute -top-4 left-1/2 -translate-x-1/2 text-primary">currency_bitcoin</span>
-<span class="material-icons absolute top-1/2 -right-4 -translate-y-1/2 text-primary">token</span>
+<?php foreach ($ring1 as $i => $c): $angle = 2 * M_PI * $i / count($ring1) - M_PI / 2; $x = 50 + 50 * cos($angle); $y = 50 + 50 * sin($angle); ?>
+<span class="absolute w-10 h-10 rounded-full overflow-hidden bg-slate-800 border-2 border-primary/30 shadow-lg flex items-center justify-center" style="left:<?php echo $x; ?>%; top:<?php echo $y; ?>%; transform:translate(-50%,-50%);"><img src="<?php echo htmlspecialchars($c['logo']); ?>" alt="<?php echo htmlspecialchars($c['symbol']); ?>" class="w-7 h-7 object-contain"/></span>
+<?php endforeach; ?>
 </div>
 <div class="absolute w-[300px] h-[300px] border border-primary/30 rounded-full animate-[spin_15s_linear_infinite_reverse]">
-<span class="material-icons absolute -bottom-4 left-1/2 -translate-x-1/2 text-primary">savings</span>
+<?php foreach ($ring2 as $i => $c): $angle = 2 * M_PI * $i / max(1, count($ring2)) - M_PI / 2; $x = 50 + 50 * cos($angle); $y = 50 + 50 * sin($angle); ?>
+<span class="absolute w-9 h-9 rounded-full overflow-hidden bg-slate-800 border-2 border-primary/30 shadow-lg flex items-center justify-center" style="left:<?php echo $x; ?>%; top:<?php echo $y; ?>%; transform:translate(-50%,-50%);"><img src="<?php echo htmlspecialchars($c['logo']); ?>" alt="<?php echo htmlspecialchars($c['symbol']); ?>" class="w-6 h-6 object-contain"/></span>
+<?php endforeach; ?>
 </div>
-<div class="absolute w-[150px] h-[150px] border border-primary/40 rounded-full animate-[spin_10s_linear_infinite]"></div>
+<div class="absolute w-[150px] h-[150px] border border-primary/40 rounded-full animate-[spin_10s_linear_infinite]">
+<?php foreach (array_slice($orbitCoins, 10, 4) as $i => $c): $n = min(4, count($orbitCoins) - 10); if ($n < 1) break; $angle = 2 * M_PI * $i / $n - M_PI / 2; $x = 50 + 50 * cos($angle); $y = 50 + 50 * sin($angle); ?>
+<span class="absolute w-8 h-8 rounded-full overflow-hidden bg-slate-800 border-2 border-primary/40 shadow flex items-center justify-center" style="left:<?php echo $x; ?>%; top:<?php echo $y; ?>%; transform:translate(-50%,-50%);"><img src="<?php echo htmlspecialchars($c['logo']); ?>" alt="<?php echo htmlspecialchars($c['symbol']); ?>" class="w-5 h-5 object-contain"/></span>
+<?php endforeach; ?>
+</div>
 <!-- Central Core -->
 <div class="relative z-10 w-40 h-40 bg-primary rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(255,193,7,0.4)]">
 <div class="text-black text-center">
@@ -442,6 +474,12 @@ try {
 </div>
 <div class="p-10 grid md:grid-cols-2 gap-12">
 <div class="space-y-10">
+<div>
+<label class="block font-bold mb-2">Plan</label>
+<select id="calc-plan" class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium">
+<option value="">Loading plans…</option>
+</select>
+</div>
 <div>
 <div class="flex justify-between mb-4 font-bold">
 <span>Investment Amount</span>
@@ -470,7 +508,7 @@ try {
 <div class="text-5xl font-bold text-black mb-1" id="calc-projected">$43,250</div>
 <div class="text-primary font-bold" id="calc-profit">+73% Profit</div>
 <div class="mt-8 w-full">
-<button class="w-full py-4 bg-black text-white font-bold rounded-lg hover:bg-slate-800 transition-all">Open Account Now</button>
+<a href="/register" class="block w-full py-4 bg-black text-white font-bold rounded-lg hover:bg-slate-800 transition-all text-center">Open Account Now</a>
 </div>
 </div>
 </div>
@@ -518,7 +556,7 @@ foreach ($indexPlans as $p):
 <div class="max-w-7xl mx-auto px-6">
 <h2 class="text-4xl font-bold mb-4">Market Insights</h2>
 <p class="text-slate-500 mb-8">Top stories from TradingView.</p>
-<div class="tradingview-widget-container rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm" style="height: 530px;">
+<div class="tradingview-widget-container rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm" style="height: 680px;">
 <div class="tradingview-widget-container__widget"></div>
 <div class="tradingview-widget-copyright text-xs text-slate-400 mt-2"><a href="https://www.tradingview.com/news/top-providers/tradingview/" rel="noopener nofollow" target="_blank"><span class="blue-text">Top stories</span></a><span class="trademark"> by TradingView</span></div>
 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
@@ -535,14 +573,15 @@ foreach ($indexPlans as $p):
   var plans = [];
   var amountEl = document.getElementById('calc-amount');
   var durationEl = document.getElementById('calc-duration');
+  var planSelect = document.getElementById('calc-plan');
   if (!amountEl || !durationEl) return;
 
-  function findPlan(amount) {
+  function findPlanByAmount(amount) {
     for (var i = 0; i < plans.length; i++) {
       var p = plans[i];
       if (amount >= p.min && (p.max === null || amount <= p.max)) return p;
     }
-    return plans[plans.length - 1] || null;
+    return plans[plans.length - 1] || (plans[0] || null);
   }
 
   function updateCalc() {
@@ -550,7 +589,13 @@ foreach ($indexPlans as $p):
     var months = parseInt(durationEl.value, 10) || 12;
     document.getElementById('calc-amount-display').textContent = '$' + amount.toLocaleString();
     document.getElementById('calc-duration-display').textContent = months + ' Month' + (months !== 1 ? 's' : '');
-    var plan = findPlan(amount);
+    var plan = null;
+    if (planSelect && planSelect.value) {
+      for (var i = 0; i < plans.length; i++) {
+        if (String(plans[i].id) === planSelect.value) { plan = plans[i]; break; }
+      }
+    }
+    if (!plan) plan = findPlanByAmount(amount);
     var projected = amount;
     var profitPct = 0;
     if (plan) {
@@ -565,6 +610,15 @@ foreach ($indexPlans as $p):
   fetch('/api/plans/list.php').then(function(r){ return r.json(); }).then(function(res){
     if (res.success && res.data && res.data.length) {
       plans = res.data;
+      if (planSelect) {
+        planSelect.innerHTML = '';
+        plans.forEach(function(p) {
+          var opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.name + ' ($' + p.min.toLocaleString() + (p.max ? ' - $' + p.max.toLocaleString() : '+') + ')';
+          planSelect.appendChild(opt);
+        });
+      }
       var first = plans[0], last = plans[plans.length - 1];
       var minVal = first ? first.min : 100;
       var maxVal = last && last.max ? last.max : 100000;
@@ -581,6 +635,7 @@ foreach ($indexPlans as $p):
 
   amountEl.addEventListener('input', updateCalc);
   durationEl.addEventListener('input', updateCalc);
+  if (planSelect) planSelect.addEventListener('change', updateCalc);
 })();
 </script>
 <script>

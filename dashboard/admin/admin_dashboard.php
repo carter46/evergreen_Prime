@@ -148,10 +148,10 @@ foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['c
 <p class="text-2xl font-bold text-amber-700 dark:text-amber-400">$<?php echo number_format($pendingWithdrawalsSum); ?></p>
 </div>
 </div>
-<!-- Mid Section - Analytics -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-<!-- Plan Distribution -->
-<div class="xl:col-span-2 bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
+<!-- Mid Section - Investments per Plan + Pending Deposits side by side (50% / 50%) -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+<!-- Plan Distribution (50%) -->
+<div class="bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
 <h3 class="font-bold text-lg mb-6">Investments per Plan</h3>
 <div class="space-y-6">
 <?php foreach ($planDist as $p): $pct = $planMax > 0 ? (int)((int)$p['cnt'] / $planMax * 100) : 0; ?>
@@ -179,14 +179,11 @@ foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['c
 </div>
 </div>
 </div>
-</div>
-<!-- Bottom Grid: Table & Activity -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-<!-- Pending Deposits Table -->
-<div class="xl:col-span-2 bg-white dark:bg-white/5 rounded-xl border border-primary/10 shadow-sm overflow-hidden">
+<!-- Pending Deposits Table (50%) -->
+<div class="bg-white dark:bg-white/5 rounded-xl border border-primary/10 shadow-sm overflow-hidden">
 <div class="p-6 border-b border-primary/10 flex items-center justify-between">
 <h3 class="font-bold text-lg">Pending Deposits</h3>
-<button class="text-xs font-bold text-primary hover:underline">View All</button>
+<a href="/dashboard/admin/transactions.php" class="text-xs font-bold text-primary hover:underline">View All</a>
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-left">
@@ -248,7 +245,9 @@ foreach ($pendingList as $tx):
 </table>
 </div>
 </div>
-<!-- Recent Activity Log -->
+</div>
+<!-- Recent Activity (full width below) -->
+<div class="grid grid-cols-1 gap-8 mb-8">
 <div class="bg-white dark:bg-white/5 rounded-xl border border-primary/10 shadow-sm flex flex-col">
 <div class="p-6 border-b border-primary/10">
 <h3 class="font-bold text-lg">Recent Activity</h3>
