@@ -401,8 +401,13 @@
             const confirm = form.querySelector('[name="confirm_password"]')?.value || '';
             const phone = form.querySelector('[name="phone"]')?.value?.trim() || '';
             const referral = form.querySelector('[name="referral"]')?.value?.trim() || '';
+            const termsCheckbox = document.getElementById('terms');
             const avatarInput = form.querySelector('[name="avatar"]');
             const hasAvatar = avatarInput?.files?.length && avatarInput.files[0];
+            if (!termsCheckbox || !termsCheckbox.checked) {
+                showMessage(msgEl, 'You must agree to the Terms of Service and Privacy Policy to continue.', true);
+                return;
+            }
             if (password !== confirm) {
                 showMessage(msgEl, 'Passwords do not match.', true);
                 return;

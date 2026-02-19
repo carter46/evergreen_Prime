@@ -24,6 +24,9 @@ $settings = [
     'homepage_youtube_url' => get_site_setting('homepage_youtube_url', ''),
     'about_youtube_url' => get_site_setting('about_youtube_url', ''),
     'homepage_modal_image' => get_site_setting('homepage_modal_image', ''),
+    'header_image' => get_site_setting('header_image', '/uploads/images/bloombit.jpg'),
+    'office_title' => get_site_setting('office_title', 'London Office'),
+    'office_address' => get_site_setting('office_address', '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom'),
 ];
 $adminEmail = '';
 $adminName = '';
@@ -154,6 +157,25 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <input type="file" id="settings-modal-image-input" accept="image/png,image/jpeg,image/webp,image/jpg" class="text-sm"/>
 </div>
 <p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">Image shown in the floating button modal on homepage. Leave empty to hide the button.</p>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Header Image (About Page)</label>
+<div class="flex items-center gap-4">
+<div id="settings-header-image-preview" class="w-32 h-32 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-slate-200 dark:border-zinc-700">
+<?php if (!empty($settings['header_image'])): ?><img src="<?php echo htmlspecialchars($settings['header_image']); ?>" alt="Header Image" class="w-full h-full object-contain"/><?php else: ?><span class="material-icons text-slate-400">image</span><?php endif; ?>
+</div>
+<input type="file" id="settings-header-image-input" accept="image/png,image/jpeg,image/webp,image/jpg" class="text-sm"/>
+</div>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">Image shown on the About Us page header. Default: /uploads/images/bloombit.jpg</p>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Office Title</label>
+<input id="settings-office-title" type="text" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($settings['office_title']); ?>" placeholder="London Office"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Office Address</label>
+<textarea id="settings-office-address" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" rows="3" placeholder="40 Bank Street, Canary Wharf&#10;London, E14 5NR&#10;United Kingdom"><?php echo htmlspecialchars($settings['office_address']); ?></textarea>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">Office address shown on Help Centre page. Use &lt;br/&gt; for line breaks.</p>
 </div>
 </div>
 <button type="button" id="settings-save-branding" class="mt-4 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Save Branding</button>
@@ -384,6 +406,14 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
     uploadAsset('modal_image', this, p).then(function(res){
       if (res && res.success) {
         fetch('/api/admin/site-settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ homepage_modal_image: res.data.url }) });
+      }
+    });
+  });
+  document.getElementById('settings-header-image-input').addEventListener('change', function(){
+    var p = document.getElementById('settings-header-image-preview');
+    uploadAsset('header_image', this, p).then(function(res){
+      if (res && res.success) {
+        fetch('/api/admin/site-settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ header_image: res.data.url }) });
       }
     });
   });

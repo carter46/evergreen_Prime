@@ -33,7 +33,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex justify-end gap-2 border-b border-primary/10 bg-white/80 dark:bg-background-dark/80">
 <button class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors" onclick="window.print()">
 <span class="material-icons text-lg">print</span>Print</button>
-<button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-slate-900 text-sm font-bold rounded-lg hover:bg-opacity-90 transition-all shadow-sm">
+<button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-slate-900 text-sm font-bold rounded-lg hover:bg-opacity-90 transition-all shadow-sm" onclick="window.print()">
 <span class="material-icons text-lg">download</span>Download PDF</button>
 </div>
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

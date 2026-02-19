@@ -114,7 +114,7 @@
 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
 </div>
 <p class="text-slate-500 dark:text-slate-400 text-sm">Status: Available Now</p>
-<button class="mt-4 font-medium text-primary text-left">Start a conversation →</button>
+<a href="/live_chat" class="mt-4 font-medium text-primary text-left inline-block">Start a conversation →</a>
 </div>
 </div>
 <!-- Office Card with Map Background -->
@@ -128,11 +128,13 @@
 <span class="material-icons-outlined">location_on</span>
 <span class="font-bold text-xs uppercase tracking-tighter">Global Headquarters</span>
 </div>
-<h3 class="font-bold text-xl mb-1">London Office</h3>
+<?php
+$officeAddress = get_site_setting('office_address', '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom');
+$officeTitle = get_site_setting('office_title', 'London Office');
+?>
+<h3 class="font-bold text-xl mb-1"><?php echo htmlspecialchars($officeTitle); ?></h3>
 <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                                40 Bank Street, Canary Wharf<br/>
-                                London, E14 5NR<br/>
-                                United Kingdom
+                                <?php echo $officeAddress; ?>
                             </p>
 </div>
 </div>
@@ -226,13 +228,13 @@
 <p class="text-slate-400 text-lg">If you couldn't find what you were looking for, our live agents are standing by to assist you in real-time.</p>
 </div>
 <div class="flex flex-col sm:flex-row gap-4 shrink-0">
-<button class="px-8 py-4 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:scale-[1.05] transition-transform">
+<a href="/live_chat" class="px-8 py-4 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:scale-[1.05] transition-transform">
 <span class="material-icons-outlined">forum</span>
                             Start Live Chat
-                        </button>
-<button class="px-8 py-4 bg-white/10 text-white font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all">
-                            View Documentation
-                        </button>
+                        </a>
+<a href="/register" class="px-8 py-4 bg-white/10 text-white font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all">
+                            Get Started
+                        </a>
 </div>
 </div>
 </div>
@@ -240,4 +242,32 @@
 </main>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
+<script>
+// FAQ Tabs
+(function(){
+  var tabs = document.querySelectorAll('aside button');
+  tabs.forEach(function(tab, idx){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('bg-primary', 'text-white', 'font-bold'); t.classList.add('hover:bg-white', 'dark:hover:bg-zinc-900', 'font-medium', 'text-slate-600', 'dark:text-slate-400'); });
+      this.classList.add('bg-primary', 'text-white', 'font-bold');
+      this.classList.remove('hover:bg-white', 'dark:hover:bg-zinc-900', 'font-medium', 'text-slate-600', 'dark:text-slate-400');
+    });
+  });
+  // FAQ Accordions
+  var accordions = document.querySelectorAll('.lg\\:col-span-3 button');
+  accordions.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var content = this.nextElementSibling;
+      var icon = this.querySelector('.material-icons-outlined');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        if (icon) icon.textContent = 'expand_less';
+      } else {
+        content.classList.add('hidden');
+        if (icon) icon.textContent = 'expand_more';
+      }
+    });
+  });
+})();
+</script>
 </body></html>

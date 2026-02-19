@@ -126,10 +126,10 @@ if (empty($orbitCoins)) {
                     Automate your wealth with institutional-grade machine learning algorithms. Deploy sophisticated bots that trade 24/7 while you sleep.
                 </p>
 <div class="flex flex-col sm:flex-row gap-4">
-<button class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-primary text-black font-bold text-base sm:text-lg rounded-lg shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all min-h-[44px]">Start Your Free Trial</button>
-<button class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white dark:bg-slate-800 border border-primary/20 font-bold text-base sm:text-lg rounded-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2 min-h-[44px]">
-<span class="material-icons">play_circle</span> Watch Demo
-                    </button>
+<a href="/register" class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-primary text-black font-bold text-base sm:text-lg rounded-lg shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all min-h-[44px] text-center">Get Started</a>
+<a href="/about_us" class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white dark:bg-slate-800 border border-primary/20 font-bold text-base sm:text-lg rounded-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2 min-h-[44px]">
+<span class="material-icons">info</span> Learn More
+                    </a>
 </div>
 </div>
 <?php
@@ -198,7 +198,7 @@ $heroPlaceholderImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAERFU
 <div>
 <h2 class="text-4xl font-bold mb-6">Live Crypto Market Overview</h2>
 <p class="text-slate-500 text-lg mb-8">Stay ahead of the curve with real-time price feeds and market sentiment analysis powered by our proprietary AI engine.</p>
-<button class="px-8 py-3 bg-primary text-black font-bold rounded-lg hover:shadow-lg transition-all">View Full Market</button>
+<a href="/login" class="px-8 py-3 bg-primary text-black font-bold rounded-lg hover:shadow-lg transition-all inline-block">View Full Market</a>
 </div>
 <div class="relative bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-primary/10 overflow-hidden">
 <div class="flex gap-6 animate-infinite-scroll whitespace-nowrap crypto-ticker">
@@ -230,7 +230,7 @@ $heroPlaceholderImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAERFU
 <h2 class="text-4xl font-bold mb-4">5 Steps to Financial Freedom</h2>
 <p class="text-slate-500 max-w-2xl mx-auto">Our streamlined process makes institutional-grade trading accessible to everyone.</p>
 </div>
-<div class="max-w-7xl mx-auto px-6 grid md:grid-cols-5 gap-8">
+<div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-5 gap-8">
 <div class="relative group">
 <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
 <span class="material-icons text-primary group-hover:text-black">person_add</span>
@@ -567,10 +567,10 @@ foreach ($indexPlans as $p):
 </div>
 </section>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
-<!-- Floating Modal Button (always visible) -->
-<button id="homepage-modal-btn" class="fixed bottom-6 left-6 z-50 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2" aria-label="View Certificate">
-<span class="material-icons">shield</span>
-<span class="hidden sm:inline">View Certificate</span>
+<!-- Floating Modal Button (scroll-based visibility) -->
+<button id="homepage-modal-btn" class="fixed bottom-6 left-6 z-50 px-4 py-3 sm:px-6 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all opacity-0 pointer-events-none flex flex-col sm:flex-row items-center gap-1 sm:gap-2" aria-label="View Certificate">
+<span class="material-icons text-lg sm:text-xl">shield</span>
+<span class="text-xs sm:text-base leading-tight text-center sm:text-left">View Certificate</span>
 </button>
 <!-- Modal -->
 <div id="homepage-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -594,6 +594,28 @@ foreach ($indexPlans as $p):
   var modal = document.getElementById('homepage-modal');
   var close = document.getElementById('homepage-modal-close');
   if (!btn || !modal || !close) return;
+  
+  // Scroll-based visibility (show at ~80% scroll)
+  function checkScroll() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    var scrollPercent = scrollTop / docHeight;
+    
+    if (scrollPercent >= 0.8) {
+      btn.classList.remove('opacity-0', 'pointer-events-none');
+      btn.classList.add('opacity-100', 'pointer-events-auto');
+    } else {
+      btn.classList.remove('opacity-100', 'pointer-events-auto');
+      btn.classList.add('opacity-0', 'pointer-events-none');
+    }
+  }
+  
+  // Check on scroll and on load
+  window.addEventListener('scroll', checkScroll);
+  window.addEventListener('resize', checkScroll);
+  checkScroll();
+  
+  // Modal functionality
   btn.addEventListener('click', function(){ modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden'; });
   close.addEventListener('click', function(){ modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; });
   modal.addEventListener('click', function(e){ if (e.target === modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; } });

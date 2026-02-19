@@ -40,6 +40,9 @@ $allowedKeys = [
     'homepage_youtube_url',
     'about_youtube_url',
     'homepage_modal_image',
+    'header_image',
+    'office_title',
+    'office_address',
 ];
 $sensitiveKeys = ['mail_smtp_password', 'mail_imap_password'];
 
@@ -78,6 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'homepage_youtube_url' => '',
         'about_youtube_url' => '',
         'homepage_modal_image' => '',
+        'header_image' => '/uploads/images/bloombit.jpg',
+        'office_title' => 'London Office',
+        'office_address' => '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom',
         // write-only flags
         'mail_smtp_password_set' => '0',
         'mail_imap_password_set' => '0',

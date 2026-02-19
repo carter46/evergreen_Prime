@@ -57,7 +57,7 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
 <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 <div>
 <span class="inline-block px-3 py-1 bg-primary/10 text-primary font-semibold text-sm rounded mb-6">ESTABLISHED 2021</span>
-<h1 class="text-6xl lg:text-7xl font-bold leading-tight mb-8">
+<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-8">
                     Democratizing <br/>
 <span class="text-primary">Wealth Creation</span> <br/>
                     Through AI.
@@ -80,7 +80,10 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
 </div>
 <div class="relative">
 <div class="absolute -top-10 -right-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
-<img class="relative z-10 w-full aspect-square object-cover rounded-xl shadow-2xl border border-white/10" data-alt="Abstract 3D golden financial visualization" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgmHiRH6uJE2PDmBrqjUEfV-Xh5k4wmTRmBXqAehLn5HzvyXY6w8N23O02fezRXDHr6C21KGkuhUuyisxLMj0GrgxV1eEOxgzVkZeV6tTjXCyqJczAX7UP6S-137ZOR_8sEaz9hlMOtcmKzIYgPCloM0cRst5VGY5KfpSPHlFilkFkoURUGrtUGS1_khWs3T8-e6hJdK9tDtbBd96wqqg7OX1fdclUK9NiYJnCyqHb7dL01j8UACMtzzIn5n49Y8TVQ0WOfPaYUZk"/>
+<?php
+$bloombitImage = get_site_setting('header_image', '/uploads/images/bloombit.jpg');
+?>
+<img class="relative z-10 w-full aspect-square object-cover rounded-xl shadow-2xl border border-white/10" alt="Bloombit" src="<?php echo htmlspecialchars($bloombitImage); ?>" onerror="this.src='/uploads/images/bloombit.jpg'"/>
 </div>
 </div>
 </header>

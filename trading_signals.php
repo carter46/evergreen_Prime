@@ -396,10 +396,10 @@
 <div class="relative z-10">
 <h4 class="font-bold text-lg mb-2">Join the Pro Feed</h4>
 <p class="text-xs text-indigo-100 mb-4">Connect with 15,000+ traders in our private Discord lounge.</p>
-<button class="bg-white text-indigo-600 px-4 py-2 rounded text-xs font-bold flex items-center gap-2">
+<a href="/register" class="bg-white text-indigo-600 px-4 py-2 rounded text-xs font-bold flex items-center gap-2 inline-block">
 <span class="material-icons text-sm">group</span>
                             Join Community
-                        </button>
+                        </a>
 </div>
 <span class="material-icons absolute -bottom-4 -right-4 text-8xl text-indigo-500/50">forum</span>
 </div>
@@ -419,12 +419,12 @@
 </div>
 </div>
 <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-<button class="bg-background-dark text-white px-8 py-3 rounded font-bold hover:scale-105 transition-transform shadow-xl">
+<a href="/register" class="bg-background-dark text-white px-8 py-3 rounded font-bold hover:scale-105 transition-transform shadow-xl inline-block">
                         Unlock Premium Feed
-                    </button>
-<button class="border-2 border-background-dark/20 text-background-dark px-8 py-3 rounded font-bold hover:bg-background-dark/5 transition-colors">
+                    </a>
+<a href="/plans" class="border-2 border-background-dark/20 text-background-dark px-8 py-3 rounded font-bold hover:bg-background-dark/5 transition-colors inline-block">
                         Compare Plans
-                    </button>
+                    </a>
 </div>
 </div>
 <!-- Abstract Graphic Background Element -->

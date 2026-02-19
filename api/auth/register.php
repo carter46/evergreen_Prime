@@ -13,15 +13,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$input = $_POST;
-if (empty($input)) {
-    $input = json_decode(file_get_contents('php://input'), true) ?? [];
+// Handle both FormData and JSON input
+$input = [];
+if (!empty($_POST)) {
+    $input = $_POST;
+} else {
+    $jsonInput = json_decode(file_get_contents('php://input'), true);
+    if ($jsonInput) {
+        $input = $jsonInput;
+    }
 }
+
 $email = trim($input['email'] ?? '');
 $password = $input['password'] ?? '';
 $name = trim($input['name'] ?? '');
 $phone = trim($input['phone'] ?? '');
 $referral = trim($input['referral'] ?? '');
+
+// Ensure name is not empty - if it is, use email prefix as fallback
+if (empty($name) && !empty($email)) {
+    $name = explode('@', $email)[0];
+}
 
 if (empty($email) || empty($password)) {
     http_response_code(400);
@@ -83,7 +95,7 @@ $expiresAt = date('Y-m-d H:i:s', time() + 24 * 3600);
 // Store in pending_registrations (no users row until OTP verified)
 try {
     $pdo->prepare('INSERT INTO pending_registrations (email, password_hash, name, phone_number, referral_code, avatar_url, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), name = VALUES(name), phone_number = VALUES(phone_number), referral_code = VALUES(referral_code), avatar_url = VALUES(avatar_url), expires_at = VALUES(expires_at)')
-        ->execute([$email, $passwordHash, $name ?: '', $phone ?: null, $referral ?: null, $avatarUrl, $expiresAt]);
+        ->execute([$email, $passwordHash, $name, $phone ?: null, $referral ?: null, $avatarUrl, $expiresAt]);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Registration failed']);

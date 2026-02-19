@@ -48,8 +48,13 @@ try {
     }
 
     // Create user only after OTP verified (email_verified = 1)
+    $userName = trim($pending['name'] ?? '');
+    // Fallback to email prefix if name is empty
+    if (empty($userName) && !empty($pending['email'])) {
+        $userName = explode('@', $pending['email'])[0];
+    }
     $cols = ['email', 'password_hash', 'name', 'role', 'email_verified', 'active'];
-    $vals = [$pending['email'], $pending['password_hash'], $pending['name'] ?? '', 'user', 1, 1];
+    $vals = [$pending['email'], $pending['password_hash'], $userName, 'user', 1, 1];
     $placeholders = ['?', '?', '?', '?', '?', '?'];
 
     try {
