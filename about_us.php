@@ -82,9 +82,9 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
 <div class="relative">
 <div class="absolute -top-10 -right-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
 <?php
-$bloombitImage = get_site_setting('header_image', '/uploads/images/bloombit.jpg');
+$bloombitImage = get_site_setting('header_image', '/bloombit.jpg');
 ?>
-<img class="relative z-10 w-full aspect-square object-cover rounded-xl shadow-2xl border border-white/10" alt="Bloombit" src="<?php echo htmlspecialchars($bloombitImage); ?>" onerror="this.src='/uploads/images/bloombit.jpg'"/>
+<img class="relative z-10 w-full aspect-square object-cover rounded-xl shadow-2xl border border-white/10" alt="Bloombit" src="<?php echo htmlspecialchars($bloombitImage); ?>" onerror="this.src='/bloombit.jpg'"/>
 </div>
 </div>
 </header>

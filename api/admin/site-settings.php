@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'homepage_youtube_url' => '',
         'about_youtube_url' => '',
         'homepage_modal_image' => '',
-        'header_image' => '/uploads/images/bloombit.jpg',
+        'header_image' => '/bloombit.jpg',
         'office_title' => 'London Office',
         'office_address' => '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom',
         'smartsupp_key' => '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d',

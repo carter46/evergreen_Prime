@@ -24,7 +24,7 @@ $settings = [
     'homepage_youtube_url' => get_site_setting('homepage_youtube_url', ''),
     'about_youtube_url' => get_site_setting('about_youtube_url', ''),
     'homepage_modal_image' => get_site_setting('homepage_modal_image', ''),
-    'header_image' => get_site_setting('header_image', '/uploads/images/bloombit.jpg'),
+    'header_image' => get_site_setting('header_image', '/bloombit.jpg'),
     'office_title' => get_site_setting('office_title', 'London Office'),
     'office_address' => get_site_setting('office_address', '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom'),
     'smartsupp_key' => get_site_setting('smartsupp_key', '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d'),
@@ -167,7 +167,7 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 </div>
 <input type="file" id="settings-header-image-input" accept="image/png,image/jpeg,image/webp,image/jpg" class="text-sm"/>
 </div>
-<p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">Image shown on the About Us page header. Default: /uploads/images/bloombit.jpg</p>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">Image shown on the About Us page header. Default: /bloombit.jpg</p>
 </div>
 <div class="md:col-span-2">
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Office Title</label>
