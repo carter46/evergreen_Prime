@@ -8,6 +8,9 @@ $site_url = $site_url ?? '/';
 $reset_url = $reset_url ?? $site_url . '/login';
 $name = $name ?? 'User';
 $expiry_minutes = $expiry_minutes ?? 60;
+require_once dirname(__DIR__) . '/helpers.php';
+$siteName = get_site_name();
+$logoParts = preg_match('/^(.+)bit$/i', $siteName, $m) ? [$m[1], 'bit'] : [$siteName, null];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,6 +23,15 @@ $expiry_minutes = $expiry_minutes ?? 60;
 <body style="font-family:Arial,sans-serif;margin:0;padding:0;background:#f8f8f5;color:#1d180c;line-height:1.6">
 <div style="max-width:520px;margin:0 auto;padding:32px 24px">
 <div style="background:#fff;border:1px solid #eae2cd;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
+<div style="height:6px;width:100%;background:#ffc105"></div>
+<div style="padding:24px 40px 16px;background:#fff;border-bottom:1px solid #f0f0f0">
+<div style="display:flex;align-items:center;gap:8px;justify-content:center">
+<div style="width:40px;height:40px;background:#ffc105;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+<span style="font-size:20px;color:#fff">✨</span>
+</div>
+<span style="font-size:20px;font-weight:700;color:#1d180c;letter-spacing:-0.02em"><?= htmlspecialchars($logoParts[0]) ?><?php if ($logoParts[1]): ?><span style="color:#ffc105"><?= htmlspecialchars($logoParts[1]) ?></span><?php endif; ?></span>
+</div>
+</div>
 <div style="padding:40px 40px 32px">
 <div style="width:48px;height:48px;background:rgba(255,193,5,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:24px">
 <span style="font-size:24px">🔐</span>
