@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+require_once dirname(__DIR__, 2) . '/includes/deposit-expiry.php';
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -39,6 +40,9 @@ try {
     echo json_encode(['success' => false, 'error' => 'Database unavailable']);
     exit;
 }
+
+// Best-effort cleanup: expire old pending deposits (idempotent)
+try { expire_pending_deposits($pdo); } catch (Throwable $e) {}
 
 // Validate currency exists in wallet_addresses (admin-managed coins with addresses)
 $stmt = $pdo->prepare('SELECT 1 FROM wallet_addresses wa INNER JOIN coins c ON c.id = wa.coin_id AND c.enabled = 1 WHERE UPPER(c.symbol) = ? LIMIT 1');
@@ -71,14 +75,28 @@ if ($amountUsd !== null && $amountUsd > 0) {
 }
 
 $hasAmountUsdCol = false;
+$hasExpiresAtCol = false;
 try {
     $chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
     $hasAmountUsdCol = $chk && $chk->rowCount() > 0;
 } catch (Throwable $e) {}
+try {
+    $chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'expires_at'");
+    $hasExpiresAtCol = $chk && $chk->rowCount() > 0;
+} catch (Throwable $e) {}
 
-if ($hasAmountUsdCol) {
+$countdownMinutes = get_deposit_countdown_minutes();
+$expiresAt = date('Y-m-d H:i:s', time() + ($countdownMinutes * 60));
+
+if ($hasAmountUsdCol && $hasExpiresAtCol) {
+    $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$userId, 'deposit', $amount, $amountUsdVal, $currency, 'pending', $reference ?: null, $expiresAt]);
+} elseif ($hasAmountUsdCol) {
     $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)');
     $stmt->execute([$userId, 'deposit', $amount, $amountUsdVal, $currency, 'pending', $reference ?: null]);
+} elseif ($hasExpiresAtCol) {
+    $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$userId, 'deposit', $amount, $currency, 'pending', $reference ?: null, $expiresAt]);
 } else {
     $stmt = $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)');
     $stmt->execute([$userId, 'deposit', $amount, $currency, 'pending', $reference ?: null]);
@@ -93,5 +111,7 @@ echo json_encode([
         'message' => 'Deposit request submitted. Awaiting admin approval.',
         'coin_amount' => (float) $amount,
         'amount_usd' => $amountUsdVal,
+        'expires_at' => $hasExpiresAtCol ? $expiresAt : null,
+        'countdown_minutes' => $countdownMinutes,
     ],
 ]);

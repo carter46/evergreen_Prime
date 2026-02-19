@@ -298,6 +298,7 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 ('max_active_plans_per_user', '3', '2026-02-15 21:51:02'),
 ('max_withdrawal_limit', '50000', '2026-02-17 21:53:51'),
 ('min_withdrawal_limit', '10', '2026-02-15 21:51:02'),
+('deposit_countdown_minutes', '30', '2026-02-19 18:00:00'),
 ('office_address', '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom', '2026-02-19 16:52:54'),
 ('office_title', 'London Office', '2026-02-19 16:52:54'),
 ('site_favicon', '/uploads/site/favicon_1771518481.png', '2026-02-19 16:28:01'),
@@ -324,9 +325,11 @@ CREATE TABLE `transactions` (
   `amount` decimal(36,18) NOT NULL,
   `amount_usd` decimal(18,2) DEFAULT NULL,
   `currency` varchar(20) NOT NULL DEFAULT 'USD',
-  `status` enum('pending','completed','rejected','cancelled') NOT NULL DEFAULT 'pending',
+  `status` enum('pending','completed','rejected','failed','cancelled') NOT NULL DEFAULT 'pending',
   `reference` varchar(255) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `expires_at` datetime DEFAULT NULL,
+  `user_confirmed_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --

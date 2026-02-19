@@ -44,6 +44,7 @@ $allowedKeys = [
     'office_title',
     'office_address',
     'smartsupp_key',
+    'deposit_countdown_minutes',
 ];
 $sensitiveKeys = ['mail_smtp_password', 'mail_imap_password'];
 
@@ -86,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'office_title' => 'London Office',
         'office_address' => '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom',
         'smartsupp_key' => '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d',
+        'deposit_countdown_minutes' => '30',
         // write-only flags
         'mail_smtp_password_set' => '0',
         'mail_imap_password_set' => '0',
@@ -129,6 +131,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($vv === 'starttls') $vv = 'tls';
             if (!in_array($vv, ['tls', 'ssl', 'none'], true)) continue;
             $v = $vv;
+        }
+        if ($k === 'deposit_countdown_minutes') {
+            $m = (int) $v;
+            if (!in_array($m, [5, 15, 30], true)) continue;
+            $v = (string) $m;
         }
         $updates[$k] = $v;
     }

@@ -224,14 +224,32 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
--- Ensure transactions table has 'rejected' status (if using older schema)
-SET @enum_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-    WHERE TABLE_SCHEMA = DATABASE() 
-    AND TABLE_NAME = 'transactions' 
-    AND COLUMN_NAME = 'status' 
-    AND COLUMN_TYPE LIKE '%rejected%');
-SET @sql = IF(@enum_exists = 0, 
-    'ALTER TABLE transactions MODIFY COLUMN status ENUM(\'pending\', \'completed\', \'rejected\', \'cancelled\') NOT NULL DEFAULT \'pending\'', 
+-- Ensure transactions table has 'failed' status (deposit countdown expiry)
+SET @col = (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'status');
+SET @has_rejected = IF(@col LIKE '%rejected%', 1, 0);
+SET @has_failed = IF(@col LIKE '%failed%', 1, 0);
+SET @sql = IF(@has_rejected = 0 OR @has_failed = 0,
+    'ALTER TABLE transactions MODIFY COLUMN status ENUM(\'pending\', \'completed\', \'rejected\', \'failed\', \'cancelled\') NOT NULL DEFAULT \'pending\'',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Deposit countdown support (expires_at + user_confirmed_at)
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'expires_at');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE transactions ADD COLUMN expires_at DATETIME NULL AFTER created_at',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'user_confirmed_at');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE transactions ADD COLUMN user_confirmed_at DATETIME NULL AFTER expires_at',
     'SELECT 1');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
@@ -281,6 +299,7 @@ DEALLOCATE PREPARE stmt;
 INSERT INTO site_settings (`key`, value) VALUES
   ('min_withdrawal_limit', '10'),
   ('max_withdrawal_limit', '50000'),
+  ('deposit_countdown_minutes', '30'),
   ('earnings_paused', '0'),
   ('distribution_interval', 'daily'),
   ('distribution_start_time', '09:00:00'),

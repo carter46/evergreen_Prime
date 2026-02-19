@@ -10,6 +10,8 @@ $completedDeposits = [];
 $completedWithdrawals = [];
 $rejectedDeposits = [];
 $rejectedWithdrawals = [];
+$failedDeposits = [];
+$failedWithdrawals = [];
 
 $filter = $_GET['filter'] ?? 'pending';
 $type = $_GET['type'] ?? 'deposit';
@@ -28,6 +30,7 @@ try {
         if ($row['status'] === 'pending') $pendingDeposits[] = $row;
         elseif ($row['status'] === 'completed') $completedDeposits[] = $row;
         elseif ($row['status'] === 'rejected') $rejectedDeposits[] = $row;
+        elseif ($row['status'] === 'failed') $failedDeposits[] = $row;
     }
     
     // Fetch all withdrawals
@@ -36,6 +39,7 @@ try {
         if ($row['status'] === 'pending') $pendingWithdrawals[] = $row;
         elseif ($row['status'] === 'completed') $completedWithdrawals[] = $row;
         elseif ($row['status'] === 'rejected') $rejectedWithdrawals[] = $row;
+        elseif ($row['status'] === 'failed') $failedWithdrawals[] = $row;
     }
     
     // Get counts for tabs
@@ -51,20 +55,22 @@ $coinLogos = [
     'USDT' => 'https://assets.coingecko.com/coins/images/325/large/Tether.png',
 ];
 
-function getTransactionsForFilter($filter, $type, $pendingDeposits, $pendingWithdrawals, $completedDeposits, $completedWithdrawals, $rejectedDeposits, $rejectedWithdrawals) {
+function getTransactionsForFilter($filter, $type, $pendingDeposits, $pendingWithdrawals, $completedDeposits, $completedWithdrawals, $rejectedDeposits, $rejectedWithdrawals, $failedDeposits, $failedWithdrawals) {
     if ($type === 'deposit') {
         if ($filter === 'pending') return $pendingDeposits;
         if ($filter === 'completed') return $completedDeposits;
         if ($filter === 'rejected') return $rejectedDeposits;
+        if ($filter === 'failed') return $failedDeposits;
     } else {
         if ($filter === 'pending') return $pendingWithdrawals;
         if ($filter === 'completed') return $completedWithdrawals;
         if ($filter === 'rejected') return $rejectedWithdrawals;
+        if ($filter === 'failed') return $failedWithdrawals;
     }
     return [];
 }
 
-$currentTransactions = getTransactionsForFilter($filter, $type, $pendingDeposits, $pendingWithdrawals, $completedDeposits, $completedWithdrawals, $rejectedDeposits, $rejectedWithdrawals);
+$currentTransactions = getTransactionsForFilter($filter, $type, $pendingDeposits, $pendingWithdrawals, $completedDeposits, $completedWithdrawals, $rejectedDeposits, $rejectedWithdrawals, $failedDeposits, $failedWithdrawals);
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en"><head>
@@ -131,6 +137,9 @@ $currentTransactions = getTransactionsForFilter($filter, $type, $pendingDeposits
 <a href="?type=<?php echo htmlspecialchars($type); ?>&filter=rejected" class="px-4 py-2 text-xs font-bold rounded-lg <?php echo $filter === 'rejected' ? 'bg-primary text-black' : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400'; ?>">
     Rejected
 </a>
+<a href="?type=<?php echo htmlspecialchars($type); ?>&filter=failed" class="px-4 py-2 text-xs font-bold rounded-lg <?php echo $filter === 'failed' ? 'bg-primary text-black' : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400'; ?>">
+    Failed
+</a>
 </div>
 
 <!-- Transactions Table -->
@@ -190,7 +199,8 @@ echo $fmt . ' ' . htmlspecialchars($tx['currency']);
 </div>
 </div>
 <?php else: ?>
-<span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase <?php echo $tx['status'] === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'; ?>"><?php echo htmlspecialchars($tx['status']); ?></span>
+<?php $pill = $tx['status'] === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'; ?>
+<span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase <?php echo $pill; ?>"><?php echo htmlspecialchars($tx['status']); ?></span>
 <?php endif; ?>
 </td>
 </tr>

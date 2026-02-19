@@ -79,7 +79,7 @@ try {
   $isIncoming = in_array($tx['type'], ['deposit', 'payout']);
   $statusClass = 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
   if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
-  elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+  elseif (in_array($tx['status'], ['rejected', 'failed'], true)) $statusClass = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
 ?>
 <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
 <td class="px-6 py-4">

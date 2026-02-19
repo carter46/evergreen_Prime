@@ -28,6 +28,7 @@ $settings = [
     'office_title' => get_site_setting('office_title', 'London Office'),
     'office_address' => get_site_setting('office_address', '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom'),
     'smartsupp_key' => get_site_setting('smartsupp_key', '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d'),
+    'deposit_countdown_minutes' => get_site_setting('deposit_countdown_minutes', '30'),
 ];
 $adminEmail = '';
 $adminName = '';
@@ -182,6 +183,16 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Smartsupp Live Chat Key</label>
 <input id="settings-smartsupp-key" type="text" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($settings['smartsupp_key']); ?>" placeholder="6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d"/>
 <p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">Your Smartsupp account key for live chat widget. Get it from your Smartsupp dashboard.</p>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Deposit Countdown Duration</label>
+<?php $depMins = (int)($settings['deposit_countdown_minutes'] ?? '30'); if (!in_array($depMins, [5,15,30], true)) $depMins = 30; ?>
+<select id="settings-deposit-countdown" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary">
+  <option value="5" <?php echo $depMins===5?'selected':''; ?>>5 minutes</option>
+  <option value="15" <?php echo $depMins===15?'selected':''; ?>>15 minutes</option>
+  <option value="30" <?php echo $depMins===30?'selected':''; ?>>30 minutes</option>
+</select>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">How long a user has to click “Done” after creating a deposit request before it auto-fails.</p>
 </div>
 </div>
 <button type="button" id="settings-save-branding" class="mt-4 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Save Branding</button>
@@ -363,13 +374,14 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
     var officeTitle = document.getElementById('settings-office-title').value.trim();
     var officeAddress = document.getElementById('settings-office-address').value.trim();
     var smartsuppKey = document.getElementById('settings-smartsupp-key').value.trim();
+    var depositCountdown = (document.getElementById('settings-deposit-countdown') || {}).value || '30';
     var btn = this;
     btn.disabled = true;
     fetch('/api/admin/site-settings.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ site_name: siteName || 'Bloombit', contact_email: contactEmail || '', homepage_youtube_url: homepageYoutube || '', about_youtube_url: aboutYoutube || '', office_title: officeTitle || '', office_address: officeAddress || '', smartsupp_key: smartsuppKey || '' })
+      body: JSON.stringify({ site_name: siteName || 'Bloombit', contact_email: contactEmail || '', homepage_youtube_url: homepageYoutube || '', about_youtube_url: aboutYoutube || '', office_title: officeTitle || '', office_address: officeAddress || '', smartsupp_key: smartsuppKey || '', deposit_countdown_minutes: depositCountdown })
     }).then(function(r){ return r.json(); }).then(function(res){
       showMsg(document.getElementById('settings-branding-msg'), res.success ? 'Branding saved.' : (res.error || 'Failed'), res.success);
       btn.disabled = false;

@@ -18,6 +18,9 @@ $dailyEarning = 0;
 $coinLogosMap = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png','USDC'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','BUSD'=>'https://assets.coingecko.com/coins/images/9576/large/BUSD.png','USD'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','XRP'=>'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png','SOL'=>'https://assets.coingecko.com/coins/images/4128/large/solana.png','BNB'=>'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png','ADA'=>'https://assets.coingecko.com/coins/images/975/large/cardano.png','DOGE'=>'https://assets.coingecko.com/coins/images/5/large/dogecoin.png','TRX'=>'https://assets.coingecko.com/coins/images/1094/large/tron-logo.png'];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
+    require_once __DIR__ . '/../../includes/deposit-expiry.php';
+    // Best-effort cleanup: expire old pending deposits (idempotent)
+    try { expire_pending_deposits($pdo); } catch (Throwable $e) {}
     $userId = $_SESSION['user_id'];
 
     // Prefer cached USD balance from users table (stable, consistent display)
@@ -306,6 +309,7 @@ $<?php echo number_format((float)$b['usd_value'], 2); ?>
 $statusClass = 'bg-amber-100 text-amber-700';
 if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700';
 elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
+elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 ?>
 <span class="px-2 py-1 <?php echo $statusClass; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>
@@ -369,7 +373,12 @@ elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
 <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Selected Currency: <span id="deposit-selected-currency" class="font-bold"></span></p>
 <p class="text-sm text-slate-600 dark:text-slate-400">Amount: <span id="deposit-selected-amount" class="font-bold"></span></p>
 </div>
-<button type="button" id="deposit-close-btn" class="w-full py-3 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-base mt-4">Close</button>
+<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+<p class="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">Confirm within <span id="deposit-countdown-mins">30</span> minutes</p>
+<p class="text-sm text-amber-700 dark:text-amber-400">Time remaining: <span id="deposit-countdown-timer" class="font-mono font-bold">--:--</span></p>
+</div>
+<div id="deposit-done-message" class="text-sm hidden"></div>
+<button type="button" id="deposit-close-btn" class="w-full py-3 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-base mt-4">Done</button>
 </div>
 </div>
 </div>
@@ -430,7 +439,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var withdrawDrawer = document.getElementById('withdraw-drawer');
     var depositStep1 = document.getElementById('deposit-form-step1');
     var depositStep2 = document.getElementById('deposit-form-step2');
+    var depositCountdownTimer = document.getElementById('deposit-countdown-timer');
+    var depositCountdownMinsEl = document.getElementById('deposit-countdown-mins');
+    var depositDoneMsg = document.getElementById('deposit-done-message');
+    var depositDoneBtn = document.getElementById('deposit-close-btn');
     var addressesData = null;
+    var currentDepositTxId = null;
+    var currentDepositExpiresAtMs = null;
+    var depositCountdownIv = null;
     var userBalances = <?php 
         $balanceMap = [];
         foreach ($walletBalances as $b) {
@@ -512,7 +528,44 @@ document.addEventListener('DOMContentLoaded', function() {
     // Deposit drawer handlers
     document.getElementById('deposit-btn').addEventListener('click', function(){ depositStep1.classList.remove('hidden'); depositStep2.classList.add('hidden'); document.getElementById('deposit-error').classList.add('hidden'); openDrawer(depositDrawer); });
     document.getElementById('deposit-drawer-close').addEventListener('click', function(){ closeDrawer(depositDrawer); });
-    document.getElementById('deposit-close-btn').addEventListener('click', function(){ closeDrawer(depositDrawer); window.location.reload(); });
+    if (depositDoneBtn) depositDoneBtn.addEventListener('click', function(){
+        if (!currentDepositTxId) { closeDrawer(depositDrawer); window.location.reload(); return; }
+        depositDoneBtn.disabled = true;
+        if (depositDoneMsg) {
+            depositDoneMsg.textContent = 'Saving...';
+            depositDoneMsg.className = 'text-sm text-slate-500';
+            depositDoneMsg.classList.remove('hidden');
+        }
+        fetch('/api/user/deposit-done.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ transaction_id: currentDepositTxId })
+        }).then(function(r){ return r.json(); }).then(function(res){
+            if (res && res.success) {
+                if (depositDoneMsg) {
+                    depositDoneMsg.textContent = (res.data && res.data.message) ? res.data.message : 'Deposit marked as done.';
+                    depositDoneMsg.className = 'text-sm text-emerald-600';
+                    depositDoneMsg.classList.remove('hidden');
+                }
+                setTimeout(function(){ closeDrawer(depositDrawer); window.location.reload(); }, 900);
+            } else {
+                depositDoneBtn.disabled = false;
+                if (depositDoneMsg) {
+                    depositDoneMsg.textContent = (res && res.error) ? res.error : 'Failed to save.';
+                    depositDoneMsg.className = 'text-sm text-red-600';
+                    depositDoneMsg.classList.remove('hidden');
+                }
+            }
+        }).catch(function(){
+            depositDoneBtn.disabled = false;
+            if (depositDoneMsg) {
+                depositDoneMsg.textContent = 'Request failed.';
+                depositDoneMsg.className = 'text-sm text-red-600';
+                depositDoneMsg.classList.remove('hidden');
+            }
+        });
+    });
     if (backdrop) backdrop.addEventListener('click', closeAllDrawers);
 
     function updateDepositCoinQuote() {
@@ -575,6 +628,51 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({ currency: currency, amount_usd: amountUsd, reference: reference || null })
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
+                currentDepositTxId = res.data && res.data.transaction_id ? res.data.transaction_id : null;
+                var countdownMins = (res.data && res.data.countdown_minutes) ? parseInt(res.data.countdown_minutes, 10) : 30;
+                if (depositCountdownMinsEl) depositCountdownMinsEl.textContent = String(countdownMins || 30);
+                // Use duration-based countdown to avoid browser/server timezone mismatch.
+                currentDepositExpiresAtMs = Date.now() + ((countdownMins || 30) * 60 * 1000);
+                if (depositDoneBtn) depositDoneBtn.disabled = false;
+                if (depositDoneMsg) depositDoneMsg.classList.add('hidden');
+
+                // start / restart countdown
+                if (depositCountdownIv) { try { clearInterval(depositCountdownIv); } catch (e) {} }
+                function tickCountdown(){
+                    if (!depositCountdownTimer) return;
+                    var ms = (currentDepositExpiresAtMs || 0) - Date.now();
+                    if (ms <= 0) {
+                        depositCountdownTimer.textContent = '00:00';
+                        if (depositDoneBtn) depositDoneBtn.disabled = true;
+                        if (depositDoneMsg) {
+                            depositDoneMsg.textContent = 'Deposit expired. Marking as failed...';
+                            depositDoneMsg.className = 'text-sm text-red-600';
+                            depositDoneMsg.classList.remove('hidden');
+                        }
+                        // Trigger backend expire for this deposit (idempotent)
+                        if (currentDepositTxId) {
+                            fetch('/api/user/deposit-expire.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'same-origin',
+                                body: JSON.stringify({ transaction_id: currentDepositTxId })
+                            }).then(function(r){ return r.json(); }).then(function(){
+                                setTimeout(function(){ window.location.reload(); }, 1200);
+                            }).catch(function(){
+                                setTimeout(function(){ window.location.reload(); }, 1200);
+                            });
+                        }
+                        if (depositCountdownIv) { try { clearInterval(depositCountdownIv); } catch (e) {} }
+                        return;
+                    }
+                    var totalSec = Math.floor(ms / 1000);
+                    var mm = Math.floor(totalSec / 60);
+                    var ss = totalSec % 60;
+                    depositCountdownTimer.textContent = String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+                }
+                tickCountdown();
+                depositCountdownIv = setInterval(tickCountdown, 1000);
+
                 var addr = addressesData ? addressesData.find(function(a){ return (a.symbol || '').toUpperCase() === (currency || '').toUpperCase(); }) : null;
                 document.getElementById('deposit-address-display').value = addr ? addr.address : '';
                 document.getElementById('deposit-selected-currency').textContent = currency;

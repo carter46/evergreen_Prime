@@ -8,6 +8,7 @@ header('Content-Type: application/json');
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+require_once dirname(__DIR__, 2) . '/includes/deposit-expiry.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -27,6 +28,9 @@ try {
     echo json_encode(['success' => false, 'error' => 'Database unavailable']);
     exit;
 }
+
+// Best-effort cleanup: expire old pending deposits (idempotent)
+try { expire_pending_deposits($pdo); } catch (Throwable $e) {}
 
 $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 $action = strtolower(trim($input['action'] ?? ''));
