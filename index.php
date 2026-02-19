@@ -568,24 +568,26 @@ foreach ($indexPlans as $p):
 </section>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <!-- Floating Modal Button (always visible) -->
-<button id="homepage-modal-btn" class="fixed bottom-6 left-6 z-50 px-6 py-3 bg-primary text-black font-bold rounded-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2" aria-label="Open modal">
-<span class="material-icons">info</span>
-<span class="hidden sm:inline">Info</span>
+<button id="homepage-modal-btn" class="fixed bottom-6 left-6 z-50 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2" aria-label="View Certificate">
+<span class="material-icons">shield</span>
+<span class="hidden sm:inline">View Certificate</span>
 </button>
 <!-- Modal -->
 <div id="homepage-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-<div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+<div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] flex flex-col">
 <button id="homepage-modal-close" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors" aria-label="Close">
 <span class="material-icons text-slate-600 dark:text-slate-300">close</span>
 </button>
+<div class="flex-1 flex items-center justify-center p-6 overflow-hidden">
 <?php if (!empty($homepageModalImage)): ?>
-<img src="<?php echo htmlspecialchars($homepageModalImage); ?>" alt="Information" class="w-full h-auto rounded-2xl"/>
+<img src="<?php echo htmlspecialchars($homepageModalImage); ?>" alt="Certificate" class="max-w-full max-h-full w-auto h-auto object-contain rounded-lg"/>
 <?php else: ?>
 <div class="p-12 text-center">
 <p class="text-slate-500 dark:text-slate-400 text-lg">No image uploaded yet.</p>
 <p class="text-slate-400 dark:text-slate-500 text-sm mt-2">Upload an image in Admin Settings → Branding → Homepage Floating Modal Image</p>
 </div>
 <?php endif; ?>
+</div>
 </div>
 </div>
 <script>
