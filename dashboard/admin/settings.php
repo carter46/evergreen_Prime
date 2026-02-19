@@ -23,6 +23,7 @@ $settings = [
     'mail_imap_sent_folder' => get_site_setting('mail_imap_sent_folder', 'Sent'),
     'homepage_youtube_url' => get_site_setting('homepage_youtube_url', ''),
     'about_youtube_url' => get_site_setting('about_youtube_url', ''),
+    'homepage_modal_image' => get_site_setting('homepage_modal_image', ''),
 ];
 $adminEmail = '';
 $adminName = '';
@@ -365,6 +366,14 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
     uploadAsset('favicon', this, p).then(function(res){
       if (res && res.success) {
         fetch('/api/admin/site-settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ site_favicon: res.data.url }) });
+      }
+    });
+  });
+  document.getElementById('settings-modal-image-input').addEventListener('change', function(){
+    var p = document.getElementById('settings-modal-image-preview');
+    uploadAsset('modal_image', this, p).then(function(res){
+      if (res && res.success) {
+        fetch('/api/admin/site-settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ homepage_modal_image: res.data.url }) });
       }
     });
   });

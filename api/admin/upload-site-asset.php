@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES['file']['tmp_name']))
 }
 
 $type = trim($_POST['type'] ?? 'logo');
-if (!in_array($type, ['logo', 'favicon'], true)) {
+if (!in_array($type, ['logo', 'favicon', 'modal_image'], true)) {
     $type = 'logo';
 }
 
@@ -50,7 +50,8 @@ $url = '/uploads/site/' . $filename;
 
 try {
     $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
-    $key = $type === 'logo' ? 'site_logo' : 'site_favicon';
+    $keyMap = ['logo' => 'site_logo', 'favicon' => 'site_favicon', 'modal_image' => 'homepage_modal_image'];
+    $key = $keyMap[$type] ?? 'site_logo';
     $stmt = $pdo->prepare('INSERT INTO site_settings (`key`, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)');
     $stmt->execute([$key, $url]);
 } catch (Throwable $e) {
