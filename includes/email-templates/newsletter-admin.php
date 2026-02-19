@@ -21,12 +21,7 @@ $date = $date ?? date('Y-m-d H:i:s');
 <div style="background:#fff;border:1px solid #e5e5e0;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
 <div style="height:6px;width:100%;background:#ffc105"></div>
 <div style="padding:32px 40px 24px;background:#fff;border-bottom:1px solid #f0f0f0;text-align:center">
-<div style="display:inline-flex;align-items:center;gap:12px;vertical-align:middle">
-<div style="width:48px;height:48px;background:#ffc105;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;vertical-align:middle">
-<span style="font-size:24px;color:#fff;line-height:1">✨</span>
-</div>
-<span style="font-size:24px;font-weight:700;color:#1d180c;letter-spacing:-0.02em;line-height:48px;vertical-align:middle"><?= htmlspecialchars($logoParts[0]) ?><?php if ($logoParts[1]): ?><span style="color:#ffc105"><?= htmlspecialchars($logoParts[1]) ?></span><?php endif; ?></span>
-</div>
+<span style="font-size:32px;font-weight:700;color:#1d180c;letter-spacing:-0.02em;line-height:1.2"><?= htmlspecialchars($logoParts[0]) ?><?php if ($logoParts[1]): ?><span style="color:#ffc105"><?= htmlspecialchars($logoParts[1]) ?></span><?php endif; ?></span>
 </div>
 <div style="padding:32px 40px">
 <span style="display:inline-block;padding:6px 12px;background:rgba(34,197,94,0.15);color:#16a34a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;border-radius:9999px;margin-bottom:20px">New Signup</span>
