@@ -67,9 +67,9 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
                 </p>
 <div class="flex gap-4">
 <div class="flex -space-x-3">
-<img class="w-12 h-12 rounded-full border-4 border-background-light" alt="Team member" src="/uploads/images/user1.jpg"/>
-<img class="w-12 h-12 rounded-full border-4 border-background-light" alt="Team member" src="/uploads/images/user2.jpg"/>
-<img class="w-12 h-12 rounded-full border-4 border-background-light" alt="Team member" src="/uploads/images/user3.jpg"/>
+<img class="w-12 h-12 rounded-full border-4 border-background-light object-cover" alt="Team member" src="/uploads/images/user1.jpg" onerror="this.style.display='none'"/>
+<img class="w-12 h-12 rounded-full border-4 border-background-light object-cover" alt="Team member" src="/uploads/images/user2.jpg" onerror="this.style.display='none'"/>
+<img class="w-12 h-12 rounded-full border-4 border-background-light object-cover" alt="Team member" src="/uploads/images/user3.jpg" onerror="this.style.display='none'"/>
 <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center border-4 border-background-light text-background-dark font-bold text-xs">+45</div>
 </div>
 <div class="flex flex-col justify-center">
@@ -227,14 +227,11 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
 </div>
 </div>
 </section>
-<!-- CEO Message Section -->
+<!-- Message & Video Section -->
 <section class="py-32">
 <div class="max-w-7xl mx-auto px-6">
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-<div class="lg:col-span-4">
-<img class="w-full h-[500px] object-cover rounded-xl shadow-xl grayscale hover:grayscale-0 transition-all duration-700" data-alt="CEO professional portrait in modern office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAauh53YsMY3lfo3adiGZqzn1aDhWkSHUdEu7tx01OuJzCZZcf2p43Q2X8L6z3n3Po7-b-01pNW7LRZUmRxZq9lJFcNX9WLppRlvNEAh6k00oIEvBOWP2_GB5lP3NHGaPTxBDbrkdpY9Zqs18b_FkO7BLFmKzkLo3toaBMQrvRfpsyy7z7TCtWx2dX0-ZT44enMaaLotwGDc2Y6A4fBR2gaeiJ1ddxxo6TNj7QRcx_4-9hRMvpg8QqEbYRxdkaenS4bU1lNYZmGTf4"/>
-</div>
-<div class="lg:col-span-4 flex flex-col justify-center">
+<div class="lg:col-span-5 flex flex-col justify-center">
 <span class="material-icons text-primary text-6xl mb-6 opacity-30">format_quote</span>
 <h3 class="text-3xl font-bold mb-8 italic leading-relaxed">
                         "In a world of noise, we provide the clarity of computation. Our goal is to build a bridge to the future of finance."
@@ -243,16 +240,18 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
 <p class="text-xl font-bold">Marcus Thorne</p>
 <p class="text-slate-500">Founder &amp; Chief Executive Officer</p>
 </div>
-<!-- CEO Signature -->
 <div class="w-48 h-12 bg-primary/5 rounded border border-primary/10 flex items-center justify-center">
 <span class="text-2xl font-display text-primary/80" style="font-family: 'Dancing Script', cursive; font-style: italic;">Marcus Thorne</span>
 </div>
 </div>
-<div class="lg:col-span-4">
-<div class="relative rounded-xl overflow-hidden aspect-video bg-slate-200 group cursor-pointer shadow-lg">
-<img class="w-full h-full object-cover" data-alt="CEO video interview placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSyoTCKeP6akFTtGff_gKdWfqar2QLzLFeK2v44pHDrjOzc9cSM9bS-RGr7LIJgahMs6iiWD_WYkZu317yH5wEusVmEjnfYFcSarEBcbv66RG2Sce5uHkVeYDg3j19_gMhYVdFtyywx4BlCoQXGs1Ndi_DdSGJwkofs0e0tIyUcsnHE715OMmwSqCQdk_ZNUv74V6WJOHbg16G6s5qRNgAJaph2mMdr8pU6JMMcfjahaLso_CzLU3Q61MnM05Ieo4S7A5nECAeQGw"/>
-<div class="absolute inset-0 bg-background-dark/40 flex items-center justify-center group-hover:bg-background-dark/20 transition-all">
-<div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-background-dark shadow-xl scale-100 group-hover:scale-110 transition-transform">
+<div class="lg:col-span-7">
+<div class="relative rounded-xl overflow-hidden aspect-video bg-slate-200 shadow-lg w-full">
+<?php if (!empty($aboutEmbedUrl)): ?>
+<iframe class="w-full h-full" src="<?php echo htmlspecialchars($aboutEmbedUrl); ?>?rel=0" title="Message from leadership" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<?php else: ?>
+<img class="w-full h-full object-cover" alt="Video placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSyoTCKeP6akFTtGff_gKdWfqar2QLzLFeK2v44pHDrjOzc9cSM9bS-RGr7LIJgahMs6iiWD_WYkZu317yH5wEusVmEjnfYFcSarEBcbv66RG2Sce5uHkVeYDg3j19_gMhYVdFtyywx4BlCoQXGs1Ndi_DdSGJwkofs0e0tIyUcsnHE715OMmwSqCQdk_ZNUv74V6WJOHbg16G6s5qRNgAJaph2mMdr8pU6JMMcfjahaLso_CzLU3Q61MnM05Ieo4S7A5nECAeQGw"/>
+<div class="absolute inset-0 bg-background-dark/40 flex items-center justify-center">
+<div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-background-dark shadow-xl">
 <span class="material-icons text-3xl">play_arrow</span>
 </div>
 </div>
@@ -260,6 +259,7 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
 <p class="text-sm font-bold">WATCH MESSAGE</p>
 <p class="text-[10px] opacity-70">Duration: 2:45</p>
 </div>
+<?php endif; ?>
 </div>
 </div>
 </div>

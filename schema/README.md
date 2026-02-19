@@ -2,8 +2,8 @@
 
 ## Files
 
-- **database.sql** – Full setup for a new database (tables + default data)
-- **migration.sql** – Update an existing database on your server (safe, no data loss)
+- **u502532383_bloombit.sql** – Full schema dump (tables + default data). Use for a new database.
+- **migration.sql** – Update an existing database (adds missing columns/tables; safe, no data loss). Run after a full dump if the dump is older than the migration.
 
 ## Setup (New Install)
 
@@ -16,7 +16,7 @@
 2. Import the database via phpMyAdmin:
    - Select your database from the left sidebar (e.g. u502532383_bloombit on shared hosting)
    - Go to phpMyAdmin → Import
-   - Choose `database.sql` (creates all tables and default site settings + plans)
+   - Choose **u502532383_bloombit.sql** (or your full schema dump) to create all tables and default data, then run **migration.sql** to apply any newer changes.
    - Execute
 
 3. Set the admin password (required for login):

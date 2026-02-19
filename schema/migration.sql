@@ -4,12 +4,21 @@
 --
 -- In phpMyAdmin: Select your database → Import → Choose this file → Execute
 --
--- NOTE: This migration only includes RECENT changes. If your database is fresh, use database.sql instead.
+-- NOTE: This migration adds RECENT changes only. For a fresh database, import the full schema dump (e.g. u502532383_bloombit.sql) first, then run this file.
 
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 
 -- Add missing user columns (safe - checks if column exists first)
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'email_verified');
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE users ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER role', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'two_factor_enabled');
 SET @sql = IF(@col_exists = 0, 
@@ -260,7 +269,9 @@ INSERT INTO site_settings (`key`, value) VALUES
   ('mail_imap_username', ''),
   ('mail_imap_password', ''),
   ('mail_imap_encryption', 'ssl'),
-  ('mail_imap_sent_folder', 'Sent')
+  ('mail_imap_sent_folder', 'Sent'),
+  ('homepage_youtube_url', ''),
+  ('about_youtube_url', '')
 ON DUPLICATE KEY UPDATE value = value;
 
 -- Ensure transactions.amount supports fractional USDT payouts (DECIMAL 36,18)
