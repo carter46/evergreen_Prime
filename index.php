@@ -567,8 +567,7 @@ foreach ($indexPlans as $p):
 </div>
 </section>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
-<?php if (!empty($homepageModalImage)): ?>
-<!-- Floating Modal Button -->
+<!-- Floating Modal Button (always visible) -->
 <button id="homepage-modal-btn" class="fixed bottom-6 left-6 z-50 px-6 py-3 bg-primary text-black font-bold rounded-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2" aria-label="Open modal">
 <span class="material-icons">info</span>
 <span class="hidden sm:inline">Info</span>
@@ -579,7 +578,14 @@ foreach ($indexPlans as $p):
 <button id="homepage-modal-close" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors" aria-label="Close">
 <span class="material-icons text-slate-600 dark:text-slate-300">close</span>
 </button>
+<?php if (!empty($homepageModalImage)): ?>
 <img src="<?php echo htmlspecialchars($homepageModalImage); ?>" alt="Information" class="w-full h-auto rounded-2xl"/>
+<?php else: ?>
+<div class="p-12 text-center">
+<p class="text-slate-500 dark:text-slate-400 text-lg">No image uploaded yet.</p>
+<p class="text-slate-400 dark:text-slate-500 text-sm mt-2">Upload an image in Admin Settings → Branding → Homepage Floating Modal Image</p>
+</div>
+<?php endif; ?>
 </div>
 </div>
 <script>
@@ -594,7 +600,6 @@ foreach ($indexPlans as $p):
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !modal.classList.contains('hidden')) { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; } });
 })();
 </script>
-<?php endif; ?>
 <script src="/js/crypto-config.js"></script>
 <script src="/js/crypto-prices.js"></script>
 <script>
@@ -678,32 +683,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-<?php if (!empty($homepageModalImage)): ?>
-<!-- Floating Modal Button -->
-<button id="homepage-modal-btn" class="fixed bottom-6 left-6 z-50 px-6 py-3 bg-primary text-black font-bold rounded-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2" aria-label="Open modal">
-<span class="material-icons">info</span>
-<span class="hidden sm:inline">Info</span>
-</button>
-<!-- Modal -->
-<div id="homepage-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-<div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
-<button id="homepage-modal-close" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors" aria-label="Close">
-<span class="material-icons text-slate-600 dark:text-slate-300">close</span>
-</button>
-<img src="<?php echo htmlspecialchars($homepageModalImage); ?>" alt="Information" class="w-full h-auto rounded-2xl"/>
-</div>
-</div>
-<script>
-(function(){
-  var btn = document.getElementById('homepage-modal-btn');
-  var modal = document.getElementById('homepage-modal');
-  var close = document.getElementById('homepage-modal-close');
-  if (!btn || !modal || !close) return;
-  btn.addEventListener('click', function(){ modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden'; });
-  close.addEventListener('click', function(){ modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; });
-  modal.addEventListener('click', function(e){ if (e.target === modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; } });
-  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !modal.classList.contains('hidden')) { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; } });
-})();
-</script>
-<?php endif; ?>
 </body></html>
