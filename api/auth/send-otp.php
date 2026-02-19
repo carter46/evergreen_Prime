@@ -18,23 +18,6 @@ $input = json_decode(file_get_contents('php://input'), true) ?? $_POST ?? [];
 $email = trim($input['email'] ?? '');
 $purpose = trim($input['purpose'] ?? '');
 
-// #region agent log
-@file_put_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
-    'sessionId' => 'e091ef',
-    'runId' => 'pre-fix',
-    'hypothesisId' => 'H5',
-    'location' => 'api/auth/send-otp.php:entry',
-    'message' => 'Send-otp endpoint hit',
-    'data' => [
-        'method' => $_SERVER['REQUEST_METHOD'] ?? null,
-        'contentType' => $_SERVER['CONTENT_TYPE'] ?? null,
-        'purpose' => $purpose,
-        'emailHash8' => substr(sha1($email), 0, 8),
-    ],
-    'timestamp' => (int) round(microtime(true) * 1000),
-]) . "\n", FILE_APPEND);
-// #endregion
-
 $allowed = ['register', 'login', 'disable_2fa'];
 if (!in_array($purpose, $allowed, true)) {
     http_response_code(400);
@@ -92,24 +75,6 @@ if ($purpose === 'register' || $purpose === 'login') {
         $name = $row['name'] ?? null;
     } catch (Throwable $e) {}
 }
-
-// #region agent log
-@file_put_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
-    'sessionId' => 'e091ef',
-    'runId' => 'pre-fix',
-    'hypothesisId' => 'H5',
-    'location' => 'api/auth/send-otp.php:name',
-    'message' => 'Resolved name for OTP (no PII)',
-    'data' => [
-        'purpose' => $purpose,
-        'emailHash8' => substr(sha1($email), 0, 8),
-        'hasName' => ($name !== null && $name !== ''),
-        'nameLen' => is_string($name) ? strlen($name) : null,
-        'nameIsDbName' => ($name === 'u502532383_bloombit'),
-    ],
-    'timestamp' => (int) round(microtime(true) * 1000),
-]) . "\n", FILE_APPEND);
-// #endregion
 
 $sent = sendOtpEmail($email, $otp, $purpose, $name);
 if (!$sent) {

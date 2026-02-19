@@ -7,6 +7,216 @@
 
     const API_BASE = '/api';
 
+    function getSiteNameFromTitle() {
+        const t = (document.title || '').trim();
+        if (!t) return 'Bloombit';
+        const pipe = t.split('|').map(s => s.trim()).filter(Boolean);
+        if (pipe.length >= 2) return pipe[pipe.length - 1];
+        const dash = t.split('—').map(s => s.trim()).filter(Boolean);
+        if (dash.length >= 2) return dash[0];
+        return t;
+    }
+
+    function splitBrandName(siteName) {
+        const n = (siteName || '').trim();
+        if (!n) return ['Bloombit', ''];
+        if (/bit$/i.test(n) && n.length > 3) return [n.slice(0, -3), n.slice(-3)];
+        return [n, ''];
+    }
+
+    function ensureGlobalLoader() {
+        if (document.getElementById('bb-global-loader')) return;
+
+        const style = document.createElement('style');
+        style.id = 'bb-global-loader-style';
+        style.textContent = `
+            #bb-global-loader{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(248,248,245,0.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:opacity .18s ease;opacity:0}
+            html.dark #bb-global-loader{background:rgba(35,30,15,0.92)}
+            #bb-global-loader.bb-show{display:flex;opacity:1}
+            #bb-global-loader .bb-name{font-family:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-weight:800;font-size:44px;letter-spacing:-0.02em;line-height:1.05;text-align:center}
+            @media (max-width:640px){#bb-global-loader .bb-name{font-size:34px}}
+            #bb-global-loader .bb-base{color:#1d180c}
+            html.dark #bb-global-loader .bb-base{color:#ffffff}
+            #bb-global-loader .bb-suffix{color:#ffc105}
+            #bb-global-loader .bb-wave{display:inline-flex;gap:1px;align-items:flex-end}
+            #bb-global-loader .bb-char{display:inline-block;transform:translateY(0);animation:bb-wave 1.05s ease-in-out infinite;animation-delay:calc(var(--i)*70ms)}
+            @keyframes bb-wave{0%,100%{transform:translateY(0);opacity:.75}50%{transform:translateY(-12px);opacity:1}}
+        `;
+        document.head.appendChild(style);
+
+        const [base, suffix] = splitBrandName(getSiteNameFromTitle());
+        const makeWave = (text, cls, startIndex) => {
+            const wrap = document.createElement('span');
+            wrap.className = 'bb-wave ' + cls;
+            const chars = Array.from(text);
+            chars.forEach((ch, i) => {
+                const s = document.createElement('span');
+                s.className = 'bb-char';
+                s.style.setProperty('--i', String(startIndex + i));
+                s.textContent = ch;
+                wrap.appendChild(s);
+            });
+            return wrap;
+        };
+
+        const root = document.createElement('div');
+        root.id = 'bb-global-loader';
+        root.setAttribute('aria-hidden', 'true');
+        const name = document.createElement('div');
+        name.className = 'bb-name';
+        name.appendChild(makeWave(base, 'bb-base', 0));
+        if (suffix) name.appendChild(makeWave(suffix, 'bb-suffix', base.length));
+        root.appendChild(name);
+        document.body.appendChild(root);
+    }
+
+    function showGlobalLoader() {
+        ensureGlobalLoader();
+        const el = document.getElementById('bb-global-loader');
+        if (!el) return;
+        // If hideGlobalLoader previously set display:none, clear it before showing.
+        el.style.display = 'flex';
+        el.classList.add('bb-show');
+        el.setAttribute('aria-hidden', 'false');
+    }
+
+    function hideGlobalLoader() {
+        const el = document.getElementById('bb-global-loader');
+        if (!el) return;
+        el.classList.remove('bb-show');
+        el.setAttribute('aria-hidden', 'true');
+        // keep in DOM for later transitions
+        setTimeout(() => { if (!el.classList.contains('bb-show')) el.style.display = 'none'; }, 220);
+    }
+
+    function initGlobalLoader() {
+        // Always create it (so we can reuse on transitions)
+        ensureGlobalLoader();
+
+        // Always hide on full load (safety net)
+        window.addEventListener('load', () => hideGlobalLoader(), { once: true });
+
+        // Initial page load: only show if script runs early enough.
+        // app.js is usually loaded at the end of <body>, so showing on "interactive"
+        // would cause a distracting flash overlay.
+        if (document.readyState === 'loading') {
+            showGlobalLoader();
+        }
+
+        let fallbackHideTimer = null;
+        const scheduleFallbackHide = () => {
+            if (fallbackHideTimer) clearTimeout(fallbackHideTimer);
+            fallbackHideTimer = setTimeout(() => {
+                // If navigation didn't happen, ensure we don't get stuck.
+                if (document.visibilityState === 'visible') hideGlobalLoader();
+            }, 1800);
+        };
+
+        // Show on internal navigation clicks
+        document.addEventListener('click', function (e) {
+            const a = e.target && e.target.closest ? e.target.closest('a') : null;
+            if (!a) return;
+            const href = a.getAttribute('href') || '';
+            if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+            if (a.hasAttribute('download')) return;
+            if ((a.getAttribute('target') || '').toLowerCase() === '_blank') return;
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            let url;
+            try { url = new URL(href, window.location.origin); } catch { return; }
+            if (url.origin !== window.location.origin) return;
+            showGlobalLoader();
+            scheduleFallbackHide();
+        }, true);
+
+        // Show on real (non-AJAX) form navigations
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (!form || form.tagName !== 'FORM') return;
+            if (e.defaultPrevented) return; // our JS form handlers are AJAX
+            const target = (form.getAttribute('target') || '').toLowerCase();
+            if (target === '_blank') return;
+            showGlobalLoader();
+            scheduleFallbackHide();
+        });
+
+        // Ensure loader is hidden if a navigation was cancelled
+        window.addEventListener('pageshow', () => hideGlobalLoader());
+    }
+
+    function setButtonLoading(btn, loading, text) {
+        if (!btn) return;
+        if (loading) {
+            if (btn.dataset.loading === '1') return;
+            btn.dataset.loading = '1';
+            btn.dataset.originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            const label = text || 'Loading...';
+            btn.innerHTML =
+                '<span class="inline-block w-4 h-4 border-2 border-black/40 border-t-black rounded-full animate-spin"></span>' +
+                '<span>' + label + '</span>';
+        } else {
+            btn.dataset.loading = '0';
+            btn.disabled = false;
+            if (btn.dataset.originalHtml) btn.innerHTML = btn.dataset.originalHtml;
+        }
+    }
+
+    function bindOtpInputs(otpInputs, onEnterOrComplete) {
+        const inputs = Array.from(otpInputs || []);
+        if (!inputs.length) return;
+        if (inputs[0]?.dataset?.otpBound === '1') return;
+        if (inputs[0]) inputs[0].dataset.otpBound = '1';
+
+        function setAt(idx, val) {
+            if (!inputs[idx]) return;
+            inputs[idx].value = val;
+        }
+
+        function focusAt(idx) {
+            if (!inputs[idx]) return;
+            inputs[idx].focus();
+            try { inputs[idx].select(); } catch { /* ignore */ }
+        }
+
+        inputs.forEach((inp, i) => {
+            inp.addEventListener('input', function () {
+                const raw = String(this.value || '');
+                const digit = raw.replace(/\D/g, '').slice(-1);
+                this.value = digit;
+                if (digit && i < inputs.length - 1) focusAt(i + 1);
+                if (inputs.every(x => (x.value || '').match(/^\d$/))) {
+                    if (typeof onEnterOrComplete === 'function') onEnterOrComplete();
+                }
+            });
+            inp.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (typeof onEnterOrComplete === 'function') onEnterOrComplete();
+                    return;
+                }
+                if (e.key === 'Backspace') {
+                    if (this.value) {
+                        this.value = '';
+                        return;
+                    }
+                    if (i > 0) focusAt(i - 1);
+                    return;
+                }
+                if (e.key === 'ArrowLeft' && i > 0) { e.preventDefault(); focusAt(i - 1); return; }
+                if (e.key === 'ArrowRight' && i < inputs.length - 1) { e.preventDefault(); focusAt(i + 1); return; }
+            });
+            inp.addEventListener('paste', function (e) {
+                const text = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+                const digits = text.replace(/\D/g, '').slice(0, inputs.length);
+                if (!digits) return;
+                e.preventDefault();
+                digits.split('').forEach((d, idx) => setAt(idx, d));
+                focusAt(Math.min(digits.length, inputs.length - 1));
+                if (digits.length === inputs.length && typeof onEnterOrComplete === 'function') onEnterOrComplete();
+            });
+        });
+    }
+
     function apiFetch(url, options = {}) {
         const opts = {
             credentials: 'same-origin',
@@ -185,6 +395,7 @@
                     if (data.data?.step === 'verify_otp') {
                         showLoginOtpStep(data.data.email, data.data.redirect);
                     } else {
+                        showGlobalLoader();
                         window.location.href = data.data?.redirect || redirect;
                     }
                 })
@@ -239,7 +450,8 @@
         });
 
         if (otpSubmit) otpSubmit.addEventListener('click', function () {
-            const otp = getLoginOtpValue();
+            if (otpSubmit.dataset.loading === '1') return;
+            const otp = getLoginOtpValue().replace(/\D/g, '');
             if (otp.length !== 6) {
                 if (otpMessage) {
                     otpMessage.textContent = 'Please enter all 6 digits.';
@@ -248,8 +460,12 @@
                 }
                 return;
             }
-            otpSubmit.disabled = true;
-            if (otpMessage) otpMessage.classList.add('hidden');
+            setButtonLoading(otpSubmit, true, 'Verifying...');
+            if (otpMessage) {
+                otpMessage.textContent = 'Verifying code...';
+                otpMessage.className = 'text-sm text-slate-500';
+                otpMessage.classList.remove('hidden');
+            }
             fetch(API_BASE + '/auth/verify-login-otp.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -257,6 +473,7 @@
                 body: JSON.stringify({ email: loginEmail, otp, redirect: loginRedirect })
             }).then(r => r.json()).then(function (res) {
                 if (res.success) {
+                    showGlobalLoader();
                     window.location.href = res.data?.redirect || loginRedirect;
                 } else {
                     if (otpMessage) {
@@ -264,7 +481,7 @@
                         otpMessage.className = 'text-sm text-red-500';
                         otpMessage.classList.remove('hidden');
                     }
-                    otpSubmit.disabled = false;
+                    setButtonLoading(otpSubmit, false);
                 }
             }).catch(function () {
                 if (otpMessage) {
@@ -272,20 +489,11 @@
                     otpMessage.className = 'text-sm text-red-500';
                     otpMessage.classList.remove('hidden');
                 }
-                otpSubmit.disabled = false;
+                setButtonLoading(otpSubmit, false);
             });
         });
 
-        if (otpInputs && otpInputs.length) {
-            otpInputs.forEach((inp, i) => {
-                inp.addEventListener('input', function () {
-                    if (this.value && i < otpInputs.length - 1) otpInputs[i + 1].focus();
-                });
-                inp.addEventListener('keydown', function (e) {
-                    if (e.key === 'Backspace' && !this.value && i > 0) otpInputs[i - 1].focus();
-                });
-            });
-        }
+        bindOtpInputs(otpInputs, () => otpSubmit?.click());
     }
 
     function initForgotPasswordForm() {
@@ -404,9 +612,6 @@
             const termsCheckbox = document.getElementById('terms');
             const avatarInput = form.querySelector('[name="avatar"]');
             const hasAvatar = avatarInput?.files?.length && avatarInput.files[0];
-            // #region agent log
-            fetch('http://127.0.0.1:7251/ingest/32a333e7-0c3c-4a8b-8d4e-74fa20b58295',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e091ef'},body:JSON.stringify({sessionId:'e091ef',runId:'pre-fix',hypothesisId:'H1',location:'js/app.js:register_submit',message:'Register submit captured fields',data:{hasName:!!name,nameLen:(name||'').length,nameIsDbName:name==='u502532383_bloombit',hasAvatar:!!hasAvatar,termsChecked:!!termsCheckbox?.checked,hasPhone:!!phone,hasReferral:!!referral},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
             if (!name) {
                 showMessage(msgEl, 'Full name is required.', true);
                 return;
@@ -430,15 +635,9 @@
                     opts.body = body;
                     opts.headers = { 'Accept': 'application/json' };
                 }
-                // #region agent log
-                fetch('http://127.0.0.1:7251/ingest/32a333e7-0c3c-4a8b-8d4e-74fa20b58295',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e091ef'},body:JSON.stringify({sessionId:'e091ef',runId:'pre-fix',hypothesisId:'H1',location:'js/app.js:doRequest',message:'Register request type',data:{bodyType:(typeof body==='string'?'json':'formdata')},timestamp:Date.now()})}).catch(()=>{});
-                // #endregion
                 return fetch(API_BASE + '/auth/register.php', { ...opts, credentials: 'same-origin' })
                     .then(r => r.json().then(data => ({ ok: r.ok, data })))
                     .then(({ ok, data }) => {
-                        // #region agent log
-                        fetch('http://127.0.0.1:7251/ingest/32a333e7-0c3c-4a8b-8d4e-74fa20b58295',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e091ef'},body:JSON.stringify({sessionId:'e091ef',runId:'pre-fix',hypothesisId:'H3',location:'js/app.js:register_response',message:'Register response',data:{ok:!!ok,hasSuccess:!!data?.success,step:(data?.data?.step||null),hasError:!!data?.error},timestamp:Date.now()})}).catch(()=>{});
-                        // #endregion
                         if (!ok) throw new Error(data.error || 'Request failed');
                         return data;
                     });
@@ -447,6 +646,7 @@
                 if (data.data?.step === 'verify_otp') {
                     showOtpStep(data.data.email);
                 } else {
+                    showGlobalLoader();
                     window.location.href = data.data?.redirect || '/dashboard';
                 }
             };
@@ -496,15 +696,18 @@
         });
 
         if (otpSubmit) otpSubmit.addEventListener('click', function () {
-            const otp = getOtpValue();
+            if (otpSubmit.dataset.loading === '1') return;
+            const otp = getOtpValue().replace(/\D/g, '');
             if (otp.length !== 6) {
                 otpMessage.textContent = 'Please enter all 6 digits.';
                 otpMessage.className = 'text-sm text-red-500';
                 otpMessage.classList.remove('hidden');
                 return;
             }
-            otpSubmit.disabled = true;
-            otpMessage.classList.add('hidden');
+            setButtonLoading(otpSubmit, true, 'Verifying...');
+            otpMessage.textContent = 'Verifying code...';
+            otpMessage.className = 'text-sm text-slate-500';
+            otpMessage.classList.remove('hidden');
             fetch(API_BASE + '/auth/verify-registration-otp.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -515,30 +718,24 @@
                     otpStep.classList.add('hidden');
                     thankYou.classList.remove('hidden');
                     setTimeout(function () {
+                        showGlobalLoader();
                         window.location.href = res.data?.redirect || '/dashboard';
                     }, 1500);
                 } else {
                     otpMessage.textContent = res.error || 'Invalid code. Try again.';
                     otpMessage.className = 'text-sm text-red-500';
                     otpMessage.classList.remove('hidden');
-                    otpSubmit.disabled = false;
+                    setButtonLoading(otpSubmit, false);
                 }
             }).catch(function () {
                 otpMessage.textContent = 'Verification failed. Try again.';
                 otpMessage.className = 'text-sm text-red-500';
                 otpMessage.classList.remove('hidden');
-                otpSubmit.disabled = false;
+                setButtonLoading(otpSubmit, false);
             });
         });
 
-        otpInputs.forEach((inp, i) => {
-            inp.addEventListener('input', function () {
-                if (this.value && i < otpInputs.length - 1) otpInputs[i + 1].focus();
-            });
-            inp.addEventListener('keydown', function (e) {
-                if (e.key === 'Backspace' && !this.value && i > 0) otpInputs[i - 1].focus();
-            });
-        });
+        bindOtpInputs(otpInputs, () => otpSubmit?.click());
     }
 
     function initPasswordToggle() {
@@ -565,8 +762,8 @@
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
                 apiFetch('/auth/logout.php', { method: 'POST' })
-                    .then(() => { window.location.href = '/'; })
-                    .catch(() => { window.location.href = '/'; });
+                    .then(() => { showGlobalLoader(); window.location.href = '/'; })
+                    .catch(() => { showGlobalLoader(); window.location.href = '/'; });
             });
         });
     }
@@ -613,6 +810,7 @@
     }
 
     function init() {
+        initGlobalLoader();
         requireAuth();
         initPasswordToggle();
         initLogoutButtons();

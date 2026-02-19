@@ -15,7 +15,6 @@ $siteName = get_site_name();
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title><?php echo htmlspecialchars($siteName); ?> | Secure Login</title>
 <?php output_favicon_tags(); ?>
-<?php output_favicon_tags(); ?>
 <!-- Tailwind CSS with plugins -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <!-- Material Icons and Symbols -->
@@ -113,12 +112,12 @@ $siteName = get_site_name();
 <p class="text-text-muted text-sm" id="login-otp-email-display"></p>
 <p class="text-sm text-text-muted">Enter the 6-digit code we sent to your email.</p>
 <div class="flex gap-2 justify-center my-6" id="login-otp-inputs">
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 1"/>
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 2"/>
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 3"/>
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 4"/>
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 5"/>
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 6"/>
+<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 1"/>
+<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 2"/>
+<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 3"/>
+<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 4"/>
+<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 5"/>
+<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-neutral-soft dark:border-neutral-800 bg-background-light dark:bg-neutral-900 focus:ring-2 focus:ring-primary focus:border-primary text-text-main dark:text-white" data-otp-digit aria-label="Digit 6"/>
 </div>
 <div id="login-otp-message" class="text-sm hidden"></div>
 <button type="button" id="login-otp-resend" class="text-primary hover:underline text-sm font-medium disabled:opacity-50" disabled>Resend code (60s)</button>

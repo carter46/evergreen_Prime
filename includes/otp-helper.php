@@ -69,23 +69,6 @@ function sendOtpEmail(string $email, string $otp, string $purpose, ?string $name
     $purpose_label = $labels[$purpose] ?? 'verification';
 
     try {
-        // #region agent log
-        @file_put_contents(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
-            'sessionId' => 'e091ef',
-            'runId' => 'pre-fix',
-            'hypothesisId' => 'H5',
-            'location' => 'includes/otp-helper.php:sendOtpEmail',
-            'message' => 'Sending OTP email (no PII)',
-            'data' => [
-                'purpose' => $purpose,
-                'hasName' => ($name !== null && $name !== ''),
-                'nameLen' => is_string($name) ? strlen($name) : null,
-                'nameIsDbName' => ($name === 'u502532383_bloombit'),
-            ],
-            'timestamp' => (int) round(microtime(true) * 1000),
-        ]) . "\n", FILE_APPEND);
-        // #endregion
-
         $mail = require __DIR__ . '/mailer.php';
         $mail->clearAddresses();
         $mail->addAddress($email);
