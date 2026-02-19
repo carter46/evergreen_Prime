@@ -49,9 +49,10 @@ try {
 
     // Create user only after OTP verified (email_verified = 1)
     $userName = trim($pending['name'] ?? '');
-    // Fallback to email prefix if name is empty
-    if (empty($userName) && !empty($pending['email'])) {
-        $userName = explode('@', $pending['email'])[0];
+    if ($userName === '') {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Full name is required. Please register again.']);
+        exit;
     }
     $cols = ['email', 'password_hash', 'name', 'role', 'email_verified', 'active'];
     $vals = [$pending['email'], $pending['password_hash'], $userName, 'user', 1, 1];

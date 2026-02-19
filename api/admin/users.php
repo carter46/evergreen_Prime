@@ -436,13 +436,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $mail->clearAddresses();
                             $mail->addAddress($userEmail);
                             $mail->Subject = 'Account Balance Credited - ' . get_site_name();
-                            $amountUsd = refresh_user_last_balance_usd($pdo, $userId, true);
+                            // USD equivalent is only deterministic for stable settlement currencies.
+                            $curUpper = strtoupper($currency);
+                            $amountUsd = in_array($curUpper, ['USD','USDT','USDC','BUSD','DAI'], true) ? (float) $amountStr : (float) $amountStr;
                             $mail->Body = renderEmailTemplate('balance-adjustment.php', [
                                 'name' => $userName,
                                 'type' => 'credit',
                                 'amount' => $amountStr,
                                 'currency' => $currency,
-                                'amountUsd' => $amountUsd ?? $amount,
+                                'amountUsd' => $amountUsd,
                             ]);
                             $mail->AltBody = "Your account has been credited with $currency " . number_format((float)$amountStr, 8, '.', ',') . ".";
                             $mail->isHTML(true);

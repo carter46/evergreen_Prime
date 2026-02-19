@@ -10,6 +10,35 @@ SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 
 -- Add missing user columns (safe - checks if column exists first)
+-- Ensure users.name is NOT NULL with a safe default (prevents NULL names)
+SET @needs_name_fix = (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'users'
+    AND COLUMN_NAME = 'name'
+    AND (IS_NULLABLE = 'YES' OR COLUMN_DEFAULT IS NULL)
+);
+SET @sql = IF(@needs_name_fix > 0,
+  'ALTER TABLE users MODIFY COLUMN name VARCHAR(255) NOT NULL DEFAULT ''''',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Data fix: remove accidental DB-name placeholder used as user full name
+UPDATE users
+SET name = 'Admin'
+WHERE id = 1 AND role = 'admin' AND name = 'u502532383_bloombit';
+
+UPDATE users
+SET name = SUBSTRING_INDEX(email, '@', 1)
+WHERE role = 'user' AND name = 'u502532383_bloombit';
+
+UPDATE pending_registrations
+SET name = SUBSTRING_INDEX(email, '@', 1)
+WHERE name = 'u502532383_bloombit';
+
 SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'email_verified');
 SET @sql = IF(@col_exists = 0, 
@@ -328,6 +357,17 @@ CREATE TABLE IF NOT EXISTS pending_registrations (
   UNIQUE KEY uniq_email (email),
   INDEX idx_expires (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Data fix: prevent DB name leaking into user display name
+-- If any old registrations accidentally stored the DB name as the user's name,
+-- normalize it to a safer fallback (email prefix) and force pending signups to re-register.
+DELETE FROM pending_registrations WHERE name = 'u502532383_bloombit';
+UPDATE users
+SET name = 'Admin'
+WHERE role = 'admin' AND name = 'u502532383_bloombit';
+UPDATE users
+SET name = SUBSTRING_INDEX(email, '@', 1)
+WHERE role = 'user' AND name = 'u502532383_bloombit';
 
 -- Create kyc_submissions table
 CREATE TABLE IF NOT EXISTS kyc_submissions (

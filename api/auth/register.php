@@ -30,9 +30,10 @@ $name = trim($input['name'] ?? '');
 $phone = trim($input['phone'] ?? '');
 $referral = trim($input['referral'] ?? '');
 
-// Ensure name is not empty - if it is, use email prefix as fallback
-if (empty($name) && !empty($email)) {
-    $name = explode('@', $email)[0];
+if ($name === '') {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Full name is required']);
+    exit;
 }
 
 if (empty($email) || empty($password)) {

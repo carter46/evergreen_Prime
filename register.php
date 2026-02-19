@@ -15,7 +15,6 @@ $siteName = get_site_name();
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Register | <?php echo htmlspecialchars($siteName); ?></title>
 <?php output_favicon_tags(); ?>
-<?php output_favicon_tags(); ?>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -108,7 +107,7 @@ $siteName = get_site_name();
 <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="name">Full Name</label>
 <div class="relative">
 <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">person</span>
-<input name="name" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="name" placeholder="John Doe" type="text"/>
+<input name="name" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="name" placeholder="John Doe" type="text" required autocomplete="name"/>
 </div>
 </div>
 <!-- Email -->

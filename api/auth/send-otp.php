@@ -53,10 +53,18 @@ $name = null;
 if ($purpose === 'register' || $purpose === 'login') {
     try {
         $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
-        $stmt = $pdo->prepare('SELECT name FROM users WHERE email = ?');
-        $stmt->execute([$email]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $name = $row['name'] ?? null;
+        if ($purpose === 'register') {
+            // During registration, the user may not exist yet. Use pending_registrations name.
+            $stmt = $pdo->prepare('SELECT name FROM pending_registrations WHERE email = ? AND expires_at > NOW()');
+            $stmt->execute([$email]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $name = $row['name'] ?? null;
+        } else {
+            $stmt = $pdo->prepare('SELECT name FROM users WHERE email = ?');
+            $stmt->execute([$email]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $name = $row['name'] ?? null;
+        }
     } catch (Throwable $e) {}
 } elseif ($purpose === 'disable_2fa') {
     try {
