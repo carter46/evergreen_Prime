@@ -574,20 +574,18 @@ foreach ($indexPlans as $p):
 </button>
 <!-- Modal -->
 <div id="homepage-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-<div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] flex flex-col">
-<button id="homepage-modal-close" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors" aria-label="Close">
+<div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex items-center justify-center max-w-[95vw] max-h-[95vh] p-4">
+<button id="homepage-modal-close" class="absolute top-2 right-2 z-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors" aria-label="Close">
 <span class="material-icons text-slate-600 dark:text-slate-300">close</span>
 </button>
-<div class="flex-1 flex items-center justify-center p-6 overflow-hidden">
 <?php if (!empty($homepageModalImage)): ?>
-<img src="<?php echo htmlspecialchars($homepageModalImage); ?>" alt="Certificate" class="max-w-full max-h-full w-auto h-auto object-contain rounded-lg"/>
+<img src="<?php echo htmlspecialchars($homepageModalImage); ?>" alt="Certificate" class="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain rounded-lg"/>
 <?php else: ?>
-<div class="p-12 text-center">
+<div class="p-12 text-center min-w-[300px]">
 <p class="text-slate-500 dark:text-slate-400 text-lg">No image uploaded yet.</p>
 <p class="text-slate-400 dark:text-slate-500 text-sm mt-2">Upload an image in Admin Settings → Branding → Homepage Floating Modal Image</p>
 </div>
 <?php endif; ?>
-</div>
 </div>
 </div>
 <script>
