@@ -22,12 +22,12 @@ $logoParts = preg_match('/^(.+)bit$/i', $siteName, $m) ? [$m[1], 'bit'] : [$site
 <div style="max-width:600px;margin:0 auto;padding:24px">
 <div style="background:#fff;border:1px solid #e5e5e0;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
 <div style="height:6px;width:100%;background:#ffc105"></div>
-<div style="padding:24px 40px 16px;background:#fff;border-bottom:1px solid #f0f0f0">
-<div style="display:flex;align-items:center;gap:8px;justify-content:center">
-<div style="width:40px;height:40px;background:#ffc105;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-<span style="font-size:20px;color:#fff">✨</span>
+<div style="padding:32px 40px 24px;background:#fff;border-bottom:1px solid #f0f0f0;text-align:center">
+<div style="display:inline-flex;align-items:center;gap:12px;vertical-align:middle">
+<div style="width:48px;height:48px;background:#ffc105;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;vertical-align:middle">
+<span style="font-size:24px;color:#fff;line-height:1">✨</span>
 </div>
-<span style="font-size:20px;font-weight:700;color:#1d180c;letter-spacing:-0.02em"><?= htmlspecialchars($logoParts[0]) ?><?php if ($logoParts[1]): ?><span style="color:#ffc105"><?= htmlspecialchars($logoParts[1]) ?></span><?php endif; ?></span>
+<span style="font-size:24px;font-weight:700;color:#1d180c;letter-spacing:-0.02em;line-height:48px;vertical-align:middle"><?= htmlspecialchars($logoParts[0]) ?><?php if ($logoParts[1]): ?><span style="color:#ffc105"><?= htmlspecialchars($logoParts[1]) ?></span><?php endif; ?></span>
 </div>
 </div>
 <div style="padding:32px 40px">
