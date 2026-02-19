@@ -409,6 +409,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $amountStr = number_format($amount, 18, '.', '');
             $adminId = (int) ($_SESSION['user_id'] ?? 0);
             $ref = 'admin_' . ($type === 'credit' ? 'credit' : 'debit') . '_' . $adminId . '_' . $userId . '_' . date('Ymd_His');
+            // Fetch user email and name for email notification
+            $userStmt = $pdo->prepare('SELECT email, name FROM users WHERE id = ?');
+            $userStmt->execute([$userId]);
+            $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+            $userEmail = $user['email'] ?? null;
+            $userName = $user['name'] ?? 'User';
+            
             $pdo->beginTransaction();
             try {
                 if ($type === 'credit') {
@@ -420,6 +427,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     require_once dirname(__DIR__, 2) . '/includes/helpers.php';
                     refresh_user_last_balance_usd($pdo, $userId);
                     $pdo->commit();
+                    
+                    // Send email notification
+                    if ($userEmail) {
+                        try {
+                            require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
+                            $mail = require dirname(__DIR__, 2) . '/includes/mailer.php';
+                            $mail->clearAddresses();
+                            $mail->addAddress($userEmail);
+                            $mail->Subject = 'Account Balance Credited - ' . get_site_name();
+                            $amountUsd = refresh_user_last_balance_usd($pdo, $userId, true);
+                            $mail->Body = renderEmailTemplate('balance-adjustment.php', [
+                                'name' => $userName,
+                                'type' => 'credit',
+                                'amount' => $amountStr,
+                                'currency' => $currency,
+                                'amountUsd' => $amountUsd ?? $amount,
+                            ]);
+                            $mail->AltBody = "Your account has been credited with $currency " . number_format((float)$amountStr, 8, '.', ',') . ".";
+                            $mail->isHTML(true);
+                            $mail->send();
+                        } catch (Throwable $e) {
+                            // Email failure should not block the operation
+                        }
+                    }
+                    
                     echo json_encode(['success' => true, 'data' => ['message' => 'Balance credited']]);
                 } else {
                     // Lock row to prevent race conditions
@@ -441,6 +473,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     require_once dirname(__DIR__, 2) . '/includes/helpers.php';
                     refresh_user_last_balance_usd($pdo, $userId);
                     $pdo->commit();
+                    
+                    // Send email notification
+                    if ($userEmail) {
+                        try {
+                            require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
+                            $mail = require dirname(__DIR__, 2) . '/includes/mailer.php';
+                            $mail->clearAddresses();
+                            $mail->addAddress($userEmail);
+                            $mail->Subject = 'Account Balance Debited - ' . get_site_name();
+                            // Calculate USD equivalent (for stablecoins, use 1:1; for others, use amount as USD estimate)
+                            $curUpper = strtoupper($currency);
+                            $amountUsd = in_array($curUpper, ['USD','USDT','USDC','BUSD','DAI'], true) ? (float)$amountStr : (float)$amountStr;
+                            $mail->Body = renderEmailTemplate('balance-adjustment.php', [
+                                'name' => $userName,
+                                'type' => 'debit',
+                                'amount' => $amountStr,
+                                'currency' => $currency,
+                                'amountUsd' => $amountUsd,
+                            ]);
+                            $mail->AltBody = "Your account has been debited with $currency " . number_format((float)$amountStr, 8, '.', ',') . ".";
+                            $mail->isHTML(true);
+                            $mail->send();
+                        } catch (Throwable $e) {
+                            // Email failure should not block the operation
+                        }
+                    }
+                    
                     echo json_encode(['success' => true, 'data' => ['message' => 'Balance debited']]);
                 }
             } catch (Throwable $e) {

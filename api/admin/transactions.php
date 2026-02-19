@@ -37,11 +37,13 @@ if (!in_array($action, ['approve', 'reject'], true) || $transactionId <= 0) {
     exit;
 }
 
-// Fetch transaction (include amount_usd when column exists)
+// Fetch transaction (include amount_usd and reference when columns exist)
 $cols = 'id, user_id, type, amount, currency, status';
 try {
     $chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
     if ($chk && $chk->rowCount() > 0) $cols .= ', amount_usd';
+    $chk2 = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'reference'");
+    if ($chk2 && $chk2->rowCount() > 0) $cols .= ', reference';
 } catch (Throwable $e) {}
 $stmt = $pdo->prepare("SELECT $cols FROM transactions WHERE id = ?");
 $stmt->execute([$transactionId]);
@@ -58,6 +60,16 @@ if ($tx['status'] !== 'pending') {
     echo json_encode(['success' => false, 'error' => 'Transaction is not pending']);
     exit;
 }
+
+// Fetch user email and name for email notification
+$userStmt = $pdo->prepare('SELECT email, name FROM users WHERE id = ?');
+$userStmt->execute([$tx['user_id']]);
+$user = $userStmt->fetch(PDO::FETCH_ASSOC);
+$userEmail = $user['email'] ?? null;
+$userName = $user['name'] ?? 'User';
+
+// Get transaction reference if available
+$reference = $tx['reference'] ?? '';
 
 $pdo->beginTransaction();
 try {
@@ -84,6 +96,33 @@ try {
         // For withdrawals, status update is sufficient (balance already debited on request)
         
         $pdo->commit();
+        
+        // Send email notification
+        if ($userEmail) {
+            try {
+                require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
+                $mail = require dirname(__DIR__, 2) . '/includes/mailer.php';
+                $mail->clearAddresses();
+                $mail->addAddress($userEmail);
+                $mail->Subject = ucfirst($tx['type']) . ' Approved - ' . get_site_name();
+                $amountUsd = isset($tx['amount_usd']) && $tx['amount_usd'] !== null ? (float)$tx['amount_usd'] : (float)$tx['amount'];
+                $mail->Body = renderEmailTemplate('transaction-status.php', [
+                    'name' => $userName,
+                    'status' => 'approved',
+                    'type' => $tx['type'],
+                    'amount' => $tx['amount'],
+                    'currency' => $tx['currency'],
+                    'amountUsd' => $amountUsd,
+                    'reference' => $reference,
+                ]);
+                $mail->AltBody = "Your {$tx['type']} request has been approved. Amount: {$tx['currency']} " . number_format((float)$tx['amount'], 8, '.', ',') . ".";
+                $mail->isHTML(true);
+                $mail->send();
+            } catch (Throwable $e) {
+                // Email failure should not block the operation
+            }
+        }
+        
         echo json_encode([
             'success' => true,
             'data' => ['message' => 'Transaction approved successfully'],
@@ -111,6 +150,33 @@ try {
         // For deposits, no balance change needed (user hasn't been credited yet)
         
         $pdo->commit();
+        
+        // Send email notification
+        if ($userEmail) {
+            try {
+                require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
+                $mail = require dirname(__DIR__, 2) . '/includes/mailer.php';
+                $mail->clearAddresses();
+                $mail->addAddress($userEmail);
+                $mail->Subject = ucfirst($tx['type']) . ' Rejected - ' . get_site_name();
+                $amountUsd = isset($tx['amount_usd']) && $tx['amount_usd'] !== null ? (float)$tx['amount_usd'] : (float)$tx['amount'];
+                $mail->Body = renderEmailTemplate('transaction-status.php', [
+                    'name' => $userName,
+                    'status' => 'rejected',
+                    'type' => $tx['type'],
+                    'amount' => $tx['amount'],
+                    'currency' => $tx['currency'],
+                    'amountUsd' => $amountUsd,
+                    'reference' => $reference,
+                ]);
+                $mail->AltBody = "Your {$tx['type']} request has been rejected. Amount: {$tx['currency']} " . number_format((float)$tx['amount'], 8, '.', ',') . ".";
+                $mail->isHTML(true);
+                $mail->send();
+            } catch (Throwable $e) {
+                // Email failure should not block the operation
+            }
+        }
+        
         echo json_encode([
             'success' => true,
             'data' => ['message' => 'Transaction rejected'],

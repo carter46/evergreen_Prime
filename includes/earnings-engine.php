@@ -123,6 +123,19 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
         if ($toCredit <= 0) continue;
         $toCreditStr = number_format($toCredit, 18, '.', '');
 
+        // Fetch user email and name for email notification
+        $userStmt = $pdo->prepare('SELECT email, name FROM users WHERE id = ?');
+        $userStmt->execute([$userId]);
+        $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+        $userEmail = $user['email'] ?? null;
+        $userName = $user['name'] ?? 'User';
+        
+        // Fetch plan name
+        $planStmt = $pdo->prepare('SELECT name FROM plans WHERE id = ?');
+        $planStmt->execute([$inv['plan_id']]);
+        $planRow = $planStmt->fetch(PDO::FETCH_ASSOC);
+        $planName = $planRow['name'] ?? 'Investment Plan';
+        
         $pdo->beginTransaction();
         try {
             $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
@@ -149,6 +162,30 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
                     ->execute([$newLastAt->format('Y-m-d H:i:s'), $invId]);
             }
             $pdo->commit();
+            
+            // Send email notification
+            if ($userEmail) {
+                try {
+                    require_once __DIR__ . '/email-templates/render.php';
+                    $mail = require __DIR__ . '/mailer.php';
+                    $mail->clearAddresses();
+                    $mail->addAddress($userEmail);
+                    $mail->Subject = 'Earning Payout Credited - ' . get_site_name();
+                    $mail->Body = renderEmailTemplate('earning-payout.php', [
+                        'name' => $userName,
+                        'amount' => $toCreditStr,
+                        'currency' => $currency,
+                        'amountUsd' => $toCreditUsd,
+                        'planName' => $planName,
+                    ]);
+                    $mail->AltBody = "Your investment earnings have been credited. Amount: $currency " . number_format((float)$toCreditStr, 8, '.', ',') . ".";
+                    $mail->isHTML(true);
+                    $mail->send();
+                } catch (Throwable $e) {
+                    // Email failure should not block the operation
+                }
+            }
+            
             $result['credits']++;
             $result['total_amount'] += $toCredit;
         } catch (Throwable $e) {
