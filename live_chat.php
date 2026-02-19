@@ -1,9 +1,12 @@
-<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
+<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); 
+$smartsuppKey = get_site_setting('smartsupp_key', '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d');
+?>
 <!DOCTYPE html>
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Live Chat | <?php echo htmlspecialchars($siteName); ?></title>
+<?php output_favicon_tags(); ?>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -35,6 +38,10 @@
         body {
             font-family: 'Space Grotesk', sans-serif;
         }
+        /* Smartsupp widget customization */
+        .smartsupp-widget {
+            --smartsupp-primary-color: #f9bd0b !important;
+        }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300 overflow-x-hidden">
@@ -51,27 +58,9 @@
 <span class="font-semibold">Support agents are online</span>
 </div>
 <p class="text-slate-600 dark:text-slate-400 text-sm">
-                Our team is available 24/7 to assist you with any questions about your account, investments, or technical issues.
+                Our team is available 24/7 to assist you with any questions about your account, investments, or technical issues. Use the chat widget in the bottom right corner to start a conversation.
             </p>
 </div>
-<div id="chat-container" class="h-[500px] overflow-y-auto border border-slate-200 dark:border-zinc-700 rounded-lg p-4 mb-4 bg-slate-50 dark:bg-zinc-800/50 space-y-4">
-<div class="flex items-start gap-3">
-<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-<span class="material-icons text-white text-sm">support_agent</span>
-</div>
-<div class="flex-1 bg-white dark:bg-zinc-900 rounded-lg p-4 shadow-sm">
-<p class="text-sm text-slate-700 dark:text-slate-300">Hello! How can we help you today?</p>
-<span class="text-xs text-slate-400 mt-1 block">Just now</span>
-</div>
-</div>
-</div>
-<form id="chat-form" class="flex gap-2">
-<input type="text" id="chat-input" placeholder="Type your message..." class="flex-1 px-4 py-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none" required/>
-<button type="submit" class="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2">
-<span class="material-icons text-sm">send</span>
-                Send
-            </button>
-</form>
 <div class="mt-6 pt-6 border-t border-slate-200 dark:border-zinc-700">
 <p class="text-sm text-slate-500 dark:text-slate-400 text-center">
                 Need immediate assistance? <a href="mailto:<?php echo htmlspecialchars(get_site_setting('contact_email', 'support@bloombit.com')); ?>" class="text-primary font-semibold hover:underline">Email us</a> or call our support line.
@@ -81,32 +70,22 @@
 </main>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
-<script>
-(function(){
-  var form = document.getElementById('chat-form');
-  var input = document.getElementById('chat-input');
-  var container = document.getElementById('chat-container');
-  if (!form || !input || !container) return;
-  form.addEventListener('submit', function(e){
-    e.preventDefault();
-    var msg = input.value.trim();
-    if (!msg) return;
-    // Add user message
-    var userMsg = document.createElement('div');
-    userMsg.className = 'flex items-start gap-3 justify-end';
-    userMsg.innerHTML = '<div class="flex-1 bg-primary text-white rounded-lg p-4 shadow-sm max-w-[80%] text-right"><p class="text-sm">' + msg + '</p><span class="text-xs opacity-70 mt-1 block">Just now</span></div>';
-    container.appendChild(userMsg);
-    container.scrollTop = container.scrollHeight;
-    input.value = '';
-    // Simulate response
-    setTimeout(function(){
-      var botMsg = document.createElement('div');
-      botMsg.className = 'flex items-start gap-3';
-      botMsg.innerHTML = '<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-icons text-white text-sm">support_agent</span></div><div class="flex-1 bg-white dark:bg-zinc-900 rounded-lg p-4 shadow-sm"><p class="text-sm text-slate-700 dark:text-slate-300">Thank you for your message. Our support team will respond shortly. In the meantime, you can check our <a href="/help_centre" class="text-primary underline">Help Center</a> for answers to common questions.</p><span class="text-xs text-slate-400 mt-1 block">Just now</span></div>';
-      container.appendChild(botMsg);
-      container.scrollTop = container.scrollHeight;
-    }, 1000);
-  });
-})();
+<!-- Smartsupp Live Chat script -->
+<script type="text/javascript">
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = '<?php echo htmlspecialchars($smartsuppKey); ?>';
+_smartsupp.widget = {
+    colors: {
+        primary: '#f9bd0b',
+        secondary: '#231e0f'
+    }
+};
+window.smartsupp||(function(d) {
+  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+  c.type='text/javascript';c.charset='utf-8';c.async=true;
+  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+})(document);
 </script>
+<noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
 </body></html>

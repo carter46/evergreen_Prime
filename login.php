@@ -14,6 +14,8 @@ $siteName = get_site_name();
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title><?php echo htmlspecialchars($siteName); ?> | Secure Login</title>
+<?php output_favicon_tags(); ?>
+<?php output_favicon_tags(); ?>
 <!-- Tailwind CSS with plugins -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <!-- Material Icons and Symbols -->

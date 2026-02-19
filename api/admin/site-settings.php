@@ -43,6 +43,7 @@ $allowedKeys = [
     'header_image',
     'office_title',
     'office_address',
+    'smartsupp_key',
 ];
 $sensitiveKeys = ['mail_smtp_password', 'mail_imap_password'];
 
@@ -84,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'header_image' => '/uploads/images/bloombit.jpg',
         'office_title' => 'London Office',
         'office_address' => '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom',
+        'smartsupp_key' => '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d',
         // write-only flags
         'mail_smtp_password_set' => '0',
         'mail_imap_password_set' => '0',

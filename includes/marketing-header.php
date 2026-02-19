@@ -29,9 +29,18 @@ if ($parts[1]) echo '<span class="text-primary">' . htmlspecialchars($parts[1]) 
 <a class="<?php echo $navLinkClass('home'); ?>" href="/">Home</a>
 <a class="<?php echo $navLinkClass('about_us'); ?>" href="/about_us">About Us</a>
 <a class="<?php echo $navLinkClass('plans'); ?>" href="/plans">Plans</a>
-<a class="<?php echo $navLinkClass('help_centre'); ?>" href="/help_centre">Help Center</a>
 <a class="<?php echo $navLinkClass('trading_signals'); ?>" href="/trading_signals">Trading Signals</a>
 <a class="<?php echo $navLinkClass('legal_centre'); ?>" href="/legal_centre">Legal</a>
+<div class="relative group">
+<a class="<?php echo ($current === 'help_centre' || $current === 'live_chat') ? 'text-primary border-b-2 border-primary pb-0.5' : 'hover:text-primary transition-colors'; ?> cursor-pointer flex items-center gap-1" href="/help_centre">
+Help Center
+<span class="material-icons text-sm">expand_more</span>
+</a>
+<div class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-slate-200 dark:border-zinc-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+<a class="block px-4 py-3 hover:bg-primary/10 text-sm <?php echo $navLinkClass('help_centre'); ?>" href="/help_centre">Help Center</a>
+<a class="block px-4 py-3 hover:bg-primary/10 text-sm <?php echo $navLinkClass('live_chat'); ?>" href="/live_chat">Live Chat</a>
+</div>
+</div>
 </div>
 <div class="flex items-center gap-2 sm:gap-4">
 <?php if ($isLoggedIn): ?>
@@ -51,9 +60,10 @@ if ($parts[1]) echo '<span class="text-primary">' . htmlspecialchars($parts[1]) 
 <a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('home'); ?>" href="/">Home</a>
 <a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('about_us'); ?>" href="/about_us">About Us</a>
 <a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('plans'); ?>" href="/plans">Plans</a>
-<a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('help_centre'); ?>" href="/help_centre">Help Center</a>
 <a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('trading_signals'); ?>" href="/trading_signals">Trading Signals</a>
 <a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('legal_centre'); ?>" href="/legal_centre">Legal</a>
+<a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('help_centre'); ?>" href="/help_centre">Help Center</a>
+<a class="py-3 px-4 rounded-lg hover:bg-primary/10 font-medium <?php echo $navLinkClass('live_chat'); ?>" href="/live_chat">Live Chat</a>
 <?php if ($isLoggedIn): ?>
 <a class="py-3 px-4 mt-2 border-t border-slate-200 dark:border-slate-700 pt-4 font-medium" href="/dashboard">Dashboard</a>
 <a class="py-3 px-4 font-medium" href="/logout">Logout</a>

@@ -32,6 +32,17 @@ function get_site_name(): string {
 }
 
 /**
+ * Output favicon link tags if favicon is set.
+ */
+function output_favicon_tags(): void {
+    $favicon = get_site_setting('site_favicon', '');
+    if (!empty($favicon)) {
+        echo '<link rel="icon" type="image/x-icon" href="' . htmlspecialchars($favicon) . '"/>' . "\n";
+        echo '<link rel="shortcut icon" type="image/x-icon" href="' . htmlspecialchars($favicon) . '"/>' . "\n";
+    }
+}
+
+/**
  * Normalize YouTube URL to embed URL. Returns null if not a valid YouTube URL.
  */
 function get_youtube_embed_url(?string $url): ?string {

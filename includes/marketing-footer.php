@@ -45,7 +45,7 @@ if ($parts[1]) echo '<span class="text-primary">' . htmlspecialchars($parts[1]) 
 <div>
 <h4 class="font-bold mb-4 sm:mb-6">Resources</h4>
 <ul class="space-y-2 sm:space-y-4 text-sm text-slate-500">
-<li><a class="hover:text-primary transition-colors py-2 block" href="#">Documentation</a></li>
+<li><a class="hover:text-primary transition-colors py-2 block" href="/live_chat">Live Chat</a></li>
 <li><a class="hover:text-primary transition-colors py-2 block" href="/help_centre">Help Center</a></li>
 <li><a class="hover:text-primary transition-colors py-2 block" href="/trading_signals">Trading Signals</a></li>
 <li><a class="hover:text-primary transition-colors py-2 block" href="/legal_centre">Legal</a></li>
