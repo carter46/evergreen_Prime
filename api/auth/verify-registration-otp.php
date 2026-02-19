@@ -8,6 +8,21 @@
 
 header('Content-Type: application/json');
 
+// #region agent log
+@file_put_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
+    'sessionId' => 'e091ef',
+    'runId' => 'pre-fix',
+    'hypothesisId' => 'H4',
+    'location' => 'api/auth/verify-registration-otp.php:entry',
+    'message' => 'Verify-registration-otp endpoint hit',
+    'data' => [
+        'method' => $_SERVER['REQUEST_METHOD'] ?? null,
+        'contentType' => $_SERVER['CONTENT_TYPE'] ?? null,
+    ],
+    'timestamp' => (int) round(microtime(true) * 1000),
+]) . "\n", FILE_APPEND);
+// #endregion
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
@@ -49,6 +64,24 @@ try {
 
     // Create user only after OTP verified (email_verified = 1)
     $userName = trim($pending['name'] ?? '');
+    // #region agent log
+    @file_put_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
+        'sessionId' => 'e091ef',
+        'runId' => 'pre-fix',
+        'hypothesisId' => 'H4',
+        'location' => 'api/auth/verify-registration-otp.php:pending',
+        'message' => 'Pending registration loaded (no PII)',
+        'data' => [
+            'pendingHasName' => ($userName !== ''),
+            'pendingNameLen' => strlen($userName),
+            'pendingNameIsDbName' => ($userName === 'u502532383_bloombit'),
+            'hasPhone' => !empty($pending['phone_number']),
+            'hasReferral' => !empty($pending['referral_code']),
+            'hasAvatar' => !empty($pending['avatar_url']),
+        ],
+        'timestamp' => (int) round(microtime(true) * 1000),
+    ]) . "\n", FILE_APPEND);
+    // #endregion
     if ($userName === '') {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Full name is required. Please register again.']);

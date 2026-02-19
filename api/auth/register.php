@@ -7,6 +7,22 @@
 
 header('Content-Type: application/json');
 
+// #region agent log
+@file_put_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
+    'sessionId' => 'e091ef',
+    'runId' => 'pre-fix',
+    'hypothesisId' => 'H2',
+    'location' => 'api/auth/register.php:entry',
+    'message' => 'Register endpoint hit',
+    'data' => [
+        'method' => $_SERVER['REQUEST_METHOD'] ?? null,
+        'hasPost' => !empty($_POST),
+        'contentType' => $_SERVER['CONTENT_TYPE'] ?? null,
+    ],
+    'timestamp' => (int) round(microtime(true) * 1000),
+]) . "\n", FILE_APPEND);
+// #endregion
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
@@ -29,6 +45,27 @@ $password = $input['password'] ?? '';
 $name = trim($input['name'] ?? '');
 $phone = trim($input['phone'] ?? '');
 $referral = trim($input['referral'] ?? '');
+
+// #region agent log
+@file_put_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
+    'sessionId' => 'e091ef',
+    'runId' => 'pre-fix',
+    'hypothesisId' => 'H2',
+    'location' => 'api/auth/register.php:parsed',
+    'message' => 'Parsed registration fields (no PII)',
+    'data' => [
+        'hasName' => ($name !== ''),
+        'nameLen' => strlen($name),
+        'nameIsDbName' => ($name === 'u502532383_bloombit'),
+        'emailLen' => strlen($email),
+        'hasPassword' => ($password !== ''),
+        'hasPhone' => ($phone !== ''),
+        'hasReferral' => ($referral !== ''),
+        'hasAvatarUpload' => !empty($_FILES['avatar']['tmp_name']),
+    ],
+    'timestamp' => (int) round(microtime(true) * 1000),
+]) . "\n", FILE_APPEND);
+// #endregion
 
 if ($name === '') {
     http_response_code(400);

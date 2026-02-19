@@ -8,6 +8,21 @@
 
 header('Content-Type: application/json');
 
+// #region agent log
+@file_put_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
+    'sessionId' => 'e091ef',
+    'runId' => 'pre-fix',
+    'hypothesisId' => 'H5',
+    'location' => 'api/auth/send-otp.php:entry',
+    'message' => 'Send-otp endpoint hit',
+    'data' => [
+        'method' => $_SERVER['REQUEST_METHOD'] ?? null,
+        'contentType' => $_SERVER['CONTENT_TYPE'] ?? null,
+    ],
+    'timestamp' => (int) round(microtime(true) * 1000),
+]) . "\n", FILE_APPEND);
+// #endregion
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
@@ -75,6 +90,23 @@ if ($purpose === 'register' || $purpose === 'login') {
         $name = $row['name'] ?? null;
     } catch (Throwable $e) {}
 }
+
+// #region agent log
+@file_put_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'debug-e091ef.log', json_encode([
+    'sessionId' => 'e091ef',
+    'runId' => 'pre-fix',
+    'hypothesisId' => 'H5',
+    'location' => 'api/auth/send-otp.php:name',
+    'message' => 'Resolved name for OTP (no PII)',
+    'data' => [
+        'purpose' => $purpose,
+        'hasName' => ($name !== null && $name !== ''),
+        'nameLen' => is_string($name) ? strlen($name) : null,
+        'nameIsDbName' => ($name === 'u502532383_bloombit'),
+    ],
+    'timestamp' => (int) round(microtime(true) * 1000),
+]) . "\n", FILE_APPEND);
+// #endregion
 
 $sent = sendOtpEmail($email, $otp, $purpose, $name);
 if (!$sent) {

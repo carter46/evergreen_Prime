@@ -404,6 +404,9 @@
             const termsCheckbox = document.getElementById('terms');
             const avatarInput = form.querySelector('[name="avatar"]');
             const hasAvatar = avatarInput?.files?.length && avatarInput.files[0];
+            // #region agent log
+            fetch('http://127.0.0.1:7251/ingest/32a333e7-0c3c-4a8b-8d4e-74fa20b58295',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e091ef'},body:JSON.stringify({sessionId:'e091ef',runId:'pre-fix',hypothesisId:'H1',location:'js/app.js:register_submit',message:'Register submit captured fields',data:{hasName:!!name,nameLen:(name||'').length,nameIsDbName:name==='u502532383_bloombit',hasAvatar:!!hasAvatar,termsChecked:!!termsCheckbox?.checked,hasPhone:!!phone,hasReferral:!!referral},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
             if (!name) {
                 showMessage(msgEl, 'Full name is required.', true);
                 return;
@@ -427,9 +430,15 @@
                     opts.body = body;
                     opts.headers = { 'Accept': 'application/json' };
                 }
+                // #region agent log
+                fetch('http://127.0.0.1:7251/ingest/32a333e7-0c3c-4a8b-8d4e-74fa20b58295',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e091ef'},body:JSON.stringify({sessionId:'e091ef',runId:'pre-fix',hypothesisId:'H1',location:'js/app.js:doRequest',message:'Register request type',data:{bodyType:(typeof body==='string'?'json':'formdata')},timestamp:Date.now()})}).catch(()=>{});
+                // #endregion
                 return fetch(API_BASE + '/auth/register.php', { ...opts, credentials: 'same-origin' })
                     .then(r => r.json().then(data => ({ ok: r.ok, data })))
                     .then(({ ok, data }) => {
+                        // #region agent log
+                        fetch('http://127.0.0.1:7251/ingest/32a333e7-0c3c-4a8b-8d4e-74fa20b58295',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e091ef'},body:JSON.stringify({sessionId:'e091ef',runId:'pre-fix',hypothesisId:'H3',location:'js/app.js:register_response',message:'Register response',data:{ok:!!ok,hasSuccess:!!data?.success,step:(data?.data?.step||null),hasError:!!data?.error},timestamp:Date.now()})}).catch(()=>{});
+                        // #endregion
                         if (!ok) throw new Error(data.error || 'Request failed');
                         return data;
                     });
