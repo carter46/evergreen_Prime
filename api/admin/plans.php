@@ -57,7 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
     $id = isset($input['id']) ? (int) $input['id'] : 0;
     $name = trim($input['name'] ?? '');
-    $slug = trim($input['slug'] ?? '') ?: strtolower(preg_replace('/[^a-z0-9]+/i', '-', $name));
+    $slug = trim($input['slug'] ?? '') ?: strtolower(trim((string) preg_replace('/[^a-z0-9]+/i', '-', $name), '-'));
+    if ($slug === '') $slug = 'plan-' . time();
     $minDeposit = (float) ($input['min_deposit'] ?? 0);
     $maxDeposit = isset($input['max_deposit']) && $input['max_deposit'] !== '' ? (float) $input['max_deposit'] : null;
     $yield = (float) ($input['yield'] ?? $input['yield_min'] ?? 0);
@@ -68,7 +69,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (is_string($features)) {
         $features = array_values(array_filter(array_map('trim', explode("\n", $features))));
     }
-    $featuresJson = is_array($features) ? json_encode($features) : '[]';
+    if (is_array($features)) {
+        $cleanFeatures = [];
+        foreach ($features as $feature) {
+            if (!is_scalar($feature)) continue;
+            $line = trim((string) $feature);
+            if ($line === '') continue;
+            $cleanFeatures[] = $line;
+        }
+        $features = array_values(array_unique($cleanFeatures));
+    } else {
+        $features = [];
+    }
+    $featuresJson = json_encode($features, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($featuresJson === false) $featuresJson = '[]';
     $description = trim($input['description'] ?? '') ?: null;
     $allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 'token'];
     $icon = trim($input['icon'] ?? '') ?: null;
@@ -119,15 +133,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $durationDays = max(1, (int) round(($minDurationDays + $maxDurationDays) / 2));
 
-    if ($id > 0) {
-        $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, description=?, icon=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, min_duration_days=?, max_duration_days=?, features_json=?, enabled=?, sort_order=? WHERE id=?');
-        $stmt->execute([$name, $slug, $description, $icon, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder, $id]);
-    } else {
-        $stmt = $pdo->prepare('INSERT INTO plans (name, slug, description, icon, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, min_duration_days, max_duration_days, features_json, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$name, $slug, $description, $icon, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder]);
+    try {
+        $slugCheckSql = 'SELECT id FROM plans WHERE slug = ?';
+        $slugParams = [$slug];
+        if ($id > 0) {
+            $slugCheckSql .= ' AND id <> ?';
+            $slugParams[] = $id;
+        }
+        $slugCheckSql .= ' LIMIT 1';
+        $slugStmt = $pdo->prepare($slugCheckSql);
+        $slugStmt->execute($slugParams);
+        if ($slugStmt->fetch(PDO::FETCH_ASSOC)) {
+            $slug .= '-' . substr((string) time(), -4);
+        }
+
+        if ($id > 0) {
+            $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, description=?, icon=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, min_duration_days=?, max_duration_days=?, features_json=?, enabled=?, sort_order=? WHERE id=?');
+            $stmt->execute([$name, $slug, $description, $icon, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder, $id]);
+        } else {
+            $stmt = $pdo->prepare('INSERT INTO plans (name, slug, description, icon, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, min_duration_days, max_duration_days, features_json, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$name, $slug, $description, $icon, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder]);
+        }
+        echo json_encode(['success' => true, 'data' => ['message' => 'Plan saved successfully']]);
+        exit;
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Unable to save plan. Please verify all fields and try again.']);
+        exit;
     }
-    echo json_encode(['success' => true, 'data' => ['message' => 'Plan saved successfully']]);
-    exit;
 }
 
 http_response_code(405);

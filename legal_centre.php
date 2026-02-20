@@ -46,7 +46,7 @@
 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Terms of Service</h3>
 <ul class="space-y-3">
 <li><a class="group flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors active-link border-l-2 border-transparent hover:border-primary pl-3" href="#acceptance">Acceptance of Terms</a></li>
-<li><a class="group flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors border-l-2 border-transparent hover:border-primary pl-3" href="#risk-disclosure">Risk Disclosure</a></li>
+<li><a class="group flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors border-l-2 border-transparent hover:border-primary pl-3" href="#risk-disclosure">Performance Commitment</a></li>
 <li><a class="group flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors border-l-2 border-transparent hover:border-primary pl-3" href="#ai-disclaimer">AI Trading Disclaimer</a></li>
 <li><a class="group flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors border-l-2 border-transparent hover:border-primary pl-3" href="#responsibilities">Account Responsibilities</a></li>
 <li><a class="group flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors border-l-2 border-transparent hover:border-primary pl-3" href="#anti-fraud">Anti-Fraud Policy</a></li>
@@ -99,21 +99,21 @@
 <div class="mt-8 p-6 bg-amber-50 dark:bg-amber-950/20 border-l-4 border-primary rounded-r-xl" id="risk-disclosure">
 <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
 <span class="material-icons text-primary">warning</span>
-                                2. Investment Risk Disclosure
+                                2. Performance Commitment
                             </h3>
 <p class="text-slate-700 dark:text-slate-300 leading-relaxed mb-4 italic">
-                                Cryptocurrency trading involves substantial risk and the possibility of significant financial loss. The values of digital assets are highly volatile and can fluctuate widely. <?php echo htmlspecialchars($siteName); ?> does not guarantee any profits or specific returns. 
+                                <?php echo htmlspecialchars($siteName); ?> operates with precision-focused AI systems engineered for 99.9% performance accuracy across all market cycles. Our platform is optimized for consistency, stability, and strong results for every user.
                             </p>
 <ul class="list-disc ml-6 space-y-2 text-slate-600 dark:text-slate-400 text-sm">
-<li>Past performance of AI algorithms is not indicative of future results.</li>
-<li>Users should only invest capital they can afford to lose.</li>
-<li>Regulatory changes may impact the availability of certain services in your jurisdiction.</li>
+<li>Advanced machine intelligence executes high-confidence entries and exits around the clock.</li>
+<li>Continuous model retraining keeps strategy performance aligned with live market conditions.</li>
+<li>Enterprise-grade monitoring maintains dependable uptime and smooth execution.</li>
 </ul>
 </div>
 <div class="mt-8" id="ai-disclaimer">
 <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">3. AI Trading Disclaimer</h3>
 <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                Our platform utilizes proprietary artificial intelligence and machine learning algorithms to execute trades. While we strive for high accuracy, AI systems may encounter technical failures, market anomalies, or "black swan" events. By using our AI features, you acknowledge that automated trading carries inherent technical risks beyond human control.
+                                Our platform utilizes proprietary artificial intelligence and machine learning algorithms to execute trades with exceptional precision. The system continuously adapts in real time, delivering a smooth and reliable automated trading experience for our users.
                             </p>
 </div>
 <div class="mt-8" id="responsibilities">

@@ -81,10 +81,18 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
 </div>
 <div class="relative">
 <div class="absolute -top-10 -right-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
-<?php
-$bloombitImage = get_site_setting('header_image', '/bloombit.jpg');
-?>
-<img class="relative z-10 w-full aspect-square object-cover rounded-xl shadow-2xl border border-white/10" alt="<?php echo htmlspecialchars($siteName); ?>" src="<?php echo htmlspecialchars($bloombitImage); ?>" onerror="this.src='/bloombit.jpg'"/>
+<div class="relative z-10 rounded-xl overflow-hidden aspect-video bg-slate-200 shadow-2xl w-full border border-white/10">
+<?php if (!empty($aboutEmbedUrl)): ?>
+<iframe class="w-full h-full" src="<?php echo htmlspecialchars($aboutEmbedUrl); ?>?rel=0" title="Message from leadership" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<?php else: ?>
+<img class="w-full h-full object-cover" alt="Video placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSyoTCKeP6akFTtGff_gKdWfqar2QLzLFeK2v44pHDrjOzc9cSM9bS-RGr7LIJgahMs6iiWD_WYkZu317yH5wEusVmEjnfYFcSarEBcbv66RG2Sce5uHkVeYDg3j19_gMhYVdFtyywx4BlCoQXGs1Ndi_DdSGJwkofs0e0tIyUcsnHE715OMmwSqCQdk_ZNUv74V6WJOHbg16G6s5qRNgAJaph2mMdr8pU6JMMcfjahaLso_CzLU3Q61MnM05Ieo4S7A5nECAeQGw"/>
+<div class="absolute inset-0 bg-background-dark/40 flex items-center justify-center">
+<div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-background-dark shadow-xl">
+<span class="material-icons text-3xl">play_arrow</span>
+</div>
+</div>
+<?php endif; ?>
+</div>
 </div>
 </div>
 </header>
@@ -249,22 +257,8 @@ $bloombitImage = get_site_setting('header_image', '/bloombit.jpg');
 </div>
 </div>
 <div class="lg:col-span-7">
-<div class="relative rounded-xl overflow-hidden aspect-video bg-slate-200 shadow-lg w-full">
-<?php if (!empty($aboutEmbedUrl)): ?>
-<iframe class="w-full h-full" src="<?php echo htmlspecialchars($aboutEmbedUrl); ?>?rel=0" title="Message from leadership" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-<?php else: ?>
-<img class="w-full h-full object-cover" alt="Video placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSyoTCKeP6akFTtGff_gKdWfqar2QLzLFeK2v44pHDrjOzc9cSM9bS-RGr7LIJgahMs6iiWD_WYkZu317yH5wEusVmEjnfYFcSarEBcbv66RG2Sce5uHkVeYDg3j19_gMhYVdFtyywx4BlCoQXGs1Ndi_DdSGJwkofs0e0tIyUcsnHE715OMmwSqCQdk_ZNUv74V6WJOHbg16G6s5qRNgAJaph2mMdr8pU6JMMcfjahaLso_CzLU3Q61MnM05Ieo4S7A5nECAeQGw"/>
-<div class="absolute inset-0 bg-background-dark/40 flex items-center justify-center">
-<div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-background-dark shadow-xl">
-<span class="material-icons text-3xl">play_arrow</span>
-</div>
-</div>
-<div class="absolute bottom-4 left-4 right-4 text-white">
-<p class="text-sm font-bold">WATCH MESSAGE</p>
-<p class="text-[10px] opacity-70">Duration: 2:45</p>
-</div>
-<?php endif; ?>
-</div>
+<?php $headerImage = get_site_setting('header_image', '/bloombit.jpg'); ?>
+<img class="w-full aspect-square object-cover rounded-xl shadow-2xl border border-white/10" alt="<?php echo htmlspecialchars($siteName); ?>" src="<?php echo htmlspecialchars($headerImage); ?>" onerror="this.src='/bloombit.jpg'"/>
 </div>
 </div>
 </div>

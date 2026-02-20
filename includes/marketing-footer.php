@@ -61,3 +61,4 @@ if ($brandAccent !== '') echo '<span class="text-primary">' . htmlspecialchars($
 </div>
 </div>
 </footer>
+<?php require_once __DIR__ . '/live-chat-widget.php'; ?>

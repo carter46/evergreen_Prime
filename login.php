@@ -178,5 +178,6 @@ $siteName = get_site_name();
 <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#fff 1px, transparent 0); background-size: 40px 40px;"></div>
 </div>
 </div>
+<?php require_once __DIR__ . '/includes/live-chat-widget.php'; ?>
 <script src="/js/app.js"></script>
 </body></html>

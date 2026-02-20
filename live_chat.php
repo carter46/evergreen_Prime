@@ -1,6 +1,4 @@
-<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); 
-$smartsuppKey = get_site_setting('smartsupp_key', '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d');
-?>
+<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
 <!DOCTYPE html>
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
@@ -63,29 +61,11 @@ $smartsuppKey = get_site_setting('smartsupp_key', '6fe6ebe5789e92d09f1a2fd405bd5
 </div>
 <div class="mt-6 pt-6 border-t border-slate-200 dark:border-zinc-700">
 <p class="text-sm text-slate-500 dark:text-slate-400 text-center">
-                Need immediate assistance? <a href="mailto:<?php echo htmlspecialchars(get_site_setting('contact_email', 'support@bloombit.com')); ?>" class="text-primary font-semibold hover:underline">Email us</a> or call our support line.
+                Need immediate assistance? <a href="mailto:<?php echo htmlspecialchars(get_site_setting('contact_email', 'support@example.com')); ?>" class="text-primary font-semibold hover:underline">Email us</a> or call our support line.
             </p>
 </div>
 </div>
 </main>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 <script src="/js/app.js"></script>
-<!-- Smartsupp Live Chat script -->
-<script type="text/javascript">
-var _smartsupp = _smartsupp || {};
-_smartsupp.key = '<?php echo htmlspecialchars($smartsuppKey); ?>';
-_smartsupp.widget = {
-    colors: {
-        primary: '#f9bd0b',
-        secondary: '#231e0f'
-    }
-};
-window.smartsupp||(function(d) {
-  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
-  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
-  c.type='text/javascript';c.charset='utf-8';c.async=true;
-  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
-})(document);
-</script>
-<noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
 </body></html>

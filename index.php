@@ -485,23 +485,21 @@ $ring2 = array_slice($orbitCoins, 6, 4);
 <div>
 <div class="flex justify-between mb-4 font-bold">
 <span>Investment Amount</span>
-<span class="text-primary" id="calc-amount-display">$25,000</span>
+<span class="text-primary text-sm" id="calc-amount-limits">$100 - $100,000</span>
 </div>
-<input id="calc-amount" class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer custom-slider" max="100000" min="100" step="500" type="range" value="25000"/>
-<div class="flex justify-between text-xs text-slate-400 mt-2">
-<span id="calc-amount-min">$100</span>
-<span id="calc-amount-max">$100,000</span>
+<input id="calc-amount" class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium" max="100000" min="100" step="1" type="number" value="25000"/>
+<div class="text-xs text-slate-400 mt-2">
+<span id="calc-amount-range-text">Allowed range updates by selected plan.</span>
 </div>
 </div>
 <div>
 <div class="flex justify-between mb-4 font-bold">
 <span>Duration</span>
-<span class="text-primary" id="calc-duration-display">12 Months</span>
+<span class="text-primary text-sm" id="calc-duration-limits">1 - 24 Months</span>
 </div>
-<input id="calc-duration" class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer custom-slider" max="24" min="1" step="1" type="range" value="12"/>
-<div class="flex justify-between text-xs text-slate-400 mt-2">
-<span>1 Month</span>
-<span>24 Months</span>
+<input id="calc-duration" class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium" max="24" min="1" step="1" type="number" value="12"/>
+<div class="text-xs text-slate-400 mt-2">
+<span id="calc-duration-range-text">Duration range is controlled by plan settings.</span>
 </div>
 </div>
 </div>
@@ -633,26 +631,59 @@ foreach ($indexPlans as $p):
   var planSelect = document.getElementById('calc-plan');
   if (!amountEl || !durationEl) return;
 
-  function findPlanByAmount(amount) {
-    for (var i = 0; i < plans.length; i++) {
-      var p = plans[i];
-      if (amount >= p.min && (p.max === null || amount <= p.max)) return p;
+  function clamp(val, min, max) {
+    if (!Number.isFinite(val)) return min;
+    if (val < min) return min;
+    if (val > max) return max;
+    return val;
+  }
+
+  function daysToMonths(days, fallback) {
+    var d = parseInt(days, 10);
+    if (!d || d < 1) return fallback;
+    return Math.max(1, Math.round(d / 30));
+  }
+
+  function getSelectedPlan() {
+    if (!plans.length) return null;
+    if (planSelect && planSelect.value) {
+      for (var i = 0; i < plans.length; i++) {
+        if (String(plans[i].id) === planSelect.value) return plans[i];
+      }
     }
-    return plans[plans.length - 1] || (plans[0] || null);
+    return plans[0];
+  }
+
+  function syncInputsToPlan(plan) {
+    if (!plan) return;
+    var minAmount = Number(plan.min || 100);
+    var maxAmount = plan.max === null ? Math.max(minAmount, 100000) : Number(plan.max);
+    if (!Number.isFinite(maxAmount) || maxAmount < minAmount) maxAmount = minAmount;
+    amountEl.min = String(minAmount);
+    amountEl.max = String(maxAmount);
+    amountEl.step = '1';
+    var currentAmount = clamp(parseFloat(amountEl.value || minAmount), minAmount, maxAmount);
+    amountEl.value = String(Math.round(currentAmount));
+    document.getElementById('calc-amount-limits').textContent = '$' + minAmount.toLocaleString() + ' - $' + maxAmount.toLocaleString();
+    document.getElementById('calc-amount-range-text').textContent = 'Plan range: $' + minAmount.toLocaleString() + ' to $' + maxAmount.toLocaleString();
+
+    var minMonths = daysToMonths(plan.min_duration_days || plan.duration_days, 1);
+    var maxMonths = daysToMonths(plan.max_duration_days || plan.duration_days, minMonths);
+    if (maxMonths < minMonths) maxMonths = minMonths;
+    durationEl.min = String(minMonths);
+    durationEl.max = String(maxMonths);
+    durationEl.step = '1';
+    var currentMonths = clamp(parseInt(durationEl.value || minMonths, 10), minMonths, maxMonths);
+    durationEl.value = String(currentMonths);
+    document.getElementById('calc-duration-limits').textContent = minMonths + ' - ' + maxMonths + ' Months';
+    document.getElementById('calc-duration-range-text').textContent = 'Allowed duration: ' + minMonths + ' to ' + maxMonths + ' months';
   }
 
   function updateCalc() {
+    var plan = getSelectedPlan();
+    if (plan) syncInputsToPlan(plan);
     var amount = parseFloat(amountEl.value) || 0;
-    var months = parseInt(durationEl.value, 10) || 12;
-    document.getElementById('calc-amount-display').textContent = '$' + amount.toLocaleString();
-    document.getElementById('calc-duration-display').textContent = months + ' Month' + (months !== 1 ? 's' : '');
-    var plan = null;
-    if (planSelect && planSelect.value) {
-      for (var i = 0; i < plans.length; i++) {
-        if (String(plans[i].id) === planSelect.value) { plan = plans[i]; break; }
-      }
-    }
-    if (!plan) plan = findPlanByAmount(amount);
+    var months = parseInt(durationEl.value, 10) || 1;
     var projected = amount;
     var profitPct = 0;
     if (plan) {
@@ -675,17 +706,9 @@ foreach ($indexPlans as $p):
           opt.textContent = p.name + ' ($' + p.min.toLocaleString() + (p.max ? ' - $' + p.max.toLocaleString() : '+') + ')';
           planSelect.appendChild(opt);
         });
+        if (plans[0]) planSelect.value = String(plans[0].id);
       }
-      var first = plans[0], last = plans[plans.length - 1];
-      var minVal = first ? first.min : 100;
-      var maxVal = last && last.max ? last.max : 100000;
-      amountEl.min = minVal;
-      amountEl.max = maxVal;
-      amountEl.step = Math.max(1, Math.floor((maxVal - minVal) / 200));
-      if (parseFloat(amountEl.value) < minVal) amountEl.value = minVal;
-      if (parseFloat(amountEl.value) > maxVal) amountEl.value = maxVal;
-      document.getElementById('calc-amount-min').textContent = '$' + minVal.toLocaleString();
-      document.getElementById('calc-amount-max').textContent = (maxVal >= 1000000 ? '$' + (maxVal/1000000) + 'M' : '$' + maxVal.toLocaleString());
+      syncInputsToPlan(getSelectedPlan());
     }
     updateCalc();
   }).catch(function(){ updateCalc(); });
