@@ -2,34 +2,15 @@
 // Public-site translator (GTranslate) with 30 languages.
 ?>
 <style>
-.bb-gtranslate-wrapper {
-  min-width: 112px;
-  position: relative;
-  z-index: 120;
-  overflow: visible !important;
-}
-.bb-gtranslate-wrapper .gt_switcher-popup,
-.bb-gtranslate-wrapper .gt_container,
-.bb-gtranslate-wrapper select {
-  font-size: 13px !important;
-}
-.bb-gtranslate-wrapper .gt_switcher-popup,
-.bb-gtranslate-wrapper .gt_container,
-.bb-gtranslate-wrapper .gt_options,
-.bb-gtranslate-wrapper .gt_options a,
-.bb-gtranslate-wrapper ul,
-.bb-gtranslate-wrapper li {
-  position: relative;
-  z-index: 99999 !important;
-}
-
-/* Force dropdown to open downward when embedded in top bar. */
-.bb-gtranslate-wrapper .gt_switcher-popup .gt_options,
-.bb-gtranslate-wrapper .gt_container .gt_options,
-.bb-gtranslate-wrapper .gt_options {
-  top: calc(100% + 6px) !important;
-  bottom: auto !important;
-  transform: none !important;
+.bb-gtranslate-hidden {
+  position: absolute !important;
+  left: -99999px !important;
+  top: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 </style>
 <script>
@@ -44,37 +25,98 @@
       'tr','ar','fa','hi','bn','ur','zh-CN','zh-TW','ja','ko',
       'vi','th','id','ms','tl','sw','he','el','ro','sv'
     ],
-    wrapper_selector: '.bb-gtranslate-wrapper',
+    wrapper_selector: '.bb-gtranslate-hidden',
     flag_size: 16,
     flag_style: '2d',
     switcher_horizontal_position: 'inline',
     switcher_open_direction: 'bottom'
   };
 })();
-
-// Some widget skins still force upward panels; normalize to downward at runtime.
 document.addEventListener('DOMContentLoaded', function() {
-  function forceTranslatorDownward() {
-    var wrapper = document.querySelector('.bb-gtranslate-wrapper');
-    if (!wrapper) return;
-    var candidates = wrapper.querySelectorAll(
-      '.gt_options, .gt_list, .gt_dropdown, .gt_switcher-popup ul, .gt_container ul'
-    );
-    candidates.forEach(function(el) {
-      el.style.top = 'calc(100% + 6px)';
-      el.style.bottom = 'auto';
-      el.style.transform = 'none';
-      if (!el.style.position) el.style.position = 'absolute';
-      el.style.zIndex = '99999';
-    });
+  var btn = document.querySelector('[data-bb-lang-button]');
+  var menu = document.querySelector('[data-bb-lang-menu]');
+  var current = document.querySelector('[data-bb-lang-current]');
+  if (!btn || !menu || !current) return;
+
+  var labels = {
+    'en':'English','es':'Español','fr':'Français','de':'Deutsch','it':'Italiano','pt':'Português','nl':'Nederlands',
+    'ru':'Русский','uk':'Українська','pl':'Polski','tr':'Türkçe','ar':'العربية','fa':'فارسی','hi':'हिन्दी',
+    'bn':'বাংলা','ur':'اردو','zh-CN':'简体中文','zh-TW':'繁體中文','ja':'日本語','ko':'한국어','vi':'Tiếng Việt',
+    'th':'ไทย','id':'Bahasa Indonesia','ms':'Bahasa Melayu','tl':'Filipino','sw':'Kiswahili','he':'עברית',
+    'el':'Ελληνικά','ro':'Română','sv':'Svenska'
+  };
+
+  function getStoredLang() {
+    try { return localStorage.getItem('gt_selected_lang') || 'en'; } catch (e) { return 'en'; }
   }
 
-  forceTranslatorDownward();
-  document.addEventListener('click', function() {
-    setTimeout(forceTranslatorDownward, 0);
-    setTimeout(forceTranslatorDownward, 100);
+  function setStoredLang(lang) {
+    try { localStorage.setItem('gt_selected_lang', lang); } catch (e) {}
+  }
+
+  function updateLabel(lang) {
+    current.textContent = labels[lang] || 'English';
+  }
+
+  function applyLanguage(lang) {
+    setStoredLang(lang);
+    updateLabel(lang);
+    if (typeof window.doGTranslate === 'function') {
+      try { window.doGTranslate('en|' + lang); } catch (e) {}
+      return;
+    }
+    var select = document.querySelector('.bb-gtranslate-hidden select');
+    if (select) {
+      select.value = lang;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  function openMenu() { menu.classList.remove('hidden'); }
+  function closeMenu() { menu.classList.add('hidden'); }
+  function toggleMenu() { menu.classList.contains('hidden') ? openMenu() : closeMenu(); }
+
+  btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleMenu();
   });
-  setInterval(forceTranslatorDownward, 1200);
+
+  menu.querySelectorAll('[data-bb-lang]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      var lang = item.getAttribute('data-bb-lang') || 'en';
+      closeMenu();
+      applyLanguage(lang);
+    });
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  updateLabel(getStoredLang());
+
+  // If a language was previously selected, re-apply once the engine is ready.
+  (function ensureApplied() {
+    var desired = getStoredLang();
+    if (!desired || desired === 'en') return;
+    var attempts = 0;
+    var timer = setInterval(function() {
+      attempts++;
+      var hasEngine = (typeof window.doGTranslate === 'function') || !!document.querySelector('.bb-gtranslate-hidden select');
+      if (hasEngine) {
+        clearInterval(timer);
+        applyLanguage(desired);
+      } else if (attempts > 30) {
+        clearInterval(timer);
+      }
+    }, 200);
+  })();
 });
 </script>
 <script src="https://cdn.gtranslate.net/widgets/latest/dwf.js" defer></script>
