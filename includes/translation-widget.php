@@ -1,5 +1,5 @@
 <?php
-// Public-site translator (GTranslate) with 50 languages.
+// Public-site translator (GTranslate) with 50 languages (curated set).
 ?>
 <style>
 .bb-gtranslate-hidden {
@@ -22,10 +22,10 @@
     detect_browser_language: true,
     languages: [
       'en','es','fr','de','it','pt','nl','ru','uk','pl',
-      'tr','ar','fa','hi','bn','ur','zh-CN','zh-TW','ja','ko',
-      'vi','th','id','ms','tl','sw','he','el','ro','sv',
-      'cs','da','fi','no','hu','bg','sr','sk','sl','hr',
-      'lt','lv','et','ta','te','mr','gu','pa','am','af'
+      'tr','ar','fa','he','el','ro','sv','no','da','fi',
+      'cs','hu','bg','sr','hr','sk','lt','lv','et',
+      'zh-CN','zh-TW','ja','ko','vi','th','id','ms','tl',
+      'hi','sw','af','am','ha','yo','ig','zu','km','my','ne','uz'
     ],
     wrapper_selector: '.bb-gtranslate-hidden',
     flag_size: 16,
@@ -47,13 +47,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var labels = {
     'en':'English','es':'Español','fr':'Français','de':'Deutsch','it':'Italiano','pt':'Português','nl':'Nederlands',
-    'ru':'Русский','uk':'Українська','pl':'Polski','tr':'Türkçe','ar':'العربية','fa':'فارسی','hi':'हिन्दी',
-    'bn':'বাংলা','ur':'اردو','zh-CN':'简体中文','zh-TW':'繁體中文','ja':'日本語','ko':'한국어','vi':'Tiếng Việt',
-    'th':'ไทย','id':'Bahasa Indonesia','ms':'Bahasa Melayu','tl':'Filipino','sw':'Kiswahili','he':'עברית',
-    'el':'Ελληνικά','ro':'Română','sv':'Svenska',
-    'cs':'Čeština','da':'Dansk','fi':'Suomi','no':'Norsk','hu':'Magyar','bg':'Български','sr':'Српски','sk':'Slovenčina',
-    'sl':'Slovenščina','hr':'Hrvatski','lt':'Lietuvių','lv':'Latviešu','et':'Eesti','ta':'தமிழ்','te':'తెలుగు','mr':'मराठी',
-    'gu':'ગુજરાતી','pa':'ਪੰਜਾਬੀ','am':'አማርኛ','af':'Afrikaans'
+    'ru':'Русский','uk':'Українська','pl':'Polski','tr':'Türkçe','ar':'العربية','fa':'فارسی','he':'עברית',
+    'el':'Ελληνικά','ro':'Română','sv':'Svenska','no':'Norsk','da':'Dansk','fi':'Suomi','cs':'Čeština','hu':'Magyar',
+    'bg':'Български','sr':'Српски','hr':'Hrvatski','sk':'Slovenčina','lt':'Lietuvių','lv':'Latviešu','et':'Eesti',
+    'zh-CN':'简体中文','zh-TW':'繁體中文','ja':'日本語','ko':'한국어','vi':'Tiếng Việt','th':'ไทย','id':'Bahasa Indonesia',
+    'ms':'Bahasa Melayu','tl':'Filipino','hi':'हिन्दी','sw':'Kiswahili','af':'Afrikaans','am':'አማርኛ','ha':'Hausa',
+    'yo':'Yorùbá','ig':'Igbo','zu':'isiZulu','km':'ភាសាខ្មែរ','my':'မြန်မာ','ne':'नेपाली','uz':'Oʻzbek'
   };
 
   var flags = {
@@ -70,9 +69,22 @@ document.addEventListener('DOMContentLoaded', function() {
     'tr': 'https://flagcdn.com/24x18/tr.png',
     'ar': 'https://flagcdn.com/24x18/sa.png',
     'fa': 'https://flagcdn.com/24x18/ir.png',
-    'hi': 'https://flagcdn.com/24x18/in.png',
-    'bn': 'https://flagcdn.com/24x18/bd.png',
-    'ur': 'https://flagcdn.com/24x18/pk.png',
+    'he': 'https://flagcdn.com/24x18/il.png',
+    'el': 'https://flagcdn.com/24x18/gr.png',
+    'ro': 'https://flagcdn.com/24x18/ro.png',
+    'sv': 'https://flagcdn.com/24x18/se.png',
+    'no': 'https://flagcdn.com/24x18/no.png',
+    'da': 'https://flagcdn.com/24x18/dk.png',
+    'fi': 'https://flagcdn.com/24x18/fi.png',
+    'cs': 'https://flagcdn.com/24x18/cz.png',
+    'hu': 'https://flagcdn.com/24x18/hu.png',
+    'bg': 'https://flagcdn.com/24x18/bg.png',
+    'sr': 'https://flagcdn.com/24x18/rs.png',
+    'hr': 'https://flagcdn.com/24x18/hr.png',
+    'sk': 'https://flagcdn.com/24x18/sk.png',
+    'lt': 'https://flagcdn.com/24x18/lt.png',
+    'lv': 'https://flagcdn.com/24x18/lv.png',
+    'et': 'https://flagcdn.com/24x18/ee.png',
     'zh-CN': 'https://flagcdn.com/24x18/cn.png',
     'zh-TW': 'https://flagcdn.com/24x18/tw.png',
     'ja': 'https://flagcdn.com/24x18/jp.png',
@@ -82,31 +94,18 @@ document.addEventListener('DOMContentLoaded', function() {
     'id': 'https://flagcdn.com/24x18/id.png',
     'ms': 'https://flagcdn.com/24x18/my.png',
     'tl': 'https://flagcdn.com/24x18/ph.png',
+    'hi': 'https://flagcdn.com/24x18/in.png',
     'sw': 'https://flagcdn.com/24x18/ke.png',
-    'he': 'https://flagcdn.com/24x18/il.png',
-    'el': 'https://flagcdn.com/24x18/gr.png',
-    'ro': 'https://flagcdn.com/24x18/ro.png',
-    'sv': 'https://flagcdn.com/24x18/se.png',
-    'cs': 'https://flagcdn.com/24x18/cz.png',
-    'da': 'https://flagcdn.com/24x18/dk.png',
-    'fi': 'https://flagcdn.com/24x18/fi.png',
-    'no': 'https://flagcdn.com/24x18/no.png',
-    'hu': 'https://flagcdn.com/24x18/hu.png',
-    'bg': 'https://flagcdn.com/24x18/bg.png',
-    'sr': 'https://flagcdn.com/24x18/rs.png',
-    'sk': 'https://flagcdn.com/24x18/sk.png',
-    'sl': 'https://flagcdn.com/24x18/si.png',
-    'hr': 'https://flagcdn.com/24x18/hr.png',
-    'lt': 'https://flagcdn.com/24x18/lt.png',
-    'lv': 'https://flagcdn.com/24x18/lv.png',
-    'et': 'https://flagcdn.com/24x18/ee.png',
-    'ta': 'https://flagcdn.com/24x18/in.png',
-    'te': 'https://flagcdn.com/24x18/in.png',
-    'mr': 'https://flagcdn.com/24x18/in.png',
-    'gu': 'https://flagcdn.com/24x18/in.png',
-    'pa': 'https://flagcdn.com/24x18/in.png',
+    'af': 'https://flagcdn.com/24x18/za.png',
     'am': 'https://flagcdn.com/24x18/et.png',
-    'af': 'https://flagcdn.com/24x18/za.png'
+    'ha': 'https://flagcdn.com/24x18/ng.png',
+    'yo': 'https://flagcdn.com/24x18/ng.png',
+    'ig': 'https://flagcdn.com/24x18/ng.png',
+    'zu': 'https://flagcdn.com/24x18/za.png',
+    'km': 'https://flagcdn.com/24x18/kh.png',
+    'my': 'https://flagcdn.com/24x18/mm.png',
+    'ne': 'https://flagcdn.com/24x18/np.png',
+    'uz': 'https://flagcdn.com/24x18/uz.png'
   };
 
   function getStoredLang() {
@@ -128,18 +127,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  function ensureMenuFlags() {
-    menu.querySelectorAll('[data-bb-lang]').forEach(function(item) {
-      var lang = item.getAttribute('data-bb-lang') || 'en';
-      item.classList.add('flex', 'items-center', 'gap-2');
-      if (item.querySelector('img')) return;
+  var languageOrder = [
+    'en','es','fr','de','it','pt','nl','ru','uk','pl',
+    'tr','ar','fa','he','el','ro','sv','no','da','fi',
+    'cs','hu','bg','sr','hr','sk','lt','lv','et',
+    'zh-CN','zh-TW','ja','ko','vi','th','id','ms','tl',
+    'hi','sw','af','am','ha','yo','ig','zu','km','my','ne','uz'
+  ];
+
+  function renderLanguageMenu() {
+    var list = menu.querySelector('[data-bb-lang-items]') || menu.querySelector('.max-h-72') || menu;
+    if (!list) return;
+    list.innerHTML = '';
+
+    languageOrder.forEach(function(lang) {
+      var label = labels[lang] || lang;
+      var flag = flags[lang] || flags['en'];
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('data-bb-lang', lang);
+      b.className = 'w-full text-left px-4 py-2 text-sm hover:bg-primary/10 notranslate flex items-center gap-2';
+      b.setAttribute('translate', 'no');
+
       var img = document.createElement('img');
-      img.src = flags[lang] || flags['en'];
-      img.alt = (labels[lang] || 'English') + ' flag';
+      img.src = flag;
+      img.alt = label + ' flag';
       img.className = 'w-4 h-4 rounded-sm object-cover shrink-0';
       img.onerror = function() { img.style.display = 'none'; };
-      item.prepend(img);
+
+      var span = document.createElement('span');
+      span.textContent = label;
+      span.className = 'notranslate';
+      span.setAttribute('translate', 'no');
+
+      b.appendChild(img);
+      b.appendChild(span);
+      list.appendChild(b);
     });
+  }
+
+  function protectIconLigatures(root) {
+    var scope = root || document;
+    scope.querySelectorAll('.material-icons, .material-icons-round, .material-symbols-outlined, .material-symbols-rounded, .material-icons-outlined')
+      .forEach(function(el) {
+        el.classList.add('notranslate');
+        el.setAttribute('translate', 'no');
+      });
   }
 
   function applyLanguage(lang) {
@@ -197,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function openMenu() {
-    ensureMenuFlags();
+    renderLanguageMenu();
     portalMenuToBody();
     positionMenu();
     menu.classList.remove('hidden');
@@ -214,13 +247,13 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleMenu();
   });
 
-  menu.querySelectorAll('[data-bb-lang]').forEach(function(item) {
-    item.addEventListener('click', function(e) {
-      e.preventDefault();
-      var lang = item.getAttribute('data-bb-lang') || 'en';
-      closeMenu();
-      applyLanguage(lang);
-    });
+  menu.addEventListener('click', function(e) {
+    var item = e.target && e.target.closest ? e.target.closest('[data-bb-lang]') : null;
+    if (!item) return;
+    e.preventDefault();
+    var lang = item.getAttribute('data-bb-lang') || 'en';
+    closeMenu();
+    applyLanguage(lang);
   });
 
   document.addEventListener('click', function(e) {
@@ -239,7 +272,23 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   updateLabel(getStoredLang());
-  ensureMenuFlags();
+  protectIconLigatures(document);
+  renderLanguageMenu();
+
+  // Keep protecting icons after translation DOM rewrites.
+  try {
+    var mo = new MutationObserver(function(muts) {
+      for (var i = 0; i < muts.length; i++) {
+        var m = muts[i];
+        if (m.addedNodes && m.addedNodes.length) {
+          m.addedNodes.forEach(function(n) {
+            if (n && n.nodeType === 1) protectIconLigatures(n);
+          });
+        }
+      }
+    });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (e) {}
 
   // If a language was previously selected, re-apply once the engine is ready.
   (function ensureApplied() {

@@ -69,7 +69,10 @@ if ($brandAccent !== '') echo '<span class="text-primary">' . htmlspecialchars($
 <button type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-zinc-900/90 text-slate-700 dark:text-slate-200 text-sm font-semibold shadow-lg hover:border-primary/50 hover:bg-white dark:hover:bg-zinc-900 transition-colors" data-bb-lang-button>
 <img data-bb-lang-flag alt="" class="w-4 h-4 rounded-sm object-cover" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" />
 <span data-bb-lang-current class="notranslate" translate="no">English</span>
-<span class="material-icons text-base opacity-70">translate</span>
+<svg class="w-4 h-4 opacity-70" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <path d="M12 3h9v3h-2.1a12.6 12.6 0 0 1-3.3 6.2 13.2 13.2 0 0 0 3.8 1.8l-1.2 2.7a15.6 15.6 0 0 1-4.8-2.6 15.4 15.4 0 0 1-4.2 2.5l-1.1-2.6c1.3-.5 2.5-1.1 3.6-1.9A12.8 12.8 0 0 1 9.4 8H12V6H8V3h4zm-1.3 5a10.1 10.1 0 0 0 2.9 4.6A10.2 10.2 0 0 0 16.1 6H10.7V8z" fill="currentColor"/>
+  <path d="M3 21l5.2-14h2.3L16 21h-2.6l-1.2-3.3H6.7L5.5 21H3zm4.4-5.7h4.1L9.4 9.6 7.4 15.3z" fill="currentColor" opacity=".65"/>
+</svg>
 </button>
 <div class="hidden absolute left-0 bottom-full mb-2 w-60 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-zinc-900 shadow-2xl overflow-hidden notranslate" translate="no" data-bb-lang-menu>
 <div class="max-h-72 overflow-auto py-1">
