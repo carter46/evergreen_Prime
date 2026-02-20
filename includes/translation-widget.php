@@ -27,7 +27,7 @@
     flag_size: 16,
     flag_style: '2d',
     switcher_horizontal_position: 'inline',
-    switcher_open_direction: 'top'
+    switcher_open_direction: 'bottom'
   };
 })();
 </script>
