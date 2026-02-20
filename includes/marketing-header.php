@@ -13,7 +13,14 @@ $navLinkClass = function ($page) use ($current) {
     return ($current === $page) ? 'text-primary border-b-2 border-primary pb-0.5' : 'hover:text-primary transition-colors';
 };
 ?>
-<nav class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10" id="marketing-nav">
+<div class="sticky top-0 z-50" id="marketing-nav-shell">
+<div class="bg-white/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-10 sm:h-11 flex items-center gap-2">
+<span class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">Language</span>
+<div class="bb-gtranslate-wrapper"></div>
+</div>
+</div>
+<nav class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10" id="marketing-nav">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
 <a class="flex items-center gap-2 shrink-0 min-h-[44px] min-w-[44px] items-center" href="/">
 <div class="w-10 h-10 bg-primary rounded flex items-center justify-center">
@@ -43,10 +50,6 @@ Help Center
 </div>
 </div>
 <div class="flex items-center gap-2 sm:gap-4">
-<div class="hidden sm:block h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
-<div class="hidden sm:flex items-center">
-<div class="bb-gtranslate-wrapper"></div>
-</div>
 <?php if ($isLoggedIn): ?>
 <a class="hidden sm:inline-flex px-4 sm:px-6 py-2.5 font-semibold hover:text-primary transition-colors min-h-[44px] items-center" href="/logout">Logout</a>
 <a class="px-4 sm:px-6 py-2.5 bg-primary text-black font-bold rounded hover:shadow-lg hover:shadow-primary/20 transition-all min-h-[44px] flex items-center justify-center" href="/dashboard">Dashboard</a>
@@ -77,6 +80,7 @@ Help Center
 </div>
 </div>
 </nav>
+</div>
 <script>
 (function(){
 var btn=document.getElementById('mobile-menu-btn');
