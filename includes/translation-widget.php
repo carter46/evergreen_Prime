@@ -4,11 +4,23 @@
 <style>
 .bb-gtranslate-wrapper {
   min-width: 112px;
+  position: relative;
+  z-index: 120;
+  overflow: visible !important;
 }
 .bb-gtranslate-wrapper .gt_switcher-popup,
 .bb-gtranslate-wrapper .gt_container,
 .bb-gtranslate-wrapper select {
   font-size: 13px !important;
+}
+.bb-gtranslate-wrapper .gt_switcher-popup,
+.bb-gtranslate-wrapper .gt_container,
+.bb-gtranslate-wrapper .gt_options,
+.bb-gtranslate-wrapper .gt_options a,
+.bb-gtranslate-wrapper ul,
+.bb-gtranslate-wrapper li {
+  position: relative;
+  z-index: 99999 !important;
 }
 </style>
 <script>
