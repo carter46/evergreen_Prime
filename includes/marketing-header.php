@@ -19,6 +19,7 @@ $navLinkClass = function ($page) use ($current) {
 <span class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">Language</span>
 <div class="bb-lang-switcher relative">
 <button type="button" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-background-dark/40 text-slate-700 dark:text-slate-200 text-sm font-semibold hover:border-primary/50 hover:bg-white dark:hover:bg-background-dark transition-colors" data-bb-lang-button>
+<img data-bb-lang-flag alt="" class="w-4 h-4 rounded-sm object-cover" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" />
 <span data-bb-lang-current>English</span>
 <span class="material-icons text-base opacity-70">expand_more</span>
 </button>
