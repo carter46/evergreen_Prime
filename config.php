@@ -12,7 +12,7 @@ $config = [
         'smtp_password' => getenv('MAIL_SMTP_PASSWORD') ?: '',
         'smtp_encryption' => getenv('MAIL_SMTP_ENCRYPTION') ?: 'tls',
         'from_email' => getenv('MAIL_FROM_EMAIL') ?: 'noreply@bloombit.com',
-        'from_name' => getenv('MAIL_FROM_NAME') ?: 'Bloombit',
+        'from_name' => getenv('MAIL_FROM_NAME') ?: 'Site',
         'reply_to' => getenv('MAIL_REPLY_TO') ?: 'support@bloombit.com',
     ],
     'email_verification' => [
@@ -21,7 +21,7 @@ $config = [
         'password_reset_expiry_minutes' => (int)(getenv('PASSWORD_RESET_EXPIRY_MINUTES') ?: 60),
     ],
     'site' => [
-        'name' => getenv('SITE_NAME') ?: 'Bloombit',
+        'name' => getenv('SITE_NAME') ?: 'Site',
         'debug' => filter_var(getenv('DEBUG_MODE') ?? false, FILTER_VALIDATE_BOOLEAN),
         'timezone' => getenv('TIMEZONE') ?: 'UTC',
     ],

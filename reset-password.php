@@ -42,7 +42,7 @@
 <span class="material-symbols-outlined text-primary text-2xl">shield</span>
 </div>
 <h2 class="text-2xl font-bold leading-tight tracking-tight dark:text-white">Set New Password</h2>
-<p class="text-[#a18a45] text-sm leading-relaxed">Almost there! Create a new strong password for your Bloombit account.</p>
+<p class="text-[#a18a45] text-sm leading-relaxed">Almost there! Create a new strong password for your <?php echo htmlspecialchars($siteName); ?> account.</p>
 </div>
 <form id="reset-password-form" class="flex flex-col gap-5">
 <input type="hidden" name="token" id="reset-token"/>

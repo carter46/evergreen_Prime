@@ -11,7 +11,7 @@ return [
         'smtp_password' => 'your-smtp-password',
         'smtp_encryption' => 'tls',
         'from_email' => 'noreply@bloombit.com',
-        'from_name' => 'Bloombit',
+        'from_name' => 'Site',
         'reply_to' => 'support@bloombit.com',
     ],
     'email_verification' => [
@@ -20,7 +20,7 @@ return [
         'password_reset_expiry_minutes' => 60,
     ],
     'site' => [
-        'name' => 'Bloombit',
+        'name' => 'Site',
         'debug' => false,
         'timezone' => 'UTC',
     ],

@@ -115,7 +115,7 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <div>
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Site Name</label>
-<input id="settings-site-name" type="text" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($settings['site_name']); ?>" placeholder="Bloombit"/>
+<input id="settings-site-name" type="text" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary" value="<?php echo htmlspecialchars($settings['site_name']); ?>" placeholder="<?php echo htmlspecialchars($siteName); ?>"/>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Support / Contact Email</label>
@@ -251,7 +251,7 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">From Name</label>
-        <input id="settings-mail-from-name" type="text" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_from_name']); ?>" placeholder="Bloombit"/>
+        <input id="settings-mail-from-name" type="text" class="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5" value="<?php echo htmlspecialchars($settings['mail_from_name']); ?>" placeholder="<?php echo htmlspecialchars($siteName); ?>"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Reply-To Email</label>
@@ -381,7 +381,7 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ site_name: siteName || 'Bloombit', contact_email: contactEmail || '', homepage_youtube_url: homepageYoutube || '', about_youtube_url: aboutYoutube || '', office_title: officeTitle || '', office_address: officeAddress || '', smartsupp_key: smartsuppKey || '', deposit_countdown_minutes: depositCountdown })
+      body: JSON.stringify({ site_name: siteName || <?php echo json_encode($siteName); ?>, contact_email: contactEmail || '', homepage_youtube_url: homepageYoutube || '', about_youtube_url: aboutYoutube || '', office_title: officeTitle || '', office_address: officeAddress || '', smartsupp_key: smartsuppKey || '', deposit_countdown_minutes: depositCountdown })
     }).then(function(r){ return r.json(); }).then(function(res){
       showMsg(document.getElementById('settings-branding-msg'), res.success ? 'Branding saved.' : (res.error || 'Failed'), res.success);
       btn.disabled = false;

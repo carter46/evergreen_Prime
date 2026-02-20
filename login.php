@@ -102,7 +102,7 @@ $siteName = get_site_name();
 <div id="login-form-message" class="text-sm hidden"></div>
 <!-- Sign In Button -->
 <button class="w-full bg-primary hover:brightness-105 active:scale-[0.98] text-text-main font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group" type="submit">
-<span>Sign In to Bloombit</span>
+<span>Sign In to <?php echo htmlspecialchars($siteName); ?></span>
 <span class="material-symbols-outlined transition-transform group-hover:translate-x-1" data-icon="arrow_forward">arrow_forward</span>
 </button>
 </form>
@@ -171,7 +171,7 @@ $siteName = get_site_name();
 </div>
 <div class="mt-12 text-center max-w-md">
 <h3 class="text-white text-3xl font-black mb-4">Master your digital fortune</h3>
-<p class="text-neutral-400 text-lg">Join 2M+ users who trust Bloombit's AI intelligence for smarter asset management and secure high-yield growth.</p>
+<p class="text-neutral-400 text-lg">Join 2M+ users who trust <?php echo htmlspecialchars($siteName); ?>'s AI intelligence for smarter asset management and secure high-yield growth.</p>
 </div>
 </div>
 <!-- Mesh Pattern Overlay -->

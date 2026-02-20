@@ -28,7 +28,30 @@ function get_site_setting(string $key, ?string $default = null): ?string {
  */
 function get_site_name(): string {
     $config = include dirname(__DIR__) . '/config.php';
-    return get_site_setting('site_name') ?? $config['site']['name'] ?? 'Bloombit';
+    return get_site_setting('site_name') ?? $config['site']['name'] ?? 'Site';
+}
+
+/**
+ * Split brand name into base + accent segment.
+ * Rules:
+ * - Multi-word names: accent the last word (e.g. "Metal FX" => ["Metal ", "FX"])
+ * - Single-word names: accent the last 3 letters (e.g. "Bloombuy" => ["Bloom", "buy"])
+ */
+function get_site_brand_parts(?string $name = null): array {
+    $siteName = (string) ($name ?? get_site_name());
+    $siteName = trim(preg_replace('/\s+/', ' ', $siteName) ?? '');
+    if ($siteName === '') $siteName = 'Site';
+
+    if (strpos($siteName, ' ') !== false) {
+        $parts = explode(' ', $siteName);
+        $accent = (string) array_pop($parts);
+        $base = implode(' ', $parts);
+        return [$base === '' ? '' : ($base . ' '), $accent];
+    }
+
+    $len = strlen($siteName);
+    if ($len <= 3) return ['', $siteName];
+    return [substr($siteName, 0, $len - 3), substr($siteName, -3)];
 }
 
 /**

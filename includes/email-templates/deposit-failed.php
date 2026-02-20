@@ -5,7 +5,7 @@
 $site_url = $site_url ?? '/';
 require_once dirname(__DIR__) . '/helpers.php';
 $siteName = get_site_name();
-$logoParts = preg_match('/^(.+)bit$/i', $siteName, $m) ? [$m[1], 'bit'] : [$siteName, null];
+[$brandBase, $brandAccent] = get_site_brand_parts($siteName);
 
 $name = $name ?? 'User';
 $amount = $amount ?? '0';
@@ -27,7 +27,7 @@ $expires_at = $expires_at ?? '';
       <div style="height:6px;width:100%;background:#ffc105"></div>
       <div style="padding:32px 40px 24px;background:#fff;border-bottom:1px solid #f0f0f0;text-align:center">
         <span style="font-size:32px;font-weight:700;color:#1d180c;letter-spacing:-0.02em;line-height:1.2">
-          <?= htmlspecialchars($logoParts[0]) ?><?php if ($logoParts[1]): ?><span style="color:#ffc105"><?= htmlspecialchars($logoParts[1]) ?></span><?php endif; ?>
+          <?= htmlspecialchars($brandBase) ?><?php if ($brandAccent !== ''): ?><span style="color:#ffc105"><?= htmlspecialchars($brandAccent) ?></span><?php endif; ?>
         </span>
       </div>
       <div style="padding:32px 40px">

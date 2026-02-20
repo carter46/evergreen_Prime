@@ -53,14 +53,15 @@ try {
     require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
     $mail = require dirname(__DIR__, 2) . '/includes/mailer.php';
 
+    $brand = get_site_name();
     $mail->addAddress($email);
-    $mail->Subject = 'Reset your Bloombit password';
+    $mail->Subject = 'Reset your ' . $brand . ' password';
     $mail->Body = renderEmailTemplate('password-reset.php', [
         'reset_url' => $resetUrl,
         'name' => explode('@', $email)[0],
         'expiry_minutes' => $expiryMinutes
     ]);
-    $mail->AltBody = "Reset your Bloombit password by visiting: $resetUrl\n\nThis link expires in $expiryMinutes minutes.";
+    $mail->AltBody = "Reset your $brand password by visiting: $resetUrl\n\nThis link expires in $expiryMinutes minutes.";
     $mail->isHTML(true);
 
     $mail->send();

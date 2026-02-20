@@ -179,7 +179,7 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <div class="rounded-xl overflow-hidden relative group w-full">
 <div class="bg-slate-900 p-6 h-full">
 <h5 class="text-primary text-xs font-bold uppercase mb-1">Coming Soon</h5>
-<h4 class="text-white font-bold mb-4">Earn up to 12% APY with Bloombit Staking</h4>
+<h4 class="text-white font-bold mb-4">Earn up to 12% APY with <?php echo htmlspecialchars($siteName); ?> Staking</h4>
 <img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" src="/uploads/images/crypto-assets.jpg" onerror="this.src='/uploads/images/crypto-assets.png';this.onerror=null"/>
 <button class="w-full mt-4 py-2 border border-white/20 text-white text-xs font-bold rounded hover:bg-white/10 transition-colors">Join Waitlist</button>
 </div>

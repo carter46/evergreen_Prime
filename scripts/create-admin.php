@@ -6,6 +6,8 @@
  */
 
 $root = dirname(__DIR__);
+require_once $root . '/includes/helpers.php';
+$siteName = get_site_name();
 $email = 'admin@mail.com';
 $password = 'Secretpass0721//';
 $name = 'Admin';
@@ -45,7 +47,7 @@ if (!$error) {
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Create Admin – Bloombit</title>
+    <title>Create Admin – <?php echo htmlspecialchars($siteName); ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <style>body { font-family: 'Space Grotesk', sans-serif; }</style>

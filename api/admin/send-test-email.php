@@ -60,15 +60,16 @@ require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
 
 try {
     $mail = require dirname(__DIR__, 2) . '/includes/mailer.php';
+    $brand = get_site_name();
     $mail->clearAddresses();
     $mail->addAddress($toEmail);
-    $mail->Subject = 'Bloombit - Test Email (' . date('Y-m-d H:i') . ')';
+    $mail->Subject = $brand . ' - Test Email (' . date('Y-m-d H:i') . ')';
     $mail->Body = renderEmailTemplate('otp.php', [
         'otp' => '123456',
         'name' => $admin['name'] ?? 'Admin',
         'purpose_label' => 'test email',
     ]);
-    $mail->AltBody = 'This is a test email from Bloombit. If you received this, your email configuration is working.';
+    $mail->AltBody = 'This is a test email from ' . $brand . '. If you received this, your email configuration is working.';
     $mail->isHTML(true);
     $mail->send();
     echo json_encode(['success' => true, 'data' => ['message' => 'Test email sent to ' . $toEmail]]);

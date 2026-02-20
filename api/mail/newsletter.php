@@ -32,7 +32,7 @@ try {
     $config = include dirname(__DIR__, 2) . '/config.php';
     require_once dirname(__DIR__, 2) . '/includes/helpers.php';
     $replyTo = get_site_setting('contact_email', $config['mail']['reply_to'] ?? 'support@bloombit.com') ?: ($config['mail']['reply_to'] ?? 'support@bloombit.com');
-    $siteName = $config['site']['name'] ?? 'Bloombit';
+    $siteName = get_site_name();
     $siteUrl = get_base_url();
     $date = date('Y-m-d H:i:s') . ' UTC';
 

@@ -20,9 +20,9 @@ $navLinkClass = function ($page) use ($current) {
 <span class="material-icons text-white">auto_awesome</span>
 </div>
 <span class="text-xl sm:text-2xl font-bold tracking-tight"><?php
-$parts = preg_match('/^(.+)bit$/i', $siteName, $m) ? [$m[1], 'bit'] : [$siteName, null];
-echo htmlspecialchars($parts[0]);
-if ($parts[1]) echo '<span class="text-primary">' . htmlspecialchars($parts[1]) . '</span>';
+[$brandBase, $brandAccent] = get_site_brand_parts($siteName);
+echo htmlspecialchars($brandBase);
+if ($brandAccent !== '') echo '<span class="text-primary">' . htmlspecialchars($brandAccent) . '</span>';
 ?></span>
 </a>
 <div class="hidden md:flex items-center gap-8 font-medium">

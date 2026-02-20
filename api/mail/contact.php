@@ -37,9 +37,10 @@ try {
     $mail = require dirname(__DIR__, 2) . '/includes/mailer.php';
     $config = include dirname(__DIR__, 2) . '/config.php';
     $replyTo = get_site_setting('contact_email', $config['mail']['reply_to'] ?? 'support@bloombit.com') ?: ($config['mail']['reply_to'] ?? 'support@bloombit.com');
+    $brand = get_site_name();
 
     $mail->addAddress($replyTo);
-    $mail->Subject = '[Bloombit Contact] ' . $subject;
+    $mail->Subject = '[' . $brand . ' Contact] ' . $subject;
     $htmlBody = renderEmailTemplate('contact-notification.php', [
         'name' => $name,
         'email' => $email,

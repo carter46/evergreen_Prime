@@ -8,20 +8,46 @@
     const API_BASE = '/api';
 
     function getSiteNameFromTitle() {
+        if (typeof window.__SITE_NAME__ === 'string' && window.__SITE_NAME__.trim()) {
+            return window.__SITE_NAME__.trim();
+        }
+        const metaSiteName = document.querySelector('meta[name="site-name"]');
+        if (metaSiteName && metaSiteName.content && metaSiteName.content.trim()) {
+            return metaSiteName.content.trim();
+        }
         const t = (document.title || '').trim();
-        if (!t) return 'Bloombit';
+        if (!t) return 'Site';
+        const looksLikePageTitle = function (value) {
+            return /(register|secure login|login|forgot password|set new password|live chat|about|plans?|dashboard|admin|kyc|transactions?|wallet|profile|analytics|support|contact|legal|signals?|investment|comparison|management|center|hub|command|settings)/i.test(value);
+        };
         const pipe = t.split('|').map(s => s.trim()).filter(Boolean);
-        if (pipe.length >= 2) return pipe[pipe.length - 1];
+        if (pipe.length >= 2) {
+            const sitePart = pipe.find(s => !looksLikePageTitle(s));
+            if (sitePart) return sitePart;
+            return pipe[0];
+        }
         const dash = t.split('—').map(s => s.trim()).filter(Boolean);
-        if (dash.length >= 2) return dash[0];
+        if (dash.length >= 2) {
+            const sitePart = dash.find(s => !looksLikePageTitle(s));
+            if (sitePart) return sitePart;
+            return dash[0];
+        }
         return t;
     }
 
     function splitBrandName(siteName) {
         const n = (siteName || '').trim();
-        if (!n) return ['Bloombit', ''];
-        if (/bit$/i.test(n) && n.length > 3) return [n.slice(0, -3), n.slice(-3)];
-        return [n, ''];
+        if (!n) return ['Bloom', 'bit'];
+        const normalized = n.replace(/\s+/g, ' ').trim();
+        if (!normalized) return ['Bloom', 'bit'];
+        if (normalized.includes(' ')) {
+            const parts = normalized.split(' ');
+            const suffix = parts.pop() || '';
+            const base = parts.join(' ');
+            return [base ? (base + ' ') : '', suffix];
+        }
+        if (normalized.length <= 3) return ['', normalized];
+        return [normalized.slice(0, -3), normalized.slice(-3)];
     }
 
     function ensureGlobalLoader() {

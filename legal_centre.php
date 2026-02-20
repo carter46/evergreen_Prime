@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); $contactEmail = get_site_setting('contact_email', 'legal@bloombit.com'); ?>
+<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); $contactEmail = get_site_setting('contact_email', 'legal@example.com'); ?>
 <!DOCTYPE html>
 
 <html class="scroll-smooth" lang="en"><head>
@@ -93,7 +93,7 @@
 <div class="mt-8" id="acceptance">
 <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">1. Acceptance of Terms</h3>
 <p class="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-                                By accessing or using the Bloombit platform, including our website, mobile application, and AI trading services, you agree to be bound by these Terms of Service. If you do not agree to these terms, you must immediately cease all use of our services. These terms constitute a legally binding agreement between you and Bloombit Global Ltd.
+                                By accessing or using the <?php echo htmlspecialchars($siteName); ?> platform, including our website, mobile application, and AI trading services, you agree to be bound by these Terms of Service. If you do not agree to these terms, you must immediately cease all use of our services. These terms constitute a legally binding agreement between you and <?php echo htmlspecialchars($siteName); ?> Global Ltd.
                             </p>
 </div>
 <div class="mt-8 p-6 bg-amber-50 dark:bg-amber-950/20 border-l-4 border-primary rounded-r-xl" id="risk-disclosure">
@@ -102,7 +102,7 @@
                                 2. Investment Risk Disclosure
                             </h3>
 <p class="text-slate-700 dark:text-slate-300 leading-relaxed mb-4 italic">
-                                Cryptocurrency trading involves substantial risk and the possibility of significant financial loss. The values of digital assets are highly volatile and can fluctuate widely. Bloombit does not guarantee any profits or specific returns. 
+                                Cryptocurrency trading involves substantial risk and the possibility of significant financial loss. The values of digital assets are highly volatile and can fluctuate widely. <?php echo htmlspecialchars($siteName); ?> does not guarantee any profits or specific returns. 
                             </p>
 <ul class="list-disc ml-6 space-y-2 text-slate-600 dark:text-slate-400 text-sm">
 <li>Past performance of AI algorithms is not indicative of future results.</li>
@@ -132,7 +132,7 @@
 <div class="mt-8" id="anti-fraud">
 <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">5. Anti-Fraud Policy</h3>
 <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                Bloombit maintains a zero-tolerance policy towards fraudulent activities, including market manipulation, money laundering, and unauthorized access. We cooperate fully with international law enforcement agencies and financial regulators.
+                                <?php echo htmlspecialchars($siteName); ?> maintains a zero-tolerance policy towards fraudulent activities, including market manipulation, money laundering, and unauthorized access. We cooperate fully with international law enforcement agencies and financial regulators.
                             </p>
 </div>
 </div>
@@ -190,7 +190,7 @@
 <ul class="space-y-3">
 <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
 <span class="material-icons text-primary text-sm mt-1">check_circle</span>
-                                    Right to Access: Request a copy of all personal data held by Bloombit.
+                                    Right to Access: Request a copy of all personal data held by <?php echo htmlspecialchars($siteName); ?>.
                                 </li>
 <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
 <span class="material-icons text-primary text-sm mt-1">check_circle</span>

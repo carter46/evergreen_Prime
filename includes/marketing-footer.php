@@ -12,9 +12,9 @@ $footerDesc = get_site_setting('footer_description', 'Leading the future of dece
 <span class="material-icons text-white text-sm">auto_awesome</span>
 </div>
 <span class="text-xl font-bold tracking-tight"><?php
-$parts = preg_match('/^(.+)bit$/i', $siteName, $m) ? [$m[1], 'bit'] : [$siteName, null];
-echo htmlspecialchars($parts[0]);
-if ($parts[1]) echo '<span class="text-primary">' . htmlspecialchars($parts[1]) . '</span>';
+[$brandBase, $brandAccent] = get_site_brand_parts($siteName);
+echo htmlspecialchars($brandBase);
+if ($brandAccent !== '') echo '<span class="text-primary">' . htmlspecialchars($brandAccent) . '</span>';
 ?></span>
 </div>
 <p class="text-slate-500 text-sm mb-6 leading-relaxed"><?php echo htmlspecialchars($footerDesc); ?></p>

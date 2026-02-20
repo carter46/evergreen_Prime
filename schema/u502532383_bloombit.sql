@@ -53,8 +53,8 @@ CREATE TABLE `admin_mailbox` (
 --
 
 INSERT INTO `admin_mailbox` (`id`, `direction`, `source`, `mailbox_folder`, `imap_uid`, `message_id`, `in_reply_to`, `references`, `mail_date`, `from_email`, `from_name`, `to_emails`, `subject`, `body_html`, `body_text`, `status`, `error_text`, `created_at`) VALUES
-(1, 'out', 'admin_compose', NULL, NULL, NULL, NULL, NULL, NULL, 'support@bloombitfx.com', 'Bloombit', 'mr.carter.tech07@gmail.com', 'reminder of event meeeting', NULL, 'ggggs', 'sent', NULL, '2026-02-18 17:46:55'),
-(2, 'out', 'admin_compose', NULL, NULL, NULL, NULL, NULL, NULL, 'support@bloombitfx.com', 'Bloombit', 'j.donovan@gmail.com, billyfredrickgibbons@gmail.com', 'reminder of event meeeting', NULL, 'ggggs', 'sent', NULL, '2026-02-18 17:46:56');
+(1, 'out', 'admin_compose', NULL, NULL, NULL, NULL, NULL, NULL, 'support@example.com', 'Site', 'mr.carter.tech07@gmail.com', 'reminder of event meeeting', NULL, 'ggggs', 'sent', NULL, '2026-02-18 17:46:55'),
+(2, 'out', 'admin_compose', NULL, NULL, NULL, NULL, NULL, NULL, 'support@example.com', 'Site', 'j.donovan@gmail.com, billyfredrickgibbons@gmail.com', 'reminder of event meeeting', NULL, 'ggggs', 'sent', NULL, '2026-02-18 17:46:56');
 
 -- --------------------------------------------------------
 
@@ -268,7 +268,7 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 ('active_traders', '12.8M+', '2026-02-15 01:07:56'),
 ('btc_dominance', '52.4%', '2026-02-15 01:07:56'),
 ('compounding_enabled', '0', '2026-02-15 21:51:02'),
-('contact_email', 'legal@bloombit.com', '2026-02-15 01:07:56'),
+('contact_email', 'legal@example.com', '2026-02-15 01:07:56'),
 ('distribution_interval', 'daily', '2026-02-18 02:31:54'),
 ('distribution_start_time', '09:00:00', '2026-02-17 21:53:51'),
 ('earnings_paused', '0', '2026-02-17 21:53:51'),
@@ -280,20 +280,20 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 ('homepage_modal_image', '/uploads/site/modal_image_1771494314.png', '2026-02-19 09:45:14'),
 ('homepage_youtube_url', 'https://www.youtube.com/watch?v=c-ZQL2VxSrE', '2026-02-19 08:39:02'),
 ('investors_count', '45000', '2026-02-15 01:07:56'),
-('mail_from_email', 'support@bloombitfx.com', '2026-02-18 17:35:18'),
-('mail_from_name', 'Bloombit', '2026-02-18 16:48:37'),
+('mail_from_email', 'support@example.com', '2026-02-18 17:35:18'),
+('mail_from_name', 'Site', '2026-02-18 16:48:37'),
 ('mail_imap_encryption', 'ssl', '2026-02-18 16:48:37'),
 ('mail_imap_host', 'imap.hostinger.com', '2026-02-18 17:35:18'),
 ('mail_imap_password', 'Secretpass0721//', '2026-02-18 17:35:18'),
 ('mail_imap_port', '993', '2026-02-18 16:48:37'),
 ('mail_imap_sent_folder', 'Sent', '2026-02-18 16:48:37'),
-('mail_imap_username', 'support@bloombitfx.com', '2026-02-18 17:35:18'),
-('mail_reply_to', 'support@bloombitfx.com', '2026-02-18 17:35:18'),
+('mail_imap_username', 'support@example.com', '2026-02-18 17:35:18'),
+('mail_reply_to', 'support@example.com', '2026-02-18 17:35:18'),
 ('mail_smtp_encryption', 'ssl', '2026-02-18 17:35:18'),
 ('mail_smtp_host', 'smtp.hostinger.com', '2026-02-18 17:35:18'),
 ('mail_smtp_password', 'Secretpass0721//', '2026-02-18 17:35:18'),
 ('mail_smtp_port', '465', '2026-02-18 17:35:18'),
-('mail_smtp_username', 'support@bloombitfx.com', '2026-02-18 17:35:18'),
+('mail_smtp_username', 'support@example.com', '2026-02-18 17:35:18'),
 ('market_cap', '$2.45T', '2026-02-15 01:07:56'),
 ('max_active_plans_per_user', '3', '2026-02-15 21:51:02'),
 ('max_withdrawal_limit', '50000', '2026-02-17 21:53:51'),
@@ -302,13 +302,13 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 ('office_address', '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom', '2026-02-19 16:52:54'),
 ('office_title', 'London Office', '2026-02-19 16:52:54'),
 ('site_favicon', '/uploads/site/favicon_1771518481.png', '2026-02-19 16:28:01'),
-('site_name', 'Bloombit', '2026-02-15 01:07:56'),
+('site_name', 'Site', '2026-02-15 01:07:56'),
 ('smartsupp_key', '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d', '2026-02-19 16:52:54'),
 ('stats_assets', '$4.2B+', '2026-02-15 01:07:56'),
 ('stats_bots', '85k+', '2026-02-15 01:07:56'),
 ('stats_roi', '12.4%', '2026-02-15 01:07:56'),
 ('stats_uptime', '99.9%', '2026-02-15 01:07:56'),
-('support_email', 'support@bloombit.com', '2026-02-15 01:33:55'),
+('support_email', 'support@example.com', '2026-02-15 01:33:55'),
 ('tagline', 'AI Crypto Trading', '2026-02-15 01:07:56'),
 ('volume_24h', '$84.2B', '2026-02-15 01:07:56');
 

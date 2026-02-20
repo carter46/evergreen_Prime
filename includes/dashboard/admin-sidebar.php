@@ -4,6 +4,8 @@
  * Use on all admin dashboard pages. Pass $currentPage to highlight active item.
  */
 $current = $currentPage ?? '';
+$siteName = $siteName ?? get_site_name();
+[$brandBase, $brandAccent] = get_site_brand_parts($siteName);
 $navClass = function ($page) use ($current) {
     return ($current === $page)
         ? 'flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-lg shadow-sm'
@@ -18,7 +20,7 @@ $navClass = function ($page) use ($current) {
         <div class="w-10 h-10 shrink-0 bg-primary rounded-lg flex items-center justify-center">
             <span class="material-icons text-white">bolt</span>
         </div>
-        <h1 class="font-bold text-xl tracking-tight truncate">Bloom<span class="text-primary">bit</span></h1>
+        <h1 class="font-bold text-xl tracking-tight truncate"><?php echo htmlspecialchars($brandBase); ?><?php if ($brandAccent !== ''): ?><span class="text-primary"><?php echo htmlspecialchars($brandAccent); ?></span><?php endif; ?></h1>
     </a>
     <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
         <a class="<?php echo $navClass('dashboard'); ?>" href="/dashboard/admin">

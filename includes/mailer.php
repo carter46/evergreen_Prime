@@ -57,7 +57,8 @@ if ($enc === 'starttls') $enc = 'tls';
 if ($enc === 'none') $enc = '';
 $mail->SMTPSecure = $enc;
 $mail->Port       = (int)($mailConfig['smtp_port'] ?? 587);
-$mail->setFrom($mailConfig['from_email'] ?? 'noreply@bloombit.com', $mailConfig['from_name'] ?? 'Bloombit');
-$mail->addReplyTo($mailConfig['reply_to'] ?? 'support@bloombit.com', $mailConfig['from_name'] ?? 'Bloombit');
+$defaultBrand = get_site_name();
+$mail->setFrom($mailConfig['from_email'] ?? 'noreply@example.com', $mailConfig['from_name'] ?? $defaultBrand);
+$mail->addReplyTo($mailConfig['reply_to'] ?? 'support@example.com', $mailConfig['from_name'] ?? $defaultBrand);
 
 return $mail;

@@ -4,6 +4,8 @@
  * Use on all user dashboard pages. Pass $currentPage to highlight active item.
  */
 $current = $currentPage ?? '';
+$siteName = $siteName ?? get_site_name();
+[$brandBase, $brandAccent] = get_site_brand_parts($siteName);
 $impersonating = isset($_SESSION['impersonate_admin_id']);
 $navClass = function ($page) use ($current) {
     return ($current === $page)
@@ -19,7 +21,7 @@ $navClass = function ($page) use ($current) {
         <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
             <span class="material-icons-round text-white">bolt</span>
         </div>
-        <span class="text-2xl font-bold tracking-tight">Bloombit</span>
+        <span class="text-2xl font-bold tracking-tight"><?php echo htmlspecialchars($brandBase); ?><?php if ($brandAccent !== ''): ?><span class="text-primary"><?php echo htmlspecialchars($brandAccent); ?></span><?php endif; ?></span>
     </a>
     <?php if ($impersonating): ?>
     <a href="/api/admin/stop-impersonate.php" class="mx-4 mb-4 flex items-center gap-2 px-3 py-2 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded-xl hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors text-sm font-semibold">

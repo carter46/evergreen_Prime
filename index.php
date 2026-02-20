@@ -141,7 +141,7 @@ $heroPlaceholderImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAERFU
 <div class="relative z-10 w-full rounded-2xl shadow-2xl border-4 border-white/50 dark:border-slate-800/50 overflow-hidden bg-slate-900/50 h-[350px] sm:h-[400px] md:h-[450px] lg:h-[500px]">
 <?php if ($homepageEmbedUrl): ?>
 <img alt="" class="hero-video-poster absolute inset-0 w-full h-full object-cover rounded-2xl" src="<?php echo htmlspecialchars($heroPlaceholderImg); ?>" aria-hidden="true"/>
-<iframe class="absolute inset-0 w-full h-full rounded-2xl" src="<?php echo htmlspecialchars($homepageEmbedUrl); ?>?rel=0" title="Bloombit demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe class="absolute inset-0 w-full h-full rounded-2xl" src="<?php echo htmlspecialchars($homepageEmbedUrl); ?>?rel=0" title="<?php echo htmlspecialchars($siteName); ?> demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 <?php else: ?>
 <img alt="AI Trading Interface" class="absolute inset-0 w-full h-full object-cover rounded-2xl" src="<?php echo htmlspecialchars($heroPlaceholderImg); ?>"/>
 <?php endif; ?>

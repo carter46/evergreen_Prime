@@ -64,7 +64,7 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
                     Through AI.
                 </h1>
 <p class="text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 max-w-lg">
-                    Bloombit is more than a trading platform. We are a collective of financial engineers and AI researchers dedicated to leveling the playing field in global crypto markets.
+                    <?php echo htmlspecialchars($siteName); ?> is more than a trading platform. We are a collective of financial engineers and AI researchers dedicated to leveling the playing field in global crypto markets.
                 </p>
 <div class="flex gap-4">
 <div class="flex -space-x-3">
@@ -84,7 +84,7 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
 <?php
 $bloombitImage = get_site_setting('header_image', '/bloombit.jpg');
 ?>
-<img class="relative z-10 w-full aspect-square object-cover rounded-xl shadow-2xl border border-white/10" alt="Bloombit" src="<?php echo htmlspecialchars($bloombitImage); ?>" onerror="this.src='/bloombit.jpg'"/>
+<img class="relative z-10 w-full aspect-square object-cover rounded-xl shadow-2xl border border-white/10" alt="<?php echo htmlspecialchars($siteName); ?>" src="<?php echo htmlspecialchars($bloombitImage); ?>" onerror="this.src='/bloombit.jpg'"/>
 </div>
 </div>
 </header>
@@ -115,7 +115,7 @@ $bloombitImage = get_site_setting('header_image', '/bloombit.jpg');
 <section class="py-24">
 <div class="max-w-7xl mx-auto px-6">
 <div class="text-center mb-16">
-<h2 class="text-4xl font-bold mb-4 tracking-tight">The Bloombit Standard</h2>
+<h2 class="text-4xl font-bold mb-4 tracking-tight">The <?php echo htmlspecialchars($siteName); ?> Standard</h2>
 <div class="w-20 h-1 bg-primary mx-auto"></div>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">

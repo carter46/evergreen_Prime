@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); $contactEmail = get_site_setting('contact_email', 'support@bloombit.com'); ?>
+<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); $contactEmail = get_site_setting('contact_email', 'support@example.com'); ?>
 <!DOCTYPE html>
 
 <html class="light" lang="en"><head>
@@ -147,7 +147,7 @@ $officeTitle = get_site_setting('office_title', 'London Office');
 <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
 <div class="max-w-xl">
 <h2 class="text-4xl font-bold">Frequently Asked Questions</h2>
-<p class="text-slate-600 dark:text-slate-400 mt-4">Everything you need to know about the Bloombit platform and our AI investment strategies.</p>
+<p class="text-slate-600 dark:text-slate-400 mt-4">Everything you need to know about the <?php echo htmlspecialchars($siteName); ?> platform and our AI investment strategies.</p>
 </div>
 <div class="relative w-full md:w-96">
 <span class="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -179,11 +179,11 @@ $officeTitle = get_site_setting('office_title', 'London Office');
 <!-- Item 1 -->
 <div class="bg-white dark:bg-zinc-900/50 rounded-xl border border-slate-100 dark:border-white/5 overflow-hidden">
 <button class="w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors">
-<span class="font-bold text-lg">What exactly is Bloombit and how does the AI work?</span>
+<span class="font-bold text-lg">What exactly is <?php echo htmlspecialchars($siteName); ?> and how does the AI work?</span>
 <span class="material-icons-outlined text-primary">expand_more</span>
 </button>
 <div class="px-6 pb-6 text-slate-600 dark:text-slate-400">
-                            Bloombit is a next-generation fintech platform that leverages proprietary AI algorithms to analyze crypto market volatility in real-time. Our system executes high-frequency trades across multiple liquidity pools to ensure optimal returns for our institutional and retail investors.
+                            <?php echo htmlspecialchars($siteName); ?> is a next-generation fintech platform that leverages proprietary AI algorithms to analyze crypto market volatility in real-time. Our system executes high-frequency trades across multiple liquidity pools to ensure optimal returns for our institutional and retail investors.
                         </div>
 </div>
 <!-- Item 2 -->
@@ -193,7 +193,7 @@ $officeTitle = get_site_setting('office_title', 'London Office');
 <span class="material-icons-outlined text-primary">expand_more</span>
 </button>
 <div class="hidden px-6 pb-6 text-slate-600 dark:text-slate-400">
-                            While all investments carry risk, Bloombit employs an automated hedging strategy and maintains a reserve fund (BloomSafe) to mitigate extreme market events and protect user principal.
+                            While all investments carry risk, <?php echo htmlspecialchars($siteName); ?> employs an automated hedging strategy and maintains a reserve fund (BloomSafe) to mitigate extreme market events and protect user principal.
                         </div>
 </div>
 <!-- Item 3 -->

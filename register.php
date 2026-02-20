@@ -69,7 +69,7 @@ $siteName = get_site_name();
 <span class="text-sm font-semibold">Back to home</span>
 </a>
 <h1 class="text-4xl font-bold text-black leading-tight mb-6">
-                    Start your <br/>journey with <br/>Bloombit.
+                    Start your <br/>journey with <br/><?php echo htmlspecialchars($siteName); ?>.
                 </h1>
 <p class="text-black/70 text-lg">
                     Join thousands of professionals managing their digital assets with precision and ease.
