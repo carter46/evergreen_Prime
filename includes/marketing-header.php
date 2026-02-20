@@ -13,55 +13,7 @@ $navLinkClass = function ($page) use ($current) {
     return ($current === $page) ? 'text-primary border-b-2 border-primary pb-0.5' : 'hover:text-primary transition-colors';
 };
 ?>
-<div class="sticky top-0 z-50" id="marketing-nav-shell">
-<div class="bg-white/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-10 sm:h-11 flex items-center gap-2">
-<span class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">Language</span>
-<div class="bb-lang-switcher relative">
-<button type="button" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-background-dark/40 text-slate-700 dark:text-slate-200 text-sm font-semibold hover:border-primary/50 hover:bg-white dark:hover:bg-background-dark transition-colors" data-bb-lang-button>
-<img data-bb-lang-flag alt="" class="w-4 h-4 rounded-sm object-cover" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" />
-<span data-bb-lang-current>English</span>
-<span class="material-icons text-base opacity-70">expand_more</span>
-</button>
-<div class="hidden absolute left-0 top-full mt-2 w-56 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-zinc-900 shadow-2xl overflow-hidden z-[99999]" data-bb-lang-menu>
-<div class="max-h-72 overflow-auto py-1">
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="en">English</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="es">Español</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="fr">Français</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="de">Deutsch</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="it">Italiano</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="pt">Português</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="nl">Nederlands</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="ru">Русский</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="uk">Українська</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="pl">Polski</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="tr">Türkçe</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="ar">العربية</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="fa">فارسی</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="hi">हिन्दी</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="bn">বাংলা</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="ur">اردو</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="zh-CN">简体中文</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="zh-TW">繁體中文</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="ja">日本語</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="ko">한국어</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="vi">Tiếng Việt</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="th">ไทย</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="id">Bahasa Indonesia</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="ms">Bahasa Melayu</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="tl">Filipino</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="sw">Kiswahili</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="he">עברית</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="el">Ελληνικά</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="ro">Română</button>
-<button type="button" class="w-full text-left px-4 py-2 text-sm hover:bg-primary/10" data-bb-lang="sv">Svenska</button>
-</div>
-</div>
-</div>
-<div class="bb-gtranslate-hidden" aria-hidden="true"></div>
-</div>
-</div>
-<nav class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10" id="marketing-nav">
+<nav class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10" id="marketing-nav">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
 <a class="flex items-center gap-2 shrink-0 min-h-[44px] min-w-[44px] items-center" href="/">
 <div class="w-10 h-10 bg-primary rounded flex items-center justify-center">
@@ -121,7 +73,6 @@ Help Center
 </div>
 </div>
 </nav>
-</div>
 <script>
 (function(){
 var btn=document.getElementById('mobile-menu-btn');

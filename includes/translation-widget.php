@@ -1,5 +1,5 @@
 <?php
-// Public-site translator (GTranslate) with 30 languages.
+// Public-site translator (GTranslate) with 50 languages.
 ?>
 <style>
 .bb-gtranslate-hidden {
@@ -23,7 +23,9 @@
     languages: [
       'en','es','fr','de','it','pt','nl','ru','uk','pl',
       'tr','ar','fa','hi','bn','ur','zh-CN','zh-TW','ja','ko',
-      'vi','th','id','ms','tl','sw','he','el','ro','sv'
+      'vi','th','id','ms','tl','sw','he','el','ro','sv',
+      'cs','da','fi','no','hu','bg','sr','sk','sl','hr',
+      'lt','lv','et','ta','te','mr','gu','pa','am','af'
     ],
     wrapper_selector: '.bb-gtranslate-hidden',
     flag_size: 16,
@@ -39,12 +41,19 @@ document.addEventListener('DOMContentLoaded', function() {
   var currentFlag = document.querySelector('[data-bb-lang-flag]');
   if (!btn || !menu || !current) return;
 
+  // Portal target (prevents sticky/backdrop-blur stacking context issues).
+  var menuHomeParent = menu.parentNode;
+  var menuHomeNext = menu.nextSibling;
+
   var labels = {
     'en':'English','es':'Español','fr':'Français','de':'Deutsch','it':'Italiano','pt':'Português','nl':'Nederlands',
     'ru':'Русский','uk':'Українська','pl':'Polski','tr':'Türkçe','ar':'العربية','fa':'فارسی','hi':'हिन्दी',
     'bn':'বাংলা','ur':'اردو','zh-CN':'简体中文','zh-TW':'繁體中文','ja':'日本語','ko':'한국어','vi':'Tiếng Việt',
     'th':'ไทย','id':'Bahasa Indonesia','ms':'Bahasa Melayu','tl':'Filipino','sw':'Kiswahili','he':'עברית',
-    'el':'Ελληνικά','ro':'Română','sv':'Svenska'
+    'el':'Ελληνικά','ro':'Română','sv':'Svenska',
+    'cs':'Čeština','da':'Dansk','fi':'Suomi','no':'Norsk','hu':'Magyar','bg':'Български','sr':'Српски','sk':'Slovenčina',
+    'sl':'Slovenščina','hr':'Hrvatski','lt':'Lietuvių','lv':'Latviešu','et':'Eesti','ta':'தமிழ்','te':'తెలుగు','mr':'मराठी',
+    'gu':'ગુજરાતી','pa':'ਪੰਜਾਬੀ','am':'አማርኛ','af':'Afrikaans'
   };
 
   var flags = {
@@ -77,7 +86,27 @@ document.addEventListener('DOMContentLoaded', function() {
     'he': 'https://flagcdn.com/24x18/il.png',
     'el': 'https://flagcdn.com/24x18/gr.png',
     'ro': 'https://flagcdn.com/24x18/ro.png',
-    'sv': 'https://flagcdn.com/24x18/se.png'
+    'sv': 'https://flagcdn.com/24x18/se.png',
+    'cs': 'https://flagcdn.com/24x18/cz.png',
+    'da': 'https://flagcdn.com/24x18/dk.png',
+    'fi': 'https://flagcdn.com/24x18/fi.png',
+    'no': 'https://flagcdn.com/24x18/no.png',
+    'hu': 'https://flagcdn.com/24x18/hu.png',
+    'bg': 'https://flagcdn.com/24x18/bg.png',
+    'sr': 'https://flagcdn.com/24x18/rs.png',
+    'sk': 'https://flagcdn.com/24x18/sk.png',
+    'sl': 'https://flagcdn.com/24x18/si.png',
+    'hr': 'https://flagcdn.com/24x18/hr.png',
+    'lt': 'https://flagcdn.com/24x18/lt.png',
+    'lv': 'https://flagcdn.com/24x18/lv.png',
+    'et': 'https://flagcdn.com/24x18/ee.png',
+    'ta': 'https://flagcdn.com/24x18/in.png',
+    'te': 'https://flagcdn.com/24x18/in.png',
+    'mr': 'https://flagcdn.com/24x18/in.png',
+    'gu': 'https://flagcdn.com/24x18/in.png',
+    'pa': 'https://flagcdn.com/24x18/in.png',
+    'am': 'https://flagcdn.com/24x18/et.png',
+    'af': 'https://flagcdn.com/24x18/za.png'
   };
 
   function getStoredLang() {
@@ -131,19 +160,51 @@ document.addEventListener('DOMContentLoaded', function() {
     var rect = btn.getBoundingClientRect();
     menu.style.position = 'fixed';
     menu.style.left = Math.max(8, rect.left) + 'px';
-    menu.style.top = (rect.bottom + 8) + 'px';
+    var spaceBelow = window.innerHeight - rect.bottom;
+    var spaceAbove = rect.top;
+    var openDown = spaceBelow >= 260 || spaceBelow >= spaceAbove;
+    if (openDown) {
+      menu.style.bottom = 'auto';
+      menu.style.top = (rect.bottom + 8) + 'px';
+    } else {
+      menu.style.top = 'auto';
+      menu.style.bottom = Math.max(8, (window.innerHeight - rect.top + 8)) + 'px';
+    }
     menu.style.width = 'auto';
     menu.style.minWidth = Math.max(224, rect.width) + 'px';
-    menu.style.zIndex = '999999';
+    menu.style.zIndex = '2147483647';
+
+    // Keep within viewport height.
+    var maxH = openDown ? Math.max(160, spaceBelow - 16) : Math.max(160, spaceAbove - 16);
+    var inner = menu.querySelector('div');
+    if (inner) inner.style.maxHeight = Math.min(480, maxH) + 'px';
+  }
+
+  function portalMenuToBody() {
+    if (menu.parentNode !== document.body) {
+      document.body.appendChild(menu);
+    }
+  }
+
+  function restoreMenuHome() {
+    if (menuHomeParent && menu.parentNode === document.body) {
+      if (menuHomeNext && menuHomeNext.parentNode === menuHomeParent) {
+        menuHomeParent.insertBefore(menu, menuHomeNext);
+      } else {
+        menuHomeParent.appendChild(menu);
+      }
+    }
   }
 
   function openMenu() {
     ensureMenuFlags();
+    portalMenuToBody();
     positionMenu();
     menu.classList.remove('hidden');
   }
   function closeMenu() {
     menu.classList.add('hidden');
+    restoreMenuHome();
   }
   function toggleMenu() { menu.classList.contains('hidden') ? openMenu() : closeMenu(); }
 

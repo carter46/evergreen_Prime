@@ -566,11 +566,6 @@ foreach ($indexPlans as $p):
 </div>
 </section>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
-<!-- Floating Modal Button (scroll-based visibility) -->
-<button id="homepage-modal-btn" class="fixed bottom-6 left-6 z-50 px-4 py-3 sm:px-6 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all opacity-0 pointer-events-none flex flex-col sm:flex-row items-center gap-1 sm:gap-2" aria-label="View Certificate">
-<span class="material-icons text-lg sm:text-xl">shield</span>
-<span class="text-xs sm:text-base leading-tight text-center sm:text-left">View Certificate</span>
-</button>
 <!-- Modal -->
 <div id="homepage-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
 <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex items-center justify-center max-w-[95vw] max-h-[95vh] p-4">
@@ -589,30 +584,10 @@ foreach ($indexPlans as $p):
 </div>
 <script>
 (function(){
-  var btn = document.getElementById('homepage-modal-btn');
+  var btn = document.getElementById('footer-certificate-btn');
   var modal = document.getElementById('homepage-modal');
   var close = document.getElementById('homepage-modal-close');
   if (!btn || !modal || !close) return;
-  
-  // Scroll-based visibility (show at ~80% scroll)
-  function checkScroll() {
-    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    var scrollPercent = scrollTop / docHeight;
-    
-    if (scrollPercent >= 0.8) {
-      btn.classList.remove('opacity-0', 'pointer-events-none');
-      btn.classList.add('opacity-100', 'pointer-events-auto');
-    } else {
-      btn.classList.remove('opacity-100', 'pointer-events-auto');
-      btn.classList.add('opacity-0', 'pointer-events-none');
-    }
-  }
-  
-  // Check on scroll and on load
-  window.addEventListener('scroll', checkScroll);
-  window.addEventListener('resize', checkScroll);
-  checkScroll();
   
   // Modal functionality
   btn.addEventListener('click', function(){ modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden'; });
