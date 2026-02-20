@@ -43,6 +43,10 @@ Help Center
 </div>
 </div>
 <div class="flex items-center gap-2 sm:gap-4">
+<div class="hidden sm:block h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
+<div class="hidden sm:flex items-center">
+<div class="bb-gtranslate-wrapper"></div>
+</div>
 <?php if ($isLoggedIn): ?>
 <a class="hidden sm:inline-flex px-4 sm:px-6 py-2.5 font-semibold hover:text-primary transition-colors min-h-[44px] items-center" href="/logout">Logout</a>
 <a class="px-4 sm:px-6 py-2.5 bg-primary text-black font-bold rounded hover:shadow-lg hover:shadow-primary/20 transition-all min-h-[44px] flex items-center justify-center" href="/dashboard">Dashboard</a>
