@@ -22,6 +22,15 @@
   position: relative;
   z-index: 99999 !important;
 }
+
+/* Force dropdown to open downward when embedded in top bar. */
+.bb-gtranslate-wrapper .gt_switcher-popup .gt_options,
+.bb-gtranslate-wrapper .gt_container .gt_options,
+.bb-gtranslate-wrapper .gt_options {
+  top: calc(100% + 6px) !important;
+  bottom: auto !important;
+  transform: none !important;
+}
 </style>
 <script>
 (function() {
@@ -42,5 +51,30 @@
     switcher_open_direction: 'bottom'
   };
 })();
+
+// Some widget skins still force upward panels; normalize to downward at runtime.
+document.addEventListener('DOMContentLoaded', function() {
+  function forceTranslatorDownward() {
+    var wrapper = document.querySelector('.bb-gtranslate-wrapper');
+    if (!wrapper) return;
+    var candidates = wrapper.querySelectorAll(
+      '.gt_options, .gt_list, .gt_dropdown, .gt_switcher-popup ul, .gt_container ul'
+    );
+    candidates.forEach(function(el) {
+      el.style.top = 'calc(100% + 6px)';
+      el.style.bottom = 'auto';
+      el.style.transform = 'none';
+      if (!el.style.position) el.style.position = 'absolute';
+      el.style.zIndex = '99999';
+    });
+  }
+
+  forceTranslatorDownward();
+  document.addEventListener('click', function() {
+    setTimeout(forceTranslatorDownward, 0);
+    setTimeout(forceTranslatorDownward, 100);
+  });
+  setInterval(forceTranslatorDownward, 1200);
+});
 </script>
 <script src="https://cdn.gtranslate.net/widgets/latest/dwf.js" defer></script>
