@@ -67,5 +67,4 @@
 </div>
 </main>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
-<script src="/js/app.js"></script>
 </body></html>

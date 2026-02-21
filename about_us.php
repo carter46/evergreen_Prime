@@ -285,5 +285,4 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
 </div>
 </section>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
-<script src="/js/app.js"></script>
 </body></html>

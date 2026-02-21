@@ -242,7 +242,6 @@ $officeTitle = get_site_setting('office_title', 'London Office');
 </section>
 </main>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
-<script src="/js/app.js"></script>
 <script>
 // FAQ Tabs
 (function(){
