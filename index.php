@@ -491,6 +491,7 @@ $ring2 = array_slice($orbitCoins, 6, 4);
 <div class="text-xs text-slate-400 mt-2">
 <span id="calc-amount-range-text">Enter any amount. Plan range shown for reference.</span>
 </div>
+<div id="calc-amount-warning" class="text-sm font-medium text-red-600 dark:text-red-400 mt-2 hidden" role="alert"></div>
 </div>
 <div>
 <div class="flex justify-between mb-4 font-bold">
@@ -506,7 +507,8 @@ $ring2 = array_slice($orbitCoins, 6, 4);
 <div class="bg-primary/5 rounded-2xl p-8 flex flex-col justify-center items-center border border-primary/20">
 <div class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">Projected Return</div>
 <div class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-1" id="calc-daily-profit">$0/day</div>
-<div class="text-xs text-slate-500 dark:text-slate-400 mb-3" id="calc-total-profit-label">Total profit over 0 days: $0</div>
+<div class="text-xs text-slate-500 dark:text-slate-400 mb-2" id="calc-total-profit-label">Total profit over 0 days: $0</div>
+<div class="text-xs text-slate-500 dark:text-slate-400 mb-1">You receive (capital + profit)</div>
 <div class="text-5xl font-bold text-black dark:text-white mb-1" id="calc-projected">$0</div>
 <div class="text-primary font-bold" id="calc-profit">+0% Profit</div>
 <div class="mt-8 w-full">
@@ -660,6 +662,19 @@ foreach ($indexPlans as $p):
     if (totalLabelEl) totalLabelEl.textContent = 'Total profit over ' + days + ' days: $' + (totalProfit % 1 ? totalProfit.toFixed(2) : Math.round(totalProfit)).toLocaleString();
     document.getElementById('calc-projected').textContent = '$' + (projected % 1 ? projected.toFixed(2) : Math.round(projected)).toLocaleString();
     document.getElementById('calc-profit').textContent = '+' + profitPct + '% Profit';
+
+    var warningEl = document.getElementById('calc-amount-warning');
+    if (warningEl && plan) {
+      var minAmount = Number(plan.min || 0);
+      var maxAmount = plan.max !== null && plan.max !== undefined ? Number(plan.max) : null;
+      var msg = '';
+      if (amount > 0) {
+        if (amount < minAmount) msg = 'Minimum for ' + plan.name + ' is $' + minAmount.toLocaleString();
+        else if (maxAmount !== null && amount > maxAmount) msg = 'Maximum for ' + plan.name + ' is $' + maxAmount.toLocaleString();
+      }
+      warningEl.textContent = msg;
+      warningEl.classList.toggle('hidden', !msg);
+    }
   }
 
   fetch('/api/plans/list.php').then(function(r){ return r.json(); }).then(function(res){
