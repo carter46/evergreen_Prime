@@ -17,22 +17,10 @@
         }
         const t = (document.title || '').trim();
         if (!t) return 'Site';
-        const looksLikePageTitle = function (value) {
-            return /(register|secure login|login|forgot password|set new password|live chat|about|plans?|dashboard|admin|kyc|transactions?|wallet|profile|analytics|support|contact|legal|signals?|investment|comparison|management|center|hub|command|settings)/i.test(value);
-        };
-        const pipe = t.split('|').map(s => s.trim()).filter(Boolean);
-        if (pipe.length >= 2) {
-            const sitePart = pipe.find(s => !looksLikePageTitle(s));
-            if (sitePart) return sitePart;
-            return pipe[0];
-        }
-        const dash = t.split('—').map(s => s.trim()).filter(Boolean);
-        if (dash.length >= 2) {
-            const sitePart = dash.find(s => !looksLikePageTitle(s));
-            if (sitePart) return sitePart;
-            return dash[0];
-        }
-        return t;
+        // Use only the first segment (site name); strip anything after " - ", " | ", or " — "
+        const byPipe = t.split('|')[0].trim();
+        const byDash = byPipe.split(/\s*[-–—]\s*/)[0].trim();
+        return byDash || byPipe || t;
     }
 
     function splitBrandName(siteName) {
@@ -56,7 +44,7 @@
         const style = document.createElement('style');
         style.id = 'bb-global-loader-style';
         style.textContent = `
-            #bb-global-loader{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(255,255,255,0.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:opacity .18s ease;opacity:0}
+            #bb-global-loader{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;min-height:100vh;min-height:100dvh;min-height:-webkit-fill-available;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(255,255,255,0.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:opacity .18s ease;opacity:0;transform:translateZ(0);-webkit-transform:translateZ(0)}
             html.dark #bb-global-loader{background:rgba(35,30,15,0.92)}
             #bb-global-loader.bb-show{display:flex;opacity:1}
             #bb-global-loader .bb-name{font-family:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-weight:800;font-size:44px;letter-spacing:-0.02em;line-height:1.05;text-align:center}
@@ -116,14 +104,18 @@
     }
 
     function initGlobalLoader() {
-        // Always create it (so we can reuse on transitions)
+        if (document.readyState === 'complete') return;
         ensureGlobalLoader();
 
-        // Always hide on full load
-        window.addEventListener('load', () => hideGlobalLoader(), { once: true });
+        var loaderShownAt = Date.now();
+        window.addEventListener('load', function () {
+            var minShowMs = 500;
+            var elapsed = Date.now() - loaderShownAt;
+            var delay = Math.max(0, minShowMs - elapsed);
+            if (delay > 0) setTimeout(hideGlobalLoader, delay);
+            else hideGlobalLoader();
+        }, { once: true });
 
-        // Show loader immediately so the white overlay and centered animation are visible
-        // while the page finishes loading (app.js often runs at end of body).
         showGlobalLoader();
 
         let fallbackHideTimer = null;

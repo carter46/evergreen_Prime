@@ -554,6 +554,9 @@ foreach ($indexPlans as $p):
 <div class="col-span-3 text-center py-12 text-slate-500">No plans available. <a href="/plans" class="text-primary font-bold hover:underline">View plans</a></div>
 <?php endif; ?>
 </div>
+<div class="max-w-7xl mx-auto px-6 mt-12 text-center">
+<a href="/plans" class="inline-flex items-center gap-2 px-8 py-4 bg-primary text-black font-bold rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all">View all plans</a>
+</div>
 </section>
 <!-- TradingView News -->
 <section class="py-32 bg-white dark:bg-slate-900/30">
