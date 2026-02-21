@@ -39,3 +39,8 @@ $initials = strtoupper(substr($userName ?: 'U', 0, 2));
 <!-- Translation widget (GTranslate) -->
 <div class="gtranslate_wrapper"></div>
 <?php require_once __DIR__ . '/../translation-widget.php'; ?>
+<style>
+  /* Dashboard-only: move language widget to bottom-right (avoid logout overlap) */
+  .gtranslate_wrapper { left: auto !important; right: 20px !important; }
+  @media (max-width: 768px) { .gtranslate_wrapper { right: 15px !important; } }
+</style>
