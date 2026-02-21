@@ -47,7 +47,8 @@ if (empty($user['email_verified'])) {
     exit;
 }
 
-$twoFactorEnabled = !empty($user['two_factor_enabled']);
+// Require OTP at login whenever 2FA is enabled (never create session without OTP in that case)
+$twoFactorEnabled = isset($user['two_factor_enabled']) && ($user['two_factor_enabled'] == 1 || $user['two_factor_enabled'] === '1' || $user['two_factor_enabled'] === true);
 
 if ($twoFactorEnabled) {
     require_once dirname(__DIR__, 2) . '/includes/otp-helper.php';

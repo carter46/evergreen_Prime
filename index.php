@@ -573,36 +573,6 @@ foreach ($indexPlans as $p):
 </div>
 </section>
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
-<!-- Modal -->
-<div id="homepage-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-<div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex items-center justify-center max-w-[95vw] max-h-[95vh] p-4">
-<button id="homepage-modal-close" class="absolute top-2 right-2 z-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors" aria-label="Close">
-<span class="material-icons text-slate-600 dark:text-slate-300">close</span>
-</button>
-<?php if (!empty($homepageModalImage)): ?>
-<img src="<?php echo htmlspecialchars($homepageModalImage); ?>" alt="Certificate" class="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain rounded-lg"/>
-<?php else: ?>
-<div class="p-12 text-center min-w-[300px]">
-<p class="text-slate-500 dark:text-slate-400 text-lg">No image uploaded yet.</p>
-<p class="text-slate-400 dark:text-slate-500 text-sm mt-2">Upload an image in Admin Settings → Branding → Homepage Floating Modal Image</p>
-</div>
-<?php endif; ?>
-</div>
-</div>
-<script>
-(function(){
-  var btn = document.getElementById('footer-certificate-btn');
-  var modal = document.getElementById('homepage-modal');
-  var close = document.getElementById('homepage-modal-close');
-  if (!btn || !modal || !close) return;
-  
-  // Modal functionality
-  btn.addEventListener('click', function(){ modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden'; });
-  close.addEventListener('click', function(){ modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; });
-  modal.addEventListener('click', function(e){ if (e.target === modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; } });
-  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !modal.classList.contains('hidden')) { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; } });
-})();
-</script>
 <script src="/js/crypto-config.js"></script>
 <script src="/js/crypto-prices.js"></script>
 <script>

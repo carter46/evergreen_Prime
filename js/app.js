@@ -407,11 +407,15 @@
             if (btn) btn.disabled = true;
             apiFetch('/auth/login.php', { method: 'POST', body: JSON.stringify({ email, password, redirect }) })
                 .then(data => {
-                    if (data.data?.step === 'verify_otp') {
-                        showLoginOtpStep(data.data.email, data.data.redirect);
-                    } else {
+                    var step = data.data && data.data.step;
+                    var isOtpRequired = step === 'verify_otp';
+                    if (isOtpRequired && data.data.email) {
+                        showLoginOtpStep(data.data.email, data.data.redirect || redirect);
+                        return;
+                    }
+                    if (data.data && data.data.redirect) {
                         showGlobalLoader();
-                        window.location.href = data.data?.redirect || redirect;
+                        window.location.href = data.data.redirect;
                     }
                 })
                 .catch(err => {

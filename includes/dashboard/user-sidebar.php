@@ -58,6 +58,10 @@ $navClass = function ($page) use ($current) {
             <span class="material-icons-round text-[20px]">verified_user</span>
             KYC
         </a>
+        <a class="<?php echo $navClass('support'); ?>" href="/live_chat">
+            <span class="material-icons-round text-[20px]">support_agent</span>
+            Support
+        </a>
     </nav>
     <div class="p-6 shrink-0">
         <div class="bg-primary/10 rounded-2xl p-4 border border-primary/20">

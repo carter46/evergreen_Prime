@@ -2,6 +2,7 @@
 require_once __DIR__ . '/helpers.php';
 $siteName = get_site_name();
 $footerDesc = get_site_setting('footer_description', 'Leading the future of decentralized finance with advanced artificial intelligence and machine learning technologies.');
+$homepageModalImage = get_site_setting('homepage_modal_image', '');
 ?>
 <footer class="bg-white dark:bg-background-dark border-t border-primary/10 pt-12 sm:pt-20 pb-10">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +24,7 @@ if ($brandAccent !== '') echo '<span class="text-primary">' . htmlspecialchars($
 <a class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center hover:bg-primary transition-colors" href="#"><span class="material-icons text-lg">link</span></a>
 <a class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center hover:bg-primary transition-colors" href="#"><span class="material-icons text-lg">code</span></a>
 </div>
-<button id="footer-certificate-btn" type="button" class="hidden mt-4 inline-flex items-center gap-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white transition-colors rounded-lg px-3 py-1.5">
+<button id="footer-certificate-btn" type="button" class="mt-4 inline-flex items-center gap-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white transition-colors rounded-lg px-3 py-1.5">
 <span class="material-icons text-base text-white notranslate" translate="no">verified</span>
 <span class="notranslate" translate="no">View Certificate</span>
 </button>
@@ -66,6 +67,35 @@ if ($brandAccent !== '') echo '<span class="text-primary">' . htmlspecialchars($
 </div>
 </footer>
 
+<!-- Certificate modal (shown on all pages so View Certificate works in footer) -->
+<div id="homepage-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+<div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex items-center justify-center max-w-[95vw] max-h-[95vh] p-4">
+<button id="homepage-modal-close" class="absolute top-2 right-2 z-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors" aria-label="Close">
+<span class="material-icons text-slate-600 dark:text-slate-300">close</span>
+</button>
+<?php if (!empty($homepageModalImage)): ?>
+<img src="<?php echo htmlspecialchars($homepageModalImage); ?>" alt="Certificate" class="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain rounded-lg"/>
+<?php else: ?>
+<div class="p-12 text-center min-w-[300px]">
+<p class="text-slate-500 dark:text-slate-400 text-lg">No image uploaded yet.</p>
+<p class="text-slate-400 dark:text-slate-500 text-sm mt-2">Upload an image in Admin Settings → Branding → Homepage Floating Modal Image</p>
+</div>
+<?php endif; ?>
+</div>
+</div>
+<script>
+(function(){
+  var btn = document.getElementById('footer-certificate-btn');
+  var modal = document.getElementById('homepage-modal');
+  var close = document.getElementById('homepage-modal-close');
+  if (!btn || !modal || !close) return;
+  btn.addEventListener('click', function(){ modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden'; });
+  close.addEventListener('click', function(){ modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; });
+  modal.addEventListener('click', function(e){ if (e.target === modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; } });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !modal.classList.contains('hidden')) { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; } });
+})();
+</script>
+
 <!-- Fixed language widget (bottom-left) -->
 <div id="bb-floating-language" class="fixed bottom-6 left-6 z-[70] notranslate" translate="no">
 <div class="bb-lang-switcher relative notranslate" translate="no">
@@ -84,14 +114,6 @@ if ($brandAccent !== '') echo '<span class="text-primary">' . htmlspecialchars($
 <div class="bb-gtranslate-hidden" aria-hidden="true"></div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var btn = document.getElementById('footer-certificate-btn');
-  if (!btn) return;
-  var modal = document.getElementById('homepage-modal');
-  if (modal) btn.classList.remove('hidden');
-});
-</script>
 <script src="/js/app.js"></script>
 <?php require_once __DIR__ . '/translation-widget.php'; ?>
 <?php require_once __DIR__ . '/live-chat-widget.php'; ?>
