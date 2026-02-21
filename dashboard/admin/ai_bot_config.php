@@ -204,5 +204,6 @@ Run Manual Distribution
   });
 })();
 </script>
+<script src="/js/app.js"></script>
 </body>
 </html>

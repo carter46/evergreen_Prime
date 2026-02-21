@@ -323,6 +323,7 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 </div>
 </main>
 </div>
+<script src="/js/app.js"></script>
 <script>
 (function(){
   var showMsg = function(el, text, ok){
