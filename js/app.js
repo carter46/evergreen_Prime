@@ -7,6 +7,30 @@
 
     const API_BASE = '/api';
 
+    function ensureI18nSafeLayoutStyles() {
+        if (document.getElementById('bb-i18n-safe-style')) return;
+        const style = document.createElement('style');
+        style.id = 'bb-i18n-safe-style';
+        style.textContent = `
+          /* i18n-safe layout: prevent horizontal scroll on longer translations */
+          html, body { max-width: 100%; overflow-x: hidden; }
+
+          /* Allow long translated words/URLs to wrap instead of expanding layout */
+          :where(h1,h2,h3,h4,h5,h6,p,li,span,a,button,label,small,strong,em) {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            hyphens: auto;
+          }
+
+          /* Flex/grid overflow trap: children default min-width:auto -> overflow */
+          :where(.flex, .inline-flex, .grid) > :where(*) { min-width: 0; }
+
+          /* Ensure common media never forces x-overflow */
+          img, svg, video, canvas { max-width: 100%; height: auto; }
+        `;
+        document.head.appendChild(style);
+    }
+
     function getSiteNameFromTitle() {
         if (typeof window.__SITE_NAME__ === 'string' && window.__SITE_NAME__.trim()) {
             return window.__SITE_NAME__.trim();
@@ -829,6 +853,7 @@
     }
 
     function init() {
+        ensureI18nSafeLayoutStyles();
         initGlobalLoader();
         requireAuth();
         initPasswordToggle();

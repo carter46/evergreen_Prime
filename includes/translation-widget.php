@@ -54,8 +54,13 @@
 window.gtranslateSettings = {
     "default_language": "en",
     "detect_browser_language": true,
-    // 15 languages total (keeps existing ones + adds more)
-    "languages": ["en", "ko", "zh-CN", "es", "pt", "it", "tl", "ms", "vi", "ja", "ru", "fr", "de", "ar", "hi"],
+    // 30+ languages total (avoid redundant regional variants)
+    "languages": [
+        "en","fr","es","pt","de","it","nl","sv","pl","el",
+        "ar","fa","he","sw","am","zh-CN","ja","ko","hi","ur",
+        "bn","th","vi","id","tl","ru","tr","uk","ro","hu",
+        "cs","da","no","fi"
+    ],
     "wrapper_selector": ".gtranslate_wrapper",
     "flag_size": 24,
     "flag_style": "2d",
