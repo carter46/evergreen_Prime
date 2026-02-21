@@ -137,7 +137,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function updateLabel(countryId) {
-    var c = countries.find(function(x){ return x.id === countryId; }) || countries.find(function(x){ return x.id === 'us'; }) || countries[0];
+    var c = null;
+    for (var i = 0; i < countries.length; i++) {
+      if (countries[i] && countries[i].id === countryId) { c = countries[i]; break; }
+    }
+    if (!c) {
+      for (var j = 0; j < countries.length; j++) {
+        if (countries[j] && countries[j].id === 'us') { c = countries[j]; break; }
+      }
+    }
+    if (!c) c = countries[0];
     if (!c) return;
     current.textContent = c.name;
     if (currentFlag) {
@@ -187,7 +196,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function applyCountry(countryId) {
-    var c = countries.find(function(x){ return x.id === countryId; });
+    var c = null;
+    for (var i = 0; i < countries.length; i++) {
+      if (countries[i] && countries[i].id === countryId) { c = countries[i]; break; }
+    }
     if (!c) return;
     setStoredCountry(c.id);
     setStoredLang(c.lang);
