@@ -15,14 +15,14 @@ $navClass = function ($page) use ($current) {
 <!-- Mobile overlay -->
 <div id="admin-sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" aria-hidden="true"></div>
 <!-- Sidebar: fixed so it stays visible when scrolling -->
-<aside id="admin-sidebar" class="fixed inset-y-0 left-0 w-64 min-w-[16rem] bg-white dark:bg-black/20 border-r border-primary/10 flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out h-screen overflow-x-hidden">
+<aside id="admin-sidebar" class="fixed inset-y-0 left-0 w-64 min-w-[16rem] bg-white dark:bg-black/20 border-r border-primary/10 flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out overflow-x-hidden">
     <a class="p-6 flex items-center gap-3 shrink-0" href="/">
         <div class="w-10 h-10 shrink-0 bg-primary rounded-lg flex items-center justify-center">
             <span class="material-icons text-white">bolt</span>
         </div>
         <h1 class="font-bold text-xl tracking-tight truncate"><?php echo htmlspecialchars($brandBase); ?><?php if ($brandAccent !== ''): ?><span class="text-primary"><?php echo htmlspecialchars($brandAccent); ?></span><?php endif; ?></h1>
     </a>
-    <nav class="flex-1 min-h-0 px-4 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
+    <nav class="flex-1 min-h-0 px-4 py-4 space-y-1 overflow-y-auto overscroll-contain overflow-x-hidden">
         <a class="<?php echo $navClass('dashboard'); ?>" href="/dashboard/admin">
             <span class="material-icons text-[20px] shrink-0">dashboard</span>
             <span class="font-medium truncate">Command Center</span>
@@ -68,6 +68,11 @@ $navClass = function ($page) use ($current) {
     </div>
 </aside>
 <div class="hidden lg:block w-64 shrink-0 flex-none" aria-hidden="true"></div>
+<style>
+  /* Real mobile browsers (esp. iOS Safari) need dvh + safe-area for fixed sidebars */
+  #admin-sidebar{height:100vh;height:100svh;height:100dvh;max-height:100vh;max-height:100svh;max-height:100dvh;padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 8px)}
+  #admin-sidebar nav{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+</style>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
     var overlay=document.getElementById('admin-sidebar-overlay');

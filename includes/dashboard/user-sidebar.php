@@ -16,7 +16,7 @@ $navClass = function ($page) use ($current) {
 <!-- Mobile overlay -->
 <div id="user-sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" aria-hidden="true"></div>
 <!-- Sidebar: fixed so it stays visible when scrolling -->
-<aside id="user-sidebar" class="fixed inset-y-0 left-0 w-64 border-r border-primary/10 bg-white dark:bg-background-dark flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out h-screen shadow-lg lg:shadow-none">
+<aside id="user-sidebar" class="fixed inset-y-0 left-0 w-64 border-r border-primary/10 bg-white dark:bg-background-dark flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out shadow-lg lg:shadow-none">
     <a class="p-6 flex items-center gap-3" href="/">
         <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
             <span class="material-icons-round text-white">bolt</span>
@@ -29,7 +29,7 @@ $navClass = function ($page) use ($current) {
         Switch back to Admin
     </a>
     <?php endif; ?>
-    <nav class="flex-1 min-h-0 px-4 py-4 space-y-2 overflow-y-auto">
+    <nav class="flex-1 min-h-0 px-4 py-4 space-y-2 overflow-y-auto overscroll-contain">
         <a class="<?php echo $navClass('dashboard'); ?>" href="/dashboard/user/dashboard">
             <span class="material-icons-round text-[20px]">grid_view</span>
             Dashboard
@@ -78,6 +78,11 @@ $navClass = function ($page) use ($current) {
     </div>
 </aside>
 <div class="hidden lg:block w-64 shrink-0 flex-none" aria-hidden="true"></div>
+<style>
+  /* Real mobile browsers (esp. iOS Safari) need dvh + safe-area for fixed sidebars */
+  #user-sidebar{height:100vh;height:100svh;height:100dvh;max-height:100vh;max-height:100svh;max-height:100dvh;padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 8px)}
+  #user-sidebar nav{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+</style>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
     var overlay=document.getElementById('user-sidebar-overlay');
