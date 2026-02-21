@@ -367,7 +367,8 @@ if (drawer) {
   document.querySelectorAll('.plan-icon-btn').forEach(function(b){
     b.addEventListener('click', function(){ setIconSelection(b.getAttribute('data-icon')); });
   });
-  document.getElementById('add-plan-btn')?.addEventListener('click', function(){ 
+  var addPlanBtn = document.getElementById('add-plan-btn');
+  if (addPlanBtn) addPlanBtn.addEventListener('click', function(){ 
     document.getElementById('plan-form-id').value = ''; 
     document.getElementById('plan-form-name').value = ''; 
     document.getElementById('plan-form-description').value = ''; 
@@ -383,15 +384,21 @@ if (drawer) {
     document.getElementById('plan-drawer-subtitle').textContent = '';
     drawer.classList.remove('hidden'); 
   });
-  drawer.querySelector('.absolute.inset-0')?.addEventListener('click', function(){ drawer.classList.add('hidden'); });
-  document.getElementById('plan-drawer-close')?.addEventListener('click', function(){ drawer.classList.add('hidden'); });
-  document.getElementById('plan-drawer-x')?.addEventListener('click', function(){ drawer.classList.add('hidden'); });
+  var drawerOverlay = drawer.querySelector('.absolute.inset-0');
+  if (drawerOverlay) drawerOverlay.addEventListener('click', function(){ drawer.classList.add('hidden'); });
+  var drawerCloseBtn = document.getElementById('plan-drawer-close');
+  if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', function(){ drawer.classList.add('hidden'); });
+  var drawerXBtn = document.getElementById('plan-drawer-x');
+  if (drawerXBtn) drawerXBtn.addEventListener('click', function(){ drawer.classList.add('hidden'); });
   document.querySelectorAll('.plan-edit-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
       var id = btn.getAttribute('data-plan-id');
-      fetch('/api/admin/plans.php').then(function(r){ return r.json(); }).then(function(res){
+      fetch('/api/admin/plans.php', { credentials: 'same-origin' }).then(function(r){ return r.json(); }).then(function(res){
         if (res.success && res.data) {
-          var p = res.data.find(function(x){ return x.id == id; });
+          var p = null;
+          for (var i = 0; i < res.data.length; i++) {
+            if (res.data[i] && res.data[i].id == id) { p = res.data[i]; break; }
+          }
           if (p) {
             document.getElementById('plan-form-id').value = p.id;
             document.getElementById('plan-form-name').value = p.name;
@@ -399,9 +406,9 @@ if (drawer) {
             setIconSelection(p.icon || 'trending_up');
             document.getElementById('plan-form-min').value = p.min_deposit;
             document.getElementById('plan-form-max').value = p.max_deposit || '';
-            document.getElementById('plan-form-yield').value = p.yield_min ?? p.yield;
-            document.getElementById('plan-form-min-days').value = p.min_duration_days ?? (p.min_duration_months ? p.min_duration_months * 30 : '7');
-            document.getElementById('plan-form-max-days').value = p.max_duration_days ?? (p.max_duration_months ? p.max_duration_months * 30 : '30');
+            document.getElementById('plan-form-yield').value = (p.yield_min !== null && p.yield_min !== undefined) ? p.yield_min : (p.yield || '');
+            document.getElementById('plan-form-min-days').value = (p.min_duration_days !== null && p.min_duration_days !== undefined) ? p.min_duration_days : (p.min_duration_months ? (p.min_duration_months * 30) : '7');
+            document.getElementById('plan-form-max-days').value = (p.max_duration_days !== null && p.max_duration_days !== undefined) ? p.max_duration_days : (p.max_duration_months ? (p.max_duration_months * 30) : '30');
             document.getElementById('plan-form-withdrawal').value = p.withdrawal_days;
             document.getElementById('plan-form-features').value = (p.features || []).join('\n');
             document.getElementById('plan-drawer-title').textContent = 'Edit Plan: ' + p.name;
@@ -422,6 +429,7 @@ if (drawer) {
       fetch('/api/admin/plans.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify({ id: id, enabled: enabled })
       }).then(function(r){ return r.json(); }).then(function(res){
         if (!res.success) { cb.checked = !enabled; alert(res.error || 'Failed'); }
@@ -429,24 +437,29 @@ if (drawer) {
       }).catch(function(){ cb.checked = !enabled; alert('Error'); });
     });
   });
-  document.getElementById('admin-plan-form')?.addEventListener('submit', function(e){
+  var adminPlanForm = document.getElementById('admin-plan-form');
+  if (adminPlanForm) adminPlanForm.addEventListener('submit', function(e){
     e.preventDefault();
     var id = document.getElementById('plan-form-id').value;
     var featuresText = document.getElementById('plan-form-features').value || '';
     var features = featuresText.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
-    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, description: document.getElementById('plan-form-description').value.trim(), icon: document.getElementById('plan-form-icon').value, min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_days: parseInt(document.getElementById('plan-form-min-days').value, 10) || null, max_duration_days: parseInt(document.getElementById('plan-form-max-days').value, 10) || null, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7, features: features };
-    fetch('/api/admin/plans.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+    var minDays = parseInt(document.getElementById('plan-form-min-days').value, 10);
+    var maxDays = parseInt(document.getElementById('plan-form-max-days').value, 10);
+    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, description: document.getElementById('plan-form-description').value.trim(), icon: document.getElementById('plan-form-icon').value, min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_days: isNaN(minDays) ? null : minDays, max_duration_days: isNaN(maxDays) ? null : maxDays, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7, features: features, features_text: featuresText };
+    fetch('/api/admin/plans.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(data) })
       .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { drawer.classList.add('hidden'); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
   });
-  document.getElementById('plan-drawer-backdrop')?.addEventListener('click', function(){ drawer.classList.add('hidden'); });
-  document.getElementById('global-settings-save')?.addEventListener('click', function(){
+  var planDrawerBackdrop = document.getElementById('plan-drawer-backdrop');
+  if (planDrawerBackdrop) planDrawerBackdrop.addEventListener('click', function(){ drawer.classList.add('hidden'); });
+  var globalSaveBtn = document.getElementById('global-settings-save');
+  if (globalSaveBtn) globalSaveBtn.addEventListener('click', function(){
     var btn = this;
     btn.disabled = true;
     var data = {
       max_active_plans_per_user: document.getElementById('global-max-plans').value,
       compounding_enabled: document.getElementById('global-compounding').checked ? '1' : '0'
     };
-    fetch('/api/admin/site-settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+    fetch('/api/admin/site-settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(data) })
       .then(function(r){ return r.json(); })
       .then(function(res){ if (res.success) alert('Settings updated'); else alert(res.error || 'Failed'); })
       .catch(function(){ alert('Error'); })

@@ -167,6 +167,17 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- Ensure plans.features_json can store long feature lists (prevents truncation / invalid JSON)
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'plans' AND COLUMN_NAME = 'features_json');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE plans ADD COLUMN features_json LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL AFTER withdrawal_days',
+    'ALTER TABLE plans MODIFY COLUMN features_json LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'plans' AND COLUMN_NAME = 'min_duration_months');
 SET @sql = IF(@col_exists = 0, 
