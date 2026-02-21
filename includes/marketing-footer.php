@@ -24,8 +24,8 @@ if ($brandAccent !== '') echo '<span class="text-primary">' . htmlspecialchars($
 <a class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center hover:bg-primary transition-colors" href="#"><span class="material-icons text-lg">code</span></a>
 </div>
 <button id="footer-certificate-btn" type="button" class="hidden mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-primary transition-colors">
-<span class="material-icons text-base">shield</span>
-View Certificate
+<span class="material-icons text-base notranslate" translate="no">verified</span>
+<span class="notranslate" translate="no">View Certificate</span>
 </button>
 </div>
 <div>

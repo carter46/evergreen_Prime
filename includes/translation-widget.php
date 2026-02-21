@@ -20,12 +20,11 @@
   window.gtranslateSettings = {
     default_language: 'en',
     detect_browser_language: true,
+    // Languages used by the 50-country picker (one language per country).
     languages: [
-      'en','es','fr','de','it','pt','nl','ru','uk','pl',
-      'tr','ar','fa','he','el','ro','sv','no','da','fi',
-      'cs','hu','bg','sr','hr','sk','lt','lv','et',
-      'zh-CN','zh-TW','ja','ko','vi','th','id','ms','tl',
-      'hi','sw','af','am','ha','yo','ig','zu','km','my','ne','uz'
+      'en','fr','es','pt','de','it','nl','sv','pl','el',
+      'ar','fa','he','sw','am','zh-CN','ja','ko','hi','ur',
+      'bn','th','vi','id','tl'
     ],
     wrapper_selector: '.bb-gtranslate-hidden',
     flag_size: 16,
@@ -45,118 +44,130 @@ document.addEventListener('DOMContentLoaded', function() {
   var menuHomeParent = menu.parentNode;
   var menuHomeNext = menu.nextSibling;
 
-  var labels = {
-    'en':'English','es':'Español','fr':'Français','de':'Deutsch','it':'Italiano','pt':'Português','nl':'Nederlands',
-    'ru':'Русский','uk':'Українська','pl':'Polski','tr':'Türkçe','ar':'العربية','fa':'فارسی','he':'עברית',
-    'el':'Ελληνικά','ro':'Română','sv':'Svenska','no':'Norsk','da':'Dansk','fi':'Suomi','cs':'Čeština','hu':'Magyar',
-    'bg':'Български','sr':'Српски','hr':'Hrvatski','sk':'Slovenčina','lt':'Lietuvių','lv':'Latviešu','et':'Eesti',
-    'zh-CN':'简体中文','zh-TW':'繁體中文','ja':'日本語','ko':'한국어','vi':'Tiếng Việt','th':'ไทย','id':'Bahasa Indonesia',
-    'ms':'Bahasa Melayu','tl':'Filipino','hi':'हिन्दी','sw':'Kiswahili','af':'Afrikaans','am':'አማርኛ','ha':'Hausa',
-    'yo':'Yorùbá','ig':'Igbo','zu':'isiZulu','km':'ភាសាខ្មែរ','my':'မြန်မာ','ne':'नेपाली','uz':'Oʻzbek'
-  };
+  // 50 unique countries by region:
+  // - Africa: 5
+  // - Asia: 10
+  // - Europe: 10
+  // - South America: 10
+  // - North America: 10
+  // - Australia: 1
+  // - Middle East: 4
+  var countries = [
+    // Africa (5)
+    { id: 'za', name: 'South Africa', lang: 'en', flag: 'za' },
+    { id: 'ng', name: 'Nigeria', lang: 'en', flag: 'ng' },
+    { id: 'ke', name: 'Kenya', lang: 'sw', flag: 'ke' },
+    { id: 'et', name: 'Ethiopia', lang: 'am', flag: 'et' },
+    { id: 'eg', name: 'Egypt', lang: 'ar', flag: 'eg' },
 
-  var flags = {
-    'en': 'https://flagcdn.com/24x18/us.png',
-    'es': 'https://flagcdn.com/24x18/es.png',
-    'fr': 'https://flagcdn.com/24x18/fr.png',
-    'de': 'https://flagcdn.com/24x18/de.png',
-    'it': 'https://flagcdn.com/24x18/it.png',
-    'pt': 'https://flagcdn.com/24x18/pt.png',
-    'nl': 'https://flagcdn.com/24x18/nl.png',
-    'ru': 'https://flagcdn.com/24x18/ru.png',
-    'uk': 'https://flagcdn.com/24x18/ua.png',
-    'pl': 'https://flagcdn.com/24x18/pl.png',
-    'tr': 'https://flagcdn.com/24x18/tr.png',
-    'ar': 'https://flagcdn.com/24x18/sa.png',
-    'fa': 'https://flagcdn.com/24x18/ir.png',
-    'he': 'https://flagcdn.com/24x18/il.png',
-    'el': 'https://flagcdn.com/24x18/gr.png',
-    'ro': 'https://flagcdn.com/24x18/ro.png',
-    'sv': 'https://flagcdn.com/24x18/se.png',
-    'no': 'https://flagcdn.com/24x18/no.png',
-    'da': 'https://flagcdn.com/24x18/dk.png',
-    'fi': 'https://flagcdn.com/24x18/fi.png',
-    'cs': 'https://flagcdn.com/24x18/cz.png',
-    'hu': 'https://flagcdn.com/24x18/hu.png',
-    'bg': 'https://flagcdn.com/24x18/bg.png',
-    'sr': 'https://flagcdn.com/24x18/rs.png',
-    'hr': 'https://flagcdn.com/24x18/hr.png',
-    'sk': 'https://flagcdn.com/24x18/sk.png',
-    'lt': 'https://flagcdn.com/24x18/lt.png',
-    'lv': 'https://flagcdn.com/24x18/lv.png',
-    'et': 'https://flagcdn.com/24x18/ee.png',
-    'zh-CN': 'https://flagcdn.com/24x18/cn.png',
-    'zh-TW': 'https://flagcdn.com/24x18/tw.png',
-    'ja': 'https://flagcdn.com/24x18/jp.png',
-    'ko': 'https://flagcdn.com/24x18/kr.png',
-    'vi': 'https://flagcdn.com/24x18/vn.png',
-    'th': 'https://flagcdn.com/24x18/th.png',
-    'id': 'https://flagcdn.com/24x18/id.png',
-    'ms': 'https://flagcdn.com/24x18/my.png',
-    'tl': 'https://flagcdn.com/24x18/ph.png',
-    'hi': 'https://flagcdn.com/24x18/in.png',
-    'sw': 'https://flagcdn.com/24x18/ke.png',
-    'af': 'https://flagcdn.com/24x18/za.png',
-    'am': 'https://flagcdn.com/24x18/et.png',
-    'ha': 'https://flagcdn.com/24x18/ng.png',
-    'yo': 'https://flagcdn.com/24x18/ng.png',
-    'ig': 'https://flagcdn.com/24x18/ng.png',
-    'zu': 'https://flagcdn.com/24x18/za.png',
-    'km': 'https://flagcdn.com/24x18/kh.png',
-    'my': 'https://flagcdn.com/24x18/mm.png',
-    'ne': 'https://flagcdn.com/24x18/np.png',
-    'uz': 'https://flagcdn.com/24x18/uz.png'
-  };
+    // Asia (10)
+    { id: 'cn', name: 'China', lang: 'zh-CN', flag: 'cn' },
+    { id: 'jp', name: 'Japan', lang: 'ja', flag: 'jp' },
+    { id: 'kr', name: 'South Korea', lang: 'ko', flag: 'kr' },
+    { id: 'in', name: 'India', lang: 'hi', flag: 'in' },
+    { id: 'pk', name: 'Pakistan', lang: 'ur', flag: 'pk' },
+    { id: 'bd', name: 'Bangladesh', lang: 'bn', flag: 'bd' },
+    { id: 'th', name: 'Thailand', lang: 'th', flag: 'th' },
+    { id: 'vn', name: 'Vietnam', lang: 'vi', flag: 'vn' },
+    { id: 'id', name: 'Indonesia', lang: 'id', flag: 'id' },
+    { id: 'ph', name: 'Philippines', lang: 'tl', flag: 'ph' },
+
+    // Europe (10)
+    { id: 'gb', name: 'United Kingdom', lang: 'en', flag: 'gb' },
+    { id: 'fr', name: 'France', lang: 'fr', flag: 'fr' },
+    { id: 'de', name: 'Germany', lang: 'de', flag: 'de' },
+    { id: 'it', name: 'Italy', lang: 'it', flag: 'it' },
+    { id: 'es', name: 'Spain', lang: 'es', flag: 'es' },
+    { id: 'pt', name: 'Portugal', lang: 'pt', flag: 'pt' },
+    { id: 'nl', name: 'Netherlands', lang: 'nl', flag: 'nl' },
+    { id: 'se', name: 'Sweden', lang: 'sv', flag: 'se' },
+    { id: 'pl', name: 'Poland', lang: 'pl', flag: 'pl' },
+    { id: 'gr', name: 'Greece', lang: 'el', flag: 'gr' },
+
+    // South America (10)
+    { id: 'br', name: 'Brazil', lang: 'pt', flag: 'br' },
+    { id: 'ar', name: 'Argentina', lang: 'es', flag: 'ar' },
+    { id: 'co', name: 'Colombia', lang: 'es', flag: 'co' },
+    { id: 'pe', name: 'Peru', lang: 'es', flag: 'pe' },
+    { id: 'cl', name: 'Chile', lang: 'es', flag: 'cl' },
+    { id: 'ec', name: 'Ecuador', lang: 'es', flag: 'ec' },
+    { id: 'bo', name: 'Bolivia', lang: 'es', flag: 'bo' },
+    { id: 'py', name: 'Paraguay', lang: 'es', flag: 'py' },
+    { id: 'uy', name: 'Uruguay', lang: 'es', flag: 'uy' },
+    { id: 've', name: 'Venezuela', lang: 'es', flag: 've' },
+
+    // North America (10)
+    { id: 'us', name: 'United States', lang: 'en', flag: 'us' },
+    { id: 'ca', name: 'Canada', lang: 'fr', flag: 'ca' },
+    { id: 'mx', name: 'Mexico', lang: 'es', flag: 'mx' },
+    { id: 'gt', name: 'Guatemala', lang: 'es', flag: 'gt' },
+    { id: 'hn', name: 'Honduras', lang: 'es', flag: 'hn' },
+    { id: 'sv', name: 'El Salvador', lang: 'es', flag: 'sv' },
+    { id: 'ni', name: 'Nicaragua', lang: 'es', flag: 'ni' },
+    { id: 'cr', name: 'Costa Rica', lang: 'es', flag: 'cr' },
+    { id: 'pa', name: 'Panama', lang: 'es', flag: 'pa' },
+    { id: 'jm', name: 'Jamaica', lang: 'en', flag: 'jm' },
+
+    // Australia (1)
+    { id: 'au', name: 'Australia', lang: 'en', flag: 'au' },
+
+    // Middle East (4)
+    { id: 'sa', name: 'Saudi Arabia', lang: 'ar', flag: 'sa' },
+    { id: 'ae', name: 'United Arab Emirates', lang: 'ar', flag: 'ae' },
+    { id: 'ir', name: 'Iran', lang: 'fa', flag: 'ir' },
+    { id: 'il', name: 'Israel', lang: 'he', flag: 'il' }
+  ];
 
   function getStoredLang() {
     try { return localStorage.getItem('gt_selected_lang') || 'en'; } catch (e) { return 'en'; }
+  }
+  function getStoredCountry() {
+    try { return localStorage.getItem('bb_selected_country') || ''; } catch (e) { return ''; }
   }
 
   function setStoredLang(lang) {
     try { localStorage.setItem('gt_selected_lang', lang); } catch (e) {}
   }
+  function setStoredCountry(countryId) {
+    try { localStorage.setItem('bb_selected_country', countryId); } catch (e) {}
+  }
 
-  function updateLabel(lang) {
-    current.textContent = labels[lang] || 'English';
+  function countryFlagUrl(cc) {
+    return 'https://flagcdn.com/24x18/' + String(cc || 'us').toLowerCase() + '.png';
+  }
+
+  function updateLabel(countryId) {
+    var c = countries.find(function(x){ return x.id === countryId; }) || countries.find(function(x){ return x.id === 'us'; }) || countries[0];
+    if (!c) return;
+    current.textContent = c.name;
     if (currentFlag) {
-      var src = flags[lang] || flags['en'];
-      currentFlag.src = src;
-      currentFlag.alt = (labels[lang] || 'English') + ' flag';
+      currentFlag.src = countryFlagUrl(c.flag);
+      currentFlag.alt = c.name + ' flag';
       currentFlag.onerror = function() { currentFlag.style.display = 'none'; };
       currentFlag.style.display = '';
     }
   }
 
-  var languageOrder = [
-    'en','es','fr','de','it','pt','nl','ru','uk','pl',
-    'tr','ar','fa','he','el','ro','sv','no','da','fi',
-    'cs','hu','bg','sr','hr','sk','lt','lv','et',
-    'zh-CN','zh-TW','ja','ko','vi','th','id','ms','tl',
-    'hi','sw','af','am','ha','yo','ig','zu','km','my','ne','uz'
-  ];
-
-  function renderLanguageMenu() {
-    var list = menu.querySelector('[data-bb-lang-items]') || menu.querySelector('.max-h-72') || menu;
+  function renderCountryMenu() {
+    var list = menu.querySelector('[data-bb-lang-items]') || menu.querySelector('[data-bb-country-items]') || menu.querySelector('.max-h-72') || menu;
     if (!list) return;
     list.innerHTML = '';
-
-    languageOrder.forEach(function(lang) {
-      var label = labels[lang] || lang;
-      var flag = flags[lang] || flags['en'];
+    countries.forEach(function(c) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.setAttribute('data-bb-lang', lang);
+      b.setAttribute('data-bb-country', c.id);
+      b.setAttribute('data-bb-lang', c.lang);
       b.className = 'w-full text-left px-4 py-2 text-sm hover:bg-primary/10 notranslate flex items-center gap-2';
       b.setAttribute('translate', 'no');
 
       var img = document.createElement('img');
-      img.src = flag;
-      img.alt = label + ' flag';
+      img.src = countryFlagUrl(c.flag);
+      img.alt = c.name + ' flag';
       img.className = 'w-4 h-4 rounded-sm object-cover shrink-0';
       img.onerror = function() { img.style.display = 'none'; };
 
       var span = document.createElement('span');
-      span.textContent = label;
+      span.textContent = c.name;
       span.className = 'notranslate';
       span.setAttribute('translate', 'no');
 
@@ -175,16 +186,19 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   }
 
-  function applyLanguage(lang) {
-    setStoredLang(lang);
-    updateLabel(lang);
+  function applyCountry(countryId) {
+    var c = countries.find(function(x){ return x.id === countryId; });
+    if (!c) return;
+    setStoredCountry(c.id);
+    setStoredLang(c.lang);
+    updateLabel(c.id);
     if (typeof window.doGTranslate === 'function') {
-      try { window.doGTranslate('en|' + lang); } catch (e) {}
+      try { window.doGTranslate('en|' + c.lang); } catch (e) {}
       return;
     }
     var select = document.querySelector('.bb-gtranslate-hidden select');
     if (select) {
-      select.value = lang;
+      select.value = c.lang;
       select.dispatchEvent(new Event('change', { bubbles: true }));
     }
   }
@@ -230,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function openMenu() {
-    renderLanguageMenu();
+    renderCountryMenu();
     portalMenuToBody();
     positionMenu();
     menu.classList.remove('hidden');
@@ -248,12 +262,12 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   menu.addEventListener('click', function(e) {
-    var item = e.target && e.target.closest ? e.target.closest('[data-bb-lang]') : null;
+    var item = e.target && e.target.closest ? e.target.closest('[data-bb-country]') : null;
     if (!item) return;
     e.preventDefault();
-    var lang = item.getAttribute('data-bb-lang') || 'en';
+    var countryId = item.getAttribute('data-bb-country') || 'us';
     closeMenu();
-    applyLanguage(lang);
+    applyCountry(countryId);
   });
 
   document.addEventListener('click', function(e) {
@@ -271,9 +285,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.key === 'Escape') closeMenu();
   });
 
-  updateLabel(getStoredLang());
+  var initialCountry = getStoredCountry() || 'us';
+  updateLabel(initialCountry);
   protectIconLigatures(document);
-  renderLanguageMenu();
+  renderCountryMenu();
 
   // Keep protecting icons after translation DOM rewrites.
   try {
@@ -292,15 +307,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // If a language was previously selected, re-apply once the engine is ready.
   (function ensureApplied() {
-    var desired = getStoredLang();
-    if (!desired || desired === 'en') return;
+    var desiredCountry = getStoredCountry();
+    if (!desiredCountry) return;
     var attempts = 0;
     var timer = setInterval(function() {
       attempts++;
       var hasEngine = (typeof window.doGTranslate === 'function') || !!document.querySelector('.bb-gtranslate-hidden select');
       if (hasEngine) {
         clearInterval(timer);
-        applyLanguage(desired);
+        applyCountry(desiredCountry);
       } else if (attempts > 30) {
         clearInterval(timer);
       }
