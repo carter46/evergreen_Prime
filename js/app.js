@@ -56,7 +56,7 @@
         const style = document.createElement('style');
         style.id = 'bb-global-loader-style';
         style.textContent = `
-            #bb-global-loader{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(248,248,245,0.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:opacity .18s ease;opacity:0}
+            #bb-global-loader{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(255,255,255,0.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:opacity .18s ease;opacity:0}
             html.dark #bb-global-loader{background:rgba(35,30,15,0.92)}
             #bb-global-loader.bb-show{display:flex;opacity:1}
             #bb-global-loader .bb-name{font-family:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-weight:800;font-size:44px;letter-spacing:-0.02em;line-height:1.05;text-align:center}
@@ -119,15 +119,12 @@
         // Always create it (so we can reuse on transitions)
         ensureGlobalLoader();
 
-        // Always hide on full load (safety net)
+        // Always hide on full load
         window.addEventListener('load', () => hideGlobalLoader(), { once: true });
 
-        // Initial page load: only show if script runs early enough.
-        // app.js is usually loaded at the end of <body>, so showing on "interactive"
-        // would cause a distracting flash overlay.
-        if (document.readyState === 'loading') {
-            showGlobalLoader();
-        }
+        // Show loader immediately so the white overlay and centered animation are visible
+        // while the page finishes loading (app.js often runs at end of body).
+        showGlobalLoader();
 
         let fallbackHideTimer = null;
         const scheduleFallbackHide = () => {

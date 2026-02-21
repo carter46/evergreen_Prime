@@ -634,31 +634,28 @@ foreach ($indexPlans as $p):
     var minAmount = Number(plan.min || 100);
     var maxAmount = plan.max === null ? Math.max(minAmount, 100000) : Number(plan.max);
     if (!Number.isFinite(maxAmount) || maxAmount < minAmount) maxAmount = minAmount;
-    amountEl.min = String(minAmount);
-    amountEl.max = String(maxAmount);
-    amountEl.step = '1';
-    var currentAmount = clamp(parseFloat(amountEl.value || minAmount), minAmount, maxAmount);
-    amountEl.value = String(Math.round(currentAmount));
-    document.getElementById('calc-amount-limits').textContent = '$' + minAmount.toLocaleString() + ' - $' + maxAmount.toLocaleString();
-    document.getElementById('calc-amount-range-text').textContent = 'Plan range: $' + minAmount.toLocaleString() + ' to $' + maxAmount.toLocaleString();
-
     var minMonths = daysToMonths(plan.min_duration_days || plan.duration_days, 1);
     var maxMonths = daysToMonths(plan.max_duration_days || plan.duration_days, minMonths);
     if (maxMonths < minMonths) maxMonths = minMonths;
-    durationEl.min = String(minMonths);
-    durationEl.max = String(maxMonths);
+
+    amountEl.min = '1';
+    amountEl.max = '999999999';
+    amountEl.step = '1';
+    document.getElementById('calc-amount-limits').textContent = 'Any amount';
+    document.getElementById('calc-amount-range-text').textContent = 'Plan range: $' + minAmount.toLocaleString() + ' to $' + maxAmount.toLocaleString();
+
+    durationEl.min = '1';
+    durationEl.max = '600';
     durationEl.step = '1';
-    var currentMonths = clamp(parseInt(durationEl.value || minMonths, 10), minMonths, maxMonths);
-    durationEl.value = String(currentMonths);
-    document.getElementById('calc-duration-limits').textContent = minMonths + ' - ' + maxMonths + ' Months';
-    document.getElementById('calc-duration-range-text').textContent = 'Allowed duration: ' + minMonths + ' to ' + maxMonths + ' months';
+    document.getElementById('calc-duration-limits').textContent = 'Any duration (months)';
+    document.getElementById('calc-duration-range-text').textContent = 'Plan duration: ' + minMonths + ' to ' + maxMonths + ' months';
   }
 
   function updateCalc() {
     var plan = getSelectedPlan();
     if (plan) syncInputsToPlan(plan);
-    var amount = parseFloat(amountEl.value) || 0;
-    var months = parseInt(durationEl.value, 10) || 1;
+    var amount = Math.max(0, parseFloat(amountEl.value) || 0);
+    var months = Math.max(1, parseInt(durationEl.value, 10) || 1);
     var projected = amount;
     var profitPct = 0;
     if (plan) {

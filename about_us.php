@@ -249,14 +249,14 @@ $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
                         "In a world of noise, we provide the clarity of computation. Our goal is to build a bridge to the future of finance."
                     </h3>
 <div class="mb-10">
-<p class="text-xl font-bold">Marcus Thorne</p>
+<p class="text-xl font-bold">Martin Harris</p>
 <p class="text-slate-500">Founder &amp; Chief Executive Officer</p>
 </div>
 <div class="w-48 h-12 bg-primary/5 rounded border border-primary/10 flex items-center justify-center">
-<span class="text-2xl font-display text-primary/80" style="font-family: 'Dancing Script', cursive; font-style: italic;">Marcus Thorne</span>
+<span class="text-2xl font-display text-primary/80" style="font-family: 'Dancing Script', cursive; font-style: italic;">Martin Harris</span>
 </div>
 </div>
-<div class="lg:col-span-7">
+<div class="lg:col-span-7 lg:max-w-xl">
 <?php $headerImage = get_site_setting('header_image', '/bloombit.jpg'); ?>
 <img class="w-full aspect-square object-cover rounded-xl shadow-2xl border border-white/10" alt="<?php echo htmlspecialchars($siteName); ?>" src="<?php echo htmlspecialchars($headerImage); ?>" onerror="this.src='/bloombit.jpg'"/>
 </div>
