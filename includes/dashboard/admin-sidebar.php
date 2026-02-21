@@ -22,7 +22,7 @@ $navClass = function ($page) use ($current) {
         </div>
         <h1 class="font-bold text-xl tracking-tight truncate"><?php echo htmlspecialchars($brandBase); ?><?php if ($brandAccent !== ''): ?><span class="text-primary"><?php echo htmlspecialchars($brandAccent); ?></span><?php endif; ?></h1>
     </a>
-    <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
+    <nav class="flex-1 min-h-0 px-4 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
         <a class="<?php echo $navClass('dashboard'); ?>" href="/dashboard/admin">
             <span class="material-icons text-[20px] shrink-0">dashboard</span>
             <span class="font-medium truncate">Command Center</span>
@@ -56,7 +56,7 @@ $navClass = function ($page) use ($current) {
             <span class="font-medium truncate">Settings</span>
         </a>
     </nav>
-    <div class="p-4 border-t border-primary/10 space-y-1">
+    <div class="p-4 border-t border-primary/10 space-y-1 shrink-0">
         <a class="<?php echo $navClass('communication'); ?>" href="/dashboard/admin/communication">
             <span class="material-icons text-[20px] shrink-0">campaign</span>
             <span class="font-medium truncate">Communication Hub</span>

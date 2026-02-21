@@ -29,7 +29,7 @@ $navClass = function ($page) use ($current) {
         Switch back to Admin
     </a>
     <?php endif; ?>
-    <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+    <nav class="flex-1 min-h-0 px-4 py-4 space-y-2 overflow-y-auto">
         <a class="<?php echo $navClass('dashboard'); ?>" href="/dashboard/user/dashboard">
             <span class="material-icons-round text-[20px]">grid_view</span>
             Dashboard
@@ -59,7 +59,7 @@ $navClass = function ($page) use ($current) {
             KYC
         </a>
     </nav>
-    <div class="p-6">
+    <div class="p-6 shrink-0">
         <div class="bg-primary/10 rounded-2xl p-4 border border-primary/20">
             <p class="text-xs font-medium text-primary mb-1 uppercase tracking-wider">Plan Status</p>
             <p class="text-sm font-bold" data-plan-status>Pro Trader AI active</p>
