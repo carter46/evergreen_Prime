@@ -485,28 +485,30 @@ $ring2 = array_slice($orbitCoins, 6, 4);
 <div>
 <div class="flex justify-between mb-4 font-bold">
 <span>Investment Amount</span>
-<span class="text-primary text-sm" id="calc-amount-limits">$100 - $100,000</span>
+<span class="text-primary text-sm" id="calc-amount-limits">Any amount</span>
 </div>
-<input id="calc-amount" class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium" max="100000" min="100" step="1" type="number" value="25000"/>
+<input id="calc-amount" class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium" type="number" step="any" min="0" placeholder="e.g. 1000" value="1000"/>
 <div class="text-xs text-slate-400 mt-2">
-<span id="calc-amount-range-text">Allowed range updates by selected plan.</span>
+<span id="calc-amount-range-text">Enter any amount. Plan range shown for reference.</span>
 </div>
 </div>
 <div>
 <div class="flex justify-between mb-4 font-bold">
-<span>Duration</span>
-<span class="text-primary text-sm" id="calc-duration-limits">1 - 24 Months</span>
+<span>Duration (days)</span>
+<span class="text-primary text-sm" id="calc-duration-limits">Any duration (days)</span>
 </div>
-<input id="calc-duration" class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium" max="24" min="1" step="1" type="number" value="12"/>
+<input id="calc-duration" class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium" type="number" min="1" step="1" placeholder="e.g. 30" value="30"/>
 <div class="text-xs text-slate-400 mt-2">
-<span id="calc-duration-range-text">Duration range is controlled by plan settings.</span>
+<span id="calc-duration-range-text">Enter number of days. Plan duration shown for reference.</span>
 </div>
 </div>
 </div>
 <div class="bg-primary/5 rounded-2xl p-8 flex flex-col justify-center items-center border border-primary/20">
 <div class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">Projected Return</div>
-<div class="text-5xl font-bold text-black mb-1" id="calc-projected">$43,250</div>
-<div class="text-primary font-bold" id="calc-profit">+73% Profit</div>
+<div class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-1" id="calc-daily-profit">$0/day</div>
+<div class="text-xs text-slate-500 dark:text-slate-400 mb-3" id="calc-total-profit-label">Total profit over 0 days: $0</div>
+<div class="text-5xl font-bold text-black dark:text-white mb-1" id="calc-projected">$0</div>
+<div class="text-primary font-bold" id="calc-profit">+0% Profit</div>
 <div class="mt-8 w-full">
 <a href="/register" class="block w-full py-4 bg-black text-white font-bold rounded-lg hover:bg-slate-800 transition-all text-center">Open Account Now</a>
 </div>
@@ -606,19 +608,6 @@ foreach ($indexPlans as $p):
   var planSelect = document.getElementById('calc-plan');
   if (!amountEl || !durationEl) return;
 
-  function clamp(val, min, max) {
-    if (!Number.isFinite(val)) return min;
-    if (val < min) return min;
-    if (val > max) return max;
-    return val;
-  }
-
-  function daysToMonths(days, fallback) {
-    var d = parseInt(days, 10);
-    if (!d || d < 1) return fallback;
-    return Math.max(1, Math.round(d / 30));
-  }
-
   function getSelectedPlan() {
     if (!plans.length) return null;
     if (planSelect && planSelect.value) {
@@ -631,39 +620,45 @@ foreach ($indexPlans as $p):
 
   function syncInputsToPlan(plan) {
     if (!plan) return;
-    var minAmount = Number(plan.min || 100);
-    var maxAmount = plan.max === null ? Math.max(minAmount, 100000) : Number(plan.max);
-    if (!Number.isFinite(maxAmount) || maxAmount < minAmount) maxAmount = minAmount;
-    var minMonths = daysToMonths(plan.min_duration_days || plan.duration_days, 1);
-    var maxMonths = daysToMonths(plan.max_duration_days || plan.duration_days, minMonths);
-    if (maxMonths < minMonths) maxMonths = minMonths;
+    var minAmount = Number(plan.min || 0);
+    var maxAmount = plan.max === null ? null : Number(plan.max);
+    var minDays = Math.max(1, parseInt(plan.min_duration_days || plan.duration_days, 10) || 1);
+    var maxDays = Math.max(minDays, parseInt(plan.max_duration_days || plan.duration_days, 10) || minDays);
 
-    amountEl.min = '1';
-    amountEl.max = '999999999';
-    amountEl.step = '1';
+    amountEl.removeAttribute('min');
+    amountEl.removeAttribute('max');
+    amountEl.setAttribute('step', 'any');
     document.getElementById('calc-amount-limits').textContent = 'Any amount';
-    document.getElementById('calc-amount-range-text').textContent = 'Plan range: $' + minAmount.toLocaleString() + ' to $' + maxAmount.toLocaleString();
+    document.getElementById('calc-amount-range-text').textContent = maxAmount != null ? ('Plan range: $' + minAmount.toLocaleString() + ' to $' + maxAmount.toLocaleString()) : ('Plan min: $' + minAmount.toLocaleString() + '+');
 
     durationEl.min = '1';
-    durationEl.max = '600';
+    durationEl.removeAttribute('max');
     durationEl.step = '1';
-    document.getElementById('calc-duration-limits').textContent = 'Any duration (months)';
-    document.getElementById('calc-duration-range-text').textContent = 'Plan duration: ' + minMonths + ' to ' + maxMonths + ' months';
+    document.getElementById('calc-duration-limits').textContent = 'Any duration (days)';
+    document.getElementById('calc-duration-range-text').textContent = 'Plan duration: ' + minDays + ' to ' + maxDays + ' days';
   }
 
   function updateCalc() {
     var plan = getSelectedPlan();
     if (plan) syncInputsToPlan(plan);
     var amount = Math.max(0, parseFloat(amountEl.value) || 0);
-    var months = Math.max(1, parseInt(durationEl.value, 10) || 1);
+    var days = Math.max(1, parseInt(durationEl.value, 10) || 1);
+    var dailyProfit = 0;
+    var totalProfit = 0;
     var projected = amount;
     var profitPct = 0;
-    if (plan) {
-      var avgYield = (plan.yield_min + plan.yield_max) / 2;
-      projected = amount * Math.pow(1 + avgYield / 100, months);
-      profitPct = ((projected - amount) / amount * 100).toFixed(1);
+    if (plan && amount > 0) {
+      var dailyRoiPct = (plan.yield_min + plan.yield_max) / 2;
+      dailyProfit = amount * (dailyRoiPct / 100);
+      totalProfit = dailyProfit * days;
+      projected = amount + totalProfit;
+      profitPct = ((totalProfit / amount) * 100).toFixed(1);
     }
-    document.getElementById('calc-projected').textContent = '$' + Math.round(projected).toLocaleString();
+    var dailyEl = document.getElementById('calc-daily-profit');
+    var totalLabelEl = document.getElementById('calc-total-profit-label');
+    if (dailyEl) dailyEl.textContent = '$' + (dailyProfit % 1 ? dailyProfit.toFixed(2) : Math.round(dailyProfit)).toLocaleString() + '/day';
+    if (totalLabelEl) totalLabelEl.textContent = 'Total profit over ' + days + ' days: $' + (totalProfit % 1 ? totalProfit.toFixed(2) : Math.round(totalProfit)).toLocaleString();
+    document.getElementById('calc-projected').textContent = '$' + (projected % 1 ? projected.toFixed(2) : Math.round(projected)).toLocaleString();
     document.getElementById('calc-profit').textContent = '+' + profitPct + '% Profit';
   }
 
