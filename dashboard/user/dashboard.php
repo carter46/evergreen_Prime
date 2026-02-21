@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function animateTradeAmount(el) {
         var current = parseFloat(el.textContent.replace(/[^0-9.-]/g, '')) || 0;
-        var isPositive = el.textContent.includes('+');
+        var isPositive = (el.textContent || '').indexOf('+') !== -1;
         var change = (Math.random() * 200 - 100);
         var newVal = Math.max(0, current + change);
         var absVal = Math.abs(newVal);
@@ -393,11 +393,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updateTrade(el) {
+        if (!el) return;
         var pairEl = el.querySelector('.trade-pair');
         var timeEl = el.querySelector('.trade-time');
         var iconEl = el.querySelector('.trade-icon');
         var amountEl = el.querySelector('.live-trade-amount');
         var iconContainer = el.querySelector('.trade-icon-container');
+        if (!pairEl || !timeEl || !iconEl || !iconContainer) return;
         
         var pair = pairs[Math.floor(Math.random() * pairs.length)];
         var direction = directions[Math.floor(Math.random() * directions.length)];
@@ -422,11 +424,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     var tradeCards = document.querySelectorAll('.live-trade-card');
     tradeCards.forEach(function(card, i) {
-        var amountEl = card.querySelector('.live-trade-amount');
-        if (amountEl) {
-            setInterval(function() { animateTradeAmount(amountEl); }, 3000 + (i * 500));
-        }
-        setInterval(function() { updateTrade(card); }, 8000 + (i * 1000));
+        // GTranslate can rewrite DOM nodes; re-query by index each tick to avoid stale references.
+        setInterval(function () {
+            var cards = document.querySelectorAll('.live-trade-card');
+            var c = cards && cards.length > i ? cards[i] : null;
+            if (!c) return;
+            var amountEl = c.querySelector('.live-trade-amount');
+            if (amountEl) animateTradeAmount(amountEl);
+        }, 3000 + (i * 500));
+
+        setInterval(function () {
+            var cards = document.querySelectorAll('.live-trade-card');
+            var c = cards && cards.length > i ? cards[i] : null;
+            if (!c) return;
+            updateTrade(c);
+        }, 8000 + (i * 1000));
     });
     
     // Chart filter buttons - AJAX

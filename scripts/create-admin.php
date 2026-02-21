@@ -70,5 +70,9 @@ if (!$error) {
         <p class="text-xs text-slate-500">For security, consider deleting or restricting access to this script after use.</p>
     <?php endif; ?>
 </div>
+
+<!-- Translation widget (GTranslate) -->
+<div class="gtranslate_wrapper"></div>
+<?php require_once $root . '/includes/translation-widget.php'; ?>
 </body>
 </html>

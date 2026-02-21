@@ -214,6 +214,10 @@ $siteName = get_site_name();
 </div>
 </div>
 </div>
+
+<!-- Translation widget (GTranslate) -->
+<div class="gtranslate_wrapper"></div>
+<?php require_once __DIR__ . '/includes/translation-widget.php'; ?>
 <?php require_once __DIR__ . '/includes/live-chat-widget.php'; ?>
 <script src="/js/app.js"></script>
 <script>

@@ -35,3 +35,7 @@ $initials = strtoupper(substr($userName ?: 'U', 0, 2));
         </div>
     </div>
 </header>
+
+<!-- Translation widget (GTranslate) -->
+<div class="gtranslate_wrapper"></div>
+<?php require_once __DIR__ . '/../translation-widget.php'; ?>

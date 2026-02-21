@@ -34,3 +34,7 @@
         </div>
     </div>
 </header>
+
+<!-- Translation widget (GTranslate) -->
+<div class="gtranslate_wrapper"></div>
+<?php require_once __DIR__ . '/../translation-widget.php'; ?>
