@@ -81,8 +81,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $features = [];
     }
-    $featuresJson = json_encode($features, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    if ($featuresJson === false) $featuresJson = '[]';
+    // Encode features robustly (avoid silently wiping features on invalid UTF-8 copy/paste)
+    $jsonFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+    if (defined('JSON_INVALID_UTF8_SUBSTITUTE')) {
+        $jsonFlags |= JSON_INVALID_UTF8_SUBSTITUTE;
+    }
+    $featuresJson = json_encode($features, $jsonFlags);
+    if ($featuresJson === false) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Could not save features (unsupported characters). Please retype the features or remove special symbols and try again.'
+        ]);
+        exit;
+    }
     $description = trim($input['description'] ?? '') ?: null;
     $allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 'token'];
     $icon = trim($input['icon'] ?? '') ?: null;

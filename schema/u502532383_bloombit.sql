@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Feb 19, 2026 at 05:45 PM
+-- Generation Time: Feb 21, 2026 at 10:32 AM
 -- Server version: 11.8.3-MariaDB-log
 -- PHP Version: 7.2.34
 
@@ -53,8 +53,8 @@ CREATE TABLE `admin_mailbox` (
 --
 
 INSERT INTO `admin_mailbox` (`id`, `direction`, `source`, `mailbox_folder`, `imap_uid`, `message_id`, `in_reply_to`, `references`, `mail_date`, `from_email`, `from_name`, `to_emails`, `subject`, `body_html`, `body_text`, `status`, `error_text`, `created_at`) VALUES
-(1, 'out', 'admin_compose', NULL, NULL, NULL, NULL, NULL, NULL, 'support@example.com', 'Site', 'mr.carter.tech07@gmail.com', 'reminder of event meeeting', NULL, 'ggggs', 'sent', NULL, '2026-02-18 17:46:55'),
-(2, 'out', 'admin_compose', NULL, NULL, NULL, NULL, NULL, NULL, 'support@example.com', 'Site', 'j.donovan@gmail.com, billyfredrickgibbons@gmail.com', 'reminder of event meeeting', NULL, 'ggggs', 'sent', NULL, '2026-02-18 17:46:56');
+(1, 'out', 'admin_compose', NULL, NULL, NULL, NULL, NULL, NULL, 'support@bloombitfx.com', 'Bloombit', 'mr.carter.tech07@gmail.com', 'reminder of event meeeting', NULL, 'ggggs', 'sent', NULL, '2026-02-18 17:46:55'),
+(2, 'out', 'admin_compose', NULL, NULL, NULL, NULL, NULL, NULL, 'support@bloombitfx.com', 'Bloombit', 'j.donovan@gmail.com, billyfredrickgibbons@gmail.com', 'reminder of event meeeting', NULL, 'ggggs', 'sent', NULL, '2026-02-18 17:46:56');
 
 -- --------------------------------------------------------
 
@@ -160,7 +160,18 @@ INSERT INTO `email_otp_codes` (`id`, `email`, `otp`, `purpose`, `expires_at`, `u
 (3, 'e.l.ian.tr.a.v.is.s.s@gmail.com', '571074', 'register', '2026-02-18 21:43:51', 0, '2026-02-18 21:33:51'),
 (4, 'j.o.n.n.a.r.uel.in@gmail.com', '974977', 'register', '2026-02-18 21:53:44', 0, '2026-02-18 21:43:44'),
 (5, 'mr.carter.tech07@gmail.com', '738084', 'register', '2026-02-19 10:12:30', 1, '2026-02-19 10:02:30'),
-(6, 'mr.carter.tech07@gmail.com', '567563', 'register', '2026-02-19 17:37:57', 1, '2026-02-19 17:27:57');
+(6, 'mr.carter.tech07@gmail.com', '567563', 'register', '2026-02-19 17:37:57', 1, '2026-02-19 17:27:57'),
+(7, 'mr.carter.tech07@gmail.com', '672961', 'register', '2026-02-19 19:23:01', 1, '2026-02-19 19:13:01'),
+(8, 'billyfredrickgibbons@gmail.com', '596500', 'register', '2026-02-19 19:42:14', 1, '2026-02-19 19:32:14'),
+(9, 'billyfredrickgibbons@gmail.com', '131047', 'register', '2026-02-19 19:44:36', 1, '2026-02-19 19:34:36'),
+(10, 'mr.carter.tech07@gmail.com', '421096', 'register', '2026-02-19 20:15:42', 1, '2026-02-19 20:05:42'),
+(11, 'mr.carter.tech07@gmail.com', '300548', 'register', '2026-02-19 20:17:12', 1, '2026-02-19 20:07:12'),
+(12, 'mr.carter.tech07@gmail.com', '211105', 'register', '2026-02-19 20:45:29', 1, '2026-02-19 20:35:29'),
+(13, 'mr.carter.tech07@gmail.com', '486287', 'register', '2026-02-19 20:47:00', 1, '2026-02-19 20:37:00'),
+(14, 'mr.carter.tech07@gmail.com', '107239', 'register', '2026-02-19 22:21:17', 1, '2026-02-19 22:11:17'),
+(15, 'murungibetty621@gmail.com', '986487', 'register', '2026-02-20 08:39:07', 1, '2026-02-20 08:29:07'),
+(16, 'mr.carter.tech07@gmail.com', '326753', 'login', '2026-02-21 10:16:41', 1, '2026-02-21 10:06:41'),
+(17, 'mr.carter.tech07@gmail.com', '890391', 'login', '2026-02-21 10:19:26', 1, '2026-02-21 10:09:26');
 
 -- --------------------------------------------------------
 
@@ -243,9 +254,11 @@ CREATE TABLE `plans` (
 --
 
 INSERT INTO `plans` (`id`, `name`, `slug`, `description`, `icon`, `min_deposit`, `max_deposit`, `yield_min`, `yield_max`, `duration_days`, `withdrawal_days`, `min_duration_months`, `max_duration_months`, `min_duration_days`, `max_duration_days`, `features_json`, `enabled`, `sort_order`, `created_at`, `updated_at`) VALUES
-(1, 'Basic', 'basic', NULL, 'trending_up', 100.00, 2500.00, 10.00, 10.00, 60, 7, 1, 3, 30, 90, '[]', 1, 0, '2026-02-15 01:07:56', '2026-02-18 01:51:16'),
-(2, 'Growth', 'growth', NULL, NULL, 2501.00, 10000.00, 1.50, 2.50, 30, 3, NULL, NULL, NULL, NULL, '[\"$2,501 - $10,000 Deposit Range\",\"Advanced AI Strategy\",\"Bi-Weekly Withdrawals\",\"10 Active Trading Bots\",\"Priority AI Sentiment Core\",\"24/7 Live Chat Support\",\"Advanced Analytics Pro\"]', 1, 2, '2026-02-15 01:07:56', '2026-02-15 01:33:55'),
-(3, 'Premium', 'premium', NULL, NULL, 10001.00, NULL, 3.00, 5.00, 30, 0, NULL, NULL, NULL, NULL, '[\"$10,001+ Deposit (No Cap)\",\"Institutional AI Strategy\",\"Instant Withdrawals\",\"Unlimited Trading Bots\",\"Dedicated Portfolio Manager\",\"Custom Strategy API Access\",\"Low-Latency Node Direct\"]', 1, 3, '2026-02-15 01:07:56', '2026-02-15 01:33:55');
+(1, 'Basic', 'basic', 'Ideal for new comers and beginners', 'trending_up', 200.00, 599.00, 5.00, 5.00, 46, 7, 1, 3, 1, 90, '[\"Advanced AI Strategy\",\"Bi-Weekly Withdrawals\",\"5 Active Trading Bots\",\"Priority AI Sentiment Core\",\"24/7 Live Chat Support\",\"Advanced Analytics Pro\"]', 1, 0, '2026-02-15 01:07:56', '2026-02-21 10:28:38'),
+(2, 'Standard', 'standard', 'For intermediary and risk takers', 'rocket_launch', 600.00, 4999.00, 6.50, 6.50, 19, 7, NULL, NULL, 7, 30, '[\"Advanced AI Strategy\",\"Bi-Weekly Withdrawals\",\"10 Active Trading Bots\",\"Priority AI Sentiment Core\",\"24\\/7 Live Chat Support\",\"Advanced Analytics Pro\"]', 1, 0, '2026-02-15 01:07:56', '2026-02-20 02:54:54'),
+(3, 'Premium', 'premium', 'Best for Seasoned traders with high stakes', 'diamond', 5000.00, 11999.00, 9.00, 9.00, 20, 10, NULL, NULL, 10, 30, '[]', 1, 0, '2026-02-15 01:07:56', '2026-02-21 10:30:27'),
+(31, 'Supreme', 'supreme', 'Best For Bloom Enthusiast', 'currency_bitcoin', 12000.00, 49999.00, 12.00, 12.00, 53, 30, NULL, NULL, 15, 90, '[]', 1, 0, '2026-02-20 02:58:32', '2026-02-21 10:29:51'),
+(33, 'Ultra', 'ultra', 'Best for Seasoned traders with high stakes', 'token', 50000.00, 200000.00, 13.00, 13.00, 60, 30, NULL, NULL, 30, 90, '[]', 1, 0, '2026-02-20 03:01:29', '2026-02-21 10:30:01');
 
 -- --------------------------------------------------------
 
@@ -264,12 +277,13 @@ CREATE TABLE `site_settings` (
 --
 
 INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
-('about_youtube_url', 'https://www.youtube.com/watch?v=c-ZQL2VxSrE', '2026-02-19 08:45:01'),
+('about_youtube_url', 'https://youtu.be/SC63qBUhCkg', '2026-02-20 02:40:55'),
 ('active_traders', '12.8M+', '2026-02-15 01:07:56'),
 ('btc_dominance', '52.4%', '2026-02-15 01:07:56'),
 ('compounding_enabled', '0', '2026-02-15 21:51:02'),
-('contact_email', 'legal@example.com', '2026-02-15 01:07:56'),
-('distribution_interval', 'daily', '2026-02-18 02:31:54'),
+('contact_email', 'legal@bloombit.com', '2026-02-15 01:07:56'),
+('deposit_countdown_minutes', '5', '2026-02-19 23:43:21'),
+('distribution_interval', 'daily', '2026-02-20 11:33:16'),
 ('distribution_start_time', '09:00:00', '2026-02-17 21:53:51'),
 ('earnings_paused', '0', '2026-02-17 21:53:51'),
 ('footer_description', 'Leading the future of decentralized finance with advanced artificial intelligence and machine learning technologies.', '2026-02-15 01:07:56'),
@@ -278,37 +292,36 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 ('hero_subtitle', 'Automate your wealth with institutional-grade machine learning algorithms. Deploy sophisticated bots that trade 24/7 while you sleep.', '2026-02-15 01:33:55'),
 ('hero_title', 'Smarter Crypto Investing Powered by Advanced AI', '2026-02-15 01:33:55'),
 ('homepage_modal_image', '/uploads/site/modal_image_1771494314.png', '2026-02-19 09:45:14'),
-('homepage_youtube_url', 'https://www.youtube.com/watch?v=c-ZQL2VxSrE', '2026-02-19 08:39:02'),
+('homepage_youtube_url', 'https://youtu.be/6G1yzLL_Ay8', '2026-02-20 02:08:05'),
 ('investors_count', '45000', '2026-02-15 01:07:56'),
-('mail_from_email', 'support@example.com', '2026-02-18 17:35:18'),
-('mail_from_name', 'Site', '2026-02-18 16:48:37'),
+('mail_from_email', 'support@bloombitfx.com', '2026-02-18 17:35:18'),
+('mail_from_name', 'Bloombit', '2026-02-18 16:48:37'),
 ('mail_imap_encryption', 'ssl', '2026-02-18 16:48:37'),
 ('mail_imap_host', 'imap.hostinger.com', '2026-02-18 17:35:18'),
 ('mail_imap_password', 'Secretpass0721//', '2026-02-18 17:35:18'),
 ('mail_imap_port', '993', '2026-02-18 16:48:37'),
 ('mail_imap_sent_folder', 'Sent', '2026-02-18 16:48:37'),
-('mail_imap_username', 'support@example.com', '2026-02-18 17:35:18'),
-('mail_reply_to', 'support@example.com', '2026-02-18 17:35:18'),
+('mail_imap_username', 'support@bloombitfx.com', '2026-02-18 17:35:18'),
+('mail_reply_to', 'support@bloombitfx.com', '2026-02-18 17:35:18'),
 ('mail_smtp_encryption', 'ssl', '2026-02-18 17:35:18'),
 ('mail_smtp_host', 'smtp.hostinger.com', '2026-02-18 17:35:18'),
 ('mail_smtp_password', 'Secretpass0721//', '2026-02-18 17:35:18'),
 ('mail_smtp_port', '465', '2026-02-18 17:35:18'),
-('mail_smtp_username', 'support@example.com', '2026-02-18 17:35:18'),
+('mail_smtp_username', 'support@bloombitfx.com', '2026-02-18 17:35:18'),
 ('market_cap', '$2.45T', '2026-02-15 01:07:56'),
 ('max_active_plans_per_user', '3', '2026-02-15 21:51:02'),
 ('max_withdrawal_limit', '50000', '2026-02-17 21:53:51'),
 ('min_withdrawal_limit', '10', '2026-02-15 21:51:02'),
-('deposit_countdown_minutes', '30', '2026-02-19 18:00:00'),
 ('office_address', '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom', '2026-02-19 16:52:54'),
 ('office_title', 'London Office', '2026-02-19 16:52:54'),
 ('site_favicon', '/uploads/site/favicon_1771518481.png', '2026-02-19 16:28:01'),
-('site_name', 'Site', '2026-02-15 01:07:56'),
+('site_name', 'Bloombit FX', '2026-02-20 09:29:08'),
 ('smartsupp_key', '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d', '2026-02-19 16:52:54'),
 ('stats_assets', '$4.2B+', '2026-02-15 01:07:56'),
 ('stats_bots', '85k+', '2026-02-15 01:07:56'),
 ('stats_roi', '12.4%', '2026-02-15 01:07:56'),
 ('stats_uptime', '99.9%', '2026-02-15 01:07:56'),
-('support_email', 'support@example.com', '2026-02-15 01:33:55'),
+('support_email', 'support@bloombit.com', '2026-02-15 01:33:55'),
 ('tagline', 'AI Crypto Trading', '2026-02-15 01:07:56'),
 ('volume_24h', '$84.2B', '2026-02-15 01:07:56');
 
@@ -336,31 +349,41 @@ CREATE TABLE `transactions` (
 -- Dumping data for table `transactions`
 --
 
-INSERT INTO `transactions` (`id`, `user_id`, `type`, `amount`, `amount_usd`, `currency`, `status`, `reference`, `created_at`) VALUES
-(4, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-15 14:50:08'),
-(5, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-15 14:50:08'),
-(7, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-15 18:17:55'),
-(8, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-15 18:17:55'),
-(10, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-15 20:59:03'),
-(11, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-15 20:59:03'),
-(13, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-15 21:51:03'),
-(14, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-15 21:51:03'),
-(16, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-15 23:56:22'),
-(17, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-15 23:56:22'),
-(19, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-16 00:42:41'),
-(20, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-16 00:42:41'),
-(22, 9, 'deposit', 500.000000000000000000, NULL, 'ETH', 'rejected', NULL, '2026-02-16 11:40:11'),
-(23, 9, 'deposit', 2000.000000000000000000, NULL, 'USDT', 'rejected', NULL, '2026-02-17 00:32:33'),
-(24, 9, 'investment', 0.010000000000000000, NULL, 'BTC', 'completed', NULL, '2026-02-17 01:00:09'),
-(26, 9, 'deposit', 25000.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-17 01:27:55'),
-(29, 9, 'payout', 384.000000000000000000, NULL, 'USDT', 'completed', 'earnings_inv_5', '2026-02-17 21:59:03'),
-(30, 9, 'payout', 2.995000000000000000, NULL, 'USDT', 'completed', 'earnings_inv_7', '2026-02-17 21:59:03'),
-(33, 9, 'deposit', 599.000000000000000000, NULL, 'USDT', 'completed', NULL, '2026-02-18 00:32:12'),
-(34, 9, 'deposit', 1200.000000000000000000, NULL, 'USDT', 'completed', NULL, '2026-02-18 00:32:14'),
-(35, 9, 'withdrawal', 1.239500000000000046, NULL, 'BTC', 'completed', 'admin_debit_1_9_20260218_003310', '2026-02-18 00:33:10'),
-(36, 9, 'withdrawal', 25000.000000000000000000, NULL, 'USD', 'completed', 'admin_debit_1_9_20260218_003326', '2026-02-18 00:33:26'),
-(37, 9, 'withdrawal', 2185.994999999999890861, NULL, 'USDT', 'completed', 'admin_debit_1_9_20260218_003346', '2026-02-18 00:33:46'),
-(38, 9, 'withdrawal', 4.820999999999999730, NULL, 'ETH', 'completed', 'admin_debit_1_9_20260218_003405', '2026-02-18 00:34:05');
+INSERT INTO `transactions` (`id`, `user_id`, `type`, `amount`, `amount_usd`, `currency`, `status`, `reference`, `created_at`, `expires_at`, `user_confirmed_at`) VALUES
+(4, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-15 14:50:08', NULL, NULL),
+(5, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-15 14:50:08', NULL, NULL),
+(7, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-15 18:17:55', NULL, NULL),
+(8, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-15 18:17:55', NULL, NULL),
+(10, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-15 20:59:03', NULL, NULL),
+(11, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-15 20:59:03', NULL, NULL),
+(13, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-15 21:51:03', NULL, NULL),
+(14, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-15 21:51:03', NULL, NULL),
+(16, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-15 23:56:22', NULL, NULL),
+(17, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-15 23:56:22', NULL, NULL),
+(19, 9, 'deposit', 500.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-16 00:42:41', NULL, NULL),
+(20, 9, 'withdrawal', 500.000000000000000000, NULL, 'USD', 'pending', NULL, '2026-02-16 00:42:41', NULL, NULL),
+(22, 9, 'deposit', 500.000000000000000000, NULL, 'ETH', 'rejected', NULL, '2026-02-16 11:40:11', NULL, NULL),
+(23, 9, 'deposit', 2000.000000000000000000, NULL, 'USDT', 'rejected', NULL, '2026-02-17 00:32:33', NULL, NULL),
+(24, 9, 'investment', 0.010000000000000000, NULL, 'BTC', 'completed', NULL, '2026-02-17 01:00:09', NULL, NULL),
+(26, 9, 'deposit', 25000.000000000000000000, NULL, 'USD', 'completed', NULL, '2026-02-17 01:27:55', NULL, NULL),
+(29, 9, 'payout', 384.000000000000000000, NULL, 'USDT', 'completed', 'earnings_inv_5', '2026-02-17 21:59:03', NULL, NULL),
+(30, 9, 'payout', 2.995000000000000000, NULL, 'USDT', 'completed', 'earnings_inv_7', '2026-02-17 21:59:03', NULL, NULL),
+(33, 9, 'deposit', 599.000000000000000000, NULL, 'USDT', 'completed', NULL, '2026-02-18 00:32:12', NULL, NULL),
+(34, 9, 'deposit', 1200.000000000000000000, NULL, 'USDT', 'completed', NULL, '2026-02-18 00:32:14', NULL, NULL),
+(35, 9, 'withdrawal', 1.239500000000000046, NULL, 'BTC', 'completed', 'admin_debit_1_9_20260218_003310', '2026-02-18 00:33:10', NULL, NULL),
+(36, 9, 'withdrawal', 25000.000000000000000000, NULL, 'USD', 'completed', 'admin_debit_1_9_20260218_003326', '2026-02-18 00:33:26', NULL, NULL),
+(37, 9, 'withdrawal', 2185.994999999999890861, NULL, 'USDT', 'completed', 'admin_debit_1_9_20260218_003346', '2026-02-18 00:33:46', NULL, NULL),
+(38, 9, 'withdrawal', 4.820999999999999730, NULL, 'ETH', 'completed', 'admin_debit_1_9_20260218_003405', '2026-02-18 00:34:05', NULL, NULL),
+(57, 49, 'deposit', 0.007470156723888067, 500.00, 'BTC', 'pending', NULL, '2026-02-19 23:39:29', NULL, NULL),
+(58, 49, 'deposit', 0.089659294680215176, 6000.00, 'BTC', 'completed', NULL, '2026-02-19 23:43:59', '2026-02-19 23:48:59', '2026-02-19 23:45:17'),
+(59, 49, 'deposit', 0.134442734863988778, 9000.00, 'BTC', 'failed', NULL, '2026-02-19 23:46:26', '2026-02-19 23:51:26', NULL),
+(60, 50, 'deposit', 11000.000000000000000000, 11000.00, 'USDT', 'completed', NULL, '2026-02-20 08:33:37', '2026-02-20 08:38:37', '2026-02-20 08:34:02'),
+(61, 50, 'investment', 11000.000000000000000000, NULL, 'USDT', 'completed', NULL, '2026-02-20 10:25:45', NULL, NULL),
+(62, 50, 'payout', 990.000000000000000000, 990.00, 'USDT', 'completed', 'earnings_inv_11', '2026-02-20 11:05:03', NULL, NULL),
+(63, 50, 'payout', 990.000000000000000000, 990.00, 'USDT', 'completed', 'earnings_inv_11', '2026-02-20 11:10:03', NULL, NULL),
+(64, 50, 'payout', 990.000000000000000000, 990.00, 'USDT', 'completed', 'earnings_inv_11', '2026-02-20 11:15:03', NULL, NULL),
+(65, 50, 'payout', 990.000000000000000000, 990.00, 'USDT', 'completed', 'earnings_inv_11', '2026-02-20 11:20:04', NULL, NULL),
+(66, 50, 'payout', 990.000000000000000000, 990.00, 'USDT', 'completed', 'earnings_inv_11', '2026-02-20 11:30:03', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -372,7 +395,7 @@ CREATE TABLE `users` (
   `id` int(10) UNSIGNED NOT NULL,
   `email` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
-  `name` varchar(255) DEFAULT '',
+  `name` varchar(255) NOT NULL DEFAULT '',
   `role` enum('user','admin') NOT NULL DEFAULT 'user',
   `email_verified` tinyint(1) NOT NULL DEFAULT 0,
   `active` tinyint(1) NOT NULL DEFAULT 1,
@@ -394,9 +417,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `name`, `role`, `email_verified`, `active`, `two_factor_enabled`, `created_at`, `updated_at`, `admin_notes`, `avatar_url`, `phone_number`, `country`, `referral_code`, `last_balance_usd`, `last_balance_usd_updated_at`, `kyc_status`) VALUES
-(1, 'admin@mail.com', '$2y$10$MuSCe0zBsM6nKIvNGzT5Mu8D0JlcoDmdR7lU.xyZtkJFVZeAKB0c6', 'Admin', 'admin', 1, 1, 0, '2026-02-15 01:25:45', '2026-02-15 01:36:16', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, 'none'),
+(1, 'admin@mail.com', '$2y$10$MuSCe0zBsM6nKIvNGzT5Mu8D0JlcoDmdR7lU.xyZtkJFVZeAKB0c6', 'Admin', 'admin', 1, 1, 0, '2026-02-15 01:25:45', '2026-02-19 19:04:31', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, 'none'),
 (9, 'j.donovan@gmail.com', '$2y$10$JTg6nQYebZOEaKheTc.O0u3xuTML8itKcWuq18p8q/zqHLAVjx.3e', 'James Donovan', 'user', 1, 1, 1, '2026-02-15 14:50:08', '2026-02-18 00:34:05', NULL, '/uploads/avatars/9_1771167884.jpg', NULL, 'United States', NULL, 0.01, '2026-02-18 00:34:05', 'verified'),
-(43, 'mr.carter.tech07@gmail.com', '$2y$10$hOGUvQ7qSuGb4XpmFQf8p.6Y4NvJCcMzG4BY1CheBKUeK2kPUOWW6', 'mr.carter.tech07', 'user', 1, 1, 0, '2026-02-19 17:29:45', '2026-02-19 17:29:45', NULL, NULL, '+23491347593', NULL, NULL, 0.00, NULL, 'none');
+(49, 'mr.carter.tech07@gmail.com', '$2y$10$437lyEG9BVfV0JYwBqIcbO03nChjWcb0LM96Y1cxCyZ0jnzQ4ObFq', 'carter tech', 'user', 1, 1, 1, '2026-02-19 22:12:09', '2026-02-21 09:34:12', NULL, NULL, '+24391347593', NULL, NULL, 6000.00, '2026-02-19 23:45:36', 'none'),
+(50, 'murungibetty621@gmail.com', '$2y$10$kYf1LKJlgLhsFfQgIlGHsuz0JhHaCiqe60fmp50RklYzVmLKMQUe.', 'Murungi', 'user', 1, 1, 0, '2026-02-20 08:30:11', '2026-02-20 11:30:03', NULL, NULL, '09164592654', NULL, NULL, 4950.00, '2026-02-20 11:30:03', 'none');
 
 -- --------------------------------------------------------
 
@@ -423,7 +447,8 @@ CREATE TABLE `user_investments` (
 INSERT INTO `user_investments` (`id`, `user_id`, `plan_id`, `amount`, `duration_days`, `start_date`, `status`, `last_earnings_at`, `created_at`) VALUES
 (5, 9, 1, 1200.00, NULL, '2025-12-15', 'cancelled', '2026-02-17 21:59:03', '2026-02-15 14:50:08'),
 (6, 9, 2, 25000.00, NULL, '2026-02-01', 'cancelled', NULL, '2026-02-15 14:50:08'),
-(7, 9, 1, 599.00, 45, '2026-02-17', 'cancelled', '2026-02-17 21:59:03', '2026-02-17 01:00:09');
+(7, 9, 1, 599.00, 45, '2026-02-17', 'cancelled', '2026-02-17 21:59:03', '2026-02-17 01:00:09'),
+(11, 50, 3, 11000.00, 10, '2026-02-20', 'active', '2026-02-20 11:30:03', '2026-02-20 10:25:45');
 
 -- --------------------------------------------------------
 
@@ -477,7 +502,9 @@ INSERT INTO `wallet_balances` (`id`, `user_id`, `currency`, `amount`, `updated_a
 (9, 9, 'BTC', 0.000000180096438651, '2026-02-18 00:33:10'),
 (10, 9, 'ETH', 0.000000000000000000, '2026-02-18 00:34:05'),
 (39, 9, 'USD', 0.000000000000000000, '2026-02-18 00:33:26'),
-(44, 9, 'USDT', 0.000000000000000000, '2026-02-18 00:33:46');
+(44, 9, 'USDT', 0.000000000000000000, '2026-02-18 00:33:46'),
+(59, 49, 'BTC', 0.089659294680215176, '2026-02-19 23:45:36'),
+(60, 50, 'USDT', 4950.000000000000000000, '2026-02-20 11:30:03');
 
 --
 -- Indexes for dumped tables
@@ -616,7 +643,7 @@ ALTER TABLE `coins`
 -- AUTO_INCREMENT for table `email_otp_codes`
 --
 ALTER TABLE `email_otp_codes`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `kyc_submissions`
@@ -628,31 +655,31 @@ ALTER TABLE `kyc_submissions`
 -- AUTO_INCREMENT for table `pending_registrations`
 --
 ALTER TABLE `pending_registrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `plans`
 --
 ALTER TABLE `plans`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- AUTO_INCREMENT for table `user_investments`
 --
 ALTER TABLE `user_investments`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `wallet_addresses`
@@ -664,7 +691,7 @@ ALTER TABLE `wallet_addresses`
 -- AUTO_INCREMENT for table `wallet_balances`
 --
 ALTER TABLE `wallet_balances`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- Constraints for dumped tables
