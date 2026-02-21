@@ -174,6 +174,9 @@ foreach ($adminPlans as $idx => $p):
 <button type="button" class="plan-edit-btn w-10 h-10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 transition-colors" data-plan-id="<?php echo (int)$p['id']; ?>">
 <span class="material-icons-round text-sm">edit</span>
 </button>
+<button type="button" class="plan-delete-btn w-10 h-10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-zinc-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600" data-plan-id="<?php echo (int)$p['id']; ?>" data-plan-name="<?php echo htmlspecialchars($p['name']); ?>">
+<span class="material-icons-round text-sm">delete</span>
+</button>
 <label class="relative inline-flex items-center cursor-pointer" title="<?php echo $activeUsers > 0 ? 'Cannot disable: plan has ' . $activeUsers . ' active user(s)' : ''; ?>">
 <input class="sr-only peer plan-enabled-toggle" type="checkbox" data-plan-id="<?php echo (int)$p['id']; ?>" data-active-users="<?php echo $activeUsers; ?>" <?php echo $enabled ? 'checked' : ''; ?> <?php echo $activeUsers > 0 ? 'disabled' : ''; ?>/>
 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
@@ -417,6 +420,24 @@ if (drawer) {
           }
         }
       });
+    });
+  });
+
+  document.querySelectorAll('.plan-delete-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-plan-id');
+      var name = btn.getAttribute('data-plan-name') || 'this plan';
+      if (!id) return;
+      if (!confirm('Delete ' + name + '?\\n\\nThis can only delete plans with NO investment history. Otherwise, disable the plan instead.')) return;
+      fetch('/api/admin/plans.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ action: 'delete', id: parseInt(id, 10) })
+      }).then(function(r){ return r.json(); }).then(function(res){
+        if (res.success) window.location.reload();
+        else alert(res.error || 'Failed to delete');
+      }).catch(function(){ alert('Error'); });
     });
   });
   document.querySelectorAll('.plan-enabled-toggle').forEach(function(cb){

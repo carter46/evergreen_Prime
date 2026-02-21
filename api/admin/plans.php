@@ -55,7 +55,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $action = trim((string)($input['action'] ?? ''));
     $id = isset($input['id']) ? (int) $input['id'] : 0;
+
+    // Delete plan (safe: only if there are no investments at all for the plan)
+    if ($action === 'delete') {
+        if ($id <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Invalid plan id']);
+            exit;
+        }
+        try {
+            $cnt = $pdo->prepare('SELECT COUNT(*) FROM user_investments WHERE plan_id = ?');
+            $cnt->execute([$id]);
+            $total = (int) $cnt->fetchColumn();
+            if ($total > 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Cannot delete: this plan has ' . $total . ' investment record(s). Disable it instead to preserve history.']);
+                exit;
+            }
+            $del = $pdo->prepare('DELETE FROM plans WHERE id = ?');
+            $del->execute([$id]);
+            echo json_encode(['success' => true, 'data' => ['message' => 'Plan deleted']]);
+            exit;
+        } catch (Throwable $e) {
+            $config = include dirname(__DIR__, 2) . '/config.php';
+            $msg = ($config['site']['debug'] ?? false)
+                ? ('Unable to delete plan: ' . $e->getMessage())
+                : 'Unable to delete plan.';
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $msg]);
+            exit;
+        }
+    }
     $name = trim($input['name'] ?? '');
     $slug = trim($input['slug'] ?? '') ?: strtolower(trim((string) preg_replace('/[^a-z0-9]+/i', '-', $name), '-'));
     if ($slug === '') $slug = 'plan-' . time();
