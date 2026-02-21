@@ -13,7 +13,7 @@
         style.id = 'bb-i18n-safe-style';
         style.textContent = `
           /* i18n-safe layout: prevent horizontal scroll on longer translations */
-          html, body { max-width: 100%; overflow-x: hidden; }
+          html, body { max-width: 100%; overflow-x: hidden; overflow-x: clip; }
 
           /* Allow long translated words/URLs to wrap instead of expanding layout */
           :where(h1,h2,h3,h4,h5,h6,p,li,span,a,button,label,small,strong,em) {
@@ -27,8 +27,79 @@
 
           /* Ensure common media never forces x-overflow */
           img, svg, video, canvas { max-width: 100%; height: auto; }
+
+          /* Google translate UI elements can cause overflow/overlap */
+          iframe.skiptranslate, .goog-te-banner-frame.skiptranslate { display: none !important; }
+          #goog-gt-tt, .goog-tooltip, .goog-tooltip:hover { display: none !important; }
+          .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+
+          /* When translated, be more aggressive about wrapping buttons/links */
+          html.bb-translated :where(a,button,[role="button"]) { white-space: normal; }
+          html.bb-translated :where(a,button,[role="button"]).flex,
+          html.bb-translated :where(a,button,[role="button"]).inline-flex { flex-wrap: wrap; }
+          html.bb-translated :where(.truncate, .whitespace-nowrap) { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; }
+
+          /* Avoid fixed-height clipping when translated (common with Tailwind h-* buttons/inputs) */
+          html.bb-translated :where(a,button,input,select,textarea)[class*="h-"] { height: auto !important; }
+          html.bb-translated :where(a,button)[class*="py-"] { line-height: 1.2; }
         `;
         document.head.appendChild(style);
+    }
+
+    function syncTranslatedState() {
+        try {
+            const lang = (localStorage.getItem('gt_selected_lang') || 'en').trim();
+            const isTranslated = lang && lang !== 'en';
+            document.documentElement.classList.toggle('bb-translated', !!isTranslated);
+            if (lang) document.documentElement.setAttribute('lang', lang);
+        } catch (e) { }
+    }
+
+    function protectMaterialIcons(scope) {
+        const root = scope && scope.querySelectorAll ? scope : document;
+        const nodes = root.querySelectorAll('.material-icons, .material-icons-round, .material-symbols-outlined, .material-symbols-rounded, .material-icons-outlined');
+        nodes.forEach(function (el) {
+            try {
+                el.classList.add('notranslate');
+                el.setAttribute('translate', 'no');
+                el.setAttribute('aria-hidden', 'true');
+                // Preserve / restore the ligature text so translation doesn't break icons.
+                const dataIcon = el.getAttribute('data-icon');
+                if (dataIcon) {
+                    if (el.textContent.trim() !== dataIcon) el.textContent = dataIcon;
+                } else {
+                    if (!el.dataset.bbIconLigature) {
+                        el.dataset.bbIconLigature = el.textContent.trim();
+                    }
+                    const original = el.dataset.bbIconLigature;
+                    if (original && el.textContent.trim() !== original) el.textContent = original;
+                }
+            } catch (e) { }
+        });
+    }
+
+    function observeTranslationSideEffects() {
+        // Re-apply icon protection after DOM rewrites by GTranslate.
+        try {
+            const mo = new MutationObserver(function (muts) {
+                for (var i = 0; i < muts.length; i++) {
+                    const m = muts[i];
+                    if (m.addedNodes && m.addedNodes.length) {
+                        m.addedNodes.forEach(function (n) {
+                            if (n && n.nodeType === 1) protectMaterialIcons(n);
+                        });
+                    }
+                }
+            });
+            mo.observe(document.documentElement, { childList: true, subtree: true });
+        } catch (e) { }
+
+        // Keep translated-state flag in sync
+        syncTranslatedState();
+        window.addEventListener('focus', syncTranslatedState);
+        document.addEventListener('visibilitychange', syncTranslatedState);
+        // Lightweight polling in case translation code updates localStorage without events.
+        setInterval(syncTranslatedState, 1000);
     }
 
     function getSiteNameFromTitle() {
@@ -854,6 +925,9 @@
 
     function init() {
         ensureI18nSafeLayoutStyles();
+        syncTranslatedState();
+        protectMaterialIcons(document);
+        observeTranslationSideEffects();
         initGlobalLoader();
         requireAuth();
         initPasswordToggle();
