@@ -46,6 +46,10 @@ $navClass = function ($page) use ($current) {
             <span class="material-icons-round text-[20px]">account_tree</span>
             Investment Plans
         </a>
+        <a class="<?php echo $navClass('referrals'); ?>" href="/dashboard/user/referrals">
+            <span class="material-icons-round text-[20px]">group_add</span>
+            Referrals
+        </a>
         <a class="<?php echo $navClass('history'); ?>" href="/dashboard/user/transactions">
             <span class="material-icons-round text-[20px]">history</span>
             Trade History

@@ -506,3 +506,65 @@ SET @sql = IF(@idx_exists = 0,
     'ALTER TABLE admin_mailbox ADD INDEX idx_message_id (message_id)',
     'SELECT 1');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ========== Referral system ==========
+-- users: who referred this user + this user's shareable code
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'referred_by_user_id');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE users ADD COLUMN referred_by_user_id INT UNSIGNED NULL AFTER referral_code, ADD INDEX idx_referred_by (referred_by_user_id)',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'my_referral_code');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE users ADD COLUMN my_referral_code VARCHAR(32) NULL AFTER referred_by_user_id, ADD UNIQUE KEY uniq_my_referral_code (my_referral_code)',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- pending_registrations: pass referrer id from register to verify
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pending_registrations' AND COLUMN_NAME = 'referred_by_user_id');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE pending_registrations ADD COLUMN referred_by_user_id INT UNSIGNED NULL AFTER referral_code',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- referral_earnings: audit trail for referrer payouts
+CREATE TABLE IF NOT EXISTS referral_earnings (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  referrer_user_id INT UNSIGNED NOT NULL,
+  referred_user_id INT UNSIGNED NOT NULL,
+  source ENUM('plan_subscription','first_deposit') NOT NULL,
+  amount_usd DECIMAL(18,2) NOT NULL,
+  currency VARCHAR(20) NOT NULL DEFAULT 'USDT',
+  percent_used DECIMAL(5,2) NOT NULL,
+  reference_id INT UNSIGNED NULL COMMENT 'e.g. user_investments.id or transactions.id',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_referrer (referrer_user_id),
+  INDEX idx_referred (referred_user_id),
+  INDEX idx_referred_source (referred_user_id, source),
+  FOREIGN KEY (referrer_user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (referred_user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- transactions: allow referral_bonus type
+SET @col_type = (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'type');
+SET @has_ref = IF(@col_type LIKE '%referral_bonus%', 1, 0);
+SET @sql = IF(@has_ref = 0,
+    'ALTER TABLE transactions MODIFY COLUMN type ENUM(\'deposit\',\'withdrawal\',\'payout\',\'investment\',\'referral_bonus\') NOT NULL',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- Site settings for referral
+INSERT INTO site_settings (`key`, value) VALUES
+  ('referral_enabled', '0'),
+  ('referral_percentage', '5')
+ON DUPLICATE KEY UPDATE value = value;
+
+-- Backfill my_referral_code for existing users (unique per user; REF1, REF2, ...)
+UPDATE users u
+SET u.my_referral_code = CONCAT('REF', u.id)
+WHERE (u.my_referral_code IS NULL OR u.my_referral_code = '') AND u.id > 0;

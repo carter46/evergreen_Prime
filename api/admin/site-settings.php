@@ -17,6 +17,8 @@ if (($_SESSION['role'] ?? '') !== 'admin') {
 $allowedKeys = [
     'max_active_plans_per_user',
     'compounding_enabled',
+    'referral_enabled',
+    'referral_percentage',
     'site_name',
     'site_logo',
     'site_favicon',
@@ -64,6 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $data = [
         'max_active_plans_per_user' => '3',
         'compounding_enabled' => '0',
+        'referral_enabled' => '0',
+        'referral_percentage' => '5',
         'site_name' => '',
         'site_logo' => '',
         'site_favicon' => '',
@@ -136,6 +140,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $m = (int) $v;
             if (!in_array($m, [5, 15, 30], true)) continue;
             $v = (string) $m;
+        }
+        if ($k === 'referral_enabled') {
+            $v = in_array(strtolower($v), ['1', 'true', 'yes', 'on'], true) ? '1' : '0';
+        }
+        if ($k === 'referral_percentage') {
+            $pct = (float) $v;
+            $pct = max(0, min(100, $pct));
+            $v = (string) round($pct, 2);
         }
         $updates[$k] = $v;
     }

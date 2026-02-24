@@ -75,18 +75,21 @@ try {
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
-<?php foreach ($transactions as $tx):
-  $isIncoming = in_array($tx['type'], ['deposit', 'payout']);
+<?php
+  $txTypeLabels = ['referral_bonus' => 'Referral bonus'];
+  foreach ($transactions as $tx):
+  $isIncoming = in_array($tx['type'], ['deposit', 'payout', 'referral_bonus']);
   $statusClass = 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
   if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
   elseif (in_array($tx['status'], ['rejected', 'failed'], true)) $statusClass = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+  $typeLabel = $txTypeLabels[$tx['type']] ?? ucfirst(str_replace('_', ' ', $tx['type']));
 ?>
 <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
 <span class="material-icons <?php echo $isIncoming ? 'text-emerald-500' : 'text-red-500'; ?> text-lg"><?php echo $isIncoming ? 'arrow_downward' : 'arrow_upward'; ?></span>
 <div>
-<p class="text-sm font-bold"><?php echo htmlspecialchars(ucfirst($tx['type'])); ?></p>
+<p class="text-sm font-bold"><?php echo htmlspecialchars($typeLabel); ?></p>
 <p class="text-[10px] text-slate-400"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></p>
 </div>
 </div>

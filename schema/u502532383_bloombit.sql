@@ -215,6 +215,7 @@ CREATE TABLE `pending_registrations` (
   `name` varchar(255) DEFAULT '',
   `phone_number` varchar(50) DEFAULT NULL,
   `referral_code` varchar(50) DEFAULT NULL,
+  `referred_by_user_id` int(10) UNSIGNED DEFAULT NULL,
   `avatar_url` varchar(500) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `expires_at` datetime NOT NULL
@@ -323,7 +324,9 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 ('stats_uptime', '99.9%', '2026-02-15 01:07:56'),
 ('support_email', 'support@bloombit.com', '2026-02-15 01:33:55'),
 ('tagline', 'AI Crypto Trading', '2026-02-15 01:07:56'),
-('volume_24h', '$84.2B', '2026-02-15 01:07:56');
+('volume_24h', '$84.2B', '2026-02-15 01:07:56'),
+('referral_enabled', '0', '2026-02-24 00:00:00'),
+('referral_percentage', '5', '2026-02-24 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -334,7 +337,7 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 CREATE TABLE `transactions` (
   `id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED NOT NULL,
-  `type` enum('deposit','withdrawal','payout','investment') NOT NULL,
+  `type` enum('deposit','withdrawal','payout','investment','referral_bonus') NOT NULL,
   `amount` decimal(36,18) NOT NULL,
   `amount_usd` decimal(18,2) DEFAULT NULL,
   `currency` varchar(20) NOT NULL DEFAULT 'USD',
@@ -407,6 +410,8 @@ CREATE TABLE `users` (
   `phone_number` varchar(50) DEFAULT NULL,
   `country` varchar(100) DEFAULT NULL,
   `referral_code` varchar(100) DEFAULT NULL,
+  `referred_by_user_id` int(10) UNSIGNED DEFAULT NULL,
+  `my_referral_code` varchar(32) DEFAULT NULL,
   `last_balance_usd` decimal(18,2) NOT NULL DEFAULT 0.00,
   `last_balance_usd_updated_at` datetime DEFAULT NULL,
   `kyc_status` enum('none','pending','verified','rejected') NOT NULL DEFAULT 'none'
@@ -416,11 +421,29 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `password_hash`, `name`, `role`, `email_verified`, `active`, `two_factor_enabled`, `created_at`, `updated_at`, `admin_notes`, `avatar_url`, `phone_number`, `country`, `referral_code`, `last_balance_usd`, `last_balance_usd_updated_at`, `kyc_status`) VALUES
-(1, 'admin@mail.com', '$2y$10$MuSCe0zBsM6nKIvNGzT5Mu8D0JlcoDmdR7lU.xyZtkJFVZeAKB0c6', 'Admin', 'admin', 1, 1, 0, '2026-02-15 01:25:45', '2026-02-19 19:04:31', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, 'none'),
-(9, 'j.donovan@gmail.com', '$2y$10$JTg6nQYebZOEaKheTc.O0u3xuTML8itKcWuq18p8q/zqHLAVjx.3e', 'James Donovan', 'user', 1, 1, 1, '2026-02-15 14:50:08', '2026-02-18 00:34:05', NULL, '/uploads/avatars/9_1771167884.jpg', NULL, 'United States', NULL, 0.01, '2026-02-18 00:34:05', 'verified'),
-(49, 'mr.carter.tech07@gmail.com', '$2y$10$437lyEG9BVfV0JYwBqIcbO03nChjWcb0LM96Y1cxCyZ0jnzQ4ObFq', 'carter tech', 'user', 1, 1, 1, '2026-02-19 22:12:09', '2026-02-21 09:34:12', NULL, NULL, '+24391347593', NULL, NULL, 6000.00, '2026-02-19 23:45:36', 'none'),
-(50, 'murungibetty621@gmail.com', '$2y$10$kYf1LKJlgLhsFfQgIlGHsuz0JhHaCiqe60fmp50RklYzVmLKMQUe.', 'Murungi', 'user', 1, 1, 0, '2026-02-20 08:30:11', '2026-02-20 11:30:03', NULL, NULL, '09164592654', NULL, NULL, 4950.00, '2026-02-20 11:30:03', 'none');
+INSERT INTO `users` (`id`, `email`, `password_hash`, `name`, `role`, `email_verified`, `active`, `two_factor_enabled`, `created_at`, `updated_at`, `admin_notes`, `avatar_url`, `phone_number`, `country`, `referral_code`, `referred_by_user_id`, `my_referral_code`, `last_balance_usd`, `last_balance_usd_updated_at`, `kyc_status`) VALUES
+(1, 'admin@mail.com', '$2y$10$MuSCe0zBsM6nKIvNGzT5Mu8D0JlcoDmdR7lU.xyZtkJFVZeAKB0c6', 'Admin', 'admin', 1, 1, 0, '2026-02-15 01:25:45', '2026-02-19 19:04:31', NULL, NULL, NULL, NULL, NULL, NULL, 'REF1', 0.00, NULL, 'none'),
+(9, 'j.donovan@gmail.com', '$2y$10$JTg6nQYebZOEaKheTc.O0u3xuTML8itKcWuq18p8q/zqHLAVjx.3e', 'James Donovan', 'user', 1, 1, 1, '2026-02-15 14:50:08', '2026-02-18 00:34:05', NULL, '/uploads/avatars/9_1771167884.jpg', NULL, 'United States', NULL, NULL, 'REF9', 0.01, '2026-02-18 00:34:05', 'verified'),
+(49, 'mr.carter.tech07@gmail.com', '$2y$10$437lyEG9BVfV0JYwBqIcbO03nChjWcb0LM96Y1cxCyZ0jnzQ4ObFq', 'carter tech', 'user', 1, 1, 1, '2026-02-19 22:12:09', '2026-02-21 09:34:12', NULL, NULL, '+24391347593', NULL, NULL, NULL, 'REF49', 6000.00, '2026-02-19 23:45:36', 'none'),
+(50, 'murungibetty621@gmail.com', '$2y$10$kYf1LKJlgLhsFfQgIlGHsuz0JhHaCiqe60fmp50RklYzVmLKMQUe.', 'Murungi', 'user', 1, 1, 0, '2026-02-20 08:30:11', '2026-02-20 11:30:03', NULL, NULL, '09164592654', NULL, NULL, NULL, 'REF50', 4950.00, '2026-02-20 11:30:03', 'none');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `referral_earnings`
+--
+
+CREATE TABLE `referral_earnings` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `referrer_user_id` int(10) UNSIGNED NOT NULL,
+  `referred_user_id` int(10) UNSIGNED NOT NULL,
+  `source` enum('plan_subscription','first_deposit') NOT NULL,
+  `amount_usd` decimal(18,2) NOT NULL,
+  `currency` varchar(20) NOT NULL DEFAULT 'USDT',
+  `percent_used` decimal(5,2) NOT NULL,
+  `reference_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'e.g. user_investments.id or transactions.id',
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -569,6 +592,15 @@ ALTER TABLE `plans`
   ADD KEY `idx_plans_sort` (`sort_order`);
 
 --
+-- Indexes for table `referral_earnings`
+--
+ALTER TABLE `referral_earnings`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_referrer` (`referrer_user_id`),
+  ADD KEY `idx_referred` (`referred_user_id`),
+  ADD KEY `idx_referred_source` (`referred_user_id`,`source`);
+
+--
 -- Indexes for table `site_settings`
 --
 ALTER TABLE `site_settings`
@@ -590,8 +622,10 @@ ALTER TABLE `transactions`
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `uniq_my_referral_code` (`my_referral_code`),
   ADD KEY `idx_users_email` (`email`),
-  ADD KEY `idx_users_role` (`role`);
+  ADD KEY `idx_users_role` (`role`),
+  ADD KEY `idx_referred_by` (`referred_by_user_id`);
 
 --
 -- Indexes for table `user_investments`
@@ -658,6 +692,12 @@ ALTER TABLE `pending_registrations`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
+-- AUTO_INCREMENT for table `referral_earnings`
+--
+ALTER TABLE `referral_earnings`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `plans`
 --
 ALTER TABLE `plans`
@@ -702,6 +742,13 @@ ALTER TABLE `wallet_balances`
 --
 ALTER TABLE `kyc_submissions`
   ADD CONSTRAINT `kyc_submissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `referral_earnings`
+--
+ALTER TABLE `referral_earnings`
+  ADD CONSTRAINT `referral_earnings_ibfk_1` FOREIGN KEY (`referrer_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `referral_earnings_ibfk_2` FOREIGN KEY (`referred_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `transactions`

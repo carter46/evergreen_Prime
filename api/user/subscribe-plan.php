@@ -129,10 +129,11 @@ try {
     // Create investment record (amount stored in USD, duration_days from user choice)
     $stmt = $pdo->prepare('INSERT INTO user_investments (user_id, plan_id, amount, duration_days, start_date, status) VALUES (?, ?, ?, ?, CURDATE(), ?)');
     $stmt->execute([$userId, $planId, $amountUsd, $durationDays, 'active']);
-    
+    $investmentId = (int) $pdo->lastInsertId();
+
     // Debit user balance (deduct from selected currency)
     $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, -?) ON DUPLICATE KEY UPDATE amount = amount - ?')->execute([$userId, $currency, $amountToDebit, $amountToDebit]);
-    
+
     // Create transaction record (amount debited in selected currency)
     $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')->execute([$userId, 'investment', $amountToDebit, $currency, 'completed']);
 
@@ -142,7 +143,47 @@ try {
     } else {
         bump_user_last_balance_usd($pdo, $userId, -1 * (float)$amountUsd);
     }
-    
+
+    // Referral bonus: pay referrer on first plan subscription (when referral system is enabled)
+    if (get_site_setting('referral_enabled', '0') === '1' && $amountUsd > 0) {
+        try {
+            $chk = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
+            if ($chk && $chk->rowCount() > 0) {
+                $userRow = $pdo->prepare('SELECT referred_by_user_id FROM users WHERE id = ?');
+                $userRow->execute([$userId]);
+                $userRow = $userRow->fetch(PDO::FETCH_ASSOC);
+                $referrerId = isset($userRow['referred_by_user_id']) ? (int) $userRow['referred_by_user_id'] : 0;
+                if ($referrerId > 0 && $referrerId !== $userId) {
+                    $paid = $pdo->prepare('SELECT id FROM referral_earnings WHERE referred_user_id = ? AND source = ? LIMIT 1');
+                    $paid->execute([$userId, 'plan_subscription']);
+                    if (!$paid->fetch()) {
+                        $pct = (float) (get_site_setting('referral_percentage', '5') ?: '5');
+                        $pct = max(0, min(100, $pct));
+                        $bonusUsd = round($amountUsd * ($pct / 100), 2);
+                        if ($bonusUsd > 0) {
+                            $refCurrency = 'USDT';
+                            $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
+                                ->execute([$referrerId, $refCurrency, $bonusUsd]);
+                            $hasAmountUsd = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'")->rowCount() > 0;
+                            if ($hasAmountUsd) {
+                                $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                                    ->execute([$referrerId, 'referral_bonus', $bonusUsd, $bonusUsd, $refCurrency, 'completed', 'ref_inv_' . $investmentId]);
+                            } else {
+                                $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
+                                    ->execute([$referrerId, 'referral_bonus', $bonusUsd, $refCurrency, 'completed', 'ref_inv_' . $investmentId]);
+                            }
+                            bump_user_last_balance_usd($pdo, $referrerId, (float) $bonusUsd);
+                            $pdo->prepare('INSERT INTO referral_earnings (referrer_user_id, referred_user_id, source, amount_usd, currency, percent_used, reference_id) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                                ->execute([$referrerId, $userId, 'plan_subscription', $bonusUsd, $refCurrency, $pct, $investmentId]);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            // Don't fail the subscription if referral logic fails (e.g. table missing)
+        }
+    }
+
     $pdo->commit();
     echo json_encode([
         'success' => true,

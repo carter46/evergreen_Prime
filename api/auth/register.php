@@ -93,10 +93,41 @@ if (!empty($_FILES['avatar']['tmp_name']) && $_FILES['avatar']['error'] === UPLO
 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 $expiresAt = date('Y-m-d H:i:s', time() + 24 * 3600);
 
+// Resolve referrer when referral system is enabled (optional; invalid code = no referrer)
+$referredByUserId = null;
+if ($referral !== '') {
+    require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+    if (get_site_setting('referral_enabled', '0') === '1') {
+        $code = strtoupper(trim($referral));
+        try {
+            $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'my_referral_code'");
+            if ($chk && $chk->rowCount() > 0) {
+                $st = $pdo->prepare('SELECT id FROM users WHERE my_referral_code = ? AND role = ? AND active = 1 LIMIT 1');
+                $st->execute([$code, 'user']);
+                $row = $st->fetch(PDO::FETCH_ASSOC);
+                if ($row) {
+                    $referredByUserId = (int) $row['id'];
+                }
+            }
+        } catch (Throwable $e) {}
+    }
+}
+
 // Store in pending_registrations (no users row until OTP verified)
+$hasReferredBy = false;
 try {
-    $pdo->prepare('INSERT INTO pending_registrations (email, password_hash, name, phone_number, referral_code, avatar_url, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), name = VALUES(name), phone_number = VALUES(phone_number), referral_code = VALUES(referral_code), avatar_url = VALUES(avatar_url), expires_at = VALUES(expires_at)')
-        ->execute([$email, $passwordHash, $name, $phone ?: null, $referral ?: null, $avatarUrl, $expiresAt]);
+    $chk = $pdo->query("SHOW COLUMNS FROM pending_registrations LIKE 'referred_by_user_id'");
+    $hasReferredBy = $chk && $chk->rowCount() > 0;
+} catch (Throwable $e) {}
+
+try {
+    if ($hasReferredBy) {
+        $pdo->prepare('INSERT INTO pending_registrations (email, password_hash, name, phone_number, referral_code, referred_by_user_id, avatar_url, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), name = VALUES(name), phone_number = VALUES(phone_number), referral_code = VALUES(referral_code), referred_by_user_id = VALUES(referred_by_user_id), avatar_url = VALUES(avatar_url), expires_at = VALUES(expires_at)')
+            ->execute([$email, $passwordHash, $name, $phone ?: null, $referral ?: null, $referredByUserId ?: null, $avatarUrl, $expiresAt]);
+    } else {
+        $pdo->prepare('INSERT INTO pending_registrations (email, password_hash, name, phone_number, referral_code, avatar_url, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), name = VALUES(name), phone_number = VALUES(phone_number), referral_code = VALUES(referral_code), avatar_url = VALUES(avatar_url), expires_at = VALUES(expires_at)')
+            ->execute([$email, $passwordHash, $name, $phone ?: null, $referral ?: null, $avatarUrl, $expiresAt]);
+    }
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Registration failed']);

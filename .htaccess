@@ -33,6 +33,8 @@ Options -Indexes
     RewriteRule ^dashboard/user/kyc$ dashboard/user/user_kyc.php [L]
     RewriteRule ^dashboard/user/analytics$ dashboard/user/user_analytics.php [L]
     RewriteRule ^dashboard/user/transactions$ dashboard/user/transactions.php [L]
+    RewriteRule ^dashboard/user/referrals$ dashboard/user/referrals.php [L]
+    RewriteRule ^dashboard/user/investment-plans$ dashboard/user/investment-plans.php [L]
     RewriteRule ^dashboard/admin$ dashboard/admin/admin_dashboard.php [L]
     RewriteRule ^dashboard/admin/activity-log$ dashboard/admin/activity_log.php [L]
     RewriteRule ^dashboard/admin/users$ dashboard/admin/user_management.php [L]

@@ -38,7 +38,12 @@ try {
     // Cleanup expired pending registrations
     $pdo->exec("DELETE FROM pending_registrations WHERE expires_at < NOW()");
 
-    $stmt = $pdo->prepare('SELECT email, password_hash, name, phone_number, referral_code, avatar_url FROM pending_registrations WHERE email = ? AND expires_at > NOW()');
+    $pendingCols = ['email', 'password_hash', 'name', 'phone_number', 'referral_code', 'avatar_url'];
+    $chk = $pdo->query("SHOW COLUMNS FROM pending_registrations LIKE 'referred_by_user_id'");
+    if ($chk && $chk->rowCount() > 0) {
+        $pendingCols[] = 'referred_by_user_id';
+    }
+    $stmt = $pdo->prepare('SELECT ' . implode(', ', $pendingCols) . ' FROM pending_registrations WHERE email = ? AND expires_at > NOW()');
     $stmt->execute([$email]);
     $pending = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$pending) {
@@ -74,6 +79,14 @@ try {
             $placeholders[] = '?';
         }
     } catch (Throwable $e) {}
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'referred_by_user_id'");
+        if ($chk && $chk->rowCount() > 0 && isset($pending['referred_by_user_id'])) {
+            $cols[] = 'referred_by_user_id';
+            $vals[] = $pending['referred_by_user_id'] ? (int) $pending['referred_by_user_id'] : null;
+            $placeholders[] = '?';
+        }
+    } catch (Throwable $e) {}
     if (!empty($pending['avatar_url'])) {
         $cols[] = 'avatar_url';
         $vals[] = $pending['avatar_url'];
@@ -83,6 +96,15 @@ try {
     $sql = 'INSERT INTO users (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $placeholders) . ')';
     $pdo->prepare($sql)->execute($vals);
     $userId = (int) $pdo->lastInsertId();
+
+    // Set my_referral_code for the new user (unique shareable code)
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'my_referral_code'");
+        if ($chk && $chk->rowCount() > 0) {
+            $myCode = 'REF' . $userId;
+            $pdo->prepare('UPDATE users SET my_referral_code = ? WHERE id = ?')->execute([$myCode, $userId]);
+        }
+    } catch (Throwable $e) {}
 
     $pdo->prepare('DELETE FROM pending_registrations WHERE email = ?')->execute([$email]);
 

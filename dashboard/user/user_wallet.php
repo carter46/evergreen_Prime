@@ -288,16 +288,19 @@ $<?php echo number_format((float)$b['usd_value'], 2); ?>
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
-<?php foreach ($walletTransactions as $tx):
-  $isDeposit = in_array($tx['type'], ['deposit','payout']);
+<?php
+  $txTypeLabels = ['referral_bonus' => 'Referral bonus'];
+  foreach ($walletTransactions as $tx):
+  $isDeposit = in_array($tx['type'], ['deposit','payout','referral_bonus']);
   $date = !empty($tx['created_at']) ? date('M j, Y H:i', strtotime($tx['created_at'])) : '';
+  $typeLabel = $txTypeLabels[$tx['type']] ?? ucfirst(str_replace('_', ' ', $tx['type']));
 ?>
 <tr>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
 <span class="material-icons <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?> text-lg"><?php echo $isDeposit ? 'arrow_downward' : 'arrow_upward'; ?></span>
 <div>
-<p class="text-sm font-bold"><?php echo htmlspecialchars(ucfirst($tx['type'])); ?></p>
+<p class="text-sm font-bold"><?php echo htmlspecialchars($typeLabel); ?></p>
 <p class="text-[10px] text-slate-400"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></p>
 </div>
 </div>

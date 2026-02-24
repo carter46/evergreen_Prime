@@ -29,6 +29,8 @@ $settings = [
     'office_address' => get_site_setting('office_address', '40 Bank Street, Canary Wharf<br/>London, E14 5NR<br/>United Kingdom'),
     'smartsupp_key' => get_site_setting('smartsupp_key', '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d'),
     'deposit_countdown_minutes' => get_site_setting('deposit_countdown_minutes', '30'),
+    'referral_enabled' => get_site_setting('referral_enabled', '0'),
+    'referral_percentage' => get_site_setting('referral_percentage', '5'),
 ];
 $adminEmail = '';
 $adminName = '';
@@ -193,6 +195,22 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
   <option value="30" <?php echo $depMins===30?'selected':''; ?>>30 minutes</option>
 </select>
 <p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">How long a user has to click “Done” after creating a deposit request before it auto-fails.</p>
+</div>
+<!-- Referral system -->
+<div class="md:col-span-2 border-t border-slate-200 dark:border-zinc-700 pt-6 mt-4">
+<h3 class="text-sm font-bold text-slate-700 dark:text-zinc-300 mb-3 flex items-center gap-2"><span class="material-icons text-primary text-lg">group_add</span> Referral System</h3>
+<div class="flex flex-wrap items-center gap-6">
+<div class="flex items-center gap-3">
+<input id="settings-referral-enabled" class="sr-only peer" type="checkbox" <?php echo ($settings['referral_enabled'] ?? '0') === '1' ? 'checked' : ''; ?>/>
+<label for="settings-referral-enabled" class="relative w-11 h-6 bg-slate-200 dark:bg-zinc-700 rounded-full cursor-pointer peer-focus:ring-2 peer-focus:ring-primary/50 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5 peer-checked:bg-primary"></label>
+<span class="text-sm font-medium">Enable referral program</span>
+</div>
+<div class="flex items-center gap-2">
+<label class="text-sm font-medium text-slate-700 dark:text-zinc-300">Commission (%)</label>
+<input id="settings-referral-percentage" type="number" min="0" max="100" step="0.5" class="w-20 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm" value="<?php echo htmlspecialchars($settings['referral_percentage'] ?? '5'); ?>"/>
+</div>
+</div>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">When enabled, users can share a referral code at signup. Referrers earn this percentage of the referee's first plan subscription (paid in USDT).</p>
 </div>
 </div>
 <button type="button" id="settings-save-branding" class="mt-4 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Save Branding</button>
@@ -376,13 +394,16 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
     var officeAddress = document.getElementById('settings-office-address').value.trim();
     var smartsuppKey = document.getElementById('settings-smartsupp-key').value.trim();
     var depositCountdown = (document.getElementById('settings-deposit-countdown') || {}).value || '30';
+    var referralEnabled = (document.getElementById('settings-referral-enabled') || {}).checked ? '1' : '0';
+    var referralPct = (document.getElementById('settings-referral-percentage') || {}).value;
+    if (referralPct === '' || isNaN(parseFloat(referralPct))) referralPct = '5';
     var btn = this;
     btn.disabled = true;
     fetch('/api/admin/site-settings.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ site_name: siteName || <?php echo json_encode($siteName); ?>, contact_email: contactEmail || '', homepage_youtube_url: homepageYoutube || '', about_youtube_url: aboutYoutube || '', office_title: officeTitle || '', office_address: officeAddress || '', smartsupp_key: smartsuppKey || '', deposit_countdown_minutes: depositCountdown })
+      body: JSON.stringify({ site_name: siteName || <?php echo json_encode($siteName); ?>, contact_email: contactEmail || '', homepage_youtube_url: homepageYoutube || '', about_youtube_url: aboutYoutube || '', office_title: officeTitle || '', office_address: officeAddress || '', smartsupp_key: smartsuppKey || '', deposit_countdown_minutes: depositCountdown, referral_enabled: referralEnabled, referral_percentage: referralPct })
     }).then(function(r){ return r.json(); }).then(function(res){
       showMsg(document.getElementById('settings-branding-msg'), res.success ? 'Branding saved.' : (res.error || 'Failed'), res.success);
       btn.disabled = false;

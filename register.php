@@ -150,7 +150,8 @@ $siteName = get_site_name();
 <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="referral">Referral Code <span class="text-zinc-400">(Optional)</span></label>
 <div class="relative">
 <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">card_giftcard</span>
-<input name="referral" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white uppercase tracking-widest text-sm" id="referral" placeholder="CODE2024" type="text"/>
+<?php $refPrefill = isset($_GET['ref']) ? strtoupper(trim((string)$_GET['ref'])) : ''; ?>
+<input name="referral" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white uppercase tracking-widest text-sm" id="referral" placeholder="CODE2024" type="text" value="<?php echo htmlspecialchars($refPrefill); ?>"/>
 </div>
 </div>
 <!-- Profile Photo (Optional) -->
