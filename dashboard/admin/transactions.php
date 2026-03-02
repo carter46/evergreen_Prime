@@ -23,6 +23,10 @@ try {
         $chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
         if ($chk && $chk->rowCount() > 0) $cols .= ', t.amount_usd';
     } catch (Throwable $e) {}
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'proof_url'");
+        if ($chk && $chk->rowCount() > 0) $cols .= ', t.proof_url';
+    } catch (Throwable $e) {}
     
     // Fetch all deposits
     $stmt = $pdo->query("SELECT $cols FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.type = 'deposit' ORDER BY t.created_at DESC LIMIT 200");
@@ -152,7 +156,7 @@ $currentTransactions = getTransactionsForFilter($filter, $type, $pendingDeposits
 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Amount</th>
 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Currency</th>
 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Date</th>
-<?php if ($type !== 'withdrawal'): ?><th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Reference</th><?php endif; ?>
+<?php if ($type !== 'withdrawal'): ?><th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Reference</th><th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Proof</th><?php endif; ?>
 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Actions</th>
 </tr>
 </thead>
@@ -188,7 +192,7 @@ echo $fmt . ' ' . htmlspecialchars($tx['currency']);
 </div>
 </td>
 <td class="px-6 py-4 text-xs text-slate-500"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></td>
-<?php if ($type !== 'withdrawal'): ?><td class="px-6 py-4 font-mono text-[10px] text-slate-400"><?php echo $tx['reference'] ? substr($tx['reference'], 0, 8) . '...' : '—'; ?></td><?php endif; ?>
+<?php if ($type !== 'withdrawal'): ?><td class="px-6 py-4 font-mono text-[10px] text-slate-400 max-w-[120px]" title="<?php echo $tx['reference'] ? htmlspecialchars($tx['reference']) : ''; ?>"><?php echo $tx['reference'] ? (strlen($tx['reference']) > 16 ? substr($tx['reference'], 0, 16) . '…' : $tx['reference']) : '—'; ?></td><td class="px-6 py-4"><?php if (!empty($tx['proof_url'])): ?><a href="<?php echo htmlspecialchars($tx['proof_url']); ?>" target="_blank" rel="noopener" class="text-primary font-medium text-xs hover:underline">View proof</a><?php else: ?>—<?php endif; ?></td><?php endif; ?>
 <td class="px-6 py-4 text-right">
 <?php if ($tx['status'] === 'pending'): ?>
 <div class="relative inline-block">
@@ -206,7 +210,7 @@ echo $fmt . ' ' . htmlspecialchars($tx['currency']);
 </tr>
 <?php endforeach; ?>
 <?php if (empty($currentTransactions)): ?>
-<tr><td class="px-6 py-8 text-center text-slate-500" colspan="<?php echo $type === 'withdrawal' ? 5 : 6; ?>">No <?php echo htmlspecialchars($filter); ?> <?php echo htmlspecialchars($type); ?>s found.</td></tr>
+<tr><td class="px-6 py-8 text-center text-slate-500" colspan="<?php echo $type === 'withdrawal' ? 5 : 7; ?>">No <?php echo htmlspecialchars($filter); ?> <?php echo htmlspecialchars($type); ?>s found.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>

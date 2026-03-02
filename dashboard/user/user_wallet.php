@@ -370,10 +370,6 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 </select>
 <p class="mt-3 text-base sm:text-lg font-bold text-primary dark:text-primary min-h-[1.5em]" id="deposit-coin-quote">—</p>
 </div>
-<div>
-<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Reference / TX Hash <span class="text-slate-400 font-normal">(Optional)</span></label>
-<input type="text" id="deposit-reference" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700" placeholder="Transaction hash or reference"/>
-</div>
 <div id="deposit-error" class="text-sm text-red-500 hidden"></div>
 <button type="button" id="deposit-submit-btn" class="w-full py-3 bg-primary text-black font-bold rounded-lg text-base">Submit Deposit Request</button>
 </div>
@@ -398,6 +394,18 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
 <p class="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">Confirm within <span id="deposit-countdown-mins">30</span> minutes</p>
 <p class="text-sm text-amber-700 dark:text-amber-400">Time remaining: <span id="deposit-countdown-timer" class="font-mono font-bold">--:--</span></p>
+</div>
+<div class="pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-4">
+<p class="text-xs text-slate-500 dark:text-zinc-400">After sending the funds, you can add your transaction details below (optional).</p>
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Reference / TX Hash <span class="text-slate-400 font-normal">(Optional)</span></label>
+<input type="text" id="deposit-reference-step2" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700" placeholder="Transaction hash or reference"/>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Upload transaction proof <span class="text-slate-400 font-normal">(Optional)</span></label>
+<input type="file" id="deposit-proof-file" class="w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-black file:font-medium file:cursor-pointer hover:file:bg-primary/90" accept="image/*,.pdf"/>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">PNG, JPEG, WEBP or PDF. Max 5MB. Shown to admin for approval.</p>
+</div>
 </div>
 <div id="deposit-done-message" class="text-sm hidden"></div>
 <button type="button" id="deposit-close-btn" class="w-full py-3 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-base mt-4">Done</button>
@@ -548,7 +556,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Deposit drawer handlers
-    document.getElementById('deposit-btn').addEventListener('click', function(){ depositStep1.classList.remove('hidden'); depositStep2.classList.add('hidden'); document.getElementById('deposit-error').classList.add('hidden'); openDrawer(depositDrawer); });
+    document.getElementById('deposit-btn').addEventListener('click', function(){ depositStep1.classList.remove('hidden'); depositStep2.classList.add('hidden'); document.getElementById('deposit-error').classList.add('hidden'); var ref2 = document.getElementById('deposit-reference-step2'); if (ref2) ref2.value = ''; var pf = document.getElementById('deposit-proof-file'); if (pf) pf.value = ''; openDrawer(depositDrawer); });
     document.getElementById('deposit-drawer-close').addEventListener('click', function(){ closeDrawer(depositDrawer); });
     if (depositDoneBtn) depositDoneBtn.addEventListener('click', function(){
         if (!currentDepositTxId) { closeDrawer(depositDrawer); window.location.reload(); return; }
@@ -558,12 +566,22 @@ document.addEventListener('DOMContentLoaded', function() {
             depositDoneMsg.className = 'text-sm text-slate-500';
             depositDoneMsg.classList.remove('hidden');
         }
-        fetch('/api/user/deposit-done.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify({ transaction_id: currentDepositTxId })
-        }).then(function(r){ return r.json(); }).then(function(res){
+        var referenceStep2 = document.getElementById('deposit-reference-step2');
+        var proofFile = document.getElementById('deposit-proof-file');
+        var refVal = referenceStep2 ? referenceStep2.value.trim() : '';
+        var hasFile = proofFile && proofFile.files && proofFile.files.length > 0;
+        var opts = { method: 'POST', credentials: 'same-origin' };
+        if (hasFile) {
+            var fd = new FormData();
+            fd.append('transaction_id', currentDepositTxId);
+            fd.append('reference', refVal);
+            fd.append('proof', proofFile.files[0]);
+            opts.body = fd;
+        } else {
+            opts.headers = { 'Content-Type': 'application/json' };
+            opts.body = JSON.stringify({ transaction_id: currentDepositTxId, reference: refVal || undefined });
+        }
+        fetch('/api/user/deposit-done.php', opts).then(function(r){ return r.json(); }).then(function(res){
             if (res && res.success) {
                 if (depositDoneMsg) {
                     depositDoneMsg.textContent = (res.data && res.data.message) ? res.data.message : 'Deposit marked as done.';
@@ -636,7 +654,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('deposit-submit-btn').addEventListener('click', function(){
         var currency = document.getElementById('deposit-currency').value;
         var amountUsd = parseFloat(document.getElementById('deposit-amount').value) || 0;
-        var reference = document.getElementById('deposit-reference').value.trim();
         var errEl = document.getElementById('deposit-error');
         if (!currency || amountUsd <= 0) {
             errEl.textContent = 'Please enter a USD amount and select a currency';
@@ -647,7 +664,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/user/deposit.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ currency: currency, amount_usd: amountUsd, reference: reference || null })
+            body: JSON.stringify({ currency: currency, amount_usd: amountUsd })
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
                 currentDepositTxId = res.data && res.data.transaction_id ? res.data.transaction_id : null;

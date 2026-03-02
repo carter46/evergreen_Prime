@@ -345,7 +345,8 @@ CREATE TABLE `transactions` (
   `reference` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `expires_at` datetime DEFAULT NULL,
-  `user_confirmed_at` datetime DEFAULT NULL
+  `user_confirmed_at` datetime DEFAULT NULL,
+  `proof_url` varchar(512) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
