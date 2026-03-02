@@ -57,11 +57,12 @@ try {
     $r->execute([$userId]);
     $activeCapital = (float)$r->fetchColumn();
     
-    // Est monthly earnings (active capital * avg yield)
+    // Est monthly earnings: plan yield is daily %, so daily = capital * (yield/100), monthly ≈ daily * 30
     $r = $pdo->prepare("SELECT COALESCE(AVG((p.yield_min + p.yield_max) / 2), 0) FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = 'active'");
     $r->execute([$userId]);
     $avgYield = (float)$r->fetchColumn();
-    $estMonthlyEarnings = $activeCapital * ($avgYield / 100);
+    $estDailyEarnings = $activeCapital * ($avgYield / 100);
+    $estMonthlyEarnings = $estDailyEarnings * 30;
     
     // Chart data
     $dailyData = [];

@@ -232,8 +232,8 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
 }
 
 /**
- * Continuous: 5min or 12h. Each trigger credits FULL daily ROI (no spreading).
- * When cron runs every 5min (or 12h), user gets full 10% each time, not a fraction.
+ * Continuous: 5min or 12h. Credits only the fraction of daily ROI for the elapsed interval.
+ * E.g. 12h interval = 2 runs/day, each credits dailyEarning/2. 5min = 288 runs/day, each credits dailyEarning/288.
  * @return array [amount, new LastAt]
  */
 function compute_continuous_earnings(string $interval, DateTime $ref, DateTime $now, float $dailyEarning): array {
@@ -246,7 +246,11 @@ function compute_continuous_earnings(string $interval, DateTime $ref, DateTime $
     if ($diffMinutes < $intervalMinutes) {
         return [0.0, null];
     }
-    return [$dailyEarning, clone $now];
+    // Spread daily earning across the day: each interval credits (intervalMinutes / 1440) * dailyEarning
+    $minutesPerDay = 24 * 60;
+    $fraction = (float) $intervalMinutes / $minutesPerDay;
+    $creditable = $dailyEarning * $fraction;
+    return [$creditable, clone $now];
 }
 
 /**

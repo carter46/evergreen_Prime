@@ -16,6 +16,7 @@ $totalProfit = 0;
 $activeCapital = 0;
 $dailyEarning = 0;
 $referralBonus = 0;
+$referralBonusLast24h = 0;
 $coinLogosMap = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png','USDC'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','BUSD'=>'https://assets.coingecko.com/coins/images/9576/large/BUSD.png','USD'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','XRP'=>'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png','SOL'=>'https://assets.coingecko.com/coins/images/4128/large/solana.png','BNB'=>'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png','ADA'=>'https://assets.coingecko.com/coins/images/975/large/cardano.png','DOGE'=>'https://assets.coingecko.com/coins/images/5/large/dogecoin.png','TRX'=>'https://assets.coingecko.com/coins/images/1094/large/tron-logo.png'];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
@@ -76,11 +77,15 @@ try {
         if ($tbl && $tbl->rowCount() > 0) {
             $r = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ?');
             $r->execute([$userId]); $referralBonus = (float)$r->fetchColumn();
+            $r = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)');
+            $r->execute([$userId]); $referralBonusLast24h = (float)$r->fetchColumn();
         }
     } catch (Throwable $e) {}
     if ($referralBonus == 0) {
         $r = $pdo->prepare("SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions WHERE user_id = ? AND type = 'referral_bonus' AND status = 'completed'");
         $r->execute([$userId]); $referralBonus = (float)$r->fetchColumn();
+        $r = $pdo->prepare("SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions WHERE user_id = ? AND type = 'referral_bonus' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
+        $r->execute([$userId]); $referralBonusLast24h = (float)$r->fetchColumn();
     }
     $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5');
     $stmt->execute([$userId]);
@@ -188,8 +193,9 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <p class="font-bold text-primary">$<?php echo number_format($dailyEarning, 2); ?></p>
 </div>
 <div>
-<p class="text-slate-400 text-xs mb-1">Referral Bonus</p>
+<p class="text-slate-400 text-xs mb-1">Referral Bonus (earned)</p>
 <p class="font-bold text-amber-400">$<?php echo number_format($referralBonus, 2); ?></p>
+<?php if ($referralBonus > 0): ?><p class="text-[10px] text-slate-500 mt-0.5">Last 24h: $<?php echo number_format($referralBonusLast24h, 2); ?></p><?php endif; ?>
 </div>
 </div>
 </div>
