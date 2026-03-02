@@ -395,8 +395,11 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <p class="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">Confirm within <span id="deposit-countdown-mins">30</span> minutes</p>
 <p class="text-sm text-amber-700 dark:text-amber-400">Time remaining: <span id="deposit-countdown-timer" class="font-mono font-bold">--:--</span></p>
 </div>
-<div class="pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-4">
-<p class="text-xs text-slate-500 dark:text-zinc-400">After sending the funds, you can add your transaction details below (optional).</p>
+<button type="button" id="deposit-i-have-paid-btn" class="w-full py-3 bg-primary text-black font-bold rounded-lg text-base mt-4 flex items-center justify-center gap-2">
+<span class="material-icons text-lg">check_circle</span> I have made this payment
+</button>
+<div id="deposit-after-payment-section" class="hidden pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-4 mt-4">
+<p class="text-xs text-slate-500 dark:text-zinc-400">Add your transaction details below (optional). Then click Done.</p>
 <div>
 <label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Reference / TX Hash <span class="text-slate-400 font-normal">(Optional)</span></label>
 <input type="text" id="deposit-reference-step2" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700" placeholder="Transaction hash or reference"/>
@@ -406,9 +409,9 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <input type="file" id="deposit-proof-file" class="w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-black file:font-medium file:cursor-pointer hover:file:bg-primary/90" accept="image/*,.pdf"/>
 <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">PNG, JPEG, WEBP or PDF. Max 5MB. Shown to admin for approval.</p>
 </div>
-</div>
 <div id="deposit-done-message" class="text-sm hidden"></div>
-<button type="button" id="deposit-close-btn" class="w-full py-3 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-base mt-4">Done</button>
+<button type="button" id="deposit-close-btn" class="w-full py-3 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-base mt-2">Done</button>
+</div>
 </div>
 </div>
 </div>
@@ -719,12 +722,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('deposit-selected-amount').textContent = (typeof coinAmt === 'number' ? coinAmt.toFixed(8) : coinAmt) + ' ' + currency;
                 depositStep1.classList.add('hidden');
                 depositStep2.classList.remove('hidden');
+                if (depositIHavePaidBtn) depositIHavePaidBtn.classList.remove('hidden');
+                if (depositAfterPaymentSection) depositAfterPaymentSection.classList.add('hidden');
             } else {
                 errEl.textContent = res.error || 'Failed to submit deposit';
                 errEl.classList.remove('hidden');
             }
         }).catch(function(){ errEl.textContent = 'Request failed'; errEl.classList.remove('hidden'); });
     });
+    var depositIHavePaidBtn = document.getElementById('deposit-i-have-paid-btn');
+    var depositAfterPaymentSection = document.getElementById('deposit-after-payment-section');
+    if (depositIHavePaidBtn && depositAfterPaymentSection) {
+        depositIHavePaidBtn.addEventListener('click', function(){
+            depositAfterPaymentSection.classList.remove('hidden');
+            depositIHavePaidBtn.classList.add('hidden');
+        });
+    }
     document.getElementById('deposit-copy-addr').addEventListener('click', function(){
         var addr = document.getElementById('deposit-address-display').value;
         if (addr && navigator.clipboard) {
