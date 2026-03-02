@@ -161,6 +161,40 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
                 $pdo->prepare('UPDATE user_investments SET last_earnings_at = ? WHERE id = ?')
                     ->execute([$newLastAt->format('Y-m-d H:i:s'), $invId]);
             }
+            // Referral bonus: referrer gets admin-set % of referee's daily payout (from platform)
+            if (get_site_setting('referral_enabled', '0') === '1' && $toCreditUsd > 0) {
+                try {
+                    $refStmt = $pdo->prepare('SELECT referred_by_user_id FROM users WHERE id = ?');
+                    $refStmt->execute([$userId]);
+                    $refRow = $refStmt->fetch(PDO::FETCH_ASSOC);
+                    $referrerId = isset($refRow['referred_by_user_id']) ? (int) $refRow['referred_by_user_id'] : 0;
+                    if ($referrerId > 0 && $referrerId !== $userId) {
+                        $pct = (float) (get_site_setting('referral_percentage', '5') ?: '5');
+                        $pct = max(0, min(100, $pct));
+                        $bonusUsd = round($toCreditUsd * ($pct / 100), 2);
+                        if ($bonusUsd > 0) {
+                            $refCurrency = 'USDT';
+                            $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
+                                ->execute([$referrerId, $refCurrency, $bonusUsd]);
+                            if ($hasAmountUsd) {
+                                $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                                    ->execute([$referrerId, 'referral_bonus', $bonusUsd, $bonusUsd, $refCurrency, 'completed', 'ref_payout_inv_' . $invId]);
+                            } else {
+                                $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
+                                    ->execute([$referrerId, 'referral_bonus', $bonusUsd, $refCurrency, 'completed', 'ref_payout_inv_' . $invId]);
+                            }
+                            bump_user_last_balance_usd($pdo, $referrerId, (float) $bonusUsd);
+                            $tblChk = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
+                            if ($tblChk && $tblChk->rowCount() > 0) {
+                                $pdo->prepare('INSERT INTO referral_earnings (referrer_user_id, referred_user_id, source, amount_usd, currency, percent_used, reference_id) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                                    ->execute([$referrerId, $userId, 'referred_payout', $bonusUsd, $refCurrency, $pct, $invId]);
+                            }
+                        }
+                    }
+                } catch (Throwable $e) {
+                    // Do not fail main payout if referral credit fails
+                }
+            }
             $pdo->commit();
             
             // Send email notification

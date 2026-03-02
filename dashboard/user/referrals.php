@@ -59,81 +59,98 @@ try {
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title><?php echo htmlspecialchars($siteName); ?> | Referrals</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <script id="tailwind-config">
-tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#f9bd0b", "background-light": "#f8f8f5", "background-dark": "#231e0f" }, fontFamily: { "display": ["Inter", "sans-serif"] } } } };
+tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#f9bd0b", "background-light": "#f8f8f5", "background-dark": "#231e0f" }, fontFamily: { "display": ["Space Grotesk", "sans-serif"] } } } };
 </script>
-<style>body { font-family: 'Inter', sans-serif; }</style>
+<style>body { font-family: 'Space Grotesk', sans-serif; }</style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen overflow-x-hidden">
 <div class="flex min-h-screen">
 <?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
 <main class="flex-1 min-w-0 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8">
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<div class="max-w-4xl mx-auto py-6">
-<nav class="flex text-xs text-slate-400 gap-2 mb-4"><a href="/dashboard/user/dashboard" class="hover:text-primary">Dashboard</a><span>/</span><span class="text-slate-600 dark:text-slate-300">Referrals</span></nav>
-<h1 class="text-2xl font-bold mb-2">Referral Program</h1>
-<p class="text-slate-500 dark:text-zinc-400 mb-6">Share your link and earn a percentage of your referees' first plan subscription (when the program is enabled).</p>
+<div class="max-w-4xl mx-auto py-6 space-y-8">
+<nav class="flex text-xs text-slate-400 gap-2 mb-2"><a href="/dashboard/user/dashboard" class="hover:text-primary">Dashboard</a><span>/</span><span class="text-slate-600 dark:text-slate-300">Referrals</span></nav>
+<h1 class="text-2xl sm:text-3xl font-bold mb-1">Referral Program</h1>
+<p class="text-slate-500 dark:text-zinc-400 text-sm sm:text-base max-w-2xl">Earn a percentage of your referees' daily earnings—set by the platform. When someone you refer invests and receives payouts, you get a bonus (e.g. 15% of their daily earning) credited to your wallet.</p>
 
 <?php if (!$referralEnabled): ?>
-<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6 flex items-center gap-3">
-<span class="material-icons-round text-amber-600 dark:text-amber-400">info</span>
+<div class="bg-amber-50/80 dark:bg-amber-900/15 rounded-xl p-4 flex items-start gap-3 border border-amber-200/60 dark:border-amber-800/50">
+<span class="material-icons-round text-amber-600 dark:text-amber-400 mt-0.5">info</span>
 <p class="text-sm text-amber-800 dark:text-amber-200">Referral bonuses are currently paused. You can still copy and share your link; when the program is enabled, you will earn from qualifying referrals.</p>
 </div>
 <?php endif; ?>
 
-<!-- Code & share link (always shown so user can copy) -->
-<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6 mb-6">
-<h2 class="text-lg font-semibold mb-4 flex items-center gap-2"><span class="material-icons-round text-primary">link</span> Your referral code</h2>
-<?php if ($myCode): ?>
-<div class="flex flex-wrap items-center gap-3 mb-4">
-<input type="text" id="referral-code" readonly value="<?php echo htmlspecialchars($myCode); ?>" class="flex-1 min-w-0 px-4 py-3 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg font-mono text-lg tracking-widest uppercase"/>
-<button type="button" id="copy-code" class="px-4 py-3 bg-primary text-black font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"><span class="material-icons-round text-lg">content_copy</span> Copy code</button>
+<!-- 1. Stats first -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="rounded-xl p-6 bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
+<p class="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-medium">Referred users</p>
+<p class="text-2xl sm:text-3xl font-bold text-primary mt-2"><?php echo (int) $referredCount; ?></p>
 </div>
-<p class="text-sm text-slate-500 dark:text-zinc-400 mb-4">Share link:</p>
-<div class="flex flex-wrap items-center gap-3">
-<input type="text" id="share-url" readonly value="<?php echo htmlspecialchars($shareUrl ?? ''); ?>" class="flex-1 min-w-0 px-4 py-3 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-sm"/>
-<button type="button" id="copy-url" class="px-4 py-3 bg-primary text-black font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"><span class="material-icons-round text-lg">content_copy</span> Copy link</button>
-</div>
-<?php else: ?>
-<p class="text-slate-500 dark:text-zinc-400">Your referral code is being generated. <a href="/dashboard/user/referrals" class="text-primary font-semibold hover:underline">Refresh the page</a> in a moment.</p>
-<?php endif; ?>
-</div>
-
-<!-- Stats -->
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-5">
-<p class="text-sm text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-semibold">Referred users</p>
-<p class="text-2xl font-bold text-primary mt-1"><?php echo (int) $referredCount; ?></p>
-</div>
-<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-5">
-<p class="text-sm text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-semibold">Total earned (USDT)</p>
-<p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">$<?php echo number_format($totalEarnedUsd, 2); ?></p>
+<div class="rounded-xl p-6 bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
+<p class="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-medium">Total earned (Bonus)</p>
+<p class="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">$<?php echo number_format($totalEarnedUsd, 2); ?></p>
 </div>
 </div>
 
-<!-- Referrals list -->
-<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden mb-6">
-<h2 class="text-lg font-semibold px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex items-center gap-2"><span class="material-icons-round text-primary">people</span> People you referred</h2>
-<?php if (empty($referrals)): ?>
-<p class="p-6 text-slate-500 dark:text-zinc-400 text-center">No referrals yet. Share your link to get started.</p>
+<!-- 2. Referral earnings history -->
+<div class="rounded-xl overflow-hidden bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
+<h2 class="text-base sm:text-lg font-semibold px-5 sm:px-6 py-4 border-b border-slate-200/80 dark:border-slate-700/50 flex items-center gap-2"><span class="material-icons-round text-primary text-xl">payments</span> Referral earnings history</h2>
+<?php if (empty($referralEarningsHistory)): ?>
+<p class="p-6 text-slate-500 dark:text-zinc-400 text-center text-sm">No referral earnings yet. You earn when referred users get daily payouts (a percentage of their earning is credited to you).</p>
 <?php else: ?>
 <div class="overflow-x-auto">
 <table class="w-full text-left">
-<thead class="bg-slate-50 dark:bg-zinc-800/50">
+<thead class="bg-slate-50/80 dark:bg-slate-800/50">
 <tr>
-<th class="px-6 py-3 text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Name</th>
-<th class="px-6 py-3 text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Email</th>
-<th class="px-6 py-3 text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Joined</th>
+<th class="px-4 sm:px-6 py-3 text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Date</th>
+<th class="px-4 sm:px-6 py-3 text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">From</th>
+<th class="px-4 sm:px-6 py-3 text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Source</th>
+<th class="px-4 sm:px-6 py-3 text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider text-right">Amount</th>
+</tr>
+</thead>
+<tbody>
+<?php
+$sourceLabels = ['plan_subscription' => 'Plan subscription', 'first_deposit' => 'First deposit', 'referred_payout' => "Referee's earning"];
+foreach ($referralEarningsHistory as $e):
+    $sourceLabel = $sourceLabels[$e['source']] ?? $e['source'];
+?>
+<tr class="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+<td class="px-4 sm:px-6 py-3 text-sm text-slate-600 dark:text-zinc-400"><?php echo $e['created_at'] ? date('M j, Y H:i', strtotime($e['created_at'])) : '—'; ?></td>
+<td class="px-4 sm:px-6 py-3 text-sm"><?php echo htmlspecialchars($e['referred_name'] ?: $e['referred_email'] ?: '—'); ?></td>
+<td class="px-4 sm:px-6 py-3 text-xs text-slate-500 dark:text-zinc-500"><?php echo htmlspecialchars($sourceLabel); ?></td>
+<td class="px-4 sm:px-6 py-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400 text-right">+$<?php echo number_format($e['amount_usd'], 2); ?></td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
+</div>
+<?php endif; ?>
+</div>
+
+<!-- 3. People you referred -->
+<div class="rounded-xl overflow-hidden bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
+<h2 class="text-base sm:text-lg font-semibold px-5 sm:px-6 py-4 border-b border-slate-200/80 dark:border-slate-700/50 flex items-center gap-2"><span class="material-icons-round text-primary text-xl">people</span> People you referred</h2>
+<?php if (empty($referrals)): ?>
+<p class="p-6 text-slate-500 dark:text-zinc-400 text-center text-sm">No referrals yet. Share your link below to get started.</p>
+<?php else: ?>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50/80 dark:bg-slate-800/50">
+<tr>
+<th class="px-4 sm:px-6 py-3 text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Name</th>
+<th class="px-4 sm:px-6 py-3 text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Email</th>
+<th class="px-4 sm:px-6 py-3 text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Joined</th>
 </tr>
 </thead>
 <tbody>
 <?php foreach ($referrals as $r): ?>
-<tr class="border-t border-slate-100 dark:border-zinc-800 hover:bg-slate-50/50 dark:hover:bg-zinc-800/30">
-<td class="px-6 py-3 font-medium"><?php echo htmlspecialchars($r['name'] ?: '—'); ?></td>
-<td class="px-6 py-3 text-sm text-slate-600 dark:text-zinc-400"><?php echo htmlspecialchars($r['email']); ?></td>
-<td class="px-6 py-3 text-sm text-slate-500 dark:text-zinc-500"><?php echo $r['created_at'] ? date('M j, Y', strtotime($r['created_at'])) : '—'; ?></td>
+<tr class="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+<td class="px-4 sm:px-6 py-3 font-medium text-sm"><?php echo htmlspecialchars($r['name'] ?: '—'); ?></td>
+<td class="px-4 sm:px-6 py-3 text-sm text-slate-600 dark:text-zinc-400"><?php echo htmlspecialchars($r['email']); ?></td>
+<td class="px-4 sm:px-6 py-3 text-sm text-slate-500 dark:text-zinc-500"><?php echo $r['created_at'] ? date('M j, Y', strtotime($r['created_at'])) : '—'; ?></td>
 </tr>
 <?php endforeach; ?>
 </tbody>
@@ -142,34 +159,28 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <?php endif; ?>
 </div>
 
-<!-- Referral earnings history -->
-<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
-<h2 class="text-lg font-semibold px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex items-center gap-2"><span class="material-icons-round text-primary">payments</span> Referral earnings history</h2>
-<?php if (empty($referralEarningsHistory)): ?>
-<p class="p-6 text-slate-500 dark:text-zinc-400 text-center">No referral earnings yet. When your referred users subscribe to a plan, you will see earnings here.</p>
-<?php else: ?>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead class="bg-slate-50 dark:bg-zinc-800/50">
-<tr>
-<th class="px-6 py-3 text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Date</th>
-<th class="px-6 py-3 text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">From</th>
-<th class="px-6 py-3 text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Source</th>
-<th class="px-6 py-3 text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider text-right">Amount (USD)</th>
-</tr>
-</thead>
-<tbody>
-<?php foreach ($referralEarningsHistory as $e): ?>
-<tr class="border-t border-slate-100 dark:border-zinc-800 hover:bg-slate-50/50 dark:hover:bg-zinc-800/30">
-<td class="px-6 py-3 text-sm text-slate-600 dark:text-zinc-400"><?php echo $e['created_at'] ? date('M j, Y H:i', strtotime($e['created_at'])) : '—'; ?></td>
-<td class="px-6 py-3 text-sm"><?php echo htmlspecialchars($e['referred_name'] ?: $e['referred_email'] ?: '—'); ?></td>
-<td class="px-6 py-3 text-xs text-slate-500 dark:text-zinc-500"><?php echo $e['source'] === 'plan_subscription' ? 'Plan subscription' : htmlspecialchars($e['source']); ?></td>
-<td class="px-6 py-3 text-sm font-bold text-emerald-600 dark:text-emerald-400 text-right">+$<?php echo number_format($e['amount_usd'], 2); ?></td>
-</tr>
-<?php endforeach; ?>
-</tbody>
-</table>
+<!-- 4. Your referral code & share link last -->
+<div class="rounded-xl p-6 sm:p-8 bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
+<h2 class="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2"><span class="material-icons-round text-primary text-xl">link</span> Your referral code &amp; link</h2>
+<?php if ($myCode): ?>
+<div class="space-y-4">
+<div>
+<label class="block text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mb-1.5">Code</label>
+<div class="flex flex-wrap items-center gap-2 sm:gap-3">
+<input type="text" id="referral-code" readonly value="<?php echo htmlspecialchars($myCode); ?>" class="flex-1 min-w-0 px-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-600 rounded-lg font-mono text-base sm:text-lg tracking-widest uppercase"/>
+<button type="button" id="copy-code" class="shrink-0 px-4 py-2.5 sm:py-3 bg-primary text-black font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"><span class="material-icons-round text-lg">content_copy</span> Copy code</button>
 </div>
+</div>
+<div>
+<label class="block text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mb-1.5">Share link (goes to registration and fills your code)</label>
+<div class="flex flex-wrap items-center gap-2 sm:gap-3">
+<input type="text" id="share-url" readonly value="<?php echo htmlspecialchars($shareUrl ?? ''); ?>" class="flex-1 min-w-0 px-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-600 rounded-lg text-sm"/>
+<button type="button" id="copy-url" class="shrink-0 px-4 py-2.5 sm:py-3 bg-primary text-black font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"><span class="material-icons-round text-lg">content_copy</span> Copy link</button>
+</div>
+</div>
+</div>
+<?php else: ?>
+<p class="text-slate-500 dark:text-zinc-400 text-sm">Your referral code is being generated. <a href="/dashboard/user/referrals" class="text-primary font-semibold hover:underline">Refresh the page</a> in a moment.</p>
 <?php endif; ?>
 </div>
 </div>

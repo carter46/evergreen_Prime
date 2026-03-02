@@ -437,7 +437,7 @@ CREATE TABLE `referral_earnings` (
   `id` int(10) UNSIGNED NOT NULL,
   `referrer_user_id` int(10) UNSIGNED NOT NULL,
   `referred_user_id` int(10) UNSIGNED NOT NULL,
-  `source` enum('plan_subscription','first_deposit') NOT NULL,
+  `source` enum('plan_subscription','first_deposit','referred_payout') NOT NULL,
   `amount_usd` decimal(18,2) NOT NULL,
   `currency` varchar(20) NOT NULL DEFAULT 'USDT',
   `percent_used` decimal(5,2) NOT NULL,

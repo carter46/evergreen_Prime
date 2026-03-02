@@ -536,7 +536,7 @@ CREATE TABLE IF NOT EXISTS referral_earnings (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   referrer_user_id INT UNSIGNED NOT NULL,
   referred_user_id INT UNSIGNED NOT NULL,
-  source ENUM('plan_subscription','first_deposit') NOT NULL,
+  source ENUM('plan_subscription','first_deposit','referred_payout') NOT NULL,
   amount_usd DECIMAL(18,2) NOT NULL,
   currency VARCHAR(20) NOT NULL DEFAULT 'USDT',
   percent_used DECIMAL(5,2) NOT NULL,
@@ -548,6 +548,15 @@ CREATE TABLE IF NOT EXISTS referral_earnings (
   FOREIGN KEY (referrer_user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (referred_user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Ensure referral_earnings.source includes referred_payout (for existing tables)
+SET @ref_enum = (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'referral_earnings' AND COLUMN_NAME = 'source');
+SET @has_referred_payout = IF(@ref_enum LIKE '%referred_payout%', 1, 0);
+SET @sql = IF(@has_referred_payout = 0,
+    'ALTER TABLE referral_earnings MODIFY COLUMN source ENUM(\'plan_subscription\',\'first_deposit\',\'referred_payout\') NOT NULL',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- transactions: allow referral_bonus type
 SET @col_type = (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS

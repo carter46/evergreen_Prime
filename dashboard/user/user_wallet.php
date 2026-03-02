@@ -15,6 +15,7 @@ $highestCoinLogo = 'https://assets.coingecko.com/coins/images/1/large/bitcoin.pn
 $totalProfit = 0;
 $activeCapital = 0;
 $dailyEarning = 0;
+$referralBonus = 0;
 $coinLogosMap = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png','USDC'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','BUSD'=>'https://assets.coingecko.com/coins/images/9576/large/BUSD.png','USD'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','XRP'=>'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png','SOL'=>'https://assets.coingecko.com/coins/images/4128/large/solana.png','BNB'=>'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png','ADA'=>'https://assets.coingecko.com/coins/images/975/large/cardano.png','DOGE'=>'https://assets.coingecko.com/coins/images/5/large/dogecoin.png','TRX'=>'https://assets.coingecko.com/coins/images/1094/large/tron-logo.png'];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
@@ -70,6 +71,17 @@ try {
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
     $r->execute([$userId]); $dailyEarning = (float)$r->fetchColumn();
+    try {
+        $tbl = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
+        if ($tbl && $tbl->rowCount() > 0) {
+            $r = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ?');
+            $r->execute([$userId]); $referralBonus = (float)$r->fetchColumn();
+        }
+    } catch (Throwable $e) {}
+    if ($referralBonus == 0) {
+        $r = $pdo->prepare("SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions WHERE user_id = ? AND type = 'referral_bonus' AND status = 'completed'");
+        $r->execute([$userId]); $referralBonus = (float)$r->fetchColumn();
+    }
     $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5');
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -150,16 +162,19 @@ echo implode(' <span class="text-white/60 mx-1">|</span> ', $parts);
 if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$extraCoinCount.'</span>';
 ?>
 </p>
-<div class="flex gap-3 mt-4">
-<button type="button" id="deposit-btn" class="bg-primary hover:bg-primary/90 text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all">
-<span class="material-icons text-sm">add</span> Deposit
+<div class="flex flex-wrap gap-2 sm:gap-3 mt-4">
+<button type="button" id="deposit-btn" class="bg-primary hover:bg-primary/90 text-black px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all text-sm">
+<span class="material-icons text-xs sm:text-sm">add</span> Deposit
 </button>
-<button type="button" id="withdraw-btn" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all backdrop-blur-sm">
-<span class="material-icons text-sm">file_upload</span> Withdraw
+<button type="button" id="withdraw-btn" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all backdrop-blur-sm text-sm">
+<span class="material-icons text-xs sm:text-sm">file_upload</span> Withdraw
 </button>
+<a href="/dashboard/user/transactions" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all backdrop-blur-sm text-sm">
+<span class="material-icons text-xs sm:text-sm">history</span> History
+</a>
 </div>
 </div>
-<div class="mt-10 grid grid-cols-3 gap-6 border-t border-white/10 pt-8">
+<div class="mt-8 sm:mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 border-t border-white/10 pt-6 sm:pt-8">
 <div>
 <p class="text-slate-400 text-xs mb-1">Total Profit</p>
 <p class="font-bold text-emerald-400">$<?php echo number_format($totalProfit, 2); ?></p>
@@ -171,6 +186,10 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <div>
 <p class="text-slate-400 text-xs mb-1">Daily Earning</p>
 <p class="font-bold text-primary">$<?php echo number_format($dailyEarning, 2); ?></p>
+</div>
+<div>
+<p class="text-slate-400 text-xs mb-1">Referral Bonus</p>
+<p class="font-bold text-amber-400">$<?php echo number_format($referralBonus, 2); ?></p>
 </div>
 </div>
 </div>
