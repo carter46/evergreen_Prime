@@ -112,6 +112,15 @@ if ($balance < $amountToDebit) {
     exit;
 }
 
+// Prevent duplicate subscription to the same plan (active or paused)
+$dup = $pdo->prepare('SELECT id FROM user_investments WHERE user_id = ? AND plan_id = ? AND status IN (?, ?) LIMIT 1');
+$dup->execute([$userId, $planId, 'active', 'paused']);
+if ($dup->fetch()) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'You already have an active subscription to this plan']);
+    exit;
+}
+
 // Check max active plans per user
 $maxPlans = (int) get_site_setting('max_active_plans_per_user', '3');
 $stmt = $pdo->prepare('SELECT COUNT(*) FROM user_investments WHERE user_id = ? AND status = ?');

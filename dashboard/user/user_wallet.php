@@ -70,8 +70,15 @@ try {
     $r->execute([$userId]); $totalProfit = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
-    $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
-    $r->execute([$userId]); $dailyEarning = (float)$r->fetchColumn();
+    $stmtDaily = $pdo->prepare('SELECT ui.amount, p.yield_min, p.yield_max FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ?');
+    $stmtDaily->execute([$userId, 'active']);
+    while ($row = $stmtDaily->fetch(PDO::FETCH_ASSOC)) {
+        $yieldMin = (float)($row['yield_min'] ?? 0);
+        $yieldMax = (float)($row['yield_max'] ?? 0);
+        $avgYield = ($yieldMin + $yieldMax) / 2;
+        if ($avgYield <= 0) $avgYield = $yieldMin;
+        $dailyEarning += (float)$row['amount'] * ($avgYield / 100);
+    }
     try {
         $tbl = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
         if ($tbl && $tbl->rowCount() > 0) {

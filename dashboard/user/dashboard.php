@@ -71,8 +71,16 @@ try {
     $r->execute([$userId]); $totalProfit = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
-    $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
-    $r->execute([$userId]); $dailyEarning = (float)$r->fetchColumn();
+    $stmt = $pdo->prepare('SELECT ui.id, ui.plan_id, ui.amount, ui.start_date, ui.status, ui.duration_days as investment_duration_days, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days as plan_duration_days FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC LIMIT 5');
+    $stmt->execute([$userId, 'active']);
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $activeInvestments[] = $row;
+        $yieldMin = (float)($row['yield_min'] ?? 0);
+        $yieldMax = (float)($row['yield_max'] ?? 0);
+        $avgYield = ($yieldMin + $yieldMax) / 2;
+        if ($avgYield <= 0) $avgYield = $yieldMin;
+        $dailyEarning += (float)$row['amount'] * ($avgYield / 100);
+    }
     try {
         $tbl = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
         if ($tbl && $tbl->rowCount() > 0) {
@@ -88,10 +96,7 @@ try {
         $r = $pdo->prepare("SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions WHERE user_id = ? AND type = 'referral_bonus' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
         $r->execute([$userId]); $referralBonusLast24h = (float)$r->fetchColumn();
     }
-    $stmt = $pdo->prepare('SELECT ui.id, ui.plan_id, ui.amount, ui.start_date, ui.status, ui.duration_days as investment_duration_days, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days as plan_duration_days FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC LIMIT 5');
-    $stmt->execute([$userId, 'active']);
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) $activeInvestments[] = $row;
-    
+    // activeInvestments and dailyEarning already populated above
     // Fetch transaction data for chart based on selected period
     $stmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
     $stmt->execute([$userId, $days]);

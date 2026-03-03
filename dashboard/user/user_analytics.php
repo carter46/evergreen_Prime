@@ -33,20 +33,12 @@ try {
         $r->execute([$userId]);
         $totalProfit = (float)$r->fetchColumn();
         
-        $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
-        $r->execute([$userId]);
-        $dailyAvgReturn = (float)$r->fetchColumn();
-        
         $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal', 'payout') GROUP BY DATE(created_at), type ORDER BY date ASC");
         $chartStmt->execute([$userId]);
     } else {
         $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)");
         $r->execute([$userId, $days]);
         $totalProfit = (float)$r->fetchColumn();
-        
-        $r = $pdo->prepare("SELECT COALESCE(AVG(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)");
-        $r->execute([$userId, $days]);
-        $dailyAvgReturn = (float)$r->fetchColumn();
         
         $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal', 'payout') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
         $chartStmt->execute([$userId, $days]);
@@ -57,12 +49,20 @@ try {
     $r->execute([$userId]);
     $activeCapital = (float)$r->fetchColumn();
     
-    // Est monthly earnings: plan yield is daily %, so daily = capital * (yield/100), monthly ≈ daily * 30
-    $r = $pdo->prepare("SELECT COALESCE(AVG((p.yield_min + p.yield_max) / 2), 0) FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = 'active'");
-    $r->execute([$userId]);
-    $avgYield = (float)$r->fetchColumn();
-    $estDailyEarnings = $activeCapital * ($avgYield / 100);
-    $estMonthlyEarnings = $estDailyEarnings * 30;
+    // Expected daily from per-plan yields (same formula as dashboard): sum of amount * (avgYield/100) per active investment
+    $expectedDaily = 0.0;
+    $expStmt = $pdo->prepare('SELECT ui.amount, p.yield_min, p.yield_max FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ?');
+    $expStmt->execute([$userId, 'active']);
+    while ($row = $expStmt->fetch(PDO::FETCH_ASSOC)) {
+        $yieldMin = (float)($row['yield_min'] ?? 0);
+        $yieldMax = (float)($row['yield_max'] ?? 0);
+        $avgYield = ($yieldMin + $yieldMax) / 2;
+        if ($avgYield <= 0) $avgYield = $yieldMin;
+        $expectedDaily += (float)$row['amount'] * ($avgYield / 100);
+    }
+    $dailyAvgReturn = $expectedDaily;
+    $estDailyEarnings = $expectedDaily;
+    $estMonthlyEarnings = $expectedDaily * 30;
     
     // Chart data
     $dailyData = [];

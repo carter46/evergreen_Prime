@@ -31,6 +31,7 @@ $settings = [
     'deposit_countdown_minutes' => get_site_setting('deposit_countdown_minutes', '30'),
     'referral_enabled' => get_site_setting('referral_enabled', '0'),
     'referral_percentage' => get_site_setting('referral_percentage', '5'),
+    'deposit_bonus_percentage' => get_site_setting('deposit_bonus_percentage', '10'),
 ];
 $adminEmail = '';
 $adminName = '';
@@ -209,8 +210,12 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <label class="text-sm font-medium text-slate-700 dark:text-zinc-300">Commission (%)</label>
 <input id="settings-referral-percentage" type="number" min="0" max="100" step="0.5" class="w-20 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm" value="<?php echo htmlspecialchars($settings['referral_percentage'] ?? '5'); ?>"/>
 </div>
+<div class="flex items-center gap-2">
+<label class="text-sm font-medium text-slate-700 dark:text-zinc-300">Deposit bonus (%)</label>
+<input id="settings-deposit-bonus-percentage" type="number" min="0" max="100" step="0.5" class="w-20 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm" value="<?php echo htmlspecialchars($settings['deposit_bonus_percentage'] ?? '10'); ?>" title="Bonus credited to depositor on every approved deposit"/>
 </div>
-<p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">When enabled, users can share a referral code at signup. Referrers earn this percentage of the referee's first plan subscription (paid in USDT).</p>
+</div>
+<p class="text-xs text-slate-500 dark:text-zinc-400 mt-2">When enabled, users can share a referral code at signup. Referrers earn this percentage of the referee's first plan subscription (paid in USDT). Deposit bonus is credited to the depositor on every approved deposit (separate from referral).</p>
 </div>
 </div>
 <button type="button" id="settings-save-branding" class="mt-4 px-6 py-2.5 bg-primary text-slate-900 font-bold rounded-lg hover:opacity-90">Save Branding</button>
@@ -397,13 +402,15 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
     var referralEnabled = (document.getElementById('settings-referral-enabled') || {}).checked ? '1' : '0';
     var referralPct = (document.getElementById('settings-referral-percentage') || {}).value;
     if (referralPct === '' || isNaN(parseFloat(referralPct))) referralPct = '5';
+    var depositBonusPct = (document.getElementById('settings-deposit-bonus-percentage') || {}).value;
+    if (depositBonusPct === '' || isNaN(parseFloat(depositBonusPct))) depositBonusPct = '10';
     var btn = this;
     btn.disabled = true;
     fetch('/api/admin/site-settings.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ site_name: siteName || <?php echo json_encode($siteName); ?>, contact_email: contactEmail || '', homepage_youtube_url: homepageYoutube || '', about_youtube_url: aboutYoutube || '', office_title: officeTitle || '', office_address: officeAddress || '', smartsupp_key: smartsuppKey || '', deposit_countdown_minutes: depositCountdown, referral_enabled: referralEnabled, referral_percentage: referralPct })
+      body: JSON.stringify({ site_name: siteName || <?php echo json_encode($siteName); ?>, contact_email: contactEmail || '', homepage_youtube_url: homepageYoutube || '', about_youtube_url: aboutYoutube || '', office_title: officeTitle || '', office_address: officeAddress || '', smartsupp_key: smartsuppKey || '', deposit_countdown_minutes: depositCountdown, referral_enabled: referralEnabled, referral_percentage: referralPct, deposit_bonus_percentage: depositBonusPct })
     }).then(function(r){ return r.json(); }).then(function(res){
       showMsg(document.getElementById('settings-branding-msg'), res.success ? 'Branding saved.' : (res.error || 'Failed'), res.success);
       btn.disabled = false;

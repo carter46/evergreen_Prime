@@ -146,6 +146,39 @@ try {
                     // Do not fail deposit approval if referral logic fails
                 }
             }
+
+            // Universal deposit bonus (to depositor, non-referral)
+            $baseUsdDeposit = $amountUsd !== null ? (float)$amountUsd : 0.0;
+            if ($baseUsdDeposit > 0) {
+                try {
+                    $depositBonusPct = (float) (get_site_setting('deposit_bonus_percentage', '10') ?: '10');
+                    $depositBonusPct = max(0, min(100, $depositBonusPct));
+                    if ($depositBonusPct > 0) {
+                        $bonusUsd = round($baseUsdDeposit * ($depositBonusPct / 100), 2);
+                        if ($bonusUsd > 0) {
+                            $refCurrency = 'USDT';
+                            $depositorId = (int) $tx['user_id'];
+                            $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
+                                ->execute([$depositorId, $refCurrency, $bonusUsd]);
+                            $hasAmountUsdCol = false;
+                            try {
+                                $colChk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
+                                $hasAmountUsdCol = $colChk && $colChk->rowCount() > 0;
+                            } catch (Throwable $e) {}
+                            if ($hasAmountUsdCol) {
+                                $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                                    ->execute([$depositorId, 'deposit_bonus', $bonusUsd, $bonusUsd, $refCurrency, 'completed', 'dep_bonus_' . $transactionId]);
+                            } else {
+                                $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
+                                    ->execute([$depositorId, 'deposit_bonus', $bonusUsd, $refCurrency, 'completed', 'dep_bonus_' . $transactionId]);
+                            }
+                            bump_user_last_balance_usd($pdo, $depositorId, (float)$bonusUsd);
+                        }
+                    }
+                } catch (Throwable $e) {
+                    // Do not fail deposit approval if deposit bonus logic fails
+                }
+            }
         }
         // For withdrawals, status update is sufficient (balance already debited on request)
         

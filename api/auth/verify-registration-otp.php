@@ -92,6 +92,15 @@ try {
         $vals[] = $pending['avatar_url'];
         $placeholders[] = '?';
     }
+    // Auto-enable 2FA for non-admin users (registration always creates 'user')
+    try {
+        $chk = $pdo->query("SHOW COLUMNS FROM users LIKE 'two_factor_enabled'");
+        if ($chk && $chk->rowCount() > 0) {
+            $cols[] = 'two_factor_enabled';
+            $vals[] = 1;
+            $placeholders[] = '?';
+        }
+    } catch (Throwable $e) {}
 
     $sql = 'INSERT INTO users (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $placeholders) . ')';
     $pdo->prepare($sql)->execute($vals);

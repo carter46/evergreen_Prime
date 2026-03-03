@@ -326,7 +326,8 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 ('tagline', 'AI Crypto Trading', '2026-02-15 01:07:56'),
 ('volume_24h', '$84.2B', '2026-02-15 01:07:56'),
 ('referral_enabled', '0', '2026-02-24 00:00:00'),
-('referral_percentage', '5', '2026-02-24 00:00:00');
+('referral_percentage', '5', '2026-02-24 00:00:00'),
+('deposit_bonus_percentage', '10', '2026-02-24 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -337,7 +338,7 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 CREATE TABLE `transactions` (
   `id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED NOT NULL,
-  `type` enum('deposit','withdrawal','payout','investment','referral_bonus') NOT NULL,
+  `type` enum('deposit','withdrawal','payout','investment','referral_bonus','deposit_bonus') NOT NULL,
   `amount` decimal(36,18) NOT NULL,
   `amount_usd` decimal(18,2) DEFAULT NULL,
   `currency` varchar(20) NOT NULL DEFAULT 'USD',

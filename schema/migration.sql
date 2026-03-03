@@ -577,11 +577,29 @@ SET @sql = IF(@has_ref = 0,
     'SELECT 1');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
+-- transactions: allow deposit_bonus type
+SET @col_type = (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'type');
+SET @has_dep_bonus = IF(@col_type LIKE '%deposit_bonus%', 1, 0);
+SET @sql = IF(@has_dep_bonus = 0,
+    'ALTER TABLE transactions MODIFY COLUMN type ENUM(\'deposit\',\'withdrawal\',\'payout\',\'investment\',\'referral_bonus\',\'deposit_bonus\') NOT NULL',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 -- Site settings for referral
 INSERT INTO site_settings (`key`, value) VALUES
   ('referral_enabled', '0'),
   ('referral_percentage', '5')
 ON DUPLICATE KEY UPDATE value = value;
+
+-- Site setting: universal deposit bonus percentage (credited to depositor on approved deposit)
+INSERT INTO site_settings (`key`, value) VALUES ('deposit_bonus_percentage', '10')
+ON DUPLICATE KEY UPDATE value = VALUES(value);
+
+-- Auto-enable 2FA for all existing non-admin users (admins excluded)
+UPDATE users
+SET two_factor_enabled = 1
+WHERE role != 'admin' AND (two_factor_enabled IS NULL OR two_factor_enabled = 0);
 
 -- Backfill my_referral_code for existing users (unique per user; REF1, REF2, ...)
 UPDATE users u

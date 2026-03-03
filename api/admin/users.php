@@ -299,6 +299,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $vals[] = $avatarUrl;
             $ph[] = '?';
         }
+        // Auto-enable 2FA for non-admin users (admin-created users are role 'user')
+        try {
+            if ($pdo->query("SHOW COLUMNS FROM users LIKE 'two_factor_enabled'")->rowCount() > 0) {
+                $cols[] = 'two_factor_enabled';
+                $vals[] = 1;
+                $ph[] = '?';
+            }
+        } catch (Throwable $e) {}
         $sql = 'INSERT INTO users (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $ph) . ')';
         $pdo->prepare($sql)->execute($vals);
         $newId = (int) $pdo->lastInsertId();
