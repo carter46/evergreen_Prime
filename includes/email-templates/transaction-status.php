@@ -42,7 +42,7 @@ $reference = $reference ?? '';
 <?php if ($amountUsd != $amount): ?>
 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #e5e5e0">
 <span style="color:#5c5c52;font-size:14px">USD Equivalent:</span>
-<span style="font-size:18px;font-weight:600;color:#1d180c">$<?= number_format((float)$amountUsd, 2, '.', ',') ?></span>
+<span style="font-size:18px;font-weight:600;color:#1d180c">$<?= format_usd_amount($amountUsd) ?></span>
 </div>
 <?php endif; ?>
 <?php if (!empty($reference)): ?>

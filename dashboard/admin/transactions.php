@@ -176,7 +176,7 @@ $currentTransactions = getTransactionsForFilter($filter, $type, $pendingDeposits
 $usdAmt = isset($tx['amount_usd']) && $tx['amount_usd'] !== null ? (float)$tx['amount_usd'] : null;
 $coinAmt = (float)$tx['amount'];
 ?>
-<div class="font-bold"><?php echo $usdAmt !== null ? '$' . number_format($usdAmt, 2) . ' USD' : '$' . number_format($coinAmt, 2); ?></div>
+<div class="font-bold"><?php echo $usdAmt !== null ? '$' . format_usd_amount($usdAmt) . ' USD' : '$' . format_usd_amount($coinAmt); ?></div>
 <div class="text-xs text-slate-500">
 <?php if ($logo): ?><img alt="<?php echo htmlspecialchars($tx['currency']); ?>" class="inline w-4 h-4 align-middle mr-0.5" src="<?php echo htmlspecialchars($logo); ?>"/><?php endif; ?>
 <?php 

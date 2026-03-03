@@ -76,9 +76,9 @@ try {
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
 <?php
-  $txTypeLabels = ['referral_bonus' => 'Referral bonus'];
+  $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus'];
   foreach ($transactions as $tx):
-  $isIncoming = in_array($tx['type'], ['deposit', 'payout', 'referral_bonus']);
+  $isIncoming = in_array($tx['type'], ['deposit', 'payout', 'referral_bonus', 'deposit_bonus']);
   $statusClass = 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
   if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
   elseif (in_array($tx['status'], ['rejected', 'failed'], true)) $statusClass = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
@@ -95,7 +95,7 @@ try {
 </div>
 </td>
 <td class="px-6 py-4 text-sm font-medium"><?php echo htmlspecialchars($tx['currency']); ?></td>
-<td class="px-6 py-4 text-right text-sm font-bold <?php echo $isIncoming ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isIncoming ? '+' : '-'; ?><?php echo number_format((float)$tx['amount'], 4); ?></td>
+<td class="px-6 py-4 text-right text-sm font-bold <?php echo $isIncoming ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isIncoming ? '+' : '-'; ?><?php echo format_usd_amount($tx['amount']); ?></td>
 <td class="px-6 py-4 text-center">
 <span class="px-2 py-1 <?php echo $statusClass; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>

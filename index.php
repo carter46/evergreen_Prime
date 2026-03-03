@@ -530,8 +530,8 @@ $ring2 = array_slice($orbitCoins, 6, 4);
 $planIndex = 0;
 foreach ($indexPlans as $p):
     $popular = ($planIndex === 1);
-    $priceLabel = '$' . number_format((float)$p['min_deposit']);
-    if (!empty($p['max_deposit'])) $priceLabel .= ' - $' . number_format((float)$p['max_deposit']);
+    $priceLabel = '$' . format_usd_amount($p['min_deposit']);
+    if (!empty($p['max_deposit'])) $priceLabel .= ' - $' . format_usd_amount($p['max_deposit']);
     else $priceLabel .= '+';
 ?>
 <div class="bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-lg border <?php echo $popular ? 'border-2 border-primary shadow-2xl' : 'border-slate-100 dark:border-slate-700'; ?> hover:-translate-y-2 transition-transform duration-300 relative">

@@ -178,7 +178,7 @@ foreach ($users as $i => $u):
 </div>
 </td>
 <td class="px-6 py-4">
-<div class="font-bold text-slate-900 dark:text-white">$<?php echo number_format($u['total_balance_usd'], 2); ?></div>
+<div class="font-bold text-slate-900 dark:text-white">$<?php echo format_usd_amount($u['total_balance_usd']); ?></div>
 </td>
 <td class="px-6 py-4">
 <span class="<?php echo $u['active_plans_count'] > 0 ? 'bg-primary/20 text-slate-900 dark:text-primary' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'; ?> px-2 py-0.5 rounded-full text-xs font-bold"><?php echo $u['active_plans_count']; ?> Plan<?php echo $u['active_plans_count'] !== 1 ? 's' : ''; ?></span>
@@ -238,7 +238,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <span class="material-icons text-slate-400 user-mobile-chevron transition-transform shrink-0">expand_more</span>
 </button>
 <div class="user-mobile-expand hidden border-t border-slate-100 dark:border-zinc-800 px-4 py-4 space-y-3">
-<div class="flex justify-between items-center"><span class="text-xs text-slate-500">Total Balance</span><span class="font-bold text-sm">$<?php echo number_format($u['total_balance_usd'], 2); ?></span></div>
+<div class="flex justify-between items-center"><span class="text-xs text-slate-500">Total Balance</span><span class="font-bold text-sm">$<?php echo format_usd_amount($u['total_balance_usd']); ?></span></div>
 <div class="flex justify-between items-center"><span class="text-xs text-slate-500">Active Plans</span><span class="<?php echo $u['active_plans_count'] > 0 ? 'bg-primary/20 text-primary' : 'text-slate-500'; ?> text-xs font-bold"><?php echo $u['active_plans_count']; ?> Plan<?php echo $u['active_plans_count'] !== 1 ? 's' : ''; ?></span></div>
 <button type="button" class="user-edit-btn w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-zinc-900 font-bold rounded-lg text-sm" data-user-id="<?php echo $u['id']; ?>"><span class="material-icons text-lg">edit</span>Edit User</button>
 </div>

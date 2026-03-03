@@ -120,7 +120,7 @@ try {
 <div class="space-y-3 mb-6">
 <div class="flex justify-between items-center">
 <span class="text-sm text-slate-500">Deposit Range</span>
-<span class="text-sm font-bold">$<?php echo number_format($plan['min_deposit'], 0); ?> - <?php echo $plan['max_deposit'] ? '$' . number_format($plan['max_deposit'], 0) : 'Unlimited'; ?></span>
+<span class="text-sm font-bold">$<?php echo format_usd_amount($plan['min_deposit']); ?> - <?php echo $plan['max_deposit'] ? '$' . format_usd_amount($plan['max_deposit']) : 'Unlimited'; ?></span>
 </div>
 <div class="flex justify-between items-center">
 <span class="text-sm text-slate-500">Yield Range</span>
@@ -190,7 +190,7 @@ Subscribe Now
 <select id="subscribe-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" <?php echo empty($walletBalances) ? 'disabled' : 'required'; ?>>
 <option value="">Select currency</option>
 <?php foreach ($walletBalances as $b): ?>
-<option value="<?php echo htmlspecialchars($b['currency']); ?>" data-amount="<?php echo $b['amount']; ?>" data-usd="<?php echo $b['usd_value'] === null ? '' : $b['usd_value']; ?>"><?php echo htmlspecialchars($b['currency']); ?> — <?php echo number_format($b['amount'], 8); ?> <?php echo $b['usd_value'] === null ? '(≈ USD value at checkout)' : '(≈ $' . number_format((float)$b['usd_value'], 2) . ')'; ?></option>
+<option value="<?php echo htmlspecialchars($b['currency']); ?>" data-amount="<?php echo $b['amount']; ?>" data-usd="<?php echo $b['usd_value'] === null ? '' : $b['usd_value']; ?>"><?php echo htmlspecialchars($b['currency']); ?> — <?php echo number_format($b['amount'], 8); ?> <?php echo $b['usd_value'] === null ? '(≈ USD value at checkout)' : '(≈ $' . format_usd_amount($b['usd_value']) . ')'; ?></option>
 <?php endforeach; ?>
 </select>
 <?php if (empty($walletBalances)): ?><p class="text-xs text-amber-600 mt-1">Deposit funds to your wallet first.</p><?php endif; ?>
@@ -199,7 +199,7 @@ Subscribe Now
 <div class="mb-4">
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Investment Amount (USD)</label>
 <input type="number" id="subscribe-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" required/>
-<p class="text-xs text-slate-500 mt-1">USD Balance: $<span id="available-balance"><?php echo number_format($userBalance, 2); ?></span></p>
+<p class="text-xs text-slate-500 mt-1">USD Balance: $<span id="available-balance"><?php echo format_usd_amount($userBalance); ?></span></p>
 <p class="text-xs text-slate-500 mt-1">Range: $<span id="plan-min"></span> - <span id="plan-max"></span></p>
 </div>
 <div id="subscribe-error" class="text-sm text-red-500 hidden mb-4"></div>

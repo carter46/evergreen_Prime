@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode([
             'success' => true,
             'data' => [
-                'message' => 'Manual distribution completed. Credits: ' . $result['credits'] . ', Total: $' . number_format($result['total_amount'], 2) . ' USDT',
+                'message' => 'Manual distribution completed. Credits: ' . $result['credits'] . ', Total: $' . format_usd_amount($result['total_amount']) . ' USDT',
                 'credits' => $result['credits'],
                 'total_amount' => $result['total_amount'],
                 'errors' => $result['errors'],

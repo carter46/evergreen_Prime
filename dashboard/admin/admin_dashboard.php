@@ -121,7 +121,7 @@ foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['c
 <span class="text-slate-500 text-xs font-medium uppercase tracking-wider">Total Earnings</span>
 <span class="text-emerald-500 text-[10px] font-bold flex items-center"><span class="material-icons text-[12px]">trending_up</span></span>
 </div>
-<p class="text-2xl font-bold">$<?php echo number_format($totalEarnings); ?></p>
+<p class="text-2xl font-bold">$<?php echo format_usd_amount($totalEarnings); ?></p>
 </div>
 <!-- Card 3 -->
 <div class="bg-white dark:bg-white/5 p-6 rounded-xl border border-primary/10 shadow-sm">
@@ -137,7 +137,7 @@ foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['c
 <span class="text-primary font-bold text-xs uppercase tracking-wider">Pending Deposits</span>
 <span class="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">ACTION</span>
 </div>
-<p class="text-2xl font-bold text-primary">$<?php echo number_format($pendingDepositsSum); ?></p>
+<p class="text-2xl font-bold text-primary">$<?php echo format_usd_amount($pendingDepositsSum); ?></p>
 </div>
 <!-- Card 5: Pending Withdrawals -->
 <div class="bg-amber-50 dark:bg-amber-900/10 p-6 rounded-xl border border-amber-200 dark:border-amber-800/30 shadow-sm">
@@ -145,7 +145,7 @@ foreach ($planDist as $p) { if ((int)$p['cnt'] > $planMax) $planMax = (int)$p['c
 <span class="text-amber-700 dark:text-amber-400 text-xs font-medium uppercase tracking-wider">Pending Withdrawals</span>
 <?php if ($pendingWithdrawalsCount > 0): ?><span class="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold"><?php echo (int)$pendingWithdrawalsCount; ?></span><?php endif; ?>
 </div>
-<p class="text-2xl font-bold text-amber-700 dark:text-amber-400">$<?php echo number_format($pendingWithdrawalsSum); ?></p>
+<p class="text-2xl font-bold text-amber-700 dark:text-amber-400">$<?php echo format_usd_amount($pendingWithdrawalsSum); ?></p>
 </div>
 </div>
 <!-- Mid Section - Investments per Plan + Pending Deposits side by side (50% / 50%) -->
@@ -215,7 +215,7 @@ foreach ($pendingList as $tx):
 </td>
 <td class="px-6 py-4 text-sm">
 <?php $usdAmt = isset($tx['amount_usd']) && $tx['amount_usd'] !== null ? (float)$tx['amount_usd'] : null; $coinAmt = (float)$tx['amount']; ?>
-<div class="font-bold"><?php echo $usdAmt !== null ? '$' . number_format($usdAmt, 2) . ' USD' : '$' . number_format($coinAmt, 2); ?></div>
+<div class="font-bold"><?php echo $usdAmt !== null ? '$' . format_usd_amount($usdAmt) . ' USD' : '$' . format_usd_amount($coinAmt); ?></div>
 <?php if ($usdAmt !== null): ?><div class="text-xs text-slate-500"><?php echo ($coinAmt >= 1 ? number_format($coinAmt, 4) : number_format($coinAmt, 6)) . ' ' . htmlspecialchars($tx['currency']); ?></div><?php endif; ?>
 </td>
 <td class="px-6 py-4">
@@ -265,12 +265,12 @@ foreach ($recentActivity as $i => $a):
     if ($type === 'registration') $desc = $name . ' just joined ' . $siteNameAct . '.';
     elseif ($type === 'withdrawal') {
         $amt = isset($a['amount_usd']) && $a['amount_usd'] !== null ? (float)$a['amount_usd'] : (float)$a['amount'];
-        $desc = $name . ' requested a $' . number_format($amt, 0) . ' payout.';
+        $desc = $name . ' requested a $' . format_usd_amount($amt) . ' payout.';
     } elseif ($type === 'deposit') {
         $amt = isset($a['amount_usd']) && $a['amount_usd'] !== null ? (float)$a['amount_usd'] : (float)$a['amount'];
-        $desc = $name . ' deposited $' . number_format($amt, 0) . '.';
+        $desc = $name . ' deposited $' . format_usd_amount($amt) . '.';
     }
-    elseif ($type === 'plan_activated') $desc = ($a['plan_name'] ?? 'Plan') . ' started for ' . $name . ' ($' . number_format((float)$a['amount'], 0) . ').';
+    elseif ($type === 'plan_activated') $desc = ($a['plan_name'] ?? 'Plan') . ' started for ' . $name . ' ($' . format_usd_amount($a['amount']) . ').';
     else $desc = $name;
 ?>
 <div class="flex gap-4">

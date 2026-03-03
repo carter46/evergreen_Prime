@@ -79,6 +79,18 @@ function get_youtube_embed_url(?string $url): ?string {
 }
 
 /**
+ * Format a USD/money amount for display: no trailing zeros (100 not 100.00, 100.19 not 100.1900).
+ * Use for all user-facing money in USD across the site.
+ */
+function format_usd_amount($amount): string {
+    $amt = (float) $amount;
+    if ($amt == 0) return '0';
+    if (round($amt, 4) == round($amt, 0)) return (string) round($amt, 0);
+    if (round($amt, 4) == round($amt, 2)) return number_format($amt, 2, '.', '');
+    return number_format($amt, 4, '.', '');
+}
+
+/**
  * Format datetime as relative time (e.g. "2 minutes ago").
  */
 function time_ago(string $datetime): string {

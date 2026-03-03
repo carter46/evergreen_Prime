@@ -111,7 +111,7 @@ $siteSettings = [
 <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <div>
 <p class="text-sm text-slate-500">Total Capital Invested</p>
-<p class="text-2xl font-bold">$<?php echo number_format($planStats['total_capital']); ?></p>
+<p class="text-2xl font-bold">$<?php echo format_usd_amount($planStats['total_capital']); ?></p>
 </div>
 <div class="w-12 h-12 bg-green-50 dark:bg-green-900/20 text-green-600 rounded-full flex items-center justify-center">
 <span class="material-icons-round">payments</span>
@@ -162,7 +162,7 @@ foreach ($adminPlans as $idx => $p):
 </div>
 <div class="flex justify-between text-sm">
 <span class="text-slate-500">Total Capital</span>
-<span class="font-semibold">$<?php echo number_format($ps['capital']); ?></span>
+<span class="font-semibold">$<?php echo format_usd_amount($ps['capital']); ?></span>
 </div>
 <div class="flex justify-between text-sm">
 <span class="text-slate-500">Daily ROI</span>

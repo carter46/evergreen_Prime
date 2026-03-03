@@ -149,7 +149,7 @@ foreach ($uniqueTargets as $t) {
         $bStmt = $pdo->prepare('SELECT last_balance_usd FROM users WHERE id = ?');
         $bStmt->execute([(int)$t['id']]);
         $row = $bStmt->fetch(PDO::FETCH_ASSOC);
-        $balance = '$' . number_format((float) ($row['last_balance_usd'] ?? 0), 2);
+        $balance = '$' . format_usd_amount($row['last_balance_usd'] ?? 0);
     }
     $bodyPersonalized = str_replace(['{user_name}', '{balance}'], [$userName, $balance], $body);
     try {

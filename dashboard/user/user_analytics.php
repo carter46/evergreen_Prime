@@ -244,7 +244,7 @@ try {
 </div>
 <h3 class="text-slate-400 text-sm font-medium">Total Profit</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$<?php echo number_format($totalProfit, 2); ?></span>
+<span class="text-2xl font-bold tracking-tight">$<?php echo format_usd_amount($totalProfit); ?></span>
 </div>
 <div class="mt-4 h-8 w-full">
 <div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
@@ -261,7 +261,7 @@ try {
 </div>
 <h3 class="text-slate-400 text-sm font-medium">Daily Avg. Return</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$<?php echo number_format($dailyAvgReturn, 2); ?></span>
+<span class="text-2xl font-bold tracking-tight">$<?php echo format_usd_amount($dailyAvgReturn); ?></span>
 </div>
 <div class="mt-4 h-8 w-full">
 <div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
@@ -278,7 +278,7 @@ try {
 </div>
 <h3 class="text-slate-400 text-sm font-medium">Active Capital</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$<?php echo number_format($activeCapital, 2); ?></span>
+<span class="text-2xl font-bold tracking-tight">$<?php echo format_usd_amount($activeCapital); ?></span>
 </div>
 <div class="mt-4 h-8 w-full">
 <div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
@@ -295,7 +295,7 @@ try {
 </div>
 <h3 class="text-slate-400 text-sm font-medium">Est. Monthly Earnings</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$<?php echo number_format($estMonthlyEarnings, 2); ?></span>
+<span class="text-2xl font-bold tracking-tight">$<?php echo format_usd_amount($estMonthlyEarnings); ?></span>
 </div>
 <div class="mt-4 h-8 w-full">
 <div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
@@ -327,7 +327,7 @@ try {
 <span class="px-2 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full">Active</span>
 </div>
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-<div><span class="text-slate-400 block text-xs">Amount</span><span class="font-bold">$<?php echo number_format((float)$ap['amount'], 2); ?></span></div>
+<div><span class="text-slate-400 block text-xs">Amount</span><span class="font-bold">$<?php echo format_usd_amount($ap['amount']); ?></span></div>
 <div><span class="text-slate-400 block text-xs">Duration</span><span class="font-bold"><?php echo $apDuration; ?> days</span></div>
 <div><span class="text-slate-400 block text-xs">Yield</span><span class="font-bold text-emerald-500"><?php echo number_format((float)$ap['yield_min'], 1); ?>–<?php echo number_format((float)$ap['yield_max'], 1); ?>%</span></div>
 <div><span class="text-slate-400 block text-xs">Ends</span><span class="font-medium"><?php echo date('M j, Y', strtotime($endDate)); ?></span></div>
@@ -515,7 +515,7 @@ foreach ($analyticsTx as $tx):
 <span class="font-medium"><?php echo htmlspecialchars($tx['currency']); ?></span>
 </div>
 </td>
-<td class="px-6 py-4 font-bold <?php echo $isPayout ? 'text-emerald-500' : 'text-slate-600'; ?>"><?php echo $isPayout ? '+' : ''; ?>$<?php echo number_format((float)$tx['amount'], 2); ?></td>
+<td class="px-6 py-4 font-bold <?php echo $isPayout ? 'text-emerald-500' : 'text-slate-600'; ?>"><?php echo $isPayout ? '+' : ''; ?>$<?php echo format_usd_amount($tx['amount']); ?></td>
 <td class="px-6 py-4">
 <?php if ($isPayout): ?>
 <span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded font-bold text-xs"><?php echo number_format((($tx['amount'] / ($activeCapital ?: 1)) * 100), 1); ?>%</span>

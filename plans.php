@@ -77,8 +77,8 @@ $planIndex = 0;
 foreach ($plans as $plan):
     $isHighlight = ($planIndex === 1 && count($plans) >= 2);
     $planIndex++;
-    $minFmt = number_format((float)$plan['min_deposit']);
-    $maxFmt = $plan['max_deposit'] ? number_format((float)$plan['max_deposit']) : null;
+    $minFmt = format_usd_amount($plan['min_deposit']);
+    $maxFmt = $plan['max_deposit'] ? format_usd_amount($plan['max_deposit']) : null;
     $rangeStr = $maxFmt ? "\${$minFmt} - \${$maxFmt}" : "\${$minFmt}+";
     $desc = $plan['description'] ?? '';
 ?>

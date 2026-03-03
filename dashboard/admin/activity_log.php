@@ -75,11 +75,11 @@ foreach ($activityLog as $i => $a):
     if ($type === 'registration') $desc = $name . ' just joined ' . $siteNameAct . '.';
     elseif ($type === 'withdrawal') {
         $amt = isset($a['amount_usd']) && $a['amount_usd'] !== null ? (float)$a['amount_usd'] : (float)$a['amount'];
-        $desc = $name . ' requested a $' . number_format($amt, 0) . ' payout.';
+        $desc = $name . ' requested a $' . format_usd_amount($amt) . ' payout.';
     } elseif ($type === 'deposit') {
         $amt = isset($a['amount_usd']) && $a['amount_usd'] !== null ? (float)$a['amount_usd'] : (float)$a['amount'];
-        $desc = $name . ' deposited $' . number_format($amt, 0) . '.';
-    } elseif ($type === 'plan_activated') $desc = ($a['plan_name'] ?? 'Plan') . ' started for ' . $name . ' ($' . number_format((float)$a['amount'], 0) . ').';
+        $desc = $name . ' deposited $' . format_usd_amount($amt) . '.';
+    } elseif ($type === 'plan_activated') $desc = ($a['plan_name'] ?? 'Plan') . ' started for ' . $name . ' ($' . format_usd_amount($a['amount']) . ').';
     else $desc = $name;
 ?>
 <div class="flex gap-4">

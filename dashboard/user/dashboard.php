@@ -175,14 +175,14 @@ try {
 <div class="relative z-10">
 <div>
 <p class="text-slate-400 text-sm font-medium mb-1">USD Balance</p>
-<h1 class="text-5xl font-bold tracking-tight">$<?php echo number_format($userBalance, 2); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
+<h1 class="text-5xl font-bold tracking-tight">$<?php echo format_usd_amount($userBalance); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
 <?php
 $fmtCoinAmt = function($amt) {
     if ($amt <= 0) return '0';
-    if ($amt >= 1000) return number_format(round($amt, 0));
-    if ($amt >= 1) return number_format($amt, 2);
-    if ($amt >= 0.01) return number_format($amt, 4);
+    if ($amt >= 1000) return (string) round($amt, 0);
+    if ($amt >= 1) return format_usd_amount($amt);
+    if ($amt >= 0.01) return format_usd_amount($amt);
     return rtrim(rtrim(number_format($amt, 6), '0'), '.');
 };
 $parts = [];
@@ -207,20 +207,20 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <div class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 border-t border-white/10 pt-6">
 <div>
 <p class="text-slate-400 text-xs mb-1">Total Profit</p>
-<p class="font-bold text-emerald-400">$<?php echo number_format($totalProfit, 2); ?></p>
+<p class="font-bold text-emerald-400">$<?php echo format_usd_amount($totalProfit); ?></p>
 </div>
 <div>
 <p class="text-slate-400 text-xs mb-1">Active Capital</p>
-<p class="font-bold">$<?php echo number_format($activeCapital, 2); ?></p>
+<p class="font-bold">$<?php echo format_usd_amount($activeCapital); ?></p>
 </div>
 <div>
 <p class="text-slate-400 text-xs mb-1">Daily Earning</p>
-<p class="font-bold text-primary">$<?php echo number_format($dailyEarning, 2); ?></p>
+<p class="font-bold text-primary">$<?php echo format_usd_amount($dailyEarning); ?></p>
 </div>
 <div>
 <p class="text-slate-400 text-xs mb-1">Referral Bonus (earned)</p>
-<p class="font-bold text-amber-400">$<?php echo number_format($referralBonus, 2); ?></p>
-<?php if ($referralBonus > 0): ?><p class="text-[10px] text-slate-500 mt-0.5">Last 24h: $<?php echo number_format($referralBonusLast24h, 2); ?></p><?php endif; ?>
+<p class="font-bold text-amber-400">$<?php echo format_usd_amount($referralBonus); ?></p>
+<?php if ($referralBonus > 0): ?><p class="text-[10px] text-slate-500 mt-0.5">Last 24h: $<?php echo format_usd_amount($referralBonusLast24h); ?></p><?php endif; ?>
 </div>
 </div>
 </div>
@@ -368,7 +368,7 @@ if (!empty($chartData)) {
 </div>
 </div>
 <div class="text-right">
-<p class="text-sm font-bold">$<?php echo number_format((float)$inv['amount'], 2); ?></p>
+<p class="text-sm font-bold">$<?php echo format_usd_amount($inv['amount']); ?></p>
 <p class="text-xs text-emerald-500">+<?php echo number_format($avgYield, 1); ?>% ROI</p>
 </div>
 </div>

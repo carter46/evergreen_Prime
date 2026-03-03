@@ -100,8 +100,8 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 </div>
 <div class="rounded-xl p-6 bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
 <p class="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-medium">Total earned (Bonus)</p>
-<p class="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">$<?php echo number_format($totalEarnedUsd, 2); ?></p>
-<?php if ($totalEarnedUsd > 0): ?><p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Last 24h: $<?php echo number_format($totalLast24h ?? 0, 2); ?></p><?php endif; ?>
+<p class="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">$<?php echo format_usd_amount($totalEarnedUsd); ?></p>
+<?php if ($totalEarnedUsd > 0): ?><p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Last 24h: $<?php echo format_usd_amount($totalLast24h ?? 0); ?></p><?php endif; ?>
 </div>
 </div>
 
@@ -131,7 +131,7 @@ foreach ($referralEarningsHistory as $e):
 <td class="px-4 sm:px-6 py-3 text-sm text-slate-600 dark:text-zinc-400"><?php echo $e['created_at'] ? date('M j, Y H:i', strtotime($e['created_at'])) : '—'; ?></td>
 <td class="px-4 sm:px-6 py-3 text-sm"><?php echo htmlspecialchars($e['referred_name'] ?: $e['referred_email'] ?: '—'); ?></td>
 <td class="px-4 sm:px-6 py-3 text-xs text-slate-500 dark:text-zinc-500"><?php echo htmlspecialchars($sourceLabel); ?></td>
-<td class="px-4 sm:px-6 py-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400 text-right">+$<?php echo number_format($e['amount_usd'], 2); ?></td>
+<td class="px-4 sm:px-6 py-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400 text-right">+$<?php echo format_usd_amount($e['amount_usd']); ?></td>
 </tr>
 <?php endforeach; ?>
 </tbody>

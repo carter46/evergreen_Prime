@@ -161,7 +161,7 @@ $coinNames = ['BTC'=>'Bitcoin','ETH'=>'Ethereum','USDT'=>'Tether','USDC'=>'USD C
 <div class="relative z-10">
 <div>
 <p class="text-slate-400 text-sm font-medium mb-1">USD Balance</p>
-<h1 class="text-6xl font-bold tracking-tight">$<?php echo number_format($walletTotalUsd, 2); ?> <span class="text-xl font-normal text-slate-400 ml-2">USD</span></h1>
+<h1 class="text-6xl font-bold tracking-tight">$<?php echo format_usd_amount($walletTotalUsd); ?> <span class="text-xl font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
 <?php
 $parts = [];
@@ -189,20 +189,20 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <div class="mt-8 sm:mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 border-t border-white/10 pt-6 sm:pt-8">
 <div>
 <p class="text-slate-400 text-xs mb-1">Total Profit</p>
-<p class="font-bold text-emerald-400">$<?php echo number_format($totalProfit, 2); ?></p>
+<p class="font-bold text-emerald-400">$<?php echo format_usd_amount($totalProfit); ?></p>
 </div>
 <div>
 <p class="text-slate-400 text-xs mb-1">Active Capital</p>
-<p class="font-bold">$<?php echo number_format($activeCapital, 2); ?></p>
+<p class="font-bold">$<?php echo format_usd_amount($activeCapital); ?></p>
 </div>
 <div>
 <p class="text-slate-400 text-xs mb-1">Daily Earning</p>
-<p class="font-bold text-primary">$<?php echo number_format($dailyEarning, 2); ?></p>
+<p class="font-bold text-primary">$<?php echo format_usd_amount($dailyEarning); ?></p>
 </div>
 <div>
 <p class="text-slate-400 text-xs mb-1">Referral Bonus (earned)</p>
-<p class="font-bold text-amber-400">$<?php echo number_format($referralBonus, 2); ?></p>
-<?php if ($referralBonus > 0): ?><p class="text-[10px] text-slate-500 mt-0.5">Last 24h: $<?php echo number_format($referralBonusLast24h, 2); ?></p><?php endif; ?>
+<p class="font-bold text-amber-400">$<?php echo format_usd_amount($referralBonus); ?></p>
+<?php if ($referralBonus > 0): ?><p class="text-[10px] text-slate-500 mt-0.5">Last 24h: $<?php echo format_usd_amount($referralBonusLast24h); ?></p><?php endif; ?>
 </div>
 </div>
 </div>
@@ -245,10 +245,10 @@ $coinIdMap = ['USDT'=>'tether','USDC'=>'usd-coin','BUSD'=>'binance-usd','USD'=>'
 $fmtBalance = function($amt, $cur) {
   $amt = (float)$amt;
   if ($amt <= 0) return '0';
-  if (in_array($cur, ['USD','USDT','USDC','BUSD'], true)) return number_format($amt, 2);
-  if ($amt >= 1000) return number_format(round($amt, 0));
-  if ($amt >= 1) return number_format($amt, 2);
-  if ($amt >= 0.01) return number_format($amt, 4);
+  if (in_array($cur, ['USD','USDT','USDC','BUSD'], true)) return format_usd_amount($amt);
+  if ($amt >= 1000) return (string) round($amt, 0);
+  if ($amt >= 1) return format_usd_amount($amt);
+  if ($amt >= 0.01) return format_usd_amount($amt);
   return rtrim(rtrim(number_format($amt, 6), '0'), '.');
 };
 foreach ($walletBalances as $b):
@@ -272,7 +272,7 @@ foreach ($walletBalances as $b):
 <?php if ($b['usd_value'] === null): ?>
 — 
 <?php else: ?>
-$<?php echo number_format((float)$b['usd_value'], 2); ?>
+$<?php echo format_usd_amount($b['usd_value']); ?>
 <?php endif; ?>
 </td>
 <td class="px-3 py-3 text-right">
@@ -321,9 +321,9 @@ $<?php echo number_format((float)$b['usd_value'], 2); ?>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
 <?php
-  $txTypeLabels = ['referral_bonus' => 'Referral bonus'];
+  $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus'];
   foreach ($walletTransactions as $tx):
-  $isDeposit = in_array($tx['type'], ['deposit','payout','referral_bonus']);
+  $isDeposit = in_array($tx['type'], ['deposit','payout','referral_bonus','deposit_bonus']);
   $date = !empty($tx['created_at']) ? date('M j, Y H:i', strtotime($tx['created_at'])) : '';
   $typeLabel = $txTypeLabels[$tx['type']] ?? ucfirst(str_replace('_', ' ', $tx['type']));
 ?>
@@ -338,7 +338,7 @@ $<?php echo number_format((float)$b['usd_value'], 2); ?>
 </div>
 </td>
 <td class="px-6 py-4 text-sm font-medium"><?php echo htmlspecialchars($tx['currency']); ?></td>
-<td class="px-6 py-4 text-right text-sm font-bold <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo number_format((float)$tx['amount'], 4); ?></td>
+<td class="px-6 py-4 text-right text-sm font-bold <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo format_usd_amount($tx['amount']); ?></td>
 <td class="px-6 py-4 text-center">
 <?php
 $statusClass = 'bg-amber-100 text-amber-700';

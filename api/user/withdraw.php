@@ -67,14 +67,14 @@ $minUsd = (float) (get_site_setting('min_withdrawal_limit', '10') ?: '10');
 $checkUsd = $amountUsdVal !== null ? $amountUsdVal : ($amount * (get_coin_usd_price($pdo, $currency) ?? 1));
 if ($checkUsd < $minUsd) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Minimum withdrawal is $' . number_format($minUsd, 2) . ' USD.']);
+    echo json_encode(['success' => false, 'error' => 'Minimum withdrawal is $' . format_usd_amount($minUsd) . ' USD.']);
     exit;
 }
 
 $maxUsd = (float) (get_site_setting('max_withdrawal_limit', '') ?: 0);
 if ($maxUsd > 0 && $checkUsd > $maxUsd) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Maximum withdrawal is $' . number_format($maxUsd, 2) . ' USD.']);
+    echo json_encode(['success' => false, 'error' => 'Maximum withdrawal is $' . format_usd_amount($maxUsd) . ' USD.']);
     exit;
 }
 
