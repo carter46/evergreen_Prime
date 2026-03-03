@@ -79,15 +79,28 @@ function get_youtube_embed_url(?string $url): ?string {
 }
 
 /**
- * Format a USD/money amount for display: no trailing zeros (100 not 100.00, 100.19 not 100.1900).
+ * Format a USD/money amount for display:
+ * - Adds thousands separators (e.g. 1126.71 → "1,126.71")
+ * - Avoids unnecessary trailing zeros (100 → "100", 100.19 → "100.19")
  * Use for all user-facing money in USD across the site.
  */
 function format_usd_amount($amount): string {
     $amt = (float) $amount;
-    if ($amt == 0) return '0';
-    if (round($amt, 4) == round($amt, 0)) return (string) round($amt, 0);
-    if (round($amt, 4) == round($amt, 2)) return number_format($amt, 2, '.', '');
-    return number_format($amt, 4, '.', '');
+    if ($amt == 0.0) return '0';
+
+    // Decide how many decimals we actually need, then apply thousands separator.
+    if (round($amt, 4) == round($amt, 0)) {
+        // Whole number
+        return number_format($amt, 0, '.', ',');
+    }
+
+    if (round($amt, 4) == round($amt, 2)) {
+        // Up to 2 decimals needed
+        return number_format($amt, 2, '.', ',');
+    }
+
+    // Fallback: show up to 4 decimals
+    return number_format($amt, 4, '.', ',');
 }
 
 /**
