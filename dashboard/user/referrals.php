@@ -123,7 +123,7 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 </thead>
 <tbody>
 <?php
-$sourceLabels = ['plan_subscription' => 'Plan subscription', 'first_deposit' => 'First deposit', 'referred_payout' => "Referee's earning"];
+$sourceLabels = ['plan_subscription' => 'Plan subscription', 'first_deposit' => 'Deposit', 'referred_payout' => "Referee's earning"];
 foreach ($referralEarningsHistory as $e):
     $sourceLabel = $sourceLabels[$e['source']] ?? $e['source'];
 ?>
