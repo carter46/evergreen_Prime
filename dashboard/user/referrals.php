@@ -5,6 +5,10 @@ $currentPage = 'referrals';
 $siteName = get_site_name();
 
 $referralEnabled = get_site_setting('referral_enabled', '0') === '1';
+$referralPctRaw = max(0, min(100, (float) (get_site_setting('referral_percentage', '5') ?: '5')));
+$referralPctDisplay = (floor($referralPctRaw) == $referralPctRaw)
+    ? (string) (int) $referralPctRaw
+    : rtrim(rtrim(number_format($referralPctRaw, 2, '.', ''), '0'), '.');
 $myCode = null;
 $shareUrl = null;
 $referredCount = 0;
@@ -83,7 +87,7 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <div class="max-w-4xl mx-auto py-6 space-y-8">
 <nav class="flex text-xs text-slate-400 gap-2 mb-2"><a href="/dashboard/user/dashboard" class="hover:text-primary">Dashboard</a><span>/</span><span class="text-slate-600 dark:text-slate-300">Referrals</span></nav>
 <h1 class="text-2xl sm:text-3xl font-bold mb-1">Referral Program</h1>
-<p class="text-slate-500 dark:text-zinc-400 text-sm sm:text-base max-w-2xl">Earn a percentage of your referees' daily earnings—set by the platform. When someone you refer invests and receives payouts, you get a bonus (e.g. 15% of their daily earning) credited to your wallet.</p>
+<p class="text-slate-500 dark:text-zinc-400 text-sm sm:text-base max-w-2xl">Earn <strong class="text-slate-700 dark:text-slate-200"><?php echo htmlspecialchars($referralPctDisplay); ?>%</strong> of your referees&rsquo; daily earnings (same commission rate the platform uses for qualifying referral rewards). When someone you refer invests and receives payouts, that percentage of their daily earning is credited to your wallet.</p>
 
 <?php if (!$referralEnabled): ?>
 <div class="bg-amber-50/80 dark:bg-amber-900/15 rounded-xl p-4 flex items-start gap-3 border border-amber-200/60 dark:border-amber-800/50">
