@@ -47,7 +47,7 @@ if (empty($user['email_verified'])) {
     exit;
 }
 
-// Require OTP at login whenever 2FA is enabled (never create session without OTP in that case)
+// Login OTP only if the user turned on 2FA in profile (two_factor_enabled). Registration uses its own OTP once at signup, not here.
 $twoFactorEnabled = isset($user['two_factor_enabled']) && ($user['two_factor_enabled'] == 1 || $user['two_factor_enabled'] === '1' || $user['two_factor_enabled'] === true);
 
 if ($twoFactorEnabled) {

@@ -4,6 +4,7 @@
  * POST /api/auth/send-otp.php
  * Body: { email, purpose } where purpose is 'register' | 'login' | 'disable_2fa'
  * For disable_2fa, requires authenticated user session.
+ * Login OTP is only sent when two_factor_enabled is on (same rule as login.php).
  */
 
 header('Content-Type: application/json');
@@ -42,6 +43,42 @@ if ($purpose === 'disable_2fa') {
 
 require_once dirname(__DIR__, 2) . '/includes/otp-helper.php';
 
+$name = null;
+
+// Login resend: only create/send OTP if user exists and has opted into login 2FA (matches login.php).
+if ($purpose === 'login') {
+    try {
+        $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
+        $stmt = $pdo->prepare('SELECT name, two_factor_enabled FROM users WHERE email = ? AND active = 1');
+        $stmt->execute([$email]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $twoOn = $row && isset($row['two_factor_enabled'])
+            && ($row['two_factor_enabled'] == 1 || $row['two_factor_enabled'] === '1' || $row['two_factor_enabled'] === true);
+        if (!$twoOn) {
+            echo json_encode(['success' => true, 'data' => ['message' => 'OTP sent']]);
+            exit;
+        }
+        $name = $row['name'] ?? null;
+    } catch (Throwable $e) {
+        echo json_encode(['success' => true, 'data' => ['message' => 'OTP sent']]);
+        exit;
+    }
+    $otp = createOtp($email, $purpose);
+    if (!$otp) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Failed to create OTP']);
+        exit;
+    }
+    $sent = sendOtpEmail($email, $otp, $purpose, $name);
+    if (!$sent) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Failed to send email']);
+        exit;
+    }
+    echo json_encode(['success' => true, 'data' => ['message' => 'OTP sent']]);
+    exit;
+}
+
 $otp = createOtp($email, $purpose);
 if (!$otp) {
     http_response_code(500);
@@ -49,22 +86,13 @@ if (!$otp) {
     exit;
 }
 
-$name = null;
-if ($purpose === 'register' || $purpose === 'login') {
+if ($purpose === 'register') {
     try {
         $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
-        if ($purpose === 'register') {
-            // During registration, the user may not exist yet. Use pending_registrations name.
-            $stmt = $pdo->prepare('SELECT name FROM pending_registrations WHERE email = ? AND expires_at > NOW()');
-            $stmt->execute([$email]);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            $name = $row['name'] ?? null;
-        } else {
-            $stmt = $pdo->prepare('SELECT name FROM users WHERE email = ?');
-            $stmt->execute([$email]);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            $name = $row['name'] ?? null;
-        }
+        $stmt = $pdo->prepare('SELECT name FROM pending_registrations WHERE email = ? AND expires_at > NOW()');
+        $stmt->execute([$email]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $name = $row['name'] ?? null;
     } catch (Throwable $e) {}
 } elseif ($purpose === 'disable_2fa') {
     try {

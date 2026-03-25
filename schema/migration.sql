@@ -596,10 +596,10 @@ ON DUPLICATE KEY UPDATE value = value;
 INSERT INTO site_settings (`key`, value) VALUES ('deposit_bonus_percentage', '10')
 ON DUPLICATE KEY UPDATE value = VALUES(value);
 
--- Auto-enable 2FA for all existing non-admin users (admins excluded)
-UPDATE users
-SET two_factor_enabled = 1
-WHERE role != 'admin' AND (two_factor_enabled IS NULL OR two_factor_enabled = 0);
+-- Login 2FA is opt-in (user profile). Registration still uses email OTP only.
+-- Do not mass-enable two_factor_enabled. If an older migration forced 2FA on for everyone, run once manually:
+--   UPDATE users SET two_factor_enabled = 0 WHERE role != 'admin';
+-- (Users who want login OTP can turn it on again in Settings.)
 
 -- Backfill my_referral_code for existing users (unique per user; REF1, REF2, ...)
 UPDATE users u
