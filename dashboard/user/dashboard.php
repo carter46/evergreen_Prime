@@ -58,13 +58,23 @@ try {
         }
         $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => $usdVal];
     }
-    // If cached column doesn't exist yet, fall back to stable-only total.
-    if (!$userBalance && $stableTotalUsd > 0) {
-        $userBalance = $stableTotalUsd;
-    }
     usort($walletBalances, function($a, $b) {
         return ((float)($b['usd_value'] ?? 0) <=> (float)($a['usd_value'] ?? 0));
     });
+    if ($hasCachedUsd && abs($userBalance - $stableTotalUsd) > 0.02) {
+        try {
+            refresh_user_last_balance_usd($pdo, (int) $userId);
+            $s->execute([(int) $userId]);
+            $rr = $s->fetch(PDO::FETCH_ASSOC);
+            if ($rr) {
+                $userBalance = (float) ($rr['last_balance_usd'] ?? $stableTotalUsd);
+            }
+        } catch (Throwable $e) {
+            $userBalance = $stableTotalUsd;
+        }
+    } elseif (!$userBalance && $stableTotalUsd > 0) {
+        $userBalance = $stableTotalUsd;
+    }
     $topCoins = array_slice(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; }), 0, 3);
     $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; })) - 3);
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");

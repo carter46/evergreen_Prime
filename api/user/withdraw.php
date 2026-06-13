@@ -100,7 +100,12 @@ try {
     if ($balance < $amount) {
         $pdo->rollBack();
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Insufficient balance']);
+        $availFmt = rtrim(rtrim(number_format($balance, 8, '.', ''), '0'), '.');
+        $needFmt = rtrim(rtrim(number_format($amount, 8, '.', ''), '0'), '.');
+        echo json_encode([
+            'success' => false,
+            'error' => 'Insufficient ' . $currency . ' balance. You have ' . $availFmt . ' ' . $currency . ' but this withdrawal requires ' . $needFmt . ' ' . $currency . '. Withdrawals only use the selected coin wallet, not your total account value or active investments.',
+        ]);
         exit;
     }
 

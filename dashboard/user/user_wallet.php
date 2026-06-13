@@ -57,13 +57,24 @@ try {
             $stableTotalUsd += $usd;
         }
     }
-    // If cached column doesn't exist yet, fall back to stable-only total.
-    if (!$walletTotalUsd && $stableTotalUsd > 0) {
-        $walletTotalUsd = $stableTotalUsd;
-    }
     usort($walletBalances, function($a, $b) {
         return ((float)($b['usd_value'] ?? 0) <=> (float)($a['usd_value'] ?? 0));
     });
+    // Cached last_balance_usd can drift from wallet_balances (e.g. after investments). Re-sync for display.
+    if ($hasCachedUsd && abs($walletTotalUsd - $stableTotalUsd) > 0.02) {
+        try {
+            refresh_user_last_balance_usd($pdo, (int) $userId);
+            $s->execute([(int) $userId]);
+            $rr = $s->fetch(PDO::FETCH_ASSOC);
+            if ($rr) {
+                $walletTotalUsd = (float) ($rr['last_balance_usd'] ?? $stableTotalUsd);
+            }
+        } catch (Throwable $e) {
+            $walletTotalUsd = $stableTotalUsd;
+        }
+    } elseif (!$walletTotalUsd && $stableTotalUsd > 0) {
+        $walletTotalUsd = $stableTotalUsd;
+    }
     $topCoins = array_slice(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; }), 0, 3);
     $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; })) - 3);
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
@@ -160,7 +171,7 @@ $coinNames = ['BTC'=>'Bitcoin','ETH'=>'Ethereum','USDT'=>'Tether','USDC'=>'USD C
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="relative z-10">
 <div>
-<p class="text-slate-400 text-sm font-medium mb-1">USD Balance</p>
+<p class="text-slate-400 text-sm font-medium mb-1">Available Balance</p>
 <h1 class="text-6xl font-bold tracking-tight">$<?php echo format_usd_amount($walletTotalUsd); ?> <span class="text-xl font-normal text-slate-400 ml-2">USD</span></h1>
 <p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
 <?php
@@ -460,7 +471,8 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <select name="currency" id="withdraw-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
 <option value="">Loading...</option>
 </select>
-<p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Available: <span id="withdraw-available" class="font-semibold">—</span></p>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Available: <span id="withdraw-available" class="font-semibold">—</span> <span id="withdraw-available-usd" class="text-slate-400"></span></p>
+<p class="text-xs text-slate-400 dark:text-zinc-500 mt-1">Withdrawals use the selected coin only. Enter an amount up to that coin&rsquo;s available balance.</p>
 <p class="mt-3 text-base sm:text-lg font-bold text-primary dark:text-primary min-h-[1.5em]" id="withdraw-coin-quote">—</p>
 </div>
 <div>
@@ -780,14 +792,30 @@ document.addEventListener('DOMContentLoaded', function() {
     var minWithdrawLimitEl = document.getElementById('withdraw-min-limit');
     var minWithdrawLimitUsd = parseFloat(minWithdrawLimitEl ? minWithdrawLimitEl.textContent : '10') || 10;
 
+    var stableWithdrawCoins = ['USDT', 'USDC', 'BUSD', 'USD', 'DAI'];
+
+    function getWithdrawCoinBalance(currency) {
+        if (!currency) return 0;
+        var sym = currency.toUpperCase();
+        var balance = userBalances[sym] || userBalances[currency];
+        return balance ? parseFloat(balance.amount) || 0 : 0;
+    }
+
     function updateWithdrawBalance() {
         var sel = document.getElementById('withdraw-currency');
         var availEl = document.getElementById('withdraw-available');
+        var availUsdEl = document.getElementById('withdraw-available-usd');
         if (!sel || !availEl) return;
         var currency = sel.value || '';
-        var balance = userBalances[currency];
-        var avail = balance ? parseFloat(balance.amount) : 0;
+        var avail = getWithdrawCoinBalance(currency);
         availEl.textContent = avail.toFixed(8) + ' ' + (currency || '');
+        if (availUsdEl) {
+            if (currency && stableWithdrawCoins.indexOf(currency.toUpperCase()) >= 0 && avail > 0) {
+                availUsdEl.textContent = '(max $' + avail.toFixed(2) + ' USD)';
+            } else {
+                availUsdEl.textContent = '';
+            }
+        }
     }
 
     function updateWithdrawCoinQuote() {
@@ -855,6 +883,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (maxWithdrawLimitUsd > 0 && amountUsd > maxWithdrawLimitUsd) {
             msgEl.textContent = 'Maximum withdrawal is $' + maxWithdrawLimitUsd.toFixed(2) + ' USD.';
+            msgEl.className = 'text-sm text-red-500';
+            msgEl.classList.remove('hidden');
+            return;
+        }
+        var coinAvail = getWithdrawCoinBalance(currency);
+        if (stableWithdrawCoins.indexOf((currency || '').toUpperCase()) >= 0 && amountUsd > coinAvail + 0.000001) {
+            msgEl.textContent = 'Insufficient ' + currency + ' balance. You have ' + coinAvail.toFixed(2) + ' ' + currency + ' available (max $' + coinAvail.toFixed(2) + ' USD). Most of your account value may be in active investments, not your wallet.';
             msgEl.className = 'text-sm text-red-500';
             msgEl.classList.remove('hidden');
             return;
