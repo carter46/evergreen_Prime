@@ -114,7 +114,7 @@ try {
                         $ur = $userRow->fetch(PDO::FETCH_ASSOC);
                         $referrerId = isset($ur['referred_by_user_id']) ? (int)$ur['referred_by_user_id'] : 0;
                         if ($referrerId > 0 && $referrerId !== (int)$tx['user_id']) {
-                            $pct = (float)(get_site_setting('referral_percentage', '5') ?: '5');
+                            $pct = (float)(get_site_setting('referral_percentage', '15') ?: '15');
                             $pct = max(0, min(100, $pct));
                             $bonusUsd = round($baseUsd * ($pct / 100), 2);
                             if ($bonusUsd > 0) {

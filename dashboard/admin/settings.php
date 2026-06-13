@@ -30,7 +30,7 @@ $settings = [
     'smartsupp_key' => get_site_setting('smartsupp_key', '6fe6ebe5789e92d09f1a2fd405bd5b7d7967835d'),
     'deposit_countdown_minutes' => get_site_setting('deposit_countdown_minutes', '30'),
     'referral_enabled' => get_site_setting('referral_enabled', '0'),
-    'referral_percentage' => get_site_setting('referral_percentage', '5'),
+    'referral_percentage' => get_site_setting('referral_percentage', '15'),
     'deposit_bonus_percentage' => get_site_setting('deposit_bonus_percentage', '10'),
 ];
 $adminEmail = '';
@@ -208,7 +208,7 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 </div>
 <div class="flex items-center gap-2">
 <label class="text-sm font-medium text-slate-700 dark:text-zinc-300">Commission (%)</label>
-<input id="settings-referral-percentage" type="number" min="0" max="100" step="0.5" class="w-20 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm" value="<?php echo htmlspecialchars($settings['referral_percentage'] ?? '5'); ?>"/>
+<input id="settings-referral-percentage" type="number" min="0" max="100" step="0.5" class="w-20 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm" value="<?php echo htmlspecialchars($settings['referral_percentage'] ?? '15'); ?>"/>
 </div>
 <div class="flex items-center gap-2">
 <label class="text-sm font-medium text-slate-700 dark:text-zinc-300">Deposit bonus (%)</label>
@@ -401,7 +401,7 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
     var depositCountdown = (document.getElementById('settings-deposit-countdown') || {}).value || '30';
     var referralEnabled = (document.getElementById('settings-referral-enabled') || {}).checked ? '1' : '0';
     var referralPct = (document.getElementById('settings-referral-percentage') || {}).value;
-    if (referralPct === '' || isNaN(parseFloat(referralPct))) referralPct = '5';
+    if (referralPct === '' || isNaN(parseFloat(referralPct))) referralPct = '15';
     var depositBonusPct = (document.getElementById('settings-deposit-bonus-percentage') || {}).value;
     if (depositBonusPct === '' || isNaN(parseFloat(depositBonusPct))) depositBonusPct = '10';
     var btn = this;

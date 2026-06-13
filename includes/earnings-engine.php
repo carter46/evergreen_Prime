@@ -169,7 +169,7 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
                     $refRow = $refStmt->fetch(PDO::FETCH_ASSOC);
                     $referrerId = isset($refRow['referred_by_user_id']) ? (int) $refRow['referred_by_user_id'] : 0;
                     if ($referrerId > 0 && $referrerId !== $userId) {
-                        $pct = (float) (get_site_setting('referral_percentage', '5') ?: '5');
+                        $pct = (float) (get_site_setting('referral_percentage', '15') ?: '15');
                         $pct = max(0, min(100, $pct));
                         $bonusUsd = round($toCreditUsd * ($pct / 100), 2);
                         if ($bonusUsd > 0) {

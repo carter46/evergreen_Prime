@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'max_active_plans_per_user' => '3',
         'compounding_enabled' => '0',
         'referral_enabled' => '0',
-        'referral_percentage' => '5',
+        'referral_percentage' => '15',
         'deposit_bonus_percentage' => '10',
         'site_name' => '',
         'site_logo' => '',

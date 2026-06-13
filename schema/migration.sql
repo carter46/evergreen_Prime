@@ -589,8 +589,11 @@ PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 -- Site settings for referral
 INSERT INTO site_settings (`key`, value) VALUES
   ('referral_enabled', '0'),
-  ('referral_percentage', '5')
+  ('referral_percentage', '15')
 ON DUPLICATE KEY UPDATE value = value;
+
+-- Raise referral commission from legacy 5% default to 15%
+UPDATE site_settings SET value = '15' WHERE `key` = 'referral_percentage' AND value = '5';
 
 -- Site setting: universal deposit bonus percentage (credited to depositor on approved deposit)
 INSERT INTO site_settings (`key`, value) VALUES ('deposit_bonus_percentage', '10')

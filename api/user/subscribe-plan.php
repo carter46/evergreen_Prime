@@ -166,7 +166,7 @@ try {
                     $paid = $pdo->prepare('SELECT id FROM referral_earnings WHERE referred_user_id = ? AND source = ? LIMIT 1');
                     $paid->execute([$userId, 'plan_subscription']);
                     if (!$paid->fetch()) {
-                        $pct = (float) (get_site_setting('referral_percentage', '5') ?: '5');
+                        $pct = (float) (get_site_setting('referral_percentage', '15') ?: '15');
                         $pct = max(0, min(100, $pct));
                         $bonusUsd = round($amountUsd * ($pct / 100), 2);
                         if ($bonusUsd > 0) {

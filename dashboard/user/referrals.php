@@ -5,7 +5,7 @@ $currentPage = 'referrals';
 $siteName = get_site_name();
 
 $referralEnabled = get_site_setting('referral_enabled', '0') === '1';
-$referralPctRaw = max(0, min(100, (float) (get_site_setting('referral_percentage', '5') ?: '5')));
+$referralPctRaw = max(0, min(100, (float) (get_site_setting('referral_percentage', '15') ?: '15')));
 $referralPctDisplay = (floor($referralPctRaw) == $referralPctRaw)
     ? (string) (int) $referralPctRaw
     : rtrim(rtrim(number_format($referralPctRaw, 2, '.', ''), '0'), '.');

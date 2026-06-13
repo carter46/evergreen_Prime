@@ -37,7 +37,7 @@ $kycStatus = $profileUser['kyc_status'] ?? 'none';
 <?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
 <div class="max-w-2xl mx-auto">
 <h1 class="text-2xl font-bold mb-2">Identity Verification</h1>
-<p class="text-slate-500 dark:text-slate-400 mb-8">Complete KYC verification to enable withdrawals.</p>
+<p class="text-slate-500 dark:text-slate-400 mb-8">Optional identity verification for your account. Withdrawals do not require KYC at this time.</p>
 
 <?php if ($kycStatus === 'verified'): ?>
 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-primary/10 p-8 shadow-sm text-center">
