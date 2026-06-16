@@ -77,10 +77,9 @@ try {
     }
     $topCoins = array_slice(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; }), 0, 3);
     $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; })) - 3);
-    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
-    $r->execute([$userId]); $totalProfit = (float)$r->fetchColumn();
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
+    $totalProfit = get_user_total_profit($pdo, (int) $userId);
     $stmt = $pdo->prepare('SELECT ui.id, ui.plan_id, ui.amount, ui.start_date, ui.status, ui.duration_days as investment_duration_days, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days as plan_duration_days FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC LIMIT 5');
     $stmt->execute([$userId, 'active']);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {

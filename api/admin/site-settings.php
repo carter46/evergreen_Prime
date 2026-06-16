@@ -19,6 +19,7 @@ $allowedKeys = [
     'compounding_enabled',
     'referral_enabled',
     'referral_percentage',
+    'referral_level2_percentage',
     'deposit_bonus_percentage',
     'site_name',
     'site_logo',
@@ -69,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'compounding_enabled' => '0',
         'referral_enabled' => '0',
         'referral_percentage' => '15',
+        'referral_level2_percentage' => '10',
         'deposit_bonus_percentage' => '10',
         'site_name' => '',
         'site_logo' => '',
@@ -146,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($k === 'referral_enabled') {
             $v = in_array(strtolower($v), ['1', 'true', 'yes', 'on'], true) ? '1' : '0';
         }
-        if ($k === 'referral_percentage' || $k === 'deposit_bonus_percentage') {
+        if ($k === 'referral_percentage' || $k === 'referral_level2_percentage' || $k === 'deposit_bonus_percentage') {
             $pct = (float) $v;
             $pct = max(0, min(100, $pct));
             $v = (string) round($pct, 2);

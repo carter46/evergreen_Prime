@@ -586,10 +586,29 @@ SET @sql = IF(@has_dep_bonus = 0,
     'SELECT 1');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
+-- referral_earnings: level-2 sources (upline 10% on first deposit & daily payout)
+SET @ref_enum = (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'referral_earnings' AND COLUMN_NAME = 'source');
+SET @has_l2_sources = IF(@ref_enum LIKE '%first_deposit_l2%', 1, 0);
+SET @sql = IF(@has_l2_sources = 0,
+    'ALTER TABLE referral_earnings MODIFY COLUMN source ENUM(\'plan_subscription\',\'first_deposit\',\'referred_payout\',\'first_deposit_l2\',\'referred_payout_l2\') NOT NULL',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- transactions: allow profit_adjustment type (admin manual profit stat; does not move wallet)
+SET @col_type = (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'type');
+SET @has_profit_adj = IF(@col_type LIKE '%profit_adjustment%', 1, 0);
+SET @sql = IF(@has_profit_adj = 0,
+    'ALTER TABLE transactions MODIFY COLUMN type ENUM(\'deposit\',\'withdrawal\',\'payout\',\'investment\',\'referral_bonus\',\'deposit_bonus\',\'profit_adjustment\') NOT NULL',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 -- Site settings for referral
 INSERT INTO site_settings (`key`, value) VALUES
   ('referral_enabled', '0'),
-  ('referral_percentage', '15')
+  ('referral_percentage', '15'),
+  ('referral_level2_percentage', '10')
 ON DUPLICATE KEY UPDATE value = value;
 
 -- Raise referral commission from legacy 5% default to 15%

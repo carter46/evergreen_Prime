@@ -73,7 +73,7 @@ try {
         $st = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ?');
         $st->execute([$userId]);
         $totalEarnedUsd = (float) $st->fetchColumn();
-        $st = $pdo->prepare('SELECT re.id, re.referred_user_id, re.amount_usd, re.source, re.created_at, u.name AS referred_name, u.email AS referred_email FROM referral_earnings re LEFT JOIN users u ON u.id = re.referred_user_id WHERE re.referrer_user_id = ? ORDER BY re.created_at DESC LIMIT 50');
+        $st = $pdo->prepare('SELECT re.id, re.referred_user_id, re.amount_usd, re.source, re.percent_used, re.created_at, u.name AS referred_name, u.email AS referred_email FROM referral_earnings re LEFT JOIN users u ON u.id = re.referred_user_id WHERE re.referrer_user_id = ? ORDER BY re.created_at DESC LIMIT 50');
         $st->execute([$userId]);
         while ($r = $st->fetch(PDO::FETCH_ASSOC)) {
             $earningsHistory[] = [
@@ -81,6 +81,7 @@ try {
                 'referred_user_id' => (int) $r['referred_user_id'],
                 'amount_usd' => (float) $r['amount_usd'],
                 'source' => $r['source'] ?? '',
+                'percent_used' => isset($r['percent_used']) ? (float) $r['percent_used'] : null,
                 'created_at' => $r['created_at'] ?? null,
                 'referred_name' => $r['referred_name'] ?? '',
                 'referred_email' => $r['referred_email'] ?? '',

@@ -414,6 +414,141 @@ function refresh_user_last_balance_usd(PDO $pdo, int $userId): void {
 }
 
 /**
+ * Total profit (USD): completed investment payouts plus admin profit adjustments.
+ * Uses amount_usd when set; otherwise amount (earnings are USDT / USD).
+ */
+function get_user_total_profit(PDO $pdo, int $userId, ?int $days = null): float {
+    $sql = "SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions
+            WHERE user_id = ? AND type IN ('payout', 'profit_adjustment') AND status = 'completed'";
+    $params = [$userId];
+    if ($days !== null && $days > 0) {
+        $sql .= ' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)';
+        $params[] = $days;
+    }
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return max(0.0, (float) $stmt->fetchColumn());
+}
+
+/**
+ * Platform-wide total profit (all users).
+ */
+function get_platform_total_profit(PDO $pdo): float {
+    $r = $pdo->query("SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions
+        WHERE type IN ('payout', 'profit_adjustment') AND status = 'completed'");
+    return max(0.0, (float) $r->fetchColumn());
+}
+
+/**
+ * Credit one referrer's wallet and record referral_bonus + referral_earnings audit row.
+ */
+function credit_referral_bonus(
+    PDO $pdo,
+    int $referrerUserId,
+    int $referredUserId,
+    float $bonusUsd,
+    string $source,
+    float $percentUsed,
+    int $referenceId,
+    string $txReference
+): void {
+    if ($bonusUsd <= 0 || $referrerUserId <= 0 || $referrerUserId === $referredUserId) {
+        return;
+    }
+    $refCurrency = 'USDT';
+    $bonusStr = number_format($bonusUsd, 18, '.', '');
+    $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
+        ->execute([$referrerUserId, $refCurrency, $bonusStr]);
+    $hasAmountUsdCol = false;
+    try {
+        $colChk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
+        $hasAmountUsdCol = $colChk && $colChk->rowCount() > 0;
+    } catch (Throwable $e) {}
+    if ($hasAmountUsdCol) {
+        $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)')
+            ->execute([$referrerUserId, 'referral_bonus', $bonusStr, round($bonusUsd, 2), $refCurrency, 'completed', $txReference]);
+    } else {
+        $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
+            ->execute([$referrerUserId, 'referral_bonus', $bonusStr, $refCurrency, 'completed', $txReference]);
+    }
+    bump_user_last_balance_usd($pdo, $referrerUserId, (float) $bonusUsd);
+    try {
+        $tblChk = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
+        if ($tblChk && $tblChk->rowCount() > 0) {
+            $pdo->prepare('INSERT INTO referral_earnings (referrer_user_id, referred_user_id, source, amount_usd, currency, percent_used, reference_id) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                ->execute([$referrerUserId, $referredUserId, $source, round($bonusUsd, 2), $refCurrency, $percentUsed, $referenceId]);
+        }
+    } catch (Throwable $e) {}
+}
+
+/**
+ * Pay 2-level referral chain: direct referrer (referral_percentage) + upline (referral_level2_percentage).
+ * $source: first_deposit | referred_payout (first deposit runs once per referred user).
+ */
+function pay_referral_chain(PDO $pdo, int $earnerUserId, float $baseUsd, string $source, int $referenceId, string $refPrefix): bool {
+    if (get_site_setting('referral_enabled', '0') !== '1') {
+        return false;
+    }
+    if ($baseUsd <= 0 || $earnerUserId <= 0) {
+        return false;
+    }
+    if (!in_array($source, ['first_deposit', 'referred_payout'], true)) {
+        return false;
+    }
+
+    if ($source === 'first_deposit') {
+        try {
+            $cntStmt = $pdo->prepare("SELECT COUNT(*) FROM transactions WHERE user_id = ? AND type = 'deposit' AND status = 'completed'");
+            $cntStmt->execute([$earnerUserId]);
+            if ((int) $cntStmt->fetchColumn() > 1) {
+                return false;
+            }
+            $tblChk = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
+            if ($tblChk && $tblChk->rowCount() > 0) {
+                $chk = $pdo->prepare('SELECT id FROM referral_earnings WHERE referred_user_id = ? AND source = ? LIMIT 1');
+                $chk->execute([$earnerUserId, 'first_deposit']);
+                if ($chk->fetch()) {
+                    return false;
+                }
+            }
+        } catch (Throwable $e) {}
+    }
+
+    $stmt = $pdo->prepare('SELECT referred_by_user_id FROM users WHERE id = ?');
+    $stmt->execute([$earnerUserId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $level1Id = isset($row['referred_by_user_id']) ? (int) $row['referred_by_user_id'] : 0;
+    if ($level1Id <= 0 || $level1Id === $earnerUserId) {
+        return false;
+    }
+
+    $pct1 = (float) (get_site_setting('referral_percentage', '15') ?: '15');
+    $pct1 = max(0, min(100, $pct1));
+    $bonus1 = round($baseUsd * ($pct1 / 100), 2);
+    if ($bonus1 > 0) {
+        credit_referral_bonus($pdo, $level1Id, $earnerUserId, $bonus1, $source, $pct1, $referenceId, $refPrefix . $referenceId);
+    }
+
+    $stmt->execute([$level1Id]);
+    $row2 = $stmt->fetch(PDO::FETCH_ASSOC);
+    $level2Id = isset($row2['referred_by_user_id']) ? (int) $row2['referred_by_user_id'] : 0;
+    if ($level2Id <= 0 || $level2Id === $earnerUserId || $level2Id === $level1Id) {
+        return true;
+    }
+
+    $level2Source = $source === 'first_deposit' ? 'first_deposit_l2' : 'referred_payout_l2';
+    $pct2 = (float) (get_site_setting('referral_level2_percentage', '10') ?: '10');
+    $pct2 = max(0, min(100, $pct2));
+    $bonus2 = round($baseUsd * ($pct2 / 100), 2);
+    if ($bonus2 > 0) {
+        $l2Ref = $source === 'first_deposit' ? ('ref_deposit_l2_' . $referenceId) : ('ref_payout_l2_inv_' . $referenceId);
+        credit_referral_bonus($pdo, $level2Id, $earnerUserId, $bonus2, $level2Source, $pct2, $referenceId, $l2Ref);
+    }
+
+    return true;
+}
+
+/**
  * Efficiently bump cached USD balance by a known USD delta (e.g. USDT payout).
  */
 function bump_user_last_balance_usd(PDO $pdo, int $userId, float $deltaUsd): void {

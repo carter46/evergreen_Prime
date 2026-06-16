@@ -18,7 +18,7 @@ try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $r = $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
     $totalUsers = (int) $r;
-    $r = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'payout' AND status = 'completed'")->fetchColumn();
+    $r = get_platform_total_profit($pdo);
     $totalEarnings = (float) $r;
     $r = $pdo->query("SELECT COUNT(*) FROM user_investments WHERE status = 'active'")->fetchColumn();
     $activeInv = (int) $r;

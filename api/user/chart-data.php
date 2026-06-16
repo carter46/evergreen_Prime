@@ -29,10 +29,8 @@ try {
     $userId = $_SESSION['user_id'];
 
     if ($type === 'analytics') {
-        $types = "'deposit','withdrawal','payout'";
         $intervalClause = $period === 'ALL' ? '' : ' AND created_at >= DATE_SUB(NOW(), INTERVAL ' . (int)$days . ' DAY)';
-        $stmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ($types) $intervalClause GROUP BY DATE(created_at), type ORDER BY date ASC");
-        $params = $period === 'ALL' ? [$userId] : [$userId];
+        $stmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit','withdrawal','payout','profit_adjustment') $intervalClause GROUP BY DATE(created_at), type ORDER BY date ASC");
         $stmt->execute([$userId]);
     } else {
         $stmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
@@ -42,7 +40,10 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $date = $row['date'];
         if (!isset($dailyData[$date])) $dailyData[$date] = ['deposit' => 0, 'withdrawal' => 0, 'payout' => 0];
-        $dailyData[$date][$row['type']] = (float)$row['total'];
+        $txType = $row['type'] === 'profit_adjustment' ? 'payout' : $row['type'];
+        if (isset($dailyData[$date][$txType])) {
+            $dailyData[$date][$txType] += (float)$row['total'];
+        }
     }
     $chartData = [];
     $cumulative = 0;

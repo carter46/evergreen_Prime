@@ -29,18 +29,14 @@ try {
     
     // Filter transactions based on period
     if ($period === 'ALL') {
-        $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
-        $r->execute([$userId]);
-        $totalProfit = (float)$r->fetchColumn();
+        $totalProfit = get_user_total_profit($pdo, (int) $userId);
         
-        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal', 'payout') GROUP BY DATE(created_at), type ORDER BY date ASC");
+        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment') GROUP BY DATE(created_at), type ORDER BY date ASC");
         $chartStmt->execute([$userId]);
     } else {
-        $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)");
-        $r->execute([$userId, $days]);
-        $totalProfit = (float)$r->fetchColumn();
+        $totalProfit = get_user_total_profit($pdo, (int) $userId, $days);
         
-        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal', 'payout') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
+        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
         $chartStmt->execute([$userId, $days]);
     }
     
@@ -69,7 +65,10 @@ try {
     while ($row = $chartStmt->fetch(PDO::FETCH_ASSOC)) {
         $date = $row['date'];
         if (!isset($dailyData[$date])) $dailyData[$date] = ['deposit' => 0, 'withdrawal' => 0, 'payout' => 0];
-        $dailyData[$date][$row['type']] = (float)$row['total'];
+        $txType = $row['type'] === 'profit_adjustment' ? 'payout' : $row['type'];
+        if (isset($dailyData[$date][$txType])) {
+            $dailyData[$date][$txType] += (float)$row['total'];
+        }
     }
     $cumulative = 0;
     foreach ($dailyData as $date => $amounts) {
@@ -154,18 +153,18 @@ try {
     // Earnings breakdown by payout currency (for the selected period)
     if ($period === 'ALL') {
         $brStmt = $pdo->prepare("
-            SELECT currency, SUM(amount) AS total
+            SELECT currency, SUM(COALESCE(amount_usd, amount)) AS total
             FROM transactions
-            WHERE user_id = ? AND type = 'payout' AND status = 'completed'
+            WHERE user_id = ? AND type IN ('payout', 'profit_adjustment') AND status = 'completed'
             GROUP BY currency
             ORDER BY total DESC
         ");
         $brStmt->execute([$userId]);
     } else {
         $brStmt = $pdo->prepare("
-            SELECT currency, SUM(amount) AS total
+            SELECT currency, SUM(COALESCE(amount_usd, amount)) AS total
             FROM transactions
-            WHERE user_id = ? AND type = 'payout' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+            WHERE user_id = ? AND type IN ('payout', 'profit_adjustment') AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
             GROUP BY currency
             ORDER BY total DESC
         ");
@@ -174,7 +173,7 @@ try {
     while ($r = $brStmt->fetch(PDO::FETCH_ASSOC)) {
         $cur = strtoupper(trim($r['currency'] ?? ''));
         $tot = (float) ($r['total'] ?? 0);
-        if ($cur === '' || $tot <= 0) continue;
+        if ($cur === '' || abs($tot) < 0.000001) continue;
         $payoutByCurrency[$cur] = $tot;
         $payoutTotalForBreakdown += $tot;
     }
@@ -493,7 +492,18 @@ $coinLogosAnalytics = [
     'USDT' => 'https://assets.coingecko.com/coins/images/325/large/Tether.png',
 ];
 foreach ($analyticsTx as $tx):
-    $isPayout = $tx['type'] === 'payout';
+    $txAmt = (float)($tx['amount'] ?? 0);
+    $txType = $tx['type'] ?? '';
+    $analyticsTypeLabels = [
+        'payout' => 'Payout',
+        'profit_adjustment' => 'Profit adjustment',
+        'referral_bonus' => 'Referral bonus',
+        'deposit_bonus' => 'Deposit bonus',
+    ];
+    $typeLabel = $analyticsTypeLabels[$txType] ?? ucfirst(str_replace('_', ' ', $txType));
+    $isProfitLike = in_array($txType, ['payout', 'profit_adjustment'], true);
+    $isProfitCredit = $txType === 'payout' || ($txType === 'profit_adjustment' && $txAmt >= 0);
+    $displayAmt = $txType === 'profit_adjustment' ? abs($txAmt) : $txAmt;
     $logo = $coinLogosAnalytics[strtoupper($tx['currency'])] ?? null;
     $statusClass = $tx['status'] === 'completed' ? 'text-emerald-500' : ($tx['status'] === 'rejected' ? 'text-red-500' : 'text-amber-500');
     $statusIcon = $tx['status'] === 'completed' ? 'check_circle' : ($tx['status'] === 'rejected' ? 'cancel' : 'schedule');
@@ -506,7 +516,7 @@ foreach ($analyticsTx as $tx):
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
 <div class="w-2 h-2 rounded-full bg-primary"></div>
-<span class="font-medium"><?php echo htmlspecialchars(ucfirst($tx['type'])); ?></span>
+<span class="font-medium"><?php echo htmlspecialchars($typeLabel); ?></span>
 </div>
 </td>
 <td class="px-6 py-4">
@@ -515,9 +525,9 @@ foreach ($analyticsTx as $tx):
 <span class="font-medium"><?php echo htmlspecialchars($tx['currency']); ?></span>
 </div>
 </td>
-<td class="px-6 py-4 font-bold <?php echo $isPayout ? 'text-emerald-500' : 'text-slate-600'; ?>"><?php echo $isPayout ? '+' : ''; ?>$<?php echo format_usd_amount($tx['amount']); ?></td>
+<td class="px-6 py-4 font-bold <?php echo $isProfitLike ? ($isProfitCredit ? 'text-emerald-500' : 'text-red-500') : 'text-slate-600'; ?>"><?php echo $isProfitLike ? ($isProfitCredit ? '+' : '-') : ''; ?>$<?php echo format_usd_amount($displayAmt); ?></td>
 <td class="px-6 py-4">
-<?php if ($isPayout): ?>
+<?php if ($isProfitLike && $isProfitCredit && $txType === 'payout'): ?>
 <span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded font-bold text-xs"><?php echo number_format((($tx['amount'] / ($activeCapital ?: 1)) * 100), 1); ?>%</span>
 <?php else: ?>
 <span class="px-2 py-1 bg-slate-100 dark:bg-zinc-800 text-slate-500 rounded font-bold text-xs">—</span>

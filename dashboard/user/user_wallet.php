@@ -77,8 +77,7 @@ try {
     }
     $topCoins = array_slice(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; }), 0, 3);
     $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; })) - 3);
-    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = ? AND type = 'payout' AND status = 'completed'");
-    $r->execute([$userId]); $totalProfit = (float)$r->fetchColumn();
+    $totalProfit = get_user_total_profit($pdo, (int) $userId);
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
     $stmtDaily = $pdo->prepare('SELECT ui.amount, p.yield_min, p.yield_max FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ?');
@@ -332,9 +331,15 @@ $<?php echo format_usd_amount($b['usd_value']); ?>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
 <?php
-  $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus'];
+  $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus', 'profit_adjustment' => 'Profit adjustment'];
   foreach ($walletTransactions as $tx):
-  $isDeposit = in_array($tx['type'], ['deposit','payout','referral_bonus','deposit_bonus']);
+  $txAmt = (float)($tx['amount'] ?? 0);
+  if ($tx['type'] === 'profit_adjustment') {
+    $isDeposit = $txAmt >= 0;
+  } else {
+    $isDeposit = in_array($tx['type'], ['deposit','payout','referral_bonus','deposit_bonus']);
+  }
+  $displayAmt = $tx['type'] === 'profit_adjustment' ? abs($txAmt) : $txAmt;
   $date = !empty($tx['created_at']) ? date('M j, Y H:i', strtotime($tx['created_at'])) : '';
   $typeLabel = $txTypeLabels[$tx['type']] ?? ucfirst(str_replace('_', ' ', $tx['type']));
 ?>
@@ -349,7 +354,7 @@ $<?php echo format_usd_amount($b['usd_value']); ?>
 </div>
 </td>
 <td class="px-6 py-4 text-sm font-medium"><?php echo htmlspecialchars($tx['currency']); ?></td>
-<td class="px-6 py-4 text-right text-sm font-bold <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo format_usd_amount($tx['amount']); ?></td>
+<td class="px-6 py-4 text-right text-sm font-bold <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo format_usd_amount($displayAmt); ?></td>
 <td class="px-6 py-4 text-center">
 <?php
 $statusClass = 'bg-amber-100 text-amber-700';

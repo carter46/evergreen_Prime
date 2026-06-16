@@ -101,47 +101,11 @@ try {
                 }
             }
 
-            // Referral bonus on every approved deposit (for referrer)
-            if (get_site_setting('referral_enabled', '0') === '1') {
+            // Referral bonus on first approved deposit only (2-level: 15% direct, 10% upline)
+            $baseUsd = $amountUsd !== null ? (float) $amountUsd : 0.0;
+            if ($baseUsd > 0) {
                 try {
-                    $chkRefTable = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
-                    $hasRefTable = $chkRefTable && $chkRefTable->rowCount() > 0;
-                    // Use USD amount when available; otherwise do not credit referral on unknown USD value
-                    $baseUsd = $amountUsd !== null ? (float)$amountUsd : 0.0;
-                    if ($hasRefTable && $baseUsd > 0) {
-                        $userRow = $pdo->prepare('SELECT referred_by_user_id FROM users WHERE id = ?');
-                        $userRow->execute([(int)$tx['user_id']]);
-                        $ur = $userRow->fetch(PDO::FETCH_ASSOC);
-                        $referrerId = isset($ur['referred_by_user_id']) ? (int)$ur['referred_by_user_id'] : 0;
-                        if ($referrerId > 0 && $referrerId !== (int)$tx['user_id']) {
-                            $pct = (float)(get_site_setting('referral_percentage', '15') ?: '15');
-                            $pct = max(0, min(100, $pct));
-                            $bonusUsd = round($baseUsd * ($pct / 100), 2);
-                            if ($bonusUsd > 0) {
-                                $refCurrency = 'USDT';
-                                // Credit referrer wallet
-                                $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                                    ->execute([$referrerId, $refCurrency, $bonusUsd]);
-                                // Record transaction for referrer
-                                $hasAmountUsdCol = false;
-                                try {
-                                    $colChk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
-                                    $hasAmountUsdCol = $colChk && $colChk->rowCount() > 0;
-                                } catch (Throwable $e) {}
-                                if ($hasAmountUsdCol) {
-                                    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)')
-                                        ->execute([$referrerId, 'referral_bonus', $bonusUsd, $bonusUsd, $refCurrency, 'completed', 'ref_deposit_' . $transactionId]);
-                                } else {
-                                    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
-                                        ->execute([$referrerId, 'referral_bonus', $bonusUsd, $refCurrency, 'completed', 'ref_deposit_' . $transactionId]);
-                                }
-                                bump_user_last_balance_usd($pdo, $referrerId, (float)$bonusUsd);
-                                // Audit trail in referral_earnings
-                                $pdo->prepare('INSERT INTO referral_earnings (referrer_user_id, referred_user_id, source, amount_usd, currency, percent_used, reference_id) VALUES (?, ?, ?, ?, ?, ?, ?)')
-                                    ->execute([$referrerId, (int)$tx['user_id'], 'first_deposit', $bonusUsd, $refCurrency, $pct, $transactionId]);
-                            }
-                        }
-                    }
+                    pay_referral_chain($pdo, (int) $tx['user_id'], $baseUsd, 'first_deposit', $transactionId, 'ref_deposit_');
                 } catch (Throwable $e) {
                     // Do not fail deposit approval if referral logic fails
                 }
