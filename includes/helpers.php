@@ -440,6 +440,52 @@ function get_platform_total_profit(PDO $pdo): float {
 }
 
 /**
+ * Total referral bonus earned (USD): referral_earnings (or referral_bonus txs) plus admin adjustments.
+ * Optional $days or $hours filters both base earnings and adjustments by created_at.
+ */
+function get_user_total_referral_bonus(PDO $pdo, int $userId, ?int $days = null, ?int $hours = null): float {
+    $timeClause = '';
+    $timeParams = [];
+    if ($hours !== null && $hours > 0) {
+        $timeClause = ' AND created_at >= DATE_SUB(NOW(), INTERVAL ? HOUR)';
+        $timeParams[] = $hours;
+    } elseif ($days !== null && $days > 0) {
+        $timeClause = ' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)';
+        $timeParams[] = $days;
+    }
+
+    $base = 0.0;
+    try {
+        $tbl = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
+        if ($tbl && $tbl->rowCount() > 0) {
+            $sql = 'SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ?' . $timeClause;
+            $params = array_merge([$userId], $timeParams);
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $base = (float) $stmt->fetchColumn();
+        }
+    } catch (Throwable $e) {}
+
+    if ($base == 0.0) {
+        $sql = "SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions
+                WHERE user_id = ? AND type = 'referral_bonus' AND status = 'completed'" . $timeClause;
+        $params = array_merge([$userId], $timeParams);
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $base = (float) $stmt->fetchColumn();
+    }
+
+    $adjSql = "SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions
+               WHERE user_id = ? AND type = 'referral_bonus_adjustment' AND status = 'completed'" . $timeClause;
+    $adjParams = array_merge([$userId], $timeParams);
+    $adjStmt = $pdo->prepare($adjSql);
+    $adjStmt->execute($adjParams);
+    $adjustments = (float) $adjStmt->fetchColumn();
+
+    return max(0.0, $base + $adjustments);
+}
+
+/**
  * Credit one referrer's wallet and record referral_bonus + referral_earnings audit row.
  */
 function credit_referral_bonus(

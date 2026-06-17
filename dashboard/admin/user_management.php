@@ -343,14 +343,17 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
   <div id="drawer-total-balance" class="text-2xl font-bold text-emerald-600 mb-2">$0.00</div>
   <div id="drawer-wallet-breakdown" class="text-sm text-slate-600 dark:text-slate-400 space-y-0.5 mb-4"></div>
   <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 mt-4">Total Profit</h4>
-  <div id="drawer-total-profit" class="text-xl font-bold text-emerald-500 mb-4">$0.00</div>
-  <button type="button" id="drawer-adjust-balance-btn" class="text-sm text-black font-medium hover:underline">Adjust balance / profit</button>
+  <div id="drawer-total-profit" class="text-xl font-bold text-emerald-500 mb-2">$0.00</div>
+  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 mt-4">Referral Bonus (earned)</h4>
+  <div id="drawer-total-referral-bonus" class="text-xl font-bold text-amber-500 mb-4">$0.00</div>
+  <button type="button" id="drawer-adjust-balance-btn" class="text-sm text-black font-medium hover:underline">Adjust balance / profit / referral</button>
   <div id="drawer-adjust-panel" class="hidden mt-3 p-4 bg-slate-50 dark:bg-zinc-800 rounded-lg space-y-3">
     <div>
       <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Place</label>
       <select id="drawer-adjust-place" class="w-full bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 text-sm">
         <option value="balance">Balance adjustment</option>
         <option value="profit">Profit adjustment</option>
+        <option value="referral">Referral bonus (earned) adjustment</option>
       </select>
     </div>
     <div>
@@ -369,7 +372,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
     <div>
       <label id="drawer-adjust-amount-label" class="block text-xs font-bold text-slate-400 uppercase mb-1">Amount</label>
       <input type="number" id="drawer-adjust-amount" step="any" min="0" class="w-full bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 text-sm" placeholder="0"/>
-      <p id="drawer-adjust-profit-hint" class="hidden text-xs text-slate-500 dark:text-zinc-400 mt-1">Profit changes do not affect wallet balance.</p>
+      <p id="drawer-adjust-profit-hint" class="hidden text-xs text-slate-500 dark:text-zinc-400 mt-1">Stat-only change — does not affect wallet balance.</p>
     </div>
     <div id="drawer-adjust-error" class="text-sm text-red-500 hidden"></div>
     <button type="button" id="drawer-adjust-go" class="w-full py-2 bg-primary text-zinc-900 font-bold rounded-lg text-sm">Go</button>
@@ -420,11 +423,16 @@ function syncAdjustPlaceUI() {
   var currencyWrap = document.getElementById('drawer-adjust-currency-wrap');
   var amountLabel = document.getElementById('drawer-adjust-amount-label');
   var profitHint = document.getElementById('drawer-adjust-profit-hint');
-  var isProfit = place === 'profit';
-  if (currencyWrap) currencyWrap.classList.toggle('hidden', isProfit);
-  if (amountLabel) amountLabel.textContent = isProfit ? 'Amount (USD)' : 'Amount';
-  if (profitHint) profitHint.classList.toggle('hidden', !isProfit);
-  if (!isProfit) {
+  var isStatOnly = place === 'profit' || place === 'referral';
+  if (currencyWrap) currencyWrap.classList.toggle('hidden', isStatOnly);
+  if (amountLabel) amountLabel.textContent = isStatOnly ? 'Amount (USD)' : 'Amount';
+  if (profitHint) {
+    profitHint.classList.toggle('hidden', !isStatOnly);
+    if (place === 'profit') profitHint.textContent = 'Profit changes do not affect wallet balance.';
+    else if (place === 'referral') profitHint.textContent = 'Referral bonus (earned) changes do not affect wallet balance.';
+    else profitHint.textContent = 'Stat-only change — does not affect wallet balance.';
+  }
+  if (!isStatOnly) {
     var typeSel = document.getElementById('drawer-adjust-type');
     populateCurrencySelect(typeSel && typeSel.value === 'debit', currentUserWallet);
   }
@@ -490,6 +498,8 @@ function loadUser(id) {
     if (totalBal) totalBal.textContent = '$' + (parseFloat(u.total_balance_usd || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' USD';
     var totalProfitEl = document.getElementById('drawer-total-profit');
     if (totalProfitEl) totalProfitEl.textContent = '$' + (parseFloat(u.total_profit || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' USD';
+    var totalReferralEl = document.getElementById('drawer-total-referral-bonus');
+    if (totalReferralEl) totalReferralEl.textContent = '$' + (parseFloat(u.total_referral_bonus || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' USD';
     var breakdownEl = document.getElementById('drawer-wallet-breakdown');
     if (breakdownEl) {
       var wb = (u.wallet_balances || []).filter(function(b){ return (parseFloat(b.amount) || 0) > 0; });
@@ -561,7 +571,8 @@ document.getElementById('drawer-adjust-balance-btn').addEventListener('click', f
 });
 document.getElementById('drawer-adjust-place').addEventListener('change', syncAdjustPlaceUI);
 document.getElementById('drawer-adjust-type').addEventListener('change', function(){
-  if ((document.getElementById('drawer-adjust-place') || {}).value === 'profit') return;
+  var place = (document.getElementById('drawer-adjust-place') || {}).value;
+  if (place === 'profit' || place === 'referral') return;
   populateCurrencySelect(this.value === 'debit', currentUserWallet);
 });
 function doPlanAction(action, invId, userId, confirmMsg) {
@@ -614,6 +625,8 @@ document.getElementById('drawer-adjust-go').addEventListener('click', function()
   var payload = { user_id: parseInt(id, 10), type: type, amount: amt };
   if (place === 'profit') {
     payload.action = 'adjust_profit';
+  } else if (place === 'referral') {
+    payload.action = 'adjust_referral_bonus';
   } else {
     var currency = document.getElementById('drawer-adjust-currency').value;
     if (!currency) { if (errEl) { errEl.textContent = 'Select a currency'; errEl.classList.remove('hidden'); } return; }
@@ -627,7 +640,7 @@ document.getElementById('drawer-adjust-go').addEventListener('click', function()
         document.getElementById('drawer-adjust-amount').value = '';
         document.getElementById('drawer-adjust-panel').classList.add('hidden');
         var toast = document.getElementById('user-toast');
-        if (toast) { toast.textContent = res.data && res.data.message ? res.data.message : (place === 'profit' ? 'Profit updated' : 'Balance updated'); toast.classList.remove('hidden'); setTimeout(function(){ toast.classList.add('hidden'); }, 2000); }
+        if (toast) { toast.textContent = res.data && res.data.message ? res.data.message : (place === 'profit' ? 'Profit updated' : (place === 'referral' ? 'Referral bonus updated' : 'Balance updated')); toast.classList.remove('hidden'); setTimeout(function(){ toast.classList.add('hidden'); }, 2000); }
         loadUser(parseInt(id, 10));
       } else { if (errEl) { errEl.textContent = res.error || 'Failed'; errEl.classList.remove('hidden'); } }
     })

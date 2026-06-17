@@ -67,12 +67,10 @@ try {
 } catch (Throwable $e) {}
 
 $earningsHistory = [];
+$totalEarnedUsd = get_user_total_referral_bonus($pdo, $userId);
 try {
     $chk = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
     if ($chk && $chk->rowCount() > 0) {
-        $st = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ?');
-        $st->execute([$userId]);
-        $totalEarnedUsd = (float) $st->fetchColumn();
         $st = $pdo->prepare('SELECT re.id, re.referred_user_id, re.amount_usd, re.source, re.percent_used, re.created_at, u.name AS referred_name, u.email AS referred_email FROM referral_earnings re LEFT JOIN users u ON u.id = re.referred_user_id WHERE re.referrer_user_id = ? ORDER BY re.created_at DESC LIMIT 50');
         $st->execute([$userId]);
         while ($r = $st->fetch(PDO::FETCH_ASSOC)) {

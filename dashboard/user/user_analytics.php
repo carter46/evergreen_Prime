@@ -498,12 +498,13 @@ foreach ($analyticsTx as $tx):
         'payout' => 'Payout',
         'profit_adjustment' => 'Profit adjustment',
         'referral_bonus' => 'Referral bonus',
+        'referral_bonus_adjustment' => 'Referral bonus adjustment',
         'deposit_bonus' => 'Deposit bonus',
     ];
     $typeLabel = $analyticsTypeLabels[$txType] ?? ucfirst(str_replace('_', ' ', $txType));
     $isProfitLike = in_array($txType, ['payout', 'profit_adjustment'], true);
     $isProfitCredit = $txType === 'payout' || ($txType === 'profit_adjustment' && $txAmt >= 0);
-    $displayAmt = $txType === 'profit_adjustment' ? abs($txAmt) : $txAmt;
+    $displayAmt = in_array($txType, ['profit_adjustment', 'referral_bonus_adjustment'], true) ? abs($txAmt) : $txAmt;
     $logo = $coinLogosAnalytics[strtoupper($tx['currency'])] ?? null;
     $statusClass = $tx['status'] === 'completed' ? 'text-emerald-500' : ($tx['status'] === 'rejected' ? 'text-red-500' : 'text-amber-500');
     $statusIcon = $tx['status'] === 'completed' ? 'check_circle' : ($tx['status'] === 'rejected' ? 'cancel' : 'schedule');

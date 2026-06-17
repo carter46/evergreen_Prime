@@ -89,21 +89,8 @@ try {
         if ($avgYield <= 0) $avgYield = $yieldMin;
         $dailyEarning += (float)$row['amount'] * ($avgYield / 100);
     }
-    try {
-        $tbl = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
-        if ($tbl && $tbl->rowCount() > 0) {
-            $r = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ?');
-            $r->execute([$userId]); $referralBonus = (float)$r->fetchColumn();
-            $r = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)');
-            $r->execute([$userId]); $referralBonusLast24h = (float)$r->fetchColumn();
-        }
-    } catch (Throwable $e) {}
-    if ($referralBonus == 0) {
-        $r = $pdo->prepare("SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions WHERE user_id = ? AND type = 'referral_bonus' AND status = 'completed'");
-        $r->execute([$userId]); $referralBonus = (float)$r->fetchColumn();
-        $r = $pdo->prepare("SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions WHERE user_id = ? AND type = 'referral_bonus' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
-        $r->execute([$userId]); $referralBonusLast24h = (float)$r->fetchColumn();
-    }
+    $referralBonus = get_user_total_referral_bonus($pdo, (int) $userId);
+    $referralBonusLast24h = get_user_total_referral_bonus($pdo, (int) $userId, null, 24);
     $stmt = $pdo->prepare('SELECT id, type, amount, currency, status, reference, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5');
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -331,15 +318,15 @@ $<?php echo format_usd_amount($b['usd_value']); ?>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
 <?php
-  $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus', 'profit_adjustment' => 'Profit adjustment'];
+  $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus', 'profit_adjustment' => 'Profit adjustment', 'referral_bonus_adjustment' => 'Referral bonus adjustment'];
   foreach ($walletTransactions as $tx):
   $txAmt = (float)($tx['amount'] ?? 0);
-  if ($tx['type'] === 'profit_adjustment') {
+  if ($tx['type'] === 'profit_adjustment' || $tx['type'] === 'referral_bonus_adjustment') {
     $isDeposit = $txAmt >= 0;
   } else {
     $isDeposit = in_array($tx['type'], ['deposit','payout','referral_bonus','deposit_bonus']);
   }
-  $displayAmt = $tx['type'] === 'profit_adjustment' ? abs($txAmt) : $txAmt;
+  $displayAmt = in_array($tx['type'], ['profit_adjustment', 'referral_bonus_adjustment'], true) ? abs($txAmt) : $txAmt;
   $date = !empty($tx['created_at']) ? date('M j, Y H:i', strtotime($tx['created_at'])) : '';
   $typeLabel = $txTypeLabels[$tx['type']] ?? ucfirst(str_replace('_', ' ', $tx['type']));
 ?>

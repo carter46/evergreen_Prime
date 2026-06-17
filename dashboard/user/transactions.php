@@ -76,15 +76,15 @@ try {
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
 <?php
-  $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus', 'profit_adjustment' => 'Profit adjustment'];
+  $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus', 'profit_adjustment' => 'Profit adjustment', 'referral_bonus_adjustment' => 'Referral bonus adjustment'];
   foreach ($transactions as $tx):
   $txAmt = (float)($tx['amount'] ?? 0);
-  if ($tx['type'] === 'profit_adjustment') {
+  if ($tx['type'] === 'profit_adjustment' || $tx['type'] === 'referral_bonus_adjustment') {
     $isIncoming = $txAmt >= 0;
   } else {
     $isIncoming = in_array($tx['type'], ['deposit', 'payout', 'referral_bonus', 'deposit_bonus']);
   }
-  $displayAmt = $tx['type'] === 'profit_adjustment' ? abs($txAmt) : $txAmt;
+  $displayAmt = in_array($tx['type'], ['profit_adjustment', 'referral_bonus_adjustment'], true) ? abs($txAmt) : $txAmt;
   $statusClass = 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
   if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
   elseif (in_array($tx['status'], ['rejected', 'failed'], true)) $statusClass = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';

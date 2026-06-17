@@ -604,6 +604,15 @@ SET @sql = IF(@has_profit_adj = 0,
     'SELECT 1');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
+-- transactions: allow referral_bonus_adjustment type (admin manual referral earned stat; does not move wallet)
+SET @col_type = (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'type');
+SET @has_ref_bonus_adj = IF(@col_type LIKE '%referral_bonus_adjustment%', 1, 0);
+SET @sql = IF(@has_ref_bonus_adj = 0,
+    'ALTER TABLE transactions MODIFY COLUMN type ENUM(\'deposit\',\'withdrawal\',\'payout\',\'investment\',\'referral_bonus\',\'deposit_bonus\',\'profit_adjustment\',\'referral_bonus_adjustment\') NOT NULL',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 -- Site settings for referral
 INSERT INTO site_settings (`key`, value) VALUES
   ('referral_enabled', '0'),

@@ -90,21 +90,8 @@ try {
         if ($avgYield <= 0) $avgYield = $yieldMin;
         $dailyEarning += (float)$row['amount'] * ($avgYield / 100);
     }
-    try {
-        $tbl = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
-        if ($tbl && $tbl->rowCount() > 0) {
-            $r = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ?');
-            $r->execute([$userId]); $referralBonus = (float)$r->fetchColumn();
-            $r = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)');
-            $r->execute([$userId]); $referralBonusLast24h = (float)$r->fetchColumn();
-        }
-    } catch (Throwable $e) {}
-    if ($referralBonus == 0) {
-        $r = $pdo->prepare("SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions WHERE user_id = ? AND type = 'referral_bonus' AND status = 'completed'");
-        $r->execute([$userId]); $referralBonus = (float)$r->fetchColumn();
-        $r = $pdo->prepare("SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions WHERE user_id = ? AND type = 'referral_bonus' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
-        $r->execute([$userId]); $referralBonusLast24h = (float)$r->fetchColumn();
-    }
+    $referralBonus = get_user_total_referral_bonus($pdo, (int) $userId);
+    $referralBonusLast24h = get_user_total_referral_bonus($pdo, (int) $userId, null, 24);
     // activeInvestments and dailyEarning already populated above
     // Fetch transaction data for chart based on selected period
     $stmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(amount) as total FROM transactions WHERE user_id = ? AND type IN ('deposit', 'withdrawal') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");

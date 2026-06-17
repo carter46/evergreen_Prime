@@ -54,25 +54,15 @@ try {
     }
 
     $referralEarningsHistory = [];
-    $totalLast24h = 0;
+    $totalEarnedUsd = get_user_total_referral_bonus($pdo, $userId);
+    $totalLast24h = get_user_total_referral_bonus($pdo, $userId, null, 24);
     $chk = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
     if ($chk && $chk->rowCount() > 0) {
-        $st = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ?');
-        $st->execute([$userId]);
-        $totalEarnedUsd = (float) $st->fetchColumn();
-        $st = $pdo->prepare('SELECT COALESCE(SUM(amount_usd), 0) FROM referral_earnings WHERE referrer_user_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)');
-        $st->execute([$userId]);
-        $totalLast24h = (float) $st->fetchColumn();
         $st = $pdo->prepare('SELECT re.id, re.referred_user_id, re.amount_usd, re.source, re.percent_used, re.created_at, u.name AS referred_name, u.email AS referred_email FROM referral_earnings re LEFT JOIN users u ON u.id = re.referred_user_id WHERE re.referrer_user_id = ? ORDER BY re.created_at DESC LIMIT 50');
         $st->execute([$userId]);
         while ($r = $st->fetch(PDO::FETCH_ASSOC)) {
             $referralEarningsHistory[] = ['id' => (int)$r['id'], 'referred_user_id' => (int)$r['referred_user_id'], 'amount_usd' => (float)$r['amount_usd'], 'source' => $r['source'] ?? '', 'percent_used' => isset($r['percent_used']) ? (float)$r['percent_used'] : null, 'created_at' => $r['created_at'] ?? null, 'referred_name' => $r['referred_name'] ?? '', 'referred_email' => $r['referred_email'] ?? ''];
         }
-    }
-    if ($totalLast24h == 0 && isset($pdo)) {
-        $st = $pdo->prepare("SELECT COALESCE(SUM(COALESCE(amount_usd, amount)), 0) FROM transactions WHERE user_id = ? AND type = 'referral_bonus' AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
-        $st->execute([$userId]);
-        $totalLast24h = (float) $st->fetchColumn();
     }
 } catch (Throwable $e) {}
 ?>

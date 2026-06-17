@@ -3,7 +3,7 @@
  * Bloombit - Admin User Management API
  * GET /api/admin/users.php - List users (pagination, search, status filter)
  * GET /api/admin/users.php?id=X - Single user detail with wallet, investments
- * POST /api/admin/users.php - Actions: update, block, unblock, reset_password, adjust_balance, adjust_profit
+ * POST /api/admin/users.php - Actions: update, block, unblock, reset_password, adjust_balance, adjust_profit, adjust_referral_bonus
  */
 
 header('Content-Type: application/json');
@@ -95,6 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $user['total_balance_usd'] = $hasCachedUsd ? (float) ($user['last_balance_usd'] ?? 0) : 0.0;
         $user['total_balance_usd_updated_at'] = $hasCachedUsd ? ($user['last_balance_usd_updated_at'] ?? null) : null;
         $user['total_profit'] = get_user_total_profit($pdo, $id);
+        $user['total_referral_bonus'] = get_user_total_referral_bonus($pdo, $id);
 
         // Active + paused investments with plan names
         $stmt = $pdo->prepare('
@@ -564,6 +565,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Throwable $e) {
                 http_response_code(500);
                 echo json_encode(['success' => false, 'error' => 'Failed to adjust profit. Run database migration if profit_adjustment type is missing.']);
+            }
+            exit;
+
+        case 'adjust_referral_bonus':
+            $type = strtolower(trim($input['type'] ?? ''));
+            $amountUsd = round((float) ($input['amount'] ?? $input['amount_usd'] ?? 0), 2);
+            if ($type !== 'credit' && $type !== 'debit') {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Type must be credit or debit']);
+                exit;
+            }
+            if ($amountUsd <= 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Amount must be greater than 0']);
+                exit;
+            }
+            $currentReferral = round(get_user_total_referral_bonus($pdo, $userId), 2);
+            if ($type === 'debit' && $currentReferral + 0.001 < $amountUsd) {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Insufficient referral bonus to debit. User referral bonus (earned) is $' . format_usd_amount($currentReferral) . ' USD.',
+                ]);
+                exit;
+            }
+            $signedUsd = $type === 'credit' ? $amountUsd : -$amountUsd;
+            $amountStr = number_format($signedUsd, 18, '.', '');
+            $adminId = (int) ($_SESSION['user_id'] ?? 0);
+            $ref = 'admin_ref_bonus_' . $type . '_' . $adminId . '_' . $userId . '_' . date('Ymd_His');
+            $hasAmountUsdCol = false;
+            try {
+                $chk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
+                $hasAmountUsdCol = $chk && $chk->rowCount() > 0;
+            } catch (Throwable $e) {}
+            try {
+                if ($hasAmountUsdCol) {
+                    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                        ->execute([$userId, 'referral_bonus_adjustment', $amountStr, $signedUsd, 'USD', 'completed', $ref]);
+                } else {
+                    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
+                        ->execute([$userId, 'referral_bonus_adjustment', $amountStr, 'USD', 'completed', $ref]);
+                }
+                $newReferral = get_user_total_referral_bonus($pdo, $userId);
+                echo json_encode([
+                    'success' => true,
+                    'data' => [
+                        'message' => $type === 'credit' ? 'Referral bonus (earned) credited' : 'Referral bonus (earned) debited',
+                        'total_referral_bonus' => $newReferral,
+                    ],
+                ]);
+            } catch (Throwable $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'error' => 'Failed to adjust referral bonus. Run database migration if referral_bonus_adjustment type is missing.']);
             }
             exit;
 
