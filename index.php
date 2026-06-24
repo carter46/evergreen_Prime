@@ -1,687 +1,407 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
 $siteName = get_site_name();
-$heroBadge = get_site_setting('hero_badge', 'AI ENGINE V4.0 NOW LIVE');
+$pageTitle = $siteName . ' | Professional Trading & Institutional Asset Management';
+$heroBadge = get_site_setting('hero_badge', 'Institutional Grade Security');
 $homepageYoutubeUrl = get_site_setting('homepage_youtube_url', '');
 $homepageEmbedUrl = get_youtube_embed_url($homepageYoutubeUrl);
-$homepageModalImage = get_site_setting('homepage_modal_image', '');
-$statsAssets = get_site_setting('stats_assets', '$4.2B+');
-$statsBots = get_site_setting('stats_bots', '85k+');
-$statsUptime = get_site_setting('stats_uptime', '99.9%');
-$statsRoi = get_site_setting('stats_roi', '12.4%');
-$marketCap = get_site_setting('market_cap', '$2.45T');
-$volume24h = get_site_setting('volume_24h', '$84.2B');
-$btcDominance = get_site_setting('btc_dominance', '52.4%');
-$activeTraders = get_site_setting('active_traders', '12.8M+');
-$indexPlans = [];
-$orbitCoins = [];
-try {
-    $pdo = require __DIR__ . '/includes/db.php';
-    $stmt = $pdo->query('SELECT name, slug, min_deposit, max_deposit, yield_min, yield_max, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id LIMIT 3');
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $row['features'] = $row['features_json'] ? json_decode($row['features_json'], true) : [];
-        $indexPlans[] = $row;
-    }
-    $stmt = $pdo->query('SELECT symbol, logo FROM coins WHERE enabled = 1 AND logo IS NOT NULL AND logo != "" ORDER BY sort_order, id LIMIT 14');
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $orbitCoins[] = $row;
-    }
-} catch (Throwable $e) { }
-if (empty($orbitCoins)) {
-    $orbitCoins = [
-        ['symbol' => 'BTC', 'logo' => 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png'],
-        ['symbol' => 'ETH', 'logo' => 'https://assets.coingecko.com/coins/images/279/large/ethereum.png'],
-        ['symbol' => 'USDT', 'logo' => 'https://assets.coingecko.com/coins/images/325/large/Tether.png'],
-        ['symbol' => 'BNB', 'logo' => 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png'],
-        ['symbol' => 'SOL', 'logo' => 'https://assets.coingecko.com/coins/images/4128/large/solana.png'],
-        ['symbol' => 'XRP', 'logo' => 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png'],
-        ['symbol' => 'ADA', 'logo' => 'https://assets.coingecko.com/coins/images/975/large/cardano.png'],
-        ['symbol' => 'DOGE', 'logo' => 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png'],
-    ];
-}
+$statsVolume = get_site_setting('stats_assets', '$42B+');
+$statsInvestors = get_site_setting('stats_bots', '1.2M+');
+$statsUptime = get_site_setting('stats_uptime', '100%');
+$statsSupport = get_site_setting('stats_roi', '24/7');
+
+$heroImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC8t20RVlMgaWNZbegnNfZpo05H-DsP08ZNR4eFxdn3auxEcHots-xhbBTK07-8o32e2aaaT-C6e8PsfJ8bl5DIPD3VvZTdgLij0I7MfF4t7Ik4sDfIirKnui2RGDr3o8g-6wwbZJbS28dKv4DD_E_eJT1QIFaskjv1mUp7vP5H_KHim-YAIMG7ZrHHh9lZb1JEycSYChDJADhS-kejRKmyKhGV44hmtxr8Hd-wLB7M7YS3aWJIYv30';
+$investImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCvI2LEc7CfuQSjFVUzej1kXzCvAscx-20YWah6xb8oVsGM2Cl_Z7XQHwsVN_tk5GtZ_CUKGyyZwZj8ICGSNDkH-4w_g9NuMUgqemomLZDLYUy6uHnyn149effZBAOiV0UaVG8Clb1ZV0d97bgGjtCykfkjgd208kb73yJUqktoFuSHDoVPMOYiV8IatXno6JBEL1rkm7LQ-P8p8bJpxvu4laQYixbBWrPH4nnSx9uOHc4jzP6-HK8e';
+$mobileImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAkTWR7DptUNdQXaCi5hUfal7sGJFohqmDJOScxp9_cPh6NOKifszH5a48O1ze0FLQxCosT-9xC54R_9kuPaMowJzm39CyOhSSo8VqFgfo9eES7FpOB5imMhhQ437f2Xr8G7FGgFfDMfHVaQ_FhLR4nhv2JyaWjfU2E1e4juY2sqQkyWa3yaIZLumrxp_KMx_-0rfr6-S8f2sB8F3g2WDMy8SlYAL345G0vNGvEFSmgaATja7hSBQ8_';
+$heatmapImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBiGujiVOX1V-f02sUWLcpITS1XeukxSsCUIpIRtpY0GrFwOFSW5F1zxlHGQYX7Gv6dpJB3KcahYE1j6yBziA5GzoLBV4YVJUkUbdEDVWcZvrZU4tx0i-MVPoR14W_1Zj6pfh0gnKPexhD8aSJoCJZpkDBh_a65UpYkHSboMo_r1JEPrQrek-azLwOWxgUFgdXTT9BKkoHOZbbIgFIUfW-UyQ4rxjp9cU_OnPIS5cb2l97eUILk8mEB';
+$eduBeginner = 'https://lh3.googleusercontent.com/aida-public/AB6AXuClXum0n5B3Fys7n6VOV6KZhwxyShVM0LCSKgB8SowoEgxrXjNTakjFaTonTQVYfKAxjWY0GZbcHevK4tuOw6eXiW_-7bKuWD4lewm9wxl51RDLOHQa7vH3fDiQA6sUQeFVJvw9D8-CjyPJELlqVFFfRcZyL7MnmMiA9HA_An3Ae4jBpRn2BWE7G1Pk7VM_vdjw8YHZh7bO0EzfAj0XZ7tDSkBPaK_CKJXq6P_pa9rM1ALr5vlx69f4';
+$eduIntermediate = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBAU594TAbyPKlG5KWutbMwCqXGdyxGubJNUFDO6FzVvF575dnmQkeOqmtDdTTaubPeTzJY1hR1B5vTbDoUaHWJJUe3iugxmlKGiko7VeZN03x2xTcUKkQdP1tEgbYiEt8BEVj3N4PCFw0s-sPyfeWTY3gbnQOYVLq7vV1mDxbmVgJhk_70tfiPXVKHzSxNrcWHBMC_9KjaBGAsAaAwJwMdyThozujO_EMfI6WHBxpaHgkN-_8YNJrX';
+$eduAdvanced = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0RFiVG3wXTjeBaz-FYpuIcbtXW_-rbo6AcxjJgKfVR2jecI-nQ1lrSn8fWdmLi-t99OUPHZgN_NO7hSRwNbbteLmUbrMvWLAk42D9OO3H2H9QVmQ0JcGGuWnHZ99UJlAYT8_hUbJakBBvwWMCn7Ztlamrd-ccxL-ZB96l17wF8YLv9DLZsAiMDsyzLwfeAWPDNLwrkCdBcboSejRk3gMPOLOeI_1F0zlphMTW8IWVYb6VYvr-a3o2';
 ?>
 <!DOCTYPE html>
-
-<html class="light" lang="en"><head>
+<html class="dark" lang="en">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> - AI Crypto Trading</title>
-<?php output_favicon_tags(); ?>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#ffc105",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Space Grotesk"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
-<style>
-        body { font-family: 'Space Grotesk', sans-serif; }
-        .neural-bg {
-            background-image: radial-gradient(circle at 2px 2px, #ffc10515 1px, transparent 0);
-            background-size: 40px 40px;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 193, 5, 0.2);
-        }
-        .custom-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #ffc105;
-            cursor: pointer;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 0 10px rgba(255, 193, 5, 0.4);
-        }
-    </style>
-<style>
-    @keyframes infinite-scroll {
-        from { transform: translateX(0); }
-        to { transform: translateX(-50%); }
-    }
-    .animate-infinite-scroll {
-        animation: infinite-scroll 25s linear infinite;
-        width: max-content;
-    }
-</style></head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden">
+<?php require_once __DIR__ . '/includes/marketing-head.php'; ?>
+</head>
+<body class="marketing-page font-body-md text-body-md overflow-x-hidden">
 <?php $currentPage = 'home'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
-<!-- Hero Section -->
-<section class="relative overflow-hidden pt-16 sm:pt-20 pb-24 sm:pb-32 neural-bg px-4 sm:px-6">
-<div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-<div>
-<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold mb-6">
-<span class="relative flex h-2 w-2">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-</span>
-                    <?php echo htmlspecialchars($heroBadge); ?>
-                </div>
-<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6 sm:mb-8">
-                    Smarter Crypto Investing Powered by <span class="text-primary">Advanced AI</span>
-</h1>
-<p class="text-base sm:text-lg lg:text-xl text-slate-500 dark:text-slate-400 mb-8 sm:mb-10 max-w-lg leading-relaxed">
-                    Automate your wealth with institutional-grade machine learning algorithms. Deploy sophisticated bots that trade 24/7 while you sleep.
-                </p>
+
+<!-- Hero -->
+<section class="relative pt-32 pb-16 md:pb-section-padding bg-surface-container-lowest overflow-hidden hero-gradient">
+<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+<div class="z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full mb-6 border border-border-low">
+<span class="material-symbols-outlined text-primary text-[14px]">verified</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase"><?php echo htmlspecialchars($heroBadge); ?></span>
+</div>
+<h1 class="font-display text-4xl sm:text-5xl lg:text-display mb-6 leading-tight text-glow">Trade Smarter.<br/><span class="text-primary-container">Invest Better.</span></h1>
+<p class="font-body-lg text-body-lg text-on-secondary-container max-w-xl mb-10">
+The ultra-fast execution engine for professional traders and institutional investors. Access global markets with zero-latency liquidity.
+</p>
 <div class="flex flex-col sm:flex-row gap-4">
-<a href="/register" class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-primary text-black font-bold text-base sm:text-lg rounded-lg shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all min-h-[44px] text-center">Get Started</a>
-<a href="/about_us" class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white dark:bg-slate-800 border border-primary/20 font-bold text-base sm:text-lg rounded-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2 min-h-[44px]">
-<span class="material-icons">info</span> Learn More
-                    </a>
+<a href="/register" class="bg-primary-container text-on-primary font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-2 hover:scale-105 transition-all text-label-sm">
+Open Institutional Account <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+<a href="/login" class="border border-outline px-8 py-4 rounded-xl text-on-surface font-bold hover:bg-surface-container-high transition-all text-label-sm text-center">
+View Live Terminal
+</a>
 </div>
 </div>
-<?php
-$heroPlaceholderImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAERFUp6io6mfsuU1xT4reC0MNfdbS-TG3S4WGzJcCZSgr20oMTW8dUmGTeXv13y8kWRb5oPvDKI71MY9ZPevM-uGRz6fdP5rwt94fPuFxrKeaT7jUgMJ9Vbc7eaMqT5j76CADhsg_voWOtIyJCJYcyKMSY_fVn5C2XOdVDDAxc9__oxwyA4PGAsGCjAAoYpnKqfXpEzSY8_0IuPOPCBU6Rn8GNYiSkYg173iJeDY9itvWtl5KgpyHI0p4yDw2MBFoiRPPEhihDvU4';
-?>
-<div class="relative">
-<div class="absolute -top-20 -right-20 w-96 h-96 bg-primary/20 blur-[120px] rounded-full"></div>
-<div class="relative z-10 w-full rounded-2xl shadow-2xl border-4 border-white/50 dark:border-slate-800/50 overflow-hidden bg-slate-900/50 h-[350px] sm:h-[400px] md:h-[450px] lg:h-[500px]">
+<div class="relative lg:scale-110 lg:translate-x-12">
+<div class="glass-panel p-2 rounded-2xl shadow-2xl overflow-hidden border-primary/20">
 <?php if ($homepageEmbedUrl): ?>
-<img alt="" class="hero-video-poster absolute inset-0 w-full h-full object-cover rounded-2xl" src="<?php echo htmlspecialchars($heroPlaceholderImg); ?>" aria-hidden="true"/>
-<iframe class="absolute inset-0 w-full h-full rounded-2xl" src="<?php echo htmlspecialchars($homepageEmbedUrl); ?>?rel=0" title="<?php echo htmlspecialchars($siteName); ?> demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<div class="relative w-full aspect-video rounded-xl overflow-hidden bg-surface-container">
+<iframe class="absolute inset-0 w-full h-full" src="<?php echo htmlspecialchars($homepageEmbedUrl); ?>?rel=0" title="<?php echo htmlspecialchars($siteName); ?> demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
 <?php else: ?>
-<img alt="AI Trading Interface" class="absolute inset-0 w-full h-full object-cover rounded-2xl" src="<?php echo htmlspecialchars($heroPlaceholderImg); ?>"/>
+<img class="w-full h-auto rounded-xl" alt="<?php echo htmlspecialchars($siteName); ?> trading dashboard" src="<?php echo htmlspecialchars($heroImg); ?>"/>
 <?php endif; ?>
 </div>
+<div class="absolute -top-10 -right-10 w-64 h-64 bg-primary-container/10 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="absolute -bottom-10 -left-10 w-64 h-64 bg-tertiary-container/10 rounded-full blur-[100px] pointer-events-none"></div>
 </div>
 </div>
 </section>
-<!-- Stats Section -->
-<section class="bg-primary py-12">
-<div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
-<div class="text-center">
-<div class="text-4xl font-bold text-black"><?php echo htmlspecialchars($statsAssets); ?></div>
-<div class="text-black/70 font-medium">Assets Managed</div>
+
+<!-- Live Market Performance -->
+<section id="markets" class="bg-[#F7F8FA] py-16 overflow-hidden border-y border-gray-200">
+<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+<h2 class="font-headline-md text-headline-md text-surface-container-lowest">Live Market Performance</h2>
+<a class="text-primary-container bg-surface-container-lowest px-4 py-2 rounded-lg font-label-xs text-label-xs inline-block w-fit" href="/trading_signals">VIEW ALL MARKETS</a>
 </div>
-<div class="text-center border-l border-black/10">
-<div class="text-4xl font-bold text-black"><?php echo htmlspecialchars($statsBots); ?></div>
-<div class="text-black/70 font-medium">Active AI Bots</div>
-</div>
-<div class="text-center border-l border-black/10">
-<div class="text-4xl font-bold text-black"><?php echo htmlspecialchars($statsUptime); ?></div>
-<div class="text-black/70 font-medium">Uptime Guarantee</div>
-</div>
-<div class="text-center border-l border-black/10">
-<div class="text-4xl font-bold text-black"><?php echo htmlspecialchars($statsRoi); ?></div>
-<div class="text-black/70 font-medium">Avg. Monthly ROI</div>
-</div>
-</div>
-</section><section class="bg-white dark:bg-background-dark border-y border-primary/10 py-6">
-<div class="max-w-7xl mx-auto px-6">
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
-<div class="flex flex-col items-center border-r border-slate-100 dark:border-slate-800 last:border-0">
-<span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Market Cap</span>
-<span class="text-xl font-bold"><?php echo htmlspecialchars($marketCap); ?> <span class="text-green-500 text-xs">+1.2%</span></span>
-</div>
-<div class="flex flex-col items-center border-r border-slate-100 dark:border-slate-800 lg:last:border-0">
-<span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">24h Volume</span>
-<span class="text-xl font-bold"><?php echo htmlspecialchars($volume24h); ?></span>
-</div>
-<div class="flex flex-col items-center border-r border-slate-100 dark:border-slate-800 last:border-0">
-<span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">BTC Dominance</span>
-<span class="text-xl font-bold"><?php echo htmlspecialchars($btcDominance); ?></span>
-</div>
-<div class="flex flex-col items-center last:border-0">
-<span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Active Traders</span>
-<span class="text-xl font-bold"><?php echo htmlspecialchars($activeTraders); ?></span>
-</div>
-</div>
-</div>
-</section><section class="py-24 overflow-hidden relative">
-<div class="absolute inset-0 pointer-events-none opacity-5">
-<span class="material-icons absolute top-10 left-10 text-6xl">currency_bitcoin</span>
-<span class="material-icons absolute bottom-10 right-10 text-6xl">token</span>
-</div>
-<div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter market-cards">
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="bitcoin">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-yellow-500/10 rounded-full flex items-center justify-center text-yellow-600 font-bold">₿</div>
 <div>
-<h2 class="text-4xl font-bold mb-6">Live Crypto Market Overview</h2>
-<p class="text-slate-500 text-lg mb-8">Stay ahead of the curve with real-time price feeds and market sentiment analysis powered by our proprietary AI engine.</p>
-<a href="/login" class="px-8 py-3 bg-primary text-black font-bold rounded-lg hover:shadow-lg transition-all inline-block">View Full Market</a>
-</div>
-<div class="relative bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-primary/10 overflow-hidden">
-<div class="flex gap-6 animate-infinite-scroll whitespace-nowrap crypto-ticker">
-<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm crypto-ticker-item" data-coin="bitcoin">
-<img class="crypto-logo w-6 h-6 rounded-full" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="Bitcoin"/>
-<span class="font-bold">BTC</span>
-<span class="font-medium crypto-price">--</span>
-<span class="text-sm crypto-change text-green-500">--</span>
-</div>
-<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm crypto-ticker-item" data-coin="ethereum">
-<img class="crypto-logo w-6 h-6 rounded-full" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png" alt="Ethereum"/>
-<span class="font-bold">ETH</span>
-<span class="font-medium crypto-price">--</span>
-<span class="text-sm crypto-change text-red-500">--</span>
-</div>
-<div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg shadow-sm crypto-ticker-item" data-coin="binancecoin">
-<img class="crypto-logo w-6 h-6 rounded-full" src="https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png" alt="BNB"/>
-<span class="font-bold">BNB</span>
-<span class="font-medium crypto-price">--</span>
-<span class="text-sm crypto-change text-green-500">--</span>
+<div class="font-bold text-surface-container-lowest">BTC / USD</div>
+<div class="text-xs text-gray-400">Bitcoin</div>
 </div>
 </div>
+<div class="font-bold font-data-mono market-change" data-coin="bitcoin" data-change>--</div>
+</div>
+<div class="text-2xl font-bold text-surface-container-lowest font-data-mono" data-coin="bitcoin" data-price>--</div>
+<div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
+<div class="h-full bg-success w-[70%] market-bar"></div>
 </div>
 </div>
-</section>
-<!-- How It Works -->
-<section class="py-32">
-<div class="max-w-7xl mx-auto px-6 text-center mb-20">
-<h2 class="text-4xl font-bold mb-4">5 Steps to Financial Freedom</h2>
-<p class="text-slate-500 max-w-2xl mx-auto">Our streamlined process makes institutional-grade trading accessible to everyone.</p>
-</div>
-<div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-5 gap-8">
-<div class="relative group">
-<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
-<span class="material-icons text-primary group-hover:text-black">person_add</span>
-</div>
-<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 01</div>
-<h3 class="text-xl font-bold mb-3">Register</h3>
-<p class="text-sm text-slate-500">Create your free account in seconds.</p>
-</div>
-<div class="relative group">
-<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
-<span class="material-icons text-primary group-hover:text-black">verified_user</span>
-</div>
-<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 02</div>
-<h3 class="text-xl font-bold mb-3">Verify Account</h3>
-<p class="text-sm text-slate-500">Confirm your email with the code we send.</p>
-</div>
-<div class="relative group">
-<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
-<span class="material-icons text-primary group-hover:text-black">account_balance_wallet</span>
-</div>
-<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 03</div>
-<h3 class="text-xl font-bold mb-3">Deposit</h3>
-<p class="text-sm text-slate-500">Fund your account securely.</p>
-</div>
-<div class="relative group">
-<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
-<span class="material-icons text-primary group-hover:text-black">insights</span>
-</div>
-<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 04</div>
-<h3 class="text-xl font-bold mb-3">Choose Plan</h3>
-<p class="text-sm text-slate-500">Pick the strategy that fits your goals.</p>
-</div>
-<div class="relative group">
-<div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
-<span class="material-icons text-primary group-hover:text-black">payments</span>
-</div>
-<div class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Step 05</div>
-<h3 class="text-xl font-bold mb-3">Subscribe</h3>
-<p class="text-sm text-slate-500">Activate your plan and start earning.</p>
-</div>
-</div>
-</section><section class="py-32 bg-slate-50 dark:bg-slate-900/30">
-<div class="max-w-7xl mx-auto px-6">
-<div class="text-center mb-16">
-<h2 class="text-4xl font-bold mb-4">Top 10 Most Popular Coins</h2>
-<p class="text-slate-500">Real-time data for the most traded assets on our platform.</p>
-</div>
-<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-100 dark:border-slate-700">
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse crypto-table">
-<thead>
-<tr class="bg-slate-50 dark:bg-slate-900/50">
-<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase">Rank</th>
-<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase">Coin</th>
-<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase">Price</th>
-<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase">24h Change</th>
-<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase hidden sm:table-cell">Market Cap</th>
-<th class="p-4 sm:p-6 font-bold text-sm text-slate-400 uppercase hidden md:table-cell">Last 7 Days</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group" data-coin="bitcoin">
-<td class="p-4 sm:p-6 font-bold">1</td>
-<td class="p-4 sm:p-6">
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="ethereum">
+<div class="flex justify-between items-start mb-4">
 <div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="Bitcoin"/></div>
-<div><div class="font-bold">Bitcoin</div><div class="text-xs text-slate-400">BTC</div></div>
-</div>
-</td>
-<td class="p-4 sm:p-6 font-medium font-mono crypto-price">--</td>
-<td class="p-4 sm:p-6 crypto-change text-green-500">--</td>
-<td class="p-4 sm:p-6 font-medium font-mono hidden sm:table-cell">$1.26T</td>
-<td class="p-4 sm:p-6 hidden md:table-cell">
-<div class="w-24 h-8 bg-green-500/10 rounded overflow-hidden">
-<div class="h-full w-2/3 bg-green-500/20 animate-pulse"></div>
-</div>
-</td>
-</tr>
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="ethereum">
-<td class="p-4 sm:p-6 font-bold">2</td>
-<td class="p-4 sm:p-6">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png" alt="Ethereum"/></div>
-<div><div class="font-bold">Ethereum</div><div class="text-xs text-slate-400">ETH</div></div>
-</div>
-</td>
-<td class="p-4 sm:p-6 font-medium font-mono crypto-price">--</td>
-<td class="p-4 sm:p-6 crypto-change text-red-500">--</td>
-<td class="p-4 sm:p-6 font-medium font-mono hidden sm:table-cell">$411.2B</td>
-<td class="p-4 sm:p-6 hidden md:table-cell">
-<div class="w-24 h-8 bg-red-500/10 rounded overflow-hidden">
-<div class="h-full w-1/2 bg-red-500/20 animate-pulse"></div>
-</div>
-</td>
-</tr>
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="tether">
-<td class="p-4 sm:p-6 font-bold">3</td>
-<td class="p-4 sm:p-6">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/325/large/Tether.png" alt="Tether"/></div>
-<div><div class="font-bold">Tether</div><div class="text-xs text-slate-400">USDT</div></div>
-</div>
-</td>
-<td class="p-4 sm:p-6 font-medium font-mono crypto-price">--</td>
-<td class="p-4 sm:p-6 crypto-change text-green-500">--</td>
-<td class="p-4 sm:p-6 font-medium font-mono hidden sm:table-cell">--</td>
-<td class="p-4 sm:p-6 hidden md:table-cell"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
-</tr>
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="binancecoin">
-<td class="p-4 sm:p-6 font-bold">4</td>
-<td class="p-4 sm:p-6">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png" alt="BNB"/></div>
-<div><div class="font-bold">BNB</div><div class="text-xs text-slate-400">BNB</div></div>
-</div>
-</td>
-<td class="p-4 sm:p-6 font-medium font-mono crypto-price">--</td>
-<td class="p-4 sm:p-6 crypto-change text-green-500">--</td>
-<td class="p-4 sm:p-6 font-medium font-mono hidden sm:table-cell">--</td>
-<td class="p-4 sm:p-6 hidden md:table-cell"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
-</tr>
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-coin="solana">
-<td class="p-4 sm:p-6 font-bold">5</td>
-<td class="p-4 sm:p-6">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"><img class="crypto-logo w-6 h-6" src="https://assets.coingecko.com/coins/images/4128/large/solana.png" alt="Solana"/></div>
-<div><div class="font-bold">Solana</div><div class="text-xs text-slate-400">SOL</div></div>
-</div>
-</td>
-<td class="p-4 sm:p-6 font-medium font-mono crypto-price">--</td>
-<td class="p-4 sm:p-6 crypto-change text-green-500">--</td>
-<td class="p-4 sm:p-6 font-medium font-mono hidden sm:table-cell">--</td>
-<td class="p-4 sm:p-6 hidden md:table-cell"><div class="w-24 h-8 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</section>
-<!-- AI Tech Section -->
-<section class="bg-slate-900 py-32 overflow-hidden relative">
-<div class="absolute inset-0 opacity-20">
-<div class="absolute top-0 left-1/4 w-96 h-96 bg-primary/30 blur-[150px] rounded-full"></div>
-<div class="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/20 blur-[150px] rounded-full"></div>
-</div>
-<div class="max-w-7xl mx-auto px-6 relative z-10">
-<div class="grid lg:grid-cols-2 gap-20 items-center">
+<div class="w-10 h-10 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-600 font-bold">Ξ</div>
 <div>
-<h2 class="text-4xl font-bold text-white mb-6">Neural Engine Architecture</h2>
-<p class="text-slate-400 text-lg mb-8">Our bots use Deep Reinforcement Learning to adapt to market volatility in milliseconds, outperforming human traders and traditional logic-based scripts.</p>
+<div class="font-bold text-surface-container-lowest">ETH / USD</div>
+<div class="text-xs text-gray-400">Ethereum</div>
+</div>
+</div>
+<div class="font-bold font-data-mono market-change" data-coin="ethereum" data-change>--</div>
+</div>
+<div class="text-2xl font-bold text-surface-container-lowest font-data-mono" data-coin="ethereum" data-price>--</div>
+<div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
+<div class="h-full bg-success w-[55%] market-bar"></div>
+</div>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center text-green-600 font-bold">$</div>
+<div>
+<div class="font-bold text-surface-container-lowest">EUR / USD</div>
+<div class="text-xs text-gray-400">Euro / Dollar</div>
+</div>
+</div>
+<div class="text-critical font-bold font-data-mono">-0.05%</div>
+</div>
+<div class="text-2xl font-bold text-surface-container-lowest font-data-mono">1.0824</div>
+<div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
+<div class="h-full bg-critical w-[40%]"></div>
+</div>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="solana">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-600 font-bold">S</div>
+<div>
+<div class="font-bold text-surface-container-lowest">SOL / USD</div>
+<div class="text-xs text-gray-400">Solana</div>
+</div>
+</div>
+<div class="font-bold font-data-mono market-change" data-coin="solana" data-change>--</div>
+</div>
+<div class="text-2xl font-bold text-surface-container-lowest font-data-mono" data-coin="solana" data-price>--</div>
+<div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
+<div class="h-full bg-success w-[85%] market-bar"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Trading Experience -->
+<section class="bg-surface-container-lowest py-16 md:py-section-padding">
+<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+<div class="lg:col-span-5 order-2 lg:order-1">
+<span class="font-label-xs text-label-xs text-primary tracking-widest uppercase mb-4 block">Execution Performance</span>
+<h2 class="font-headline-lg text-headline-lg mb-6">Professional Tools for Every Trader</h2>
+<div class="space-y-8">
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-12 h-12 bg-primary-container/10 border border-primary/20 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">speed</span>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">Ultra-Low Latency</h3>
+<p class="text-on-secondary-container">Execute orders in under 1ms with our institutional-grade matching engine, engineered for high-frequency trading.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-12 h-12 bg-primary-container/10 border border-primary/20 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">data_exploration</span>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">Advanced Analytics</h3>
+<p class="text-on-secondary-container">Dozens of indicators and chart types integrated directly from TradingView, enhanced with our proprietary liquidity heatmaps.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-12 h-12 bg-primary-container/10 border border-primary/20 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">shield</span>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">Segregated Accounts</h3>
+<p class="text-on-secondary-container">Your funds are protected. We maintain 1:1 reserves and utilize multi-sig cold storage for all digital assets.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-7 order-1 lg:order-2">
+<div class="relative rounded-2xl overflow-hidden glass-panel">
+<img class="w-full h-full object-cover min-h-[280px]" alt="Professional trading terminal" src="<?php echo htmlspecialchars($heroImg); ?>"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 to-transparent"></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Investment Management -->
+<section class="bg-[#F1F3F5] py-16 md:py-section-padding text-surface-container-lowest">
+<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+<div class="relative">
+<div class="absolute -inset-4 bg-primary-container/20 blur-3xl rounded-full pointer-events-none"></div>
+<img class="relative rounded-2xl shadow-xl w-full border border-gray-200" alt="Investment portfolio dashboard" src="<?php echo htmlspecialchars($investImg); ?>"/>
+</div>
+<div>
+<span class="font-label-xs text-label-xs text-primary-container px-3 py-1 bg-surface-container-lowest rounded-md mb-4 inline-block">Bespoke Wealth Management</span>
+<h2 class="font-headline-lg text-headline-lg mb-8 leading-tight">Institutional Asset Management</h2>
+<p class="font-body-lg text-body-lg text-gray-600 mb-10">
+<?php echo htmlspecialchars($siteName); ?> provides curated investment strategies for high-net-worth individuals and corporate entities. Our algorithms manage risk dynamically while maximizing alpha across global markets.
+</p>
 <ul class="space-y-4 mb-10">
-<li class="flex items-start gap-4 text-slate-300">
-<span class="material-icons text-primary">check_circle</span>
-<span>Predictive sentiment analysis from 40+ social signals</span>
+<li class="flex items-center gap-3 text-gray-700 font-medium">
+<span class="material-symbols-outlined text-success">check_circle</span>
+Personalized Portfolio Construction
 </li>
-<li class="flex items-start gap-4 text-slate-300">
-<span class="material-icons text-primary">check_circle</span>
-<span>High-frequency execution with zero-latency APIs</span>
+<li class="flex items-center gap-3 text-gray-700 font-medium">
+<span class="material-symbols-outlined text-success">check_circle</span>
+Tax-Efficient Rebalancing
 </li>
-<li class="flex items-start gap-4 text-slate-300">
-<span class="material-icons text-primary">check_circle</span>
-<span>Dynamic risk-adjusted position sizing</span>
+<li class="flex items-center gap-3 text-gray-700 font-medium">
+<span class="material-symbols-outlined text-success">check_circle</span>
+Dedicated Wealth Consultant
 </li>
 </ul>
-<button class="text-primary font-bold flex items-center gap-2 hover:translate-x-2 transition-transform">
-                        Explore Our Documentation <span class="material-icons">arrow_forward</span>
-</button>
+<a href="/plans" class="inline-block bg-surface-container-lowest text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-800 transition-colors text-label-sm">
+Inquire About Institutional Services
+</a>
 </div>
-<div class="grid gap-6">
-<div class="glass-card p-8 rounded-xl bg-white/5 border-white/10">
-<div class="flex items-center gap-4 mb-4">
-<div class="p-3 bg-primary/20 rounded-lg">
-<span class="material-icons text-primary">psychology</span>
 </div>
-<h3 class="text-xl font-bold text-white">Sentiment Core</h3>
+</section>
+
+<!-- Mobile Experience -->
+<section class="bg-[#F7F8FA] py-16 md:py-section-padding text-surface-container-lowest text-center">
+<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
+<h2 class="font-headline-lg text-headline-lg mb-4">Your Portfolio, Anywhere</h2>
+<p class="text-gray-500 font-body-lg mb-16 max-w-2xl mx-auto">Take the power of <?php echo htmlspecialchars($siteName); ?> on the go with our award-winning mobile application. Full terminal features in the palm of your hand.</p>
+<div class="relative max-w-4xl mx-auto">
+<img class="mx-auto drop-shadow-2xl max-w-full h-auto" alt="Mobile trading app" src="<?php echo htmlspecialchars($mobileImg); ?>"/>
+<div class="flex flex-col sm:flex-row justify-center gap-4 mt-12">
+<a class="bg-black text-white px-8 py-3 rounded-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform" href="/register">
+<span class="material-symbols-outlined text-3xl">apps</span>
+<div class="text-left">
+<div class="text-[10px] uppercase opacity-70">Download on the</div>
+<div class="text-lg font-bold leading-none">App Store</div>
 </div>
-<p class="text-slate-400 text-sm">Analyzes massive datasets from Twitter, Reddit, and News in real-time to predict market moves before they happen.</p>
+</a>
+<a class="bg-black text-white px-8 py-3 rounded-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform" href="/register">
+<span class="material-symbols-outlined text-3xl">play_books</span>
+<div class="text-left">
+<div class="text-[10px] uppercase opacity-70">Get it on</div>
+<div class="text-lg font-bold leading-none">Google Play</div>
 </div>
-<div class="glass-card p-8 rounded-xl bg-white/5 border-white/10 ml-8">
-<div class="flex items-center gap-4 mb-4">
-<div class="p-3 bg-primary/20 rounded-lg">
-<span class="material-icons text-primary">speed</span>
-</div>
-<h3 class="text-xl font-bold text-white">Execution Node</h3>
-</div>
-<p class="text-slate-400 text-sm">Low-latency proprietary infrastructure ensures your orders are filled at the best possible price across all major CEXs.</p>
-</div>
-<div class="glass-card p-8 rounded-xl bg-white/5 border-white/10">
-<div class="flex items-center gap-4 mb-4">
-<div class="p-3 bg-primary/20 rounded-lg">
-<span class="material-icons text-primary">shield</span>
-</div>
-<h3 class="text-xl font-bold text-white">Risk Matrix</h3>
-</div>
-<p class="text-slate-400 text-sm">Automatically adjusts stop-losses and take-profits based on current market volatility and asset correlation.</p>
+</a>
 </div>
 </div>
 </div>
+</section>
+
+<!-- Neural Engine Intelligence -->
+<section class="bg-surface-container-lowest py-16 md:py-section-padding relative overflow-hidden">
+<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop relative z-10">
+<div class="text-center mb-12 md:mb-20">
+<span class="font-label-xs text-label-xs text-primary mb-4 block">Next-Generation Intelligence</span>
+<h2 class="font-headline-lg text-headline-lg mb-4">Neural Engine Intelligence</h2>
+<p class="text-on-secondary-container max-w-2xl mx-auto">Our AI-driven analytics suite processes millions of data points per second to identify sentiment shifts and market anomalies before they happen.</p>
 </div>
-</section><section class="py-32 bg-slate-900 border-t border-white/5 overflow-hidden">
-<div class="max-w-7xl mx-auto px-6 text-center">
-<h2 class="text-3xl font-bold text-white mb-20">AI Market Intelligence Orbit</h2>
-<div class="relative flex items-center justify-center h-[500px]">
-<?php
-$ring1 = array_slice($orbitCoins, 0, 6);
-$ring2 = array_slice($orbitCoins, 6, 4);
-?>
-<!-- Orbit rings: real coin logos from DB or fallback -->
-<div class="absolute w-[450px] h-[450px] border border-primary/20 rounded-full animate-[spin_20s_linear_infinite]">
-<?php foreach ($ring1 as $i => $c): $angle = 2 * M_PI * $i / count($ring1) - M_PI / 2; $x = 50 + 50 * cos($angle); $y = 50 + 50 * sin($angle); ?>
-<span class="absolute w-10 h-10 rounded-full overflow-hidden bg-slate-800 border-2 border-primary/30 shadow-lg flex items-center justify-center" style="left:<?php echo $x; ?>%; top:<?php echo $y; ?>%; transform:translate(-50%,-50%);"><img src="<?php echo htmlspecialchars($c['logo']); ?>" alt="<?php echo htmlspecialchars($c['symbol']); ?>" class="w-7 h-7 object-contain"/></span>
-<?php endforeach; ?>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<div class="lg:col-span-8 glass-panel rounded-2xl overflow-hidden group">
+<img class="w-full h-[280px] md:h-[400px] object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-700" alt="Market sentiment heatmap" src="<?php echo htmlspecialchars($heatmapImg); ?>"/>
+<div class="p-8">
+<h3 class="text-xl font-bold mb-2">Market Sentiment Heatmaps</h3>
+<p class="text-on-secondary-container">Visualize global capital flow across thousands of assets simultaneously with our real-time sector rotation terminal.</p>
 </div>
-<div class="absolute w-[300px] h-[300px] border border-primary/30 rounded-full animate-[spin_15s_linear_infinite_reverse]">
-<?php foreach ($ring2 as $i => $c): $angle = 2 * M_PI * $i / max(1, count($ring2)) - M_PI / 2; $x = 50 + 50 * cos($angle); $y = 50 + 50 * sin($angle); ?>
-<span class="absolute w-9 h-9 rounded-full overflow-hidden bg-slate-800 border-2 border-primary/30 shadow-lg flex items-center justify-center" style="left:<?php echo $x; ?>%; top:<?php echo $y; ?>%; transform:translate(-50%,-50%);"><img src="<?php echo htmlspecialchars($c['logo']); ?>" alt="<?php echo htmlspecialchars($c['symbol']); ?>" class="w-6 h-6 object-contain"/></span>
-<?php endforeach; ?>
 </div>
-<div class="absolute w-[150px] h-[150px] border border-primary/40 rounded-full animate-[spin_10s_linear_infinite]">
-<?php foreach (array_slice($orbitCoins, 10, 4) as $i => $c): $n = min(4, count($orbitCoins) - 10); if ($n < 1) break; $angle = 2 * M_PI * $i / $n - M_PI / 2; $x = 50 + 50 * cos($angle); $y = 50 + 50 * sin($angle); ?>
-<span class="absolute w-8 h-8 rounded-full overflow-hidden bg-slate-800 border-2 border-primary/40 shadow flex items-center justify-center" style="left:<?php echo $x; ?>%; top:<?php echo $y; ?>%; transform:translate(-50%,-50%);"><img src="<?php echo htmlspecialchars($c['logo']); ?>" alt="<?php echo htmlspecialchars($c['symbol']); ?>" class="w-5 h-5 object-contain"/></span>
-<?php endforeach; ?>
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<div class="glass-panel rounded-2xl p-8 flex-1 group hover:border-primary/40 transition-colors">
+<div class="w-12 h-12 bg-primary-container/10 border border-primary/20 rounded-lg flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary">psychology</span>
 </div>
-<!-- Central Core -->
-<div class="relative z-10 w-40 h-40 bg-primary rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(255,193,7,0.4)]">
-<div class="text-black text-center">
-<div class="font-black leading-tight text-sm">AI CORE</div>
-<div class="text-[10px] font-bold opacity-80 uppercase tracking-tighter">Intelligence<br/>Engine</div>
+<h3 class="text-xl font-bold mb-2">Predictive AI</h3>
+<p class="text-on-secondary-container">Machine learning models trained on decades of market data to assist your decision-making process.</p>
+</div>
+<div class="glass-panel rounded-2xl p-8 flex-1 group hover:border-primary/40 transition-colors">
+<div class="w-12 h-12 bg-primary-container/10 border border-primary/20 rounded-lg flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary">hub</span>
+</div>
+<h3 class="text-xl font-bold mb-2">Smart Order Routing</h3>
+<p class="text-on-secondary-container">Our SOR engine automatically finds the best price across multiple liquidity venues in real-time.</p>
 </div>
 </div>
 </div>
 </div>
 </section>
-<!-- Investment Calculator -->
-<section class="py-32 bg-background-light dark:bg-background-dark">
-<div class="max-w-4xl mx-auto px-6">
-<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-primary/10">
-<div class="p-10 border-b border-slate-100 dark:border-slate-800">
-<h2 class="text-3xl font-bold text-center mb-2">Investment Calculator</h2>
-<p class="text-slate-500 text-center">Estimate your potential returns based on historical performance data.</p>
-</div>
-<div class="p-10 grid md:grid-cols-2 gap-12">
-<div class="space-y-10">
+
+<!-- Trust & Security -->
+<section class="bg-white py-16 md:py-section-padding text-surface-container-lowest">
+<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 text-center">
 <div>
-<label class="block font-bold mb-2">Plan</label>
-<select id="calc-plan" class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium">
-<option value="">Loading plans…</option>
-</select>
+<div class="text-3xl md:text-4xl font-extrabold mb-2 font-display text-primary-container"><?php echo htmlspecialchars($statsVolume); ?></div>
+<div class="font-label-xs text-label-xs text-gray-400 uppercase tracking-widest">Quarterly Trading Volume</div>
 </div>
 <div>
-<div class="flex justify-between mb-4 font-bold">
-<span>Investment Amount</span>
-<span class="text-primary text-sm" id="calc-amount-limits">Any amount</span>
-</div>
-<input id="calc-amount" class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium" type="number" step="any" min="0" placeholder="e.g. 1000" value="1000"/>
-<div class="text-xs text-slate-400 mt-2">
-<span id="calc-amount-range-text">Enter any amount. Plan range shown for reference.</span>
-</div>
-<div id="calc-amount-warning" class="text-sm font-medium text-red-600 dark:text-red-400 mt-2 hidden" role="alert"></div>
+<div class="text-3xl md:text-4xl font-extrabold mb-2 font-display text-primary-container"><?php echo htmlspecialchars($statsInvestors); ?></div>
+<div class="font-label-xs text-label-xs text-gray-400 uppercase tracking-widest">Verified Investors</div>
 </div>
 <div>
-<div class="flex justify-between mb-4 font-bold">
-<span>Duration (days)</span>
-<span class="text-primary text-sm" id="calc-duration-limits">Any duration (days)</span>
+<div class="text-3xl md:text-4xl font-extrabold mb-2 font-display text-primary-container"><?php echo htmlspecialchars($statsUptime); ?></div>
+<div class="font-label-xs text-label-xs text-gray-400 uppercase tracking-widest">Reserve Transparency</div>
 </div>
-<input id="calc-duration" class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium" type="number" min="1" step="1" placeholder="e.g. 30" value="30"/>
-<div class="text-xs text-slate-400 mt-2">
-<span id="calc-duration-range-text">Enter number of days. Plan duration shown for reference.</span>
-</div>
+<div>
+<div class="text-3xl md:text-4xl font-extrabold mb-2 font-display text-primary-container"><?php echo htmlspecialchars($statsSupport); ?></div>
+<div class="font-label-xs text-label-xs text-gray-400 uppercase tracking-widest">Concierge Support</div>
 </div>
 </div>
-<div class="bg-primary/5 rounded-2xl p-8 flex flex-col justify-center items-center border border-primary/20">
-<div class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">Projected Return</div>
-<div class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-1" id="calc-daily-profit">$0/day</div>
-<div class="text-xs text-slate-500 dark:text-slate-400 mb-2" id="calc-total-profit-label">Total profit over 0 days: $0</div>
-<div class="text-xs text-slate-500 dark:text-slate-400 mb-1">You receive (capital + profit)</div>
-<div class="text-5xl font-bold text-black dark:text-white mb-1" id="calc-projected">$0</div>
-<div class="text-primary font-bold" id="calc-profit">+0% Profit</div>
-<div class="mt-8 w-full">
-<a href="/register" class="block w-full py-4 bg-black text-white font-bold rounded-lg hover:bg-slate-800 transition-all text-center">Open Account Now</a>
-</div>
-</div>
-</div>
+<div class="mt-16 md:mt-24 pt-12 md:pt-16 border-t border-gray-100 flex flex-wrap justify-center items-center gap-8 md:gap-16 grayscale opacity-50">
+<div class="h-8 flex items-center font-display font-black text-lg md:text-2xl tracking-tighter">FINRA REGULATED</div>
+<div class="h-8 flex items-center font-display font-black text-lg md:text-2xl tracking-tighter">ISO 27001</div>
+<div class="h-8 flex items-center font-display font-black text-lg md:text-2xl tracking-tighter">SEC COMPLIANT</div>
+<div class="h-8 flex items-center font-display font-black text-lg md:text-2xl tracking-tighter">MULTI-SIG PROTECTED</div>
 </div>
 </div>
 </section>
-<!-- Plans Preview -->
-<section class="py-32 bg-white dark:bg-slate-900/50">
-<div class="max-w-7xl mx-auto px-6 text-center mb-16">
-<h2 class="text-4xl font-bold mb-4">Choose Your Strategy</h2>
-<p class="text-slate-500">Flexible plans tailored to your investment goals.</p>
+
+<!-- Learn and Earn -->
+<section class="bg-[#F1F3F5] py-16 md:py-section-padding text-surface-container-lowest">
+<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-12">
+<div>
+<span class="font-label-xs text-label-xs text-gray-400 mb-2 block">Knowledge is Wealth</span>
+<h2 class="font-headline-lg text-headline-lg">Learn and Earn</h2>
 </div>
-<div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-8">
-<?php
-$planIndex = 0;
-foreach ($indexPlans as $p):
-    $popular = ($planIndex === 1);
-    $priceLabel = '$' . format_usd_amount($p['min_deposit']);
-    if (!empty($p['max_deposit'])) $priceLabel .= ' - $' . format_usd_amount($p['max_deposit']);
-    else $priceLabel .= '+';
-?>
-<div class="bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-lg border <?php echo $popular ? 'border-2 border-primary shadow-2xl' : 'border-slate-100 dark:border-slate-700'; ?> hover:-translate-y-2 transition-transform duration-300 relative">
-<?php if ($popular): ?><div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-black text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div><?php endif; ?>
-<div class="text-primary font-bold mb-2"><?php echo htmlspecialchars($p['name']); ?></div>
-<div class="text-4xl font-bold mb-6"><?php echo $priceLabel; ?><span class="text-lg text-slate-400 font-normal"> deposit</span></div>
-<p class="text-slate-500 mb-8 text-sm"><?php echo number_format((float)($p['yield_min'] ?? 0), 1); ?>% daily ROI</p>
-<ul class="space-y-4 mb-10 text-left">
-<?php foreach (array_slice($p['features'] ?? [], 0, 4) as $f): ?>
-<li class="flex items-center gap-3 text-sm">
-<span class="material-icons text-primary text-lg">check</span>
-<?php echo htmlspecialchars($f); ?>
-</li>
-<?php endforeach; ?>
-</ul>
-<a href="/register" class="block w-full py-3 <?php echo $popular ? 'bg-primary text-black' : 'border-2 border-primary text-black dark:text-white'; ?> font-bold rounded-lg hover:bg-primary hover:text-black text-center transition-all"><?php echo $popular ? 'Choose ' . htmlspecialchars($p['name']) : 'Get Started'; ?></a>
+<a href="/help_centre" class="text-primary-container font-bold border-b-2 border-primary-container pb-1 text-label-sm">Browse Academy</a>
 </div>
-<?php $planIndex++; endforeach; ?>
-<?php if (empty($indexPlans)): ?>
-<div class="col-span-3 text-center py-12 text-slate-500">No plans available. <a href="/plans" class="text-primary font-bold hover:underline">View plans</a></div>
-<?php endif; ?>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<a href="/help_centre" class="bg-white rounded-xl overflow-hidden shadow-sm group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 block">
+<div class="h-48 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Foundations of trading" src="<?php echo htmlspecialchars($eduBeginner); ?>"/>
 </div>
-<div class="max-w-7xl mx-auto px-6 mt-12 text-center">
-<a href="/plans" class="inline-flex items-center gap-2 px-8 py-4 bg-primary text-black font-bold rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all">View all plans</a>
+<div class="p-6">
+<span class="text-xs font-bold text-primary-container uppercase mb-2 block">Beginner</span>
+<h3 class="text-xl font-bold mb-3">Foundations of Trading</h3>
+<p class="text-gray-500 text-sm mb-4">Master the basics of technical analysis, order types, and risk management.</p>
+<div class="flex items-center text-primary-container font-bold text-sm">
+Read Module <span class="material-symbols-outlined ml-1 text-sm">chevron_right</span>
+</div>
+</div>
+</a>
+<a href="/help_centre" class="bg-white rounded-xl overflow-hidden shadow-sm group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 block">
+<div class="h-48 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Understanding liquidity" src="<?php echo htmlspecialchars($eduIntermediate); ?>"/>
+</div>
+<div class="p-6">
+<span class="text-xs font-bold text-primary-container uppercase mb-2 block">Intermediate</span>
+<h3 class="text-xl font-bold mb-3">Understanding Liquidity</h3>
+<p class="text-gray-500 text-sm mb-4">Deep dive into how liquidity pools and market makers shape price action.</p>
+<div class="flex items-center text-primary-container font-bold text-sm">
+Read Module <span class="material-symbols-outlined ml-1 text-sm">chevron_right</span>
+</div>
+</div>
+</a>
+<a href="/help_centre" class="bg-white rounded-xl overflow-hidden shadow-sm group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 block">
+<div class="h-48 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Algorithmic strategies" src="<?php echo htmlspecialchars($eduAdvanced); ?>"/>
+</div>
+<div class="p-6">
+<span class="text-xs font-bold text-primary-container uppercase mb-2 block">Advanced</span>
+<h3 class="text-xl font-bold mb-3">Algorithmic Strategies</h3>
+<p class="text-gray-500 text-sm mb-4">Building and backtesting quantitative models for institutional portfolios.</p>
+<div class="flex items-center text-primary-container font-bold text-sm">
+Read Module <span class="material-symbols-outlined ml-1 text-sm">chevron_right</span>
+</div>
+</div>
+</a>
+</div>
 </div>
 </section>
-<!-- TradingView News -->
-<section class="py-32 bg-white dark:bg-slate-900/30">
-<div class="max-w-7xl mx-auto px-6">
-<h2 class="text-4xl font-bold mb-4">Market Insights</h2>
-<p class="text-slate-500 mb-8">Top stories from TradingView.</p>
-<div class="tradingview-widget-container rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm" style="height: 680px;">
-<div class="tradingview-widget-container__widget"></div>
-<div class="tradingview-widget-copyright text-xs text-slate-400 mt-2"><a href="https://www.tradingview.com/news/top-providers/tradingview/" rel="noopener nofollow" target="_blank"><span class="blue-text">Top stories</span></a><span class="trademark"> by TradingView</span></div>
-<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
-{"displayMode":"regular","feedMode":"all_symbols","colorTheme":"light","isTransparent":false,"locale":"en","width":"100%","height":"100%"}
-</script>
-</div>
-</div>
-</section>
+
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
+
 <script src="/js/crypto-config.js"></script>
 <script src="/js/crypto-prices.js"></script>
 <script>
-(function(){
-  var plans = [];
-  var amountEl = document.getElementById('calc-amount');
-  var durationEl = document.getElementById('calc-duration');
-  var planSelect = document.getElementById('calc-plan');
-  if (!amountEl || !durationEl) return;
-
-  function getSelectedPlan() {
-    if (!plans.length) return null;
-    if (planSelect && planSelect.value) {
-      for (var i = 0; i < plans.length; i++) {
-        if (String(plans[i].id) === planSelect.value) return plans[i];
-      }
-    }
-    return plans[0];
-  }
-
-  function syncInputsToPlan(plan) {
-    if (!plan) return;
-    var minAmount = Number(plan.min || 0);
-    var maxAmount = plan.max === null ? null : Number(plan.max);
-    var minDays = Math.max(1, parseInt(plan.min_duration_days || plan.duration_days, 10) || 1);
-    var maxDays = Math.max(minDays, parseInt(plan.max_duration_days || plan.duration_days, 10) || minDays);
-
-    amountEl.removeAttribute('min');
-    amountEl.removeAttribute('max');
-    amountEl.setAttribute('step', 'any');
-    document.getElementById('calc-amount-limits').textContent = 'Any amount';
-    document.getElementById('calc-amount-range-text').textContent = maxAmount != null ? ('Plan range: $' + minAmount.toLocaleString() + ' to $' + maxAmount.toLocaleString()) : ('Plan min: $' + minAmount.toLocaleString() + '+');
-
-    durationEl.min = '1';
-    durationEl.removeAttribute('max');
-    durationEl.step = '1';
-    document.getElementById('calc-duration-limits').textContent = 'Any duration (days)';
-    document.getElementById('calc-duration-range-text').textContent = 'Plan duration: ' + minDays + ' to ' + maxDays + ' days';
-  }
-
-  function updateCalc() {
-    var plan = getSelectedPlan();
-    if (plan) syncInputsToPlan(plan);
-    var amount = Math.max(0, parseFloat(amountEl.value) || 0);
-    var days = Math.max(1, parseInt(durationEl.value, 10) || 1);
-    var dailyProfit = 0;
-    var totalProfit = 0;
-    var projected = amount;
-    var profitPct = 0;
-    if (plan && amount > 0) {
-      var dailyRoiPct = (plan.yield_min + plan.yield_max) / 2;
-      dailyProfit = amount * (dailyRoiPct / 100);
-      totalProfit = dailyProfit * days;
-      projected = amount + totalProfit;
-      profitPct = ((totalProfit / amount) * 100).toFixed(1);
-    }
-    var dailyEl = document.getElementById('calc-daily-profit');
-    var totalLabelEl = document.getElementById('calc-total-profit-label');
-    if (dailyEl) dailyEl.textContent = '$' + (dailyProfit % 1 ? dailyProfit.toFixed(2) : Math.round(dailyProfit)).toLocaleString() + '/day';
-    if (totalLabelEl) totalLabelEl.textContent = 'Total profit over ' + days + ' days: $' + (totalProfit % 1 ? totalProfit.toFixed(2) : Math.round(totalProfit)).toLocaleString();
-    document.getElementById('calc-projected').textContent = '$' + (projected % 1 ? projected.toFixed(2) : Math.round(projected)).toLocaleString();
-    document.getElementById('calc-profit').textContent = '+' + profitPct + '% Profit';
-
-    var warningEl = document.getElementById('calc-amount-warning');
-    if (warningEl && plan) {
-      var minAmount = Number(plan.min || 0);
-      var maxAmount = plan.max !== null && plan.max !== undefined ? Number(plan.max) : null;
-      var msg = '';
-      if (amount > 0) {
-        if (amount < minAmount) msg = 'Minimum for ' + plan.name + ' is $' + minAmount.toLocaleString();
-        else if (maxAmount !== null && amount > maxAmount) msg = 'Maximum for ' + plan.name + ' is $' + maxAmount.toLocaleString();
-      }
-      warningEl.textContent = msg;
-      warningEl.classList.toggle('hidden', !msg);
-    }
-  }
-
-  fetch('/api/plans/list.php').then(function(r){ return r.json(); }).then(function(res){
-    if (res.success && res.data && res.data.length) {
-      plans = res.data;
-      if (planSelect) {
-        planSelect.innerHTML = '';
-        plans.forEach(function(p) {
-          var opt = document.createElement('option');
-          opt.value = p.id;
-          opt.textContent = p.name + ' ($' + p.min.toLocaleString() + (p.max ? ' - $' + p.max.toLocaleString() : '+') + ')';
-          planSelect.appendChild(opt);
-        });
-        if (plans[0]) planSelect.value = String(plans[0].id);
-      }
-      syncInputsToPlan(getSelectedPlan());
-    }
-    updateCalc();
-  }).catch(function(){ updateCalc(); });
-
-  amountEl.addEventListener('input', updateCalc);
-  durationEl.addEventListener('input', updateCalc);
-  if (planSelect) planSelect.addEventListener('change', updateCalc);
-})();
-</script>
-<script>
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.BloombitCryptoPrices) {
-        window.BloombitCryptoPrices.init(['bitcoin','ethereum','tether','binancecoin','solana'], {
-            tickerSelector: '.crypto-ticker',
-            tableSelector: '.crypto-table',
-            refreshInterval: 120000
-        });
-    }
+  if (window.BloombitCryptoPrices) {
+    window.BloombitCryptoPrices.init(['bitcoin','ethereum','solana'], {
+      refreshInterval: 120000
+    }).then(function(prices) {
+      document.querySelectorAll('.market-change[data-coin]').forEach(function(el) {
+        var coinId = el.getAttribute('data-coin');
+        var p = prices && prices[coinId];
+        if (!p || p.usd_24h_change == null) return;
+        el.classList.remove('text-success', 'text-critical', 'text-emerald-500', 'text-red-500');
+        el.classList.add(p.usd_24h_change >= 0 ? 'text-success' : 'text-critical');
+        var card = el.closest('.crypto-market-card');
+        if (card) {
+          var bar = card.querySelector('.market-bar');
+          if (bar) {
+            bar.classList.remove('bg-success', 'bg-critical');
+            bar.classList.add(p.usd_24h_change >= 0 ? 'bg-success' : 'bg-critical');
+            bar.style.width = Math.min(95, Math.max(15, Math.abs(p.usd_24h_change) * 12)) + '%';
+          }
+        }
+      });
+    });
+  }
+
+  document.querySelectorAll('a, button').forEach(function(btn) {
+    btn.addEventListener('mousedown', function() { btn.classList.add('scale-95'); });
+    btn.addEventListener('mouseup', function() { btn.classList.remove('scale-95'); });
+    btn.addEventListener('mouseleave', function() { btn.classList.remove('scale-95'); });
+  });
 });
 </script>
-</body></html>
+</body>
+</html>
