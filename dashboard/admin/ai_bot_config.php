@@ -204,6 +204,6 @@ Run Manual Distribution
   });
 })();
 </script>
-<script src="/js/app.js"></script>
+<?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 </body>
 </html>

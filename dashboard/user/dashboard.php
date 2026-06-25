@@ -382,7 +382,7 @@ if (!empty($chartData)) {
 </div>
 </main>
 </div>
-<script src="/js/app.js"></script>
+<?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>window.BLOOMBIT_API_BASE = '';</script>
 <script src="/js/crypto-config.js"></script>
 <script src="/js/crypto-prices.js"></script>

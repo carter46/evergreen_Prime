@@ -351,7 +351,7 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 </div>
 </main>
 </div>
-<script src="/js/app.js"></script>
+<?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 (function(){
   var showMsg = function(el, text, ok){

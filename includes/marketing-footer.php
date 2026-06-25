@@ -93,6 +93,6 @@ View Certificate
 <?php endif; ?>
 
 <div class="gtranslate_wrapper"></div>
-<script src="/js/app.js"></script>
+<?php require_once __DIR__ . '/app-script.php'; ?>
 <?php require_once __DIR__ . '/translation-widget.php'; ?>
 <?php require_once __DIR__ . '/live-chat-widget.php'; ?>

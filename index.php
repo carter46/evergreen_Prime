@@ -48,12 +48,8 @@ View Live Terminal
 </a>
 </div>
 </div>
-<div class="relative lg:scale-110 lg:translate-x-12">
-<div class="glass-panel p-2 rounded-2xl shadow-2xl overflow-hidden border-primary/20 min-h-[320px] sm:min-h-[400px] lg:min-h-[480px]">
-<img class="w-full h-full min-h-[320px] sm:min-h-[400px] lg:min-h-[480px] object-cover rounded-xl" alt="<?php echo htmlspecialchars($siteName); ?> mobile trading" src="<?php echo htmlspecialchars($heroImg); ?>"/>
-</div>
-<div class="absolute -top-10 -right-10 w-64 h-64 bg-primary-container/10 rounded-full blur-[100px] pointer-events-none"></div>
-<div class="absolute -bottom-10 -left-10 w-64 h-64 bg-tertiary-container/10 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="relative flex justify-center lg:justify-end w-full px-6 sm:px-10 lg:px-14 xl:px-20">
+<img class="w-full max-w-[240px] sm:max-w-[280px] md:max-w-[320px] lg:max-w-[360px] h-auto" alt="<?php echo htmlspecialchars($siteName); ?> mobile trading" src="<?php echo htmlspecialchars($heroImg); ?>"/>
 </div>
 </div>
 </section>
@@ -139,6 +135,22 @@ View Live Terminal
 </div>
 </div>
 </div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter market-stocks mt-gutter">
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
+<tv-mini-chart symbol="NASDAQ:TSLA"></tv-mini-chart>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
+<tv-mini-chart symbol="NASDAQ:MSFT"></tv-mini-chart>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
+<tv-mini-chart symbol="NASDAQ:GOOGL"></tv-mini-chart>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
+<tv-mini-chart symbol="NSE:ICICIBANK"></tv-mini-chart>
+</div>
+</div>
+<script type="module" src="https://widgets.tradingview-widget.com/w/en/tv-mini-chart.js"></script>
 </div>
 </section>
 

@@ -557,7 +557,7 @@ foreach ($analyticsTx as $tx):
 <button class="fixed bottom-6 right-6 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-50">
 <span class="material-icons-round">support_agent</span>
 </button>
-<script src="/js/app.js"></script>
+<?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Page load animations

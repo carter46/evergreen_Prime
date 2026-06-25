@@ -320,7 +320,7 @@ else echo 'Complete verification to withdraw';
 </form>
 </div>
 </div>
-<script src="/js/app.js"></script>
+<?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 (function(){
   var profileForm = document.getElementById('profile-form');

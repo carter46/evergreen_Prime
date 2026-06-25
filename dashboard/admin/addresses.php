@@ -79,7 +79,7 @@ body { font-family: 'Inter', sans-serif; }
 </div>
 </div>
 
-<script src="/js/app.js"></script>
+<?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 (function(){
 var allAddresses = [];

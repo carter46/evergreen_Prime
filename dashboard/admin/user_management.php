@@ -409,7 +409,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <button type="button" id="drawer-delete-user" class="px-2 py-2 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700">Delete</button>
 </div>
 </div>
-<script src="/js/app.js"></script>
+<?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 (function(){
 var drawer = document.getElementById('user-profile-drawer');

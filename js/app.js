@@ -2,6 +2,20 @@
  * Bloombit - Frontend Application JS
  * API fetch wrapper, form handlers, and page-specific init.
  */
+(function disablePageLoader() {
+    function stripLoader() {
+        var el = document.getElementById('bb-global-loader');
+        var style = document.getElementById('bb-global-loader-style');
+        if (el) el.remove();
+        if (style) style.remove();
+    }
+    stripLoader();
+    if (typeof MutationObserver !== 'undefined' && document.documentElement) {
+        new MutationObserver(stripLoader).observe(document.documentElement, { childList: true, subtree: true });
+    }
+    document.addEventListener('DOMContentLoaded', stripLoader);
+})();
+
 (function () {
     'use strict';
 
@@ -100,15 +114,6 @@
         document.addEventListener('visibilitychange', syncTranslatedState);
         // Lightweight polling in case translation code updates localStorage without events.
         setInterval(syncTranslatedState, 1000);
-    }
-
-    function showGlobalLoader() {}
-
-    function hideGlobalLoader() {
-        const el = document.getElementById('bb-global-loader');
-        if (el) el.remove();
-        const style = document.getElementById('bb-global-loader-style');
-        if (style) style.remove();
     }
 
     function setButtonLoading(btn, loading, text) {
@@ -367,7 +372,6 @@
                         return;
                     }
                     if (data.data && data.data.redirect) {
-                        showGlobalLoader();
                         window.location.href = data.data.redirect;
                     }
                 })
@@ -445,7 +449,6 @@
                 body: JSON.stringify({ email: loginEmail, otp, redirect: loginRedirect })
             }).then(r => r.json()).then(function (res) {
                 if (res.success) {
-                    showGlobalLoader();
                     window.location.href = res.data?.redirect || loginRedirect;
                 } else {
                     if (otpMessage) {
@@ -618,7 +621,6 @@
                 if (data.data?.step === 'verify_otp') {
                     showOtpStep(data.data.email);
                 } else {
-                    showGlobalLoader();
                     window.location.href = data.data?.redirect || '/dashboard';
                 }
             };
@@ -690,7 +692,6 @@
                     otpStep.classList.add('hidden');
                     thankYou.classList.remove('hidden');
                     setTimeout(function () {
-                        showGlobalLoader();
                         window.location.href = res.data?.redirect || '/dashboard';
                     }, 1500);
                 } else {
@@ -734,8 +735,8 @@
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
                 apiFetch('/auth/logout.php', { method: 'POST' })
-                    .then(() => { showGlobalLoader(); window.location.href = '/'; })
-                    .catch(() => { showGlobalLoader(); window.location.href = '/'; });
+                    .then(() => { window.location.href = '/'; })
+                    .catch(() => { window.location.href = '/'; });
             });
         });
     }
@@ -786,7 +787,6 @@
         syncTranslatedState();
         protectMaterialIcons(document);
         observeTranslationSideEffects();
-        hideGlobalLoader();
         requireAuth();
         initPasswordToggle();
         initLogoutButtons();

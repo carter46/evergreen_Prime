@@ -111,6 +111,12 @@ tailwind.config = {
 }
 </script>
 <style>
+#bb-global-loader,
+#bb-global-loader-style {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
 .glass-panel {
   background: rgba(30, 35, 41, 0.8);
   backdrop-filter: blur(12px);
@@ -144,4 +150,30 @@ body.marketing-page {
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
+.stock-market-card {
+  min-height: 168px;
+  display: flex;
+  flex-direction: column;
+}
+.stock-market-card tv-mini-chart {
+  display: block;
+  width: 100%;
+  flex: 1;
+  min-height: 120px;
+}
 </style>
+<script>
+(function () {
+  function stripLoader() {
+    var el = document.getElementById('bb-global-loader');
+    var style = document.getElementById('bb-global-loader-style');
+    if (el) el.remove();
+    if (style) style.remove();
+  }
+  stripLoader();
+  document.addEventListener('DOMContentLoaded', stripLoader);
+  if (typeof MutationObserver !== 'undefined' && document.documentElement) {
+    new MutationObserver(stripLoader).observe(document.documentElement, { childList: true, subtree: true });
+  }
+})();
+</script>
