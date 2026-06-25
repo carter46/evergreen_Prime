@@ -8,7 +8,7 @@ $statsInvestors = get_site_setting('stats_bots', '1.2M+');
 $statsUptime = get_site_setting('stats_uptime', '100%');
 $statsSupport = get_site_setting('stats_roi', '24/7');
 
-$heroImg = '/uploads/images/evergren_cardphone.jpg';
+$heroImg = '/uploads/images/evergren_cardphone.png';
 $tradingImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC8t20RVlMgaWNZbegnNfZpo05H-DsP08ZNR4eFxdn3auxEcHots-xhbBTK07-8o32e2aaaT-C6e8PsfJ8bl5DIPD3VvZTdgLij0I7MfF4t7Ik4sDfIirKnui2RGDr3o8g-6wwbZJbS28dKv4DD_E_eJT1QIFaskjv1mUp7vP5H_KHim-YAIMG7ZrHHh9lZb1JEycSYChDJADhS-kejRKmyKhGV44hmtxr8Hd-wLB7M7YS3aWJIYv30';
 $investImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCvI2LEc7CfuQSjFVUzej1kXzCvAscx-20YWah6xb8oVsGM2Cl_Z7XQHwsVN_tk5GtZ_CUKGyyZwZj8ICGSNDkH-4w_g9NuMUgqemomLZDLYUy6uHnyn149effZBAOiV0UaVG8Clb1ZV0d97bgGjtCykfkjgd208kb73yJUqktoFuSHDoVPMOYiV8IatXno6JBEL1rkm7LQ-P8p8bJpxvu4laQYixbBWrPH4nnSx9uOHc4jzP6-HK8e';
 $mobileImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAkTWR7DptUNdQXaCi5hUfal7sGJFohqmDJOScxp9_cPh6NOKifszH5a48O1ze0FLQxCosT-9xC54R_9kuPaMowJzm39CyOhSSo8VqFgfo9eES7FpOB5imMhhQ437f2Xr8G7FGgFfDMfHVaQ_FhLR4nhv2JyaWjfU2E1e4juY2sqQkyWa3yaIZLumrxp_KMx_-0rfr6-S8f2sB8F3g2WDMy8SlYAL345G0vNGvEFSmgaATja7hSBQ8_';
@@ -49,7 +49,7 @@ View Live Terminal
 </div>
 </div>
 <div class="relative flex justify-center lg:justify-end w-full px-6 sm:px-10 lg:px-14 xl:px-20">
-<img class="w-full max-w-[240px] sm:max-w-[280px] md:max-w-[320px] lg:max-w-[360px] h-auto" alt="<?php echo htmlspecialchars($siteName); ?> mobile trading" src="<?php echo htmlspecialchars($heroImg); ?>"/>
+<img class="w-full max-w-[340px] sm:max-w-[400px] md:max-w-[460px] lg:max-w-[540px] xl:max-w-[600px] h-auto" alt="<?php echo htmlspecialchars($siteName); ?> mobile trading" src="<?php echo htmlspecialchars($heroImg); ?>"/>
 </div>
 </div>
 </section>
@@ -138,16 +138,31 @@ View Live Terminal
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter market-stocks mt-gutter">
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
-<tv-mini-chart symbol="NASDAQ:TSLA"></tv-mini-chart>
+<tv-mini-chart symbol="NASDAQ:TSLA" style="width: 500px; height: 300px"></tv-mini-chart>
 </div>
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
-<tv-mini-chart symbol="NASDAQ:MSFT"></tv-mini-chart>
+<tv-mini-chart symbol="NASDAQ:MSFT" style="width: 500px; height: 300px"></tv-mini-chart>
 </div>
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
-<tv-mini-chart symbol="NASDAQ:GOOGL"></tv-mini-chart>
+<tv-mini-chart symbol="NASDAQ:GOOGL" style="width: 500px; height: 300px"></tv-mini-chart>
 </div>
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
-<tv-mini-chart symbol="NSE:ICICIBANK"></tv-mini-chart>
+<tv-mini-chart symbol="NASDAQ:META" style="width: 500px; height: 300px"></tv-mini-chart>
+</div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter market-forex mt-gutter">
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow forex-market-card">
+<tv-mini-chart symbol="OANDA:AUDCAD" style="width: 500px; height: 300px"></tv-mini-chart>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow forex-market-card">
+<tv-mini-chart symbol="OANDA:USDJPY" style="width: 500px; height: 300px"></tv-mini-chart>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow forex-market-card">
+<tv-mini-chart symbol="OANDA:EURJPY" style="width: 500px; height: 300px"></tv-mini-chart>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow forex-market-card">
+<tv-mini-chart symbol="FX:NZDUSD" style="width: 500px; height: 300px"></tv-mini-chart>
 </div>
 </div>
 <script type="module" src="https://widgets.tradingview-widget.com/w/en/tv-mini-chart.js"></script>

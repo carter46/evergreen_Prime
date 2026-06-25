@@ -150,16 +150,28 @@ body.marketing-page {
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
-.stock-market-card {
+.stock-market-card,
+.forex-market-card {
   min-height: 168px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
-.stock-market-card tv-mini-chart {
+.stock-market-card tv-mini-chart,
+.forex-market-card tv-mini-chart {
   display: block;
-  width: 100%;
-  flex: 1;
-  min-height: 120px;
+  width: 100% !important;
+  max-width: 500px;
+  height: 300px !important;
+  max-height: 300px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  .stock-market-card tv-mini-chart,
+  .forex-market-card tv-mini-chart {
+    height: 220px !important;
+    max-height: 220px;
+  }
 }
 </style>
 <script>
