@@ -102,155 +102,13 @@
         setInterval(syncTranslatedState, 1000);
     }
 
-    function getSiteNameFromTitle() {
-        if (typeof window.__SITE_NAME__ === 'string' && window.__SITE_NAME__.trim()) {
-            return window.__SITE_NAME__.trim();
-        }
-        const metaSiteName = document.querySelector('meta[name="site-name"]');
-        if (metaSiteName && metaSiteName.content && metaSiteName.content.trim()) {
-            return metaSiteName.content.trim();
-        }
-        const t = (document.title || '').trim();
-        if (!t) return 'Site';
-        // Use only the first segment (site name); strip anything after " - ", " | ", or " — "
-        const byPipe = t.split('|')[0].trim();
-        const byDash = byPipe.split(/\s*[-–—]\s*/)[0].trim();
-        return byDash || byPipe || t;
-    }
-
-    function splitBrandName(siteName) {
-        const n = (siteName || '').trim();
-        if (!n) return ['Bloom', 'bit'];
-        const normalized = n.replace(/\s+/g, ' ').trim();
-        if (!normalized) return ['Bloom', 'bit'];
-        if (normalized.includes(' ')) {
-            const parts = normalized.split(' ');
-            const suffix = parts.pop() || '';
-            const base = parts.join(' ');
-            return [base ? (base + ' ') : '', suffix];
-        }
-        if (normalized.length <= 3) return ['', normalized];
-        return [normalized.slice(0, -3), normalized.slice(-3)];
-    }
-
-    function ensureGlobalLoader() {
-        if (document.getElementById('bb-global-loader')) return;
-
-        const style = document.createElement('style');
-        style.id = 'bb-global-loader-style';
-        style.textContent = `
-            #bb-global-loader{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;min-height:100vh;min-height:100dvh;min-height:-webkit-fill-available;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(255,255,255,0.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:opacity .18s ease;opacity:0;transform:translateZ(0);-webkit-transform:translateZ(0)}
-            html.dark #bb-global-loader{background:rgba(35,30,15,0.92)}
-            #bb-global-loader.bb-show{display:flex;opacity:1}
-            #bb-global-loader .bb-name{font-family:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-weight:800;font-size:44px;letter-spacing:-0.02em;line-height:1.05;text-align:center}
-            @media (max-width:640px){#bb-global-loader .bb-name{font-size:34px}}
-            #bb-global-loader .bb-base{color:#1d180c}
-            html.dark #bb-global-loader .bb-base{color:#ffffff}
-            #bb-global-loader .bb-suffix{color:#ffc105}
-            #bb-global-loader .bb-wave{display:inline-flex;gap:1px;align-items:flex-end}
-            #bb-global-loader .bb-char{display:inline-block;transform:translateY(0);animation:bb-wave 1.05s ease-in-out infinite;animation-delay:calc(var(--i)*70ms)}
-            @keyframes bb-wave{0%,100%{transform:translateY(0);opacity:.75}50%{transform:translateY(-12px);opacity:1}}
-        `;
-        document.head.appendChild(style);
-
-        const [base, suffix] = splitBrandName(getSiteNameFromTitle());
-        const makeWave = (text, cls, startIndex) => {
-            const wrap = document.createElement('span');
-            wrap.className = 'bb-wave ' + cls;
-            const chars = Array.from(text);
-            chars.forEach((ch, i) => {
-                const s = document.createElement('span');
-                s.className = 'bb-char';
-                s.style.setProperty('--i', String(startIndex + i));
-                s.textContent = ch;
-                wrap.appendChild(s);
-            });
-            return wrap;
-        };
-
-        const root = document.createElement('div');
-        root.id = 'bb-global-loader';
-        root.setAttribute('aria-hidden', 'true');
-        const name = document.createElement('div');
-        name.className = 'bb-name';
-        name.appendChild(makeWave(base, 'bb-base', 0));
-        if (suffix) name.appendChild(makeWave(suffix, 'bb-suffix', base.length));
-        root.appendChild(name);
-        document.body.appendChild(root);
-    }
-
-    function showGlobalLoader() {
-        ensureGlobalLoader();
-        const el = document.getElementById('bb-global-loader');
-        if (!el) return;
-        // If hideGlobalLoader previously set display:none, clear it before showing.
-        el.style.display = 'flex';
-        el.classList.add('bb-show');
-        el.setAttribute('aria-hidden', 'false');
-    }
+    function showGlobalLoader() {}
 
     function hideGlobalLoader() {
         const el = document.getElementById('bb-global-loader');
-        if (!el) return;
-        el.classList.remove('bb-show');
-        el.setAttribute('aria-hidden', 'true');
-        // keep in DOM for later transitions
-        setTimeout(() => { if (!el.classList.contains('bb-show')) el.style.display = 'none'; }, 220);
-    }
-
-    function initGlobalLoader() {
-        if (document.readyState === 'complete') return;
-        ensureGlobalLoader();
-
-        var loaderShownAt = Date.now();
-        window.addEventListener('load', function () {
-            var minShowMs = 500;
-            var elapsed = Date.now() - loaderShownAt;
-            var delay = Math.max(0, minShowMs - elapsed);
-            if (delay > 0) setTimeout(hideGlobalLoader, delay);
-            else hideGlobalLoader();
-        }, { once: true });
-
-        showGlobalLoader();
-
-        let fallbackHideTimer = null;
-        const scheduleFallbackHide = () => {
-            if (fallbackHideTimer) clearTimeout(fallbackHideTimer);
-            fallbackHideTimer = setTimeout(() => {
-                // If navigation didn't happen, ensure we don't get stuck.
-                if (document.visibilityState === 'visible') hideGlobalLoader();
-            }, 1800);
-        };
-
-        // Show on internal navigation clicks
-        document.addEventListener('click', function (e) {
-            const a = e.target && e.target.closest ? e.target.closest('a') : null;
-            if (!a) return;
-            const href = a.getAttribute('href') || '';
-            if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
-            if (a.hasAttribute('download')) return;
-            if ((a.getAttribute('target') || '').toLowerCase() === '_blank') return;
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-            let url;
-            try { url = new URL(href, window.location.origin); } catch { return; }
-            if (url.origin !== window.location.origin) return;
-            showGlobalLoader();
-            scheduleFallbackHide();
-        }, true);
-
-        // Show on real (non-AJAX) form navigations
-        document.addEventListener('submit', function (e) {
-            const form = e.target;
-            if (!form || form.tagName !== 'FORM') return;
-            if (e.defaultPrevented) return; // our JS form handlers are AJAX
-            const target = (form.getAttribute('target') || '').toLowerCase();
-            if (target === '_blank') return;
-            showGlobalLoader();
-            scheduleFallbackHide();
-        });
-
-        // Ensure loader is hidden if a navigation was cancelled
-        window.addEventListener('pageshow', () => hideGlobalLoader());
+        if (el) el.remove();
+        const style = document.getElementById('bb-global-loader-style');
+        if (style) style.remove();
     }
 
     function setButtonLoading(btn, loading, text) {
@@ -928,7 +786,7 @@
         syncTranslatedState();
         protectMaterialIcons(document);
         observeTranslationSideEffects();
-        initGlobalLoader();
+        hideGlobalLoader();
         requireAuth();
         initPasswordToggle();
         initLogoutButtons();
