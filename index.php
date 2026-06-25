@@ -3,14 +3,13 @@ require_once __DIR__ . '/includes/helpers.php';
 $siteName = get_site_name();
 $pageTitle = $siteName . ' | Professional Trading & Institutional Asset Management';
 $heroBadge = get_site_setting('hero_badge', 'Institutional Grade Security');
-$homepageYoutubeUrl = get_site_setting('homepage_youtube_url', '');
-$homepageEmbedUrl = get_youtube_embed_url($homepageYoutubeUrl);
 $statsVolume = get_site_setting('stats_assets', '$42B+');
 $statsInvestors = get_site_setting('stats_bots', '1.2M+');
 $statsUptime = get_site_setting('stats_uptime', '100%');
 $statsSupport = get_site_setting('stats_roi', '24/7');
 
-$heroImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC8t20RVlMgaWNZbegnNfZpo05H-DsP08ZNR4eFxdn3auxEcHots-xhbBTK07-8o32e2aaaT-C6e8PsfJ8bl5DIPD3VvZTdgLij0I7MfF4t7Ik4sDfIirKnui2RGDr3o8g-6wwbZJbS28dKv4DD_E_eJT1QIFaskjv1mUp7vP5H_KHim-YAIMG7ZrHHh9lZb1JEycSYChDJADhS-kejRKmyKhGV44hmtxr8Hd-wLB7M7YS3aWJIYv30';
+$heroImg = '/uploads/images/evergren_cardphone.jpg';
+$tradingImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC8t20RVlMgaWNZbegnNfZpo05H-DsP08ZNR4eFxdn3auxEcHots-xhbBTK07-8o32e2aaaT-C6e8PsfJ8bl5DIPD3VvZTdgLij0I7MfF4t7Ik4sDfIirKnui2RGDr3o8g-6wwbZJbS28dKv4DD_E_eJT1QIFaskjv1mUp7vP5H_KHim-YAIMG7ZrHHh9lZb1JEycSYChDJADhS-kejRKmyKhGV44hmtxr8Hd-wLB7M7YS3aWJIYv30';
 $investImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCvI2LEc7CfuQSjFVUzej1kXzCvAscx-20YWah6xb8oVsGM2Cl_Z7XQHwsVN_tk5GtZ_CUKGyyZwZj8ICGSNDkH-4w_g9NuMUgqemomLZDLYUy6uHnyn149effZBAOiV0UaVG8Clb1ZV0d97bgGjtCykfkjgd208kb73yJUqktoFuSHDoVPMOYiV8IatXno6JBEL1rkm7LQ-P8p8bJpxvu4laQYixbBWrPH4nnSx9uOHc4jzP6-HK8e';
 $mobileImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAkTWR7DptUNdQXaCi5hUfal7sGJFohqmDJOScxp9_cPh6NOKifszH5a48O1ze0FLQxCosT-9xC54R_9kuPaMowJzm39CyOhSSo8VqFgfo9eES7FpOB5imMhhQ437f2Xr8G7FGgFfDMfHVaQ_FhLR4nhv2JyaWjfU2E1e4juY2sqQkyWa3yaIZLumrxp_KMx_-0rfr6-S8f2sB8F3g2WDMy8SlYAL345G0vNGvEFSmgaATja7hSBQ8_';
 $heatmapImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBiGujiVOX1V-f02sUWLcpITS1XeukxSsCUIpIRtpY0GrFwOFSW5F1zxlHGQYX7Gv6dpJB3KcahYE1j6yBziA5GzoLBV4YVJUkUbdEDVWcZvrZU4tx0i-MVPoR14W_1Zj6pfh0gnKPexhD8aSJoCJZpkDBh_a65UpYkHSboMo_r1JEPrQrek-azLwOWxgUFgdXTT9BKkoHOZbbIgFIUfW-UyQ4rxjp9cU_OnPIS5cb2l97eUILk8mEB';
@@ -51,13 +50,7 @@ View Live Terminal
 </div>
 <div class="relative lg:scale-110 lg:translate-x-12">
 <div class="glass-panel p-2 rounded-2xl shadow-2xl overflow-hidden border-primary/20 min-h-[320px] sm:min-h-[400px] lg:min-h-[480px]">
-<?php if ($homepageEmbedUrl): ?>
-<div class="relative w-full h-full min-h-[320px] sm:min-h-[400px] lg:min-h-[480px] rounded-xl overflow-hidden bg-surface-container">
-<iframe class="absolute inset-0 w-full h-full" src="<?php echo htmlspecialchars($homepageEmbedUrl); ?>?rel=0" title="<?php echo htmlspecialchars($siteName); ?> demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</div>
-<?php else: ?>
-<img class="w-full h-full min-h-[320px] sm:min-h-[400px] lg:min-h-[480px] object-cover rounded-xl" alt="<?php echo htmlspecialchars($siteName); ?> trading dashboard" src="<?php echo htmlspecialchars($heroImg); ?>"/>
-<?php endif; ?>
+<img class="w-full h-full min-h-[320px] sm:min-h-[400px] lg:min-h-[480px] object-cover rounded-xl" alt="<?php echo htmlspecialchars($siteName); ?> mobile trading" src="<?php echo htmlspecialchars($heroImg); ?>"/>
 </div>
 <div class="absolute -top-10 -right-10 w-64 h-64 bg-primary-container/10 rounded-full blur-[100px] pointer-events-none"></div>
 <div class="absolute -bottom-10 -left-10 w-64 h-64 bg-tertiary-container/10 rounded-full blur-[100px] pointer-events-none"></div>
@@ -187,7 +180,7 @@ View Live Terminal
 </div>
 <div class="lg:col-span-7 order-1 lg:order-2">
 <div class="relative rounded-2xl overflow-hidden glass-panel">
-<img class="w-full h-full object-cover min-h-[280px]" alt="Professional trading terminal" src="<?php echo htmlspecialchars($heroImg); ?>"/>
+<img class="w-full h-full object-cover min-h-[280px]" alt="Professional trading terminal" src="<?php echo htmlspecialchars($tradingImg); ?>"/>
 <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 to-transparent"></div>
 </div>
 </div>

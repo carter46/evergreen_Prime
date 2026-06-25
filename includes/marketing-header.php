@@ -49,7 +49,7 @@ $navActive = function ($page) use ($current) {
 <a class="py-3 px-4 font-label-sm text-white/70" href="/logout">Logout</a>
 <?php else: ?>
 <a class="py-3 px-4 mt-2 border-t border-border-low pt-4 font-label-sm text-white/70" href="/login">Login</a>
-<a class="py-3 px-4 font-label-sm text-success font-bold" href="/register">Get Started</a>
+<a class="py-3 px-4 font-label-sm text-black font-bold bg-white rounded-lg text-center" href="/register">Get Started</a>
 <?php endif; ?>
 </div>
 </div>

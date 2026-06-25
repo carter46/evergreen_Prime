@@ -136,12 +136,12 @@ body.marketing-page {
   100% { transform: translateX(-50%); }
 }
 .btn-get-started {
-  background: linear-gradient(135deg, #0a3d22 0%, #145c36 45%, #20B26C 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(32, 178, 108, 0.35);
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 .btn-get-started:hover {
-  background: linear-gradient(135deg, #0d4a2a 0%, #187a48 45%, #24c97a 100%);
-  box-shadow: 0 6px 20px rgba(32, 178, 108, 0.45);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
 </style>
