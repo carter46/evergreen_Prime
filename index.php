@@ -29,8 +29,8 @@ $eduAdvanced = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0RFiVG3wXTj
 <?php $currentPage = 'home'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 
 <!-- Hero -->
-<section class="relative pt-32 pb-16 md:pb-section-padding bg-surface-container-lowest overflow-hidden hero-gradient">
-<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+<section class="relative pt-36 pb-24 md:pb-32 lg:pb-40 min-h-[88vh] lg:min-h-[92vh] flex items-center bg-surface-container-lowest overflow-hidden hero-gradient">
+<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
 <div class="z-10">
 <div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full mb-6 border border-border-low">
 <span class="material-symbols-outlined text-primary text-[14px]">verified</span>
@@ -50,13 +50,13 @@ View Live Terminal
 </div>
 </div>
 <div class="relative lg:scale-110 lg:translate-x-12">
-<div class="glass-panel p-2 rounded-2xl shadow-2xl overflow-hidden border-primary/20">
+<div class="glass-panel p-2 rounded-2xl shadow-2xl overflow-hidden border-primary/20 min-h-[320px] sm:min-h-[400px] lg:min-h-[480px]">
 <?php if ($homepageEmbedUrl): ?>
-<div class="relative w-full aspect-video rounded-xl overflow-hidden bg-surface-container">
+<div class="relative w-full h-full min-h-[320px] sm:min-h-[400px] lg:min-h-[480px] rounded-xl overflow-hidden bg-surface-container">
 <iframe class="absolute inset-0 w-full h-full" src="<?php echo htmlspecialchars($homepageEmbedUrl); ?>?rel=0" title="<?php echo htmlspecialchars($siteName); ?> demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <?php else: ?>
-<img class="w-full h-auto rounded-xl" alt="<?php echo htmlspecialchars($siteName); ?> trading dashboard" src="<?php echo htmlspecialchars($heroImg); ?>"/>
+<img class="w-full h-full min-h-[320px] sm:min-h-[400px] lg:min-h-[480px] object-cover rounded-xl" alt="<?php echo htmlspecialchars($siteName); ?> trading dashboard" src="<?php echo htmlspecialchars($heroImg); ?>"/>
 <?php endif; ?>
 </div>
 <div class="absolute -top-10 -right-10 w-64 h-64 bg-primary-container/10 rounded-full blur-[100px] pointer-events-none"></div>
@@ -76,65 +76,73 @@ View Live Terminal
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="bitcoin">
 <div class="flex justify-between items-start mb-4">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-yellow-500/10 rounded-full flex items-center justify-center text-yellow-600 font-bold">₿</div>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-yellow-500/10 flex items-center justify-center shrink-0">
+<img class="crypto-logo w-7 h-7 object-contain" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="Bitcoin"/>
+</div>
 <div>
-<div class="font-bold text-surface-container-lowest">BTC / USD</div>
-<div class="text-xs text-gray-400">Bitcoin</div>
+<div class="font-bold text-surface-container-lowest crypto-symbol">BTC / USD</div>
+<div class="text-xs text-gray-400 crypto-name">Bitcoin</div>
 </div>
 </div>
-<div class="font-bold font-data-mono market-change" data-coin="bitcoin" data-change>--</div>
+<div class="crypto-change font-bold font-data-mono text-gray-400">--</div>
 </div>
-<div class="text-2xl font-bold text-surface-container-lowest font-data-mono" data-coin="bitcoin" data-price>--</div>
+<div class="text-2xl font-bold text-surface-container-lowest font-data-mono crypto-price">--</div>
 <div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
-<div class="h-full bg-success w-[70%] market-bar"></div>
+<div class="h-full bg-success w-[50%] market-bar"></div>
 </div>
 </div>
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="ethereum">
 <div class="flex justify-between items-start mb-4">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-600 font-bold">Ξ</div>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-blue-500/10 flex items-center justify-center shrink-0">
+<img class="crypto-logo w-7 h-7 object-contain" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png" alt="Ethereum"/>
+</div>
 <div>
-<div class="font-bold text-surface-container-lowest">ETH / USD</div>
-<div class="text-xs text-gray-400">Ethereum</div>
+<div class="font-bold text-surface-container-lowest crypto-symbol">ETH / USD</div>
+<div class="text-xs text-gray-400 crypto-name">Ethereum</div>
 </div>
 </div>
-<div class="font-bold font-data-mono market-change" data-coin="ethereum" data-change>--</div>
+<div class="crypto-change font-bold font-data-mono text-gray-400">--</div>
 </div>
-<div class="text-2xl font-bold text-surface-container-lowest font-data-mono" data-coin="ethereum" data-price>--</div>
+<div class="text-2xl font-bold text-surface-container-lowest font-data-mono crypto-price">--</div>
 <div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
-<div class="h-full bg-success w-[55%] market-bar"></div>
+<div class="h-full bg-success w-[50%] market-bar"></div>
 </div>
 </div>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow">
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="binancecoin">
 <div class="flex justify-between items-start mb-4">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center text-green-600 font-bold">$</div>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-yellow-500/10 flex items-center justify-center shrink-0">
+<img class="crypto-logo w-7 h-7 object-contain" src="https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png" alt="BNB"/>
+</div>
 <div>
-<div class="font-bold text-surface-container-lowest">EUR / USD</div>
-<div class="text-xs text-gray-400">Euro / Dollar</div>
+<div class="font-bold text-surface-container-lowest crypto-symbol">BNB / USD</div>
+<div class="text-xs text-gray-400 crypto-name">BNB</div>
 </div>
 </div>
-<div class="text-critical font-bold font-data-mono">-0.05%</div>
+<div class="crypto-change font-bold font-data-mono text-gray-400">--</div>
 </div>
-<div class="text-2xl font-bold text-surface-container-lowest font-data-mono">1.0824</div>
+<div class="text-2xl font-bold text-surface-container-lowest font-data-mono crypto-price">--</div>
 <div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
-<div class="h-full bg-critical w-[40%]"></div>
+<div class="h-full bg-success w-[50%] market-bar"></div>
 </div>
 </div>
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="solana">
 <div class="flex justify-between items-start mb-4">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-600 font-bold">S</div>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-orange-500/10 flex items-center justify-center shrink-0">
+<img class="crypto-logo w-7 h-7 object-contain" src="https://assets.coingecko.com/coins/images/4128/large/solana.png" alt="Solana"/>
+</div>
 <div>
-<div class="font-bold text-surface-container-lowest">SOL / USD</div>
-<div class="text-xs text-gray-400">Solana</div>
+<div class="font-bold text-surface-container-lowest crypto-symbol">SOL / USD</div>
+<div class="text-xs text-gray-400 crypto-name">Solana</div>
 </div>
 </div>
-<div class="font-bold font-data-mono market-change" data-coin="solana" data-change>--</div>
+<div class="crypto-change font-bold font-data-mono text-gray-400">--</div>
 </div>
-<div class="text-2xl font-bold text-surface-container-lowest font-data-mono" data-coin="solana" data-price>--</div>
+<div class="text-2xl font-bold text-surface-container-lowest font-data-mono crypto-price">--</div>
 <div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
-<div class="h-full bg-success w-[85%] market-bar"></div>
+<div class="h-full bg-success w-[50%] market-bar"></div>
 </div>
 </div>
 </div>
@@ -374,25 +382,9 @@ Read Module <span class="material-symbols-outlined ml-1 text-sm">chevron_right</
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   if (window.BloombitCryptoPrices) {
-    window.BloombitCryptoPrices.init(['bitcoin','ethereum','solana'], {
+    window.BloombitCryptoPrices.init(['bitcoin','ethereum','binancecoin','solana'], {
+      marketCardsSelector: '.market-cards',
       refreshInterval: 120000
-    }).then(function(prices) {
-      document.querySelectorAll('.market-change[data-coin]').forEach(function(el) {
-        var coinId = el.getAttribute('data-coin');
-        var p = prices && prices[coinId];
-        if (!p || p.usd_24h_change == null) return;
-        el.classList.remove('text-success', 'text-critical', 'text-emerald-500', 'text-red-500');
-        el.classList.add(p.usd_24h_change >= 0 ? 'text-success' : 'text-critical');
-        var card = el.closest('.crypto-market-card');
-        if (card) {
-          var bar = card.querySelector('.market-bar');
-          if (bar) {
-            bar.classList.remove('bg-success', 'bg-critical');
-            bar.classList.add(p.usd_24h_change >= 0 ? 'bg-success' : 'bg-critical');
-            bar.style.width = Math.min(95, Math.max(15, Math.abs(p.usd_24h_change) * 12)) + '%';
-          }
-        }
-      });
     });
   }
 

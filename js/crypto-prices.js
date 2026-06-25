@@ -166,12 +166,48 @@
         });
     }
 
+    function updateMarketCardsDOM(prices, containerSelector) {
+        const container = document.querySelector(containerSelector || '.market-cards');
+        if (!container) return;
+
+        container.querySelectorAll('.crypto-market-card[data-coin]').forEach(card => {
+            const coinId = card.getAttribute('data-coin');
+            if (!coinId) return;
+            const p = (prices || cachedPrices)[coinId];
+            const meta = Config.getMeta ? Config.getMeta(coinId) : { symbol: coinId.toUpperCase().slice(0, 3), name: coinId };
+            const logo = (Config.getLogo ? Config.getLogo(coinId) : CRYPTO_LOGOS[coinId]) || '';
+            const priceEl = card.querySelector('.crypto-price');
+            const changeEl = card.querySelector('.crypto-change');
+            const imgEl = card.querySelector('.crypto-logo');
+            const symbolEl = card.querySelector('.crypto-symbol');
+            const nameEl = card.querySelector('.crypto-name');
+            const barEl = card.querySelector('.market-bar');
+
+            if (imgEl && logo) {
+                imgEl.src = logo;
+                imgEl.alt = meta.name;
+            }
+            if (symbolEl) symbolEl.textContent = meta.symbol + ' / USD';
+            if (nameEl) nameEl.textContent = meta.name;
+            if (priceEl && p) priceEl.textContent = formatPrice(p.usd);
+            if (changeEl && p) {
+                changeEl.textContent = formatChange(p.usd_24h_change);
+                changeEl.className = 'crypto-change font-bold font-data-mono ' + (p.usd_24h_change >= 0 ? 'text-success' : 'text-critical');
+            }
+            if (barEl && p && p.usd_24h_change != null) {
+                barEl.className = 'h-full market-bar ' + (p.usd_24h_change >= 0 ? 'bg-success' : 'bg-critical');
+                barEl.style.width = Math.min(95, Math.max(15, Math.abs(p.usd_24h_change) * 12)) + '%';
+            }
+        });
+    }
+
     async function initPrices(coinIds, options) {
         const opts = options || {};
         const coins = coinIds || COINS_TOP;
         const prices = await fetchCryptoPrices(coins);
         if (opts.tickerSelector) updateTickerDOM(prices, opts.tickerSelector);
         if (opts.tableSelector) updateTableDOM(prices, opts.tableSelector);
+        if (opts.marketCardsSelector) updateMarketCardsDOM(prices, opts.marketCardsSelector);
         updateDataElements(prices);
 
         const interval = opts.refreshInterval !== undefined ? opts.refreshInterval : REFRESH_INTERVAL_MS;
@@ -180,6 +216,7 @@
                 const p = await fetchCryptoPrices(coins);
                 if (opts.tickerSelector) updateTickerDOM(p, opts.tickerSelector);
                 if (opts.tableSelector) updateTableDOM(p, opts.tableSelector);
+                if (opts.marketCardsSelector) updateMarketCardsDOM(p, opts.marketCardsSelector);
                 updateDataElements(p);
             }, interval);
         }
@@ -200,6 +237,7 @@
         formatChange,
         updateTickerDOM,
         updateTableDOM,
+        updateMarketCardsDOM,
         updateDataElements,
         init: initPrices,
         stopRefresh,

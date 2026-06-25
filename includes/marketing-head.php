@@ -135,4 +135,13 @@ body.marketing-page {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+.btn-get-started {
+  background: linear-gradient(135deg, #0a3d22 0%, #145c36 45%, #20B26C 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(32, 178, 108, 0.35);
+}
+.btn-get-started:hover {
+  background: linear-gradient(135deg, #0d4a2a 0%, #187a48 45%, #24c97a 100%);
+  box-shadow: 0 6px 20px rgba(32, 178, 108, 0.45);
+}
 </style>
