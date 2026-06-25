@@ -9,10 +9,10 @@ $statsUptime = get_site_setting('stats_uptime', '100%');
 $statsSupport = get_site_setting('stats_roi', '24/7');
 
 $heroImg = '/uploads/images/evergren_cardphone.png';
+$heroBgImg = '/uploads/images/nasa-Q1p7bh3SHj8-unsplash.jpg';
 $tradingImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC8t20RVlMgaWNZbegnNfZpo05H-DsP08ZNR4eFxdn3auxEcHots-xhbBTK07-8o32e2aaaT-C6e8PsfJ8bl5DIPD3VvZTdgLij0I7MfF4t7Ik4sDfIirKnui2RGDr3o8g-6wwbZJbS28dKv4DD_E_eJT1QIFaskjv1mUp7vP5H_KHim-YAIMG7ZrHHh9lZb1JEycSYChDJADhS-kejRKmyKhGV44hmtxr8Hd-wLB7M7YS3aWJIYv30';
-$investImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCvI2LEc7CfuQSjFVUzej1kXzCvAscx-20YWah6xb8oVsGM2Cl_Z7XQHwsVN_tk5GtZ_CUKGyyZwZj8ICGSNDkH-4w_g9NuMUgqemomLZDLYUy6uHnyn149effZBAOiV0UaVG8Clb1ZV0d97bgGjtCykfkjgd208kb73yJUqktoFuSHDoVPMOYiV8IatXno6JBEL1rkm7LQ-P8p8bJpxvu4laQYixbBWrPH4nnSx9uOHc4jzP6-HK8e';
+$investImg = '/uploads/images/wallet_image3.png';
 $mobileImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAkTWR7DptUNdQXaCi5hUfal7sGJFohqmDJOScxp9_cPh6NOKifszH5a48O1ze0FLQxCosT-9xC54R_9kuPaMowJzm39CyOhSSo8VqFgfo9eES7FpOB5imMhhQ437f2Xr8G7FGgFfDMfHVaQ_FhLR4nhv2JyaWjfU2E1e4juY2sqQkyWa3yaIZLumrxp_KMx_-0rfr6-S8f2sB8F3g2WDMy8SlYAL345G0vNGvEFSmgaATja7hSBQ8_';
-$heatmapImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBiGujiVOX1V-f02sUWLcpITS1XeukxSsCUIpIRtpY0GrFwOFSW5F1zxlHGQYX7Gv6dpJB3KcahYE1j6yBziA5GzoLBV4YVJUkUbdEDVWcZvrZU4tx0i-MVPoR14W_1Zj6pfh0gnKPexhD8aSJoCJZpkDBh_a65UpYkHSboMo_r1JEPrQrek-azLwOWxgUFgdXTT9BKkoHOZbbIgFIUfW-UyQ4rxjp9cU_OnPIS5cb2l97eUILk8mEB';
 $eduBeginner = 'https://lh3.googleusercontent.com/aida-public/AB6AXuClXum0n5B3Fys7n6VOV6KZhwxyShVM0LCSKgB8SowoEgxrXjNTakjFaTonTQVYfKAxjWY0GZbcHevK4tuOw6eXiW_-7bKuWD4lewm9wxl51RDLOHQa7vH3fDiQA6sUQeFVJvw9D8-CjyPJELlqVFFfRcZyL7MnmMiA9HA_An3Ae4jBpRn2BWE7G1Pk7VM_vdjw8YHZh7bO0EzfAj0XZ7tDSkBPaK_CKJXq6P_pa9rM1ALr5vlx69f4';
 $eduIntermediate = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBAU594TAbyPKlG5KWutbMwCqXGdyxGubJNUFDO6FzVvF575dnmQkeOqmtDdTTaubPeTzJY1hR1B5vTbDoUaHWJJUe3iugxmlKGiko7VeZN03x2xTcUKkQdP1tEgbYiEt8BEVj3N4PCFw0s-sPyfeWTY3gbnQOYVLq7vV1mDxbmVgJhk_70tfiPXVKHzSxNrcWHBMC_9KjaBGAsAaAwJwMdyThozujO_EMfI6WHBxpaHgkN-_8YNJrX';
 $eduAdvanced = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0RFiVG3wXTjeBaz-FYpuIcbtXW_-rbo6AcxjJgKfVR2jecI-nQ1lrSn8fWdmLi-t99OUPHZgN_NO7hSRwNbbteLmUbrMvWLAk42D9OO3H2H9QVmQ0JcGGuWnHZ99UJlAYT8_hUbJakBBvwWMCn7Ztlamrd-ccxL-ZB96l17wF8YLv9DLZsAiMDsyzLwfeAWPDNLwrkCdBcboSejRk3gMPOLOeI_1F0zlphMTW8IWVYb6VYvr-a3o2';
@@ -28,9 +28,11 @@ $eduAdvanced = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0RFiVG3wXTj
 <?php $currentPage = 'home'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 
 <!-- Hero -->
-<section class="relative pt-36 pb-24 md:pb-32 lg:pb-40 min-h-[88vh] lg:min-h-[92vh] flex items-center bg-surface-container-lowest overflow-hidden hero-gradient">
-<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
-<div class="z-10">
+<section class="relative pt-36 pb-24 md:pb-32 lg:pb-40 min-h-[88vh] lg:min-h-[92vh] flex items-center overflow-hidden hero-section">
+<div class="absolute inset-0 hero-bg" style="background-image: url('<?php echo htmlspecialchars($heroBgImg); ?>');"></div>
+<div class="absolute inset-0 hero-bg-overlay"></div>
+<div class="relative z-10 max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
+<div>
 <div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full mb-6 border border-border-low">
 <span class="material-symbols-outlined text-primary text-[14px]">verified</span>
 <span class="font-label-xs text-label-xs text-on-surface-variant uppercase"><?php echo htmlspecialchars($heroBadge); ?></span>
@@ -49,7 +51,7 @@ View Live Terminal
 </div>
 </div>
 <div class="relative flex justify-center lg:justify-end w-full px-6 sm:px-10 lg:px-14 xl:px-20">
-<img class="w-full max-w-[340px] sm:max-w-[400px] md:max-w-[460px] lg:max-w-[540px] xl:max-w-[600px] h-auto" alt="<?php echo htmlspecialchars($siteName); ?> mobile trading" src="<?php echo htmlspecialchars($heroImg); ?>"/>
+<img class="hero-image-animate w-full max-w-[340px] sm:max-w-[400px] md:max-w-[460px] lg:max-w-[540px] xl:max-w-[600px] h-auto" alt="<?php echo htmlspecialchars($siteName); ?> mobile trading" src="<?php echo htmlspecialchars($heroImg); ?>"/>
 </div>
 </div>
 </section>
@@ -57,9 +59,8 @@ View Live Terminal
 <!-- Live Market Performance -->
 <section id="markets" class="bg-[#F7F8FA] py-16 overflow-hidden border-y border-gray-200">
 <div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+<div class="mb-8">
 <h2 class="font-headline-md text-headline-md text-surface-container-lowest">Live Market Performance</h2>
-<a class="text-primary-container bg-surface-container-lowest px-4 py-2 rounded-lg font-label-xs text-label-xs inline-block w-fit" href="/trading_signals">VIEW ALL MARKETS</a>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter market-cards">
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="bitcoin">
@@ -166,6 +167,9 @@ View Live Terminal
 </div>
 </div>
 <script type="module" src="https://widgets.tradingview-widget.com/w/en/tv-mini-chart.js"></script>
+<div class="flex justify-center mt-8 md:mt-10">
+<a class="text-primary-container bg-surface-container-lowest px-6 py-3 rounded-lg font-label-xs text-label-xs inline-block hover:opacity-90 transition-opacity" href="/trading_signals">VIEW ALL MARKETS</a>
+</div>
 </div>
 </section>
 
@@ -285,7 +289,28 @@ Inquire About Institutional Services
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
 <div class="lg:col-span-8 glass-panel rounded-2xl overflow-hidden group">
-<img class="w-full h-[280px] md:h-[400px] object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-700" alt="Market sentiment heatmap" src="<?php echo htmlspecialchars($heatmapImg); ?>"/>
+<div class="tradingview-widget-container h-[320px] sm:h-[380px] md:h-[420px]">
+<div class="tradingview-widget-container__widget"></div>
+<div class="tradingview-widget-copyright text-xs text-on-secondary-container px-4 py-2"><a href="https://www.tradingview.com/heatmap/etf/" rel="noopener nofollow" target="_blank"><span class="text-primary-container">ETF Heatmap</span></a><span class="trademark"> by TradingView</span></div>
+<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-etf-heatmap.js" async>
+{
+"dataSource": "AllUSEtf",
+"blockSize": "volume",
+"blockColor": "change",
+"grouping": "asset_class",
+"locale": "en",
+"symbolUrl": "",
+"colorTheme": "light",
+"hasTopBar": false,
+"isDataSetEnabled": false,
+"isZoomEnabled": true,
+"hasSymbolTooltip": true,
+"isMonoSize": false,
+"width": "100%",
+"height": "100%"
+}
+</script>
+</div>
 <div class="p-8">
 <h3 class="text-xl font-bold mb-2">Market Sentiment Heatmaps</h3>
 <p class="text-on-secondary-container">Visualize global capital flow across thousands of assets simultaneously with our real-time sector rotation terminal.</p>

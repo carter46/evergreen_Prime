@@ -129,6 +129,47 @@ tailwind.config = {
   background: radial-gradient(circle at top right, rgba(255, 195, 92, 0.1), transparent 50%),
               radial-gradient(circle at bottom left, rgba(17, 20, 23, 1), transparent 80%);
 }
+.hero-section {
+  background-color: #0b0e11;
+}
+.hero-bg {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.hero-bg-overlay {
+  background: linear-gradient(180deg, rgba(11, 14, 17, 0.82) 0%, rgba(11, 14, 17, 0.88) 100%);
+}
+.hero-image-animate {
+  opacity: 0;
+  animation: heroFadeInMobile 0.9s ease-out forwards;
+  animation-delay: 0.2s;
+}
+@media (min-width: 1024px) {
+  .hero-image-animate {
+    animation-name: heroFadeInDesktop;
+  }
+}
+@keyframes heroFadeInDesktop {
+  from {
+    opacity: 0;
+    transform: translateX(48px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes heroFadeInMobile {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 body.marketing-page {
   background-color: #0b0e11;
   color: #e1e2e7;
