@@ -31,8 +31,8 @@ $eduAdvanced = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0RFiVG3wXTj
 <section class="relative pt-36 pb-24 md:pb-32 lg:pb-40 min-h-[88vh] lg:min-h-[92vh] flex items-center overflow-hidden hero-section">
 <div class="absolute inset-0 hero-bg" style="background-image: url('<?php echo htmlspecialchars($heroBgImg); ?>');"></div>
 <div class="absolute inset-0 hero-bg-overlay"></div>
-<div class="relative z-10 max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
-<div>
+<div class="relative z-10 max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full">
+<div class="order-2 lg:order-1 text-center lg:text-left">
 <div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full mb-6 border border-border-low">
 <span class="material-symbols-outlined text-primary text-[14px]">verified</span>
 <span class="font-label-xs text-label-xs text-on-surface-variant uppercase"><?php echo htmlspecialchars($heroBadge); ?></span>
@@ -41,7 +41,7 @@ $eduAdvanced = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0RFiVG3wXTj
 <p class="font-body-lg text-body-lg text-on-secondary-container max-w-xl mb-10">
 The ultra-fast execution engine for professional traders and institutional investors. Access global markets with zero-latency liquidity.
 </p>
-<div class="flex flex-col sm:flex-row gap-4">
+<div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
 <a href="/register" class="bg-primary-container text-on-primary font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-2 hover:scale-105 transition-all text-label-sm">
 Open Institutional Account <span class="material-symbols-outlined">arrow_forward</span>
 </a>
@@ -50,8 +50,8 @@ View Live Terminal
 </a>
 </div>
 </div>
-<div class="relative flex justify-center lg:justify-end w-full px-6 sm:px-10 lg:px-14 xl:px-20">
-<img class="hero-image-animate w-full max-w-[340px] sm:max-w-[400px] md:max-w-[460px] lg:max-w-[540px] xl:max-w-[600px] h-auto" alt="<?php echo htmlspecialchars($siteName); ?> mobile trading" src="<?php echo htmlspecialchars($heroImg); ?>"/>
+<div class="order-1 lg:order-2 relative flex justify-center items-center w-full mx-auto px-4 sm:px-10 lg:px-14 xl:px-20 lg:justify-end">
+<img class="hero-image-animate w-full max-w-[340px] sm:max-w-[400px] md:max-w-[460px] lg:max-w-[540px] xl:max-w-[600px] h-auto mx-auto lg:mx-0" alt="<?php echo htmlspecialchars($siteName); ?> mobile trading" src="<?php echo htmlspecialchars($heroImg); ?>"/>
 </div>
 </div>
 </section>
