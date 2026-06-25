@@ -221,9 +221,10 @@ View Live Terminal
 <!-- Investment Management -->
 <section class="bg-[#F1F3F5] py-16 md:py-section-padding text-surface-container-lowest">
 <div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-<div class="relative">
-<div class="absolute -inset-4 bg-primary-container/20 blur-3xl rounded-full pointer-events-none"></div>
-<img class="relative rounded-2xl shadow-xl w-full border border-gray-200" alt="Investment portfolio dashboard" src="<?php echo htmlspecialchars($investImg); ?>"/>
+<div class="relative rounded-2xl overflow-hidden shadow-xl wealth-image-wrap">
+<div class="wealth-image-bg">
+<img class="relative w-full h-auto rounded-xl" alt="Investment portfolio dashboard" src="<?php echo htmlspecialchars($investImg); ?>"/>
+</div>
 </div>
 <div>
 <span class="font-label-xs text-label-xs text-primary-container px-3 py-1 bg-surface-container-lowest rounded-md mb-4 inline-block">Bespoke Wealth Management</span>
