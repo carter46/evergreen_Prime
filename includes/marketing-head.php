@@ -138,7 +138,18 @@ tailwind.config = {
   background-repeat: no-repeat;
 }
 .hero-bg-overlay {
-  background: linear-gradient(to top, rgba(5, 8, 14, 0.97) 0%, rgba(8, 12, 22, 0.82) 28%, rgba(11, 16, 28, 0.45) 58%, rgba(11, 14, 17, 0.12) 82%, rgba(11, 14, 17, 0) 100%);
+  background: linear-gradient(
+    to top,
+    rgba(5, 8, 14, 0.98) 0%,
+    rgba(6, 9, 16, 0.92) 15%,
+    rgba(8, 11, 20, 0.84) 30%,
+    rgba(9, 13, 24, 0.72) 45%,
+    rgba(10, 14, 26, 0.58) 60%,
+    rgba(11, 15, 28, 0.42) 75%,
+    rgba(11, 14, 22, 0.24) 88%,
+    rgba(11, 14, 17, 0.08) 96%,
+    rgba(11, 14, 17, 0) 100%
+  );
 }
 .wealth-image-wrap {
   background: linear-gradient(145deg, #050508 0%, #0a0d14 45%, #0c1424 100%);
