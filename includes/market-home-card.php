@@ -1,6 +1,6 @@
 <?php
 /**
- * Homepage market preview card — non-interactive widget + link overlay to /markets/{slug}.
+ * Homepage market preview card — official TradingView mini-chart + View Market CTA.
  * Expects $instrument from market-instruments registry.
  */
 if (empty($instrument) || !is_array($instrument)) return;
@@ -13,9 +13,8 @@ $pairLabel = htmlspecialchars($instrument['pair_label'] ?? '');
 $symbol = htmlspecialchars($instrument['symbol'] ?? '');
 ?>
 <div class="market-card-link relative bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow flex flex-col">
-<div class="market-card-preview-wrap relative flex-1 min-h-0">
 <?php if ($category === 'crypto'): ?>
-<div class="market-card-preview pointer-events-none crypto-market-card" data-coin="<?php echo htmlspecialchars($instrument['coingecko_id'] ?? $slug); ?>">
+<div class="market-card-preview crypto-market-card flex-1" data-coin="<?php echo htmlspecialchars($instrument['coingecko_id'] ?? $slug); ?>">
 <div class="flex justify-between items-start mb-4">
 <div class="flex items-center gap-3">
 <div class="w-10 h-10 rounded-full overflow-hidden bg-yellow-500/10 flex items-center justify-center shrink-0">
@@ -34,15 +33,9 @@ $symbol = htmlspecialchars($instrument['symbol'] ?? '');
 </div>
 </div>
 <?php else: ?>
-<div class="market-card-preview pointer-events-none relative <?php echo $category === 'forex' ? 'forex-market-card' : 'stock-market-card'; ?>" data-tv-widget data-lazy-tv>
-<div class="market-chart-skeleton market-chart-skeleton-active" aria-hidden="true"></div>
-<?php require __DIR__ . '/market-chart-fallback.php'; ?>
-<tv-mini-chart symbol="<?php echo $symbol; ?>" style="width: 500px; height: 300px" class="market-tv-chart"></tv-mini-chart>
+<div class="market-card-preview flex-1 <?php echo $category === 'forex' ? 'forex-market-card' : 'stock-market-card'; ?>">
+<tv-mini-chart symbol="<?php echo $symbol; ?>" style="width: 100%; height: 240px"></tv-mini-chart>
 </div>
 <?php endif; ?>
-<a href="<?php echo $href; ?>" class="market-card-overlay absolute inset-0 z-10 rounded-lg" aria-label="View <?php echo $label; ?> market page">
-<span class="sr-only">View <?php echo $label; ?></span>
-</a>
-</div>
-<a href="<?php echo $href; ?>" class="market-view-btn relative z-20 mt-4 w-full text-center">View Market</a>
+<a href="<?php echo $href; ?>" class="market-view-btn mt-4 w-full text-center">View Market</a>
 </div>

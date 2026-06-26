@@ -2,7 +2,7 @@
  * Evergreen Prime — minimal PWA service worker (static assets only).
  * Never caches dashboard, API, markets, or live data.
  */
-const CACHE_NAME = 'epm-static-v3';
+const CACHE_NAME = 'epm-static-v4';
 
 const STATIC_ASSETS = [
     '/pwa/icons/icon-180.png',
@@ -13,7 +13,6 @@ const STATIC_ASSETS = [
     '/js/app.js',
     '/js/crypto-config.js',
     '/js/crypto-prices.js',
-    '/js/market-widgets.js',
     '/manifest.webmanifest',
 ];
 

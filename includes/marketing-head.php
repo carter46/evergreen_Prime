@@ -228,17 +228,6 @@ body.marketing-page {
 .market-card-link {
   position: relative;
 }
-.market-card-preview-wrap tv-mini-chart {
-  pointer-events: none;
-}
-.market-card-overlay {
-  cursor: pointer;
-  z-index: 10;
-}
-.market-card-overlay:focus-visible {
-  outline: 2px solid #ffc35c;
-  outline-offset: 2px;
-}
 .market-view-btn {
   display: inline-flex;
   align-items: center;
@@ -270,70 +259,6 @@ body.marketing-page {
   70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
-.market-chart-fallback {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 168px;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
-  background: #f7f8fa;
-  border: 1px dashed #e5e7eb;
-  color: #4b5563;
-}
-.market-chart-fallback:not(.hidden) {
-  display: flex;
-}
-.market-detail-chart-wrap .market-chart-fallback {
-  min-height: 360px;
-}
-.market-chart-fallback-icon {
-  font-size: 2rem;
-  color: #ffc35c;
-  margin-bottom: 0.5rem;
-}
-.market-chart-fallback-text {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #0b0e11;
-}
-.market-chart-skeleton {
-  display: none !important;
-  border-radius: 0.75rem;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: market-skeleton-shimmer 1.4s ease-in-out infinite;
-}
-.market-chart-skeleton.market-chart-skeleton-active {
-  display: block !important;
-  min-height: 168px;
-}
-.market-chart-skeleton.market-chart-skeleton-active.market-chart-skeleton-lg {
-  min-height: 360px;
-  margin-bottom: 1rem;
-  position: relative;
-  inset: auto;
-  z-index: auto;
-  margin-left: 0;
-  margin-right: 0;
-}
-.market-chart-skeleton.market-chart-skeleton-active:not(.market-chart-skeleton-lg) {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  margin: 1.5rem;
-  min-height: auto;
-}
-.market-chart-skeleton[hidden] {
-  display: none !important;
-  animation: none;
-}
-@keyframes market-skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
 .market-hero-glow {
   background: radial-gradient(ellipse 80% 60% at 20% 50%, rgba(255, 195, 92, 0.12), transparent);
 }
@@ -348,7 +273,7 @@ body.marketing-page {
 .market-detail-chart-wrap {
   position: relative;
 }
-.market-detail-chart tv-mini-chart {
+.market-detail-chart-wrap tv-mini-chart {
   display: block;
   width: 100% !important;
   max-width: 100%;
