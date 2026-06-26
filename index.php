@@ -13,7 +13,7 @@ $heroImg = '/uploads/images/evergren_cardphone.png';
 $heroBgImg = '/uploads/images/nasa-Q1p7bh3SHj8-unsplash.jpg';
 $tradingImg = '/uploads/images/evergren_cmarket.png';
 $investImg = '/uploads/images/wallet_image3.png';
-$mobileImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAkTWR7DptUNdQXaCi5hUfal7sGJFohqmDJOScxp9_cPh6NOKifszH5a48O1ze0FLQxCosT-9xC54R_9kuPaMowJzm39CyOhSSo8VqFgfo9eES7FpOB5imMhhQ437f2Xr8G7FGgFfDMfHVaQ_FhLR4nhv2JyaWjfU2E1e4juY2sqQkyWa3yaIZLumrxp_KMx_-0rfr6-S8f2sB8F3g2WDMy8SlYAL345G0vNGvEFSmgaATja7hSBQ8_';
+$mobileImg = '/uploads/images/evergren_mockup.png';
 $eduBeginner = 'https://lh3.googleusercontent.com/aida-public/AB6AXuClXum0n5B3Fys7n6VOV6KZhwxyShVM0LCSKgB8SowoEgxrXjNTakjFaTonTQVYfKAxjWY0GZbcHevK4tuOw6eXiW_-7bKuWD4lewm9wxl51RDLOHQa7vH3fDiQA6sUQeFVJvw9D8-CjyPJELlqVFFfRcZyL7MnmMiA9HA_An3Ae4jBpRn2BWE7G1Pk7VM_vdjw8YHZh7bO0EzfAj0XZ7tDSkBPaK_CKJXq6P_pa9rM1ALr5vlx69f4';
 $eduIntermediate = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBAU594TAbyPKlG5KWutbMwCqXGdyxGubJNUFDO6FzVvF575dnmQkeOqmtDdTTaubPeTzJY1hR1B5vTbDoUaHWJJUe3iugxmlKGiko7VeZN03x2xTcUKkQdP1tEgbYiEt8BEVj3N4PCFw0s-sPyfeWTY3gbnQOYVLq7vV1mDxbmVgJhk_70tfiPXVKHzSxNrcWHBMC_9KjaBGAsAaAwJwMdyThozujO_EMfI6WHBxpaHgkN-_8YNJrX';
 $eduAdvanced = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0RFiVG3wXTjeBaz-FYpuIcbtXW_-rbo6AcxjJgKfVR2jecI-nQ1lrSn8fWdmLi-t99OUPHZgN_NO7hSRwNbbteLmUbrMvWLAk42D9OO3H2H9QVmQ0JcGGuWnHZ99UJlAYT8_hUbJakBBvwWMCn7Ztlamrd-ccxL-ZB96l17wF8YLv9DLZsAiMDsyzLwfeAWPDNLwrkCdBcboSejRk3gMPOLOeI_1F0zlphMTW8IWVYb6VYvr-a3o2';
@@ -80,7 +80,7 @@ View Live Terminal
 <?php require __DIR__ . '/includes/market-home-card.php'; ?>
 <?php endforeach; ?>
 </div>
-<script src="/js/market-widgets.js"></script>
+<?php require_once __DIR__ . '/includes/market-tv-scripts.php'; ?>
 <div class="flex justify-center mt-8 md:mt-10">
 <a class="text-primary-container bg-surface-container-lowest px-6 py-3 rounded-lg font-label-xs text-label-xs inline-block hover:opacity-90 transition-opacity" href="/trading_signals">VIEW ALL MARKETS</a>
 </div>
@@ -124,9 +124,8 @@ View Live Terminal
 </div>
 </div>
 <div class="lg:col-span-7 order-1 lg:order-2">
-<div class="relative rounded-2xl overflow-hidden glass-panel">
-<img class="w-full h-full object-cover min-h-[280px]" alt="Professional trading terminal" src="<?php echo htmlspecialchars($tradingImg); ?>"/>
-<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 to-transparent"></div>
+<div class="relative rounded-2xl overflow-hidden">
+<img class="w-full h-full object-cover min-h-[280px] rounded-2xl" alt="Professional trading terminal" src="<?php echo htmlspecialchars($tradingImg); ?>"/>
 </div>
 </div>
 </div>
@@ -173,7 +172,7 @@ Inquire About Institutional Services
 <h2 class="font-headline-lg text-headline-lg mb-4">Your Portfolio, Anywhere</h2>
 <p class="text-gray-500 font-body-lg mb-16 max-w-2xl mx-auto">Take the power of <?php echo htmlspecialchars($siteName); ?> on the go with our award-winning mobile application. Full terminal features in the palm of your hand.</p>
 <div class="relative max-w-4xl mx-auto">
-<img class="mx-auto drop-shadow-2xl max-w-full h-auto" alt="Mobile trading app" src="<?php echo htmlspecialchars($mobileImg); ?>"/>
+<img class="mx-auto drop-shadow-2xl max-w-full h-auto rounded-2xl md:rounded-3xl" alt="Mobile trading app" src="<?php echo htmlspecialchars($mobileImg); ?>"/>
 <div class="flex flex-col sm:flex-row justify-center gap-4 mt-12">
 <a class="bg-black text-white px-8 py-3 rounded-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform" href="/register">
 <span class="material-symbols-outlined text-3xl">apps</span>

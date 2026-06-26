@@ -34,8 +34,9 @@ $symbol = htmlspecialchars($instrument['symbol'] ?? '');
 </div>
 </div>
 <?php else: ?>
-<div class="market-card-preview pointer-events-none relative <?php echo $category === 'forex' ? 'forex-market-card' : 'stock-market-card'; ?>" data-lazy-tv>
+<div class="market-card-preview pointer-events-none relative <?php echo $category === 'forex' ? 'forex-market-card' : 'stock-market-card'; ?>" data-tv-widget data-lazy-tv>
 <div class="market-chart-skeleton market-chart-skeleton-active" aria-hidden="true"></div>
+<?php require __DIR__ . '/market-chart-fallback.php'; ?>
 <tv-mini-chart symbol="<?php echo $symbol; ?>" style="width: 500px; height: 300px" class="market-tv-chart"></tv-mini-chart>
 </div>
 <?php endif; ?>

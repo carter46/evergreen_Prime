@@ -120,7 +120,7 @@ Get Started Now <span class="material-symbols-outlined">arrow_forward</span>
 <section class="py-12 md:py-16 bg-white">
 <div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
 <h2 class="font-headline-md text-headline-md text-surface-container-lowest mb-6">Live Price Chart</h2>
-<div class="market-detail-chart-wrap bg-[#F7F8FA] rounded-2xl border border-gray-100 p-4 md:p-6" data-lazy-tv-detail>
+<div class="market-detail-chart-wrap bg-[#F7F8FA] rounded-2xl border border-gray-100 p-4 md:p-6" data-tv-widget data-lazy-tv-detail>
 <?php if ($isCrypto && $coingeckoId): ?>
 <div class="crypto-detail-header pointer-events-none mb-4 flex flex-wrap items-center justify-between gap-4" data-coin="<?php echo htmlspecialchars($coingeckoId); ?>">
 <div class="flex items-center gap-3">
@@ -137,6 +137,7 @@ Get Started Now <span class="material-symbols-outlined">arrow_forward</span>
 </div>
 <?php endif; ?>
 <div class="market-chart-skeleton market-chart-skeleton-active market-chart-skeleton-lg" aria-hidden="true"></div>
+<?php require_once __DIR__ . '/includes/market-chart-fallback.php'; ?>
 <div class="market-detail-chart <?php echo $isCrypto ? 'stock-market-card' : ($instrument['category'] === 'forex' ? 'forex-market-card' : 'stock-market-card'); ?>">
 <tv-mini-chart symbol="<?php echo htmlspecialchars($instrument['symbol']); ?>" style="width: 100%; height: 360px; max-width: 100%;"></tv-mini-chart>
 </div>
@@ -276,7 +277,7 @@ Get Started Now <span class="material-symbols-outlined">arrow_forward</span>
 
 <script src="/js/crypto-config.js"></script>
 <script src="/js/crypto-prices.js"></script>
-<script src="/js/market-widgets.js"></script>
+<?php require_once __DIR__ . '/includes/market-tv-scripts.php'; ?>
 <?php if ($isCrypto && $coingeckoId): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
