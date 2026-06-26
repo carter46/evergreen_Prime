@@ -109,181 +109,113 @@ try {
         $chartData[] = ['date' => $date, 'value' => $cumulative];
     }
 } catch (Throwable $e) { }
-?>
-<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | AI Trading Dashboard</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#ffc105",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Space Grotesk"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
-<style>
-        body { font-family: 'Space Grotesk', sans-serif; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 193, 5, 0.1);
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #ffc10544; border-radius: 10px; }
-        .trading-graph-bg {
-            background: linear-gradient(180deg, rgba(255,193,5,0.1) 0%, rgba(255,193,5,0) 100%);
-        }
-    </style>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
-<?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<!-- Dashboard Grid -->
-<div class="grid grid-cols-12 gap-6">
-<!-- Row 1: Total Estimated Balance (60%) | Live AI Trades (40%) -->
-<div class="col-span-12 lg:col-span-7 relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-6 text-white shadow-2xl">
-<div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-<div class="relative z-10">
-<div>
-<p class="text-slate-400 text-sm font-medium mb-1">USD Balance</p>
-<h1 class="text-5xl font-bold tracking-tight">$<?php echo format_usd_amount($userBalance); ?> <span class="text-lg font-normal text-slate-400 ml-2">USD</span></h1>
-<p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
-<?php
-$fmtCoinAmt = function($amt) {
+$profileUser = get_current_user_data() ?? [];
+$dashboardUserName = $profileUser['name'] ?? 'User';
+$pageTitle = $siteName . ' | Dashboard';
+$fmtCoinAmt = function ($amt) {
     if ($amt <= 0) return '0';
     if ($amt >= 1000) return (string) round($amt, 0);
     if ($amt >= 1) return format_usd_amount($amt);
     if ($amt >= 0.01) return format_usd_amount($amt);
     return rtrim(rtrim(number_format($amt, 6), '0'), '.');
 };
+require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
+?>
+<?php
 $parts = [];
 foreach ($topCoins as $c) {
     $logo = $coinLogos[$c['currency']] ?? 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
     $amt = $c['amount'] > 0 ? $fmtCoinAmt($c['amount']) : '0';
-    $parts[] = '<img class="w-5 h-5" src="' . htmlspecialchars($logo) . '" alt="' . htmlspecialchars($c['currency']) . '"/>' . $amt . ' ' . htmlspecialchars($c['currency']);
+    $parts[] = '<img class="w-4 h-4 inline" src="' . htmlspecialchars($logo) . '" alt=""/>' . $amt . ' ' . htmlspecialchars($c['currency']);
 }
-echo implode(' <span class="text-white/60 mx-1">|</span> ', $parts);
-if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$extraCoinCount.'</span>';
+$coinLine = implode(' <span class="text-white/50 mx-1">|</span> ', $parts);
+if ($extraCoinCount > 0) $coinLine .= ' <span class="text-white/70 font-bold">+' . $extraCoinCount . '</span>';
+$chartBtnActive = 'px-4 py-1.5 rounded text-label-xs bg-surface-dim text-primary-container font-bold shadow-sm';
+$chartBtnIdle = 'px-4 py-1.5 rounded text-label-xs text-on-surface-variant hover:text-on-surface transition-colors';
 ?>
-</p>
-<div class="flex flex-wrap gap-2 sm:gap-3 mt-4">
-<button type="button" id="deposit-btn-dash" class="bg-primary hover:bg-primary/90 text-black px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all text-sm">
-<span class="material-icons text-xs sm:text-sm">add</span> Deposit
-</button>
-<a href="/dashboard/user/transactions" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all backdrop-blur-sm text-sm">
-<span class="material-icons text-xs sm:text-sm">history</span> Transactions
+<header class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8 md:mb-10">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-text-primary mb-1">Good morning, <?php echo htmlspecialchars($dashboardUserName); ?></h2>
+<p class="text-text-secondary font-body-md">Welcome back to your institutional trading hub.</p>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-high/50 border border-low px-4 py-2 rounded-full w-fit">
+<div class="w-2 h-2 bg-success rounded-full animate-pulse shadow-[0_0_8px_rgba(32,178,108,0.6)]"></div>
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest">AI Core Online</span>
+</div>
+</header>
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-gutter">
+<div class="balance-gradient-card p-6 md:p-8 rounded-xl relative overflow-hidden group text-white shadow-2xl">
+<div class="absolute top-0 right-0 w-48 h-48 bg-primary-container/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-5xl md:text-6xl">account_balance_wallet</span>
+</div>
+<div class="relative z-10">
+<p class="font-label-xs text-label-xs text-slate-400 uppercase tracking-widest mb-3">Total USD Balance</p>
+<div class="flex flex-wrap items-baseline gap-2 md:gap-3 mb-4">
+<span class="font-display text-4xl md:text-[48px] text-primary-container font-extrabold leading-none">$<?php echo format_usd_amount($userBalance); ?></span>
+<?php if ($coinLine): ?><span class="font-label-sm text-label-sm text-slate-400"><?php echo $coinLine; ?></span><?php endif; ?>
+</div>
+<div class="flex gap-3">
+<button type="button" id="deposit-btn-dash" class="flex-1 bg-primary-container text-on-primary font-bold py-3 rounded-lg hover:opacity-90 transition-all text-label-sm">Deposit</button>
+<a href="/dashboard/user/transactions" class="flex-1 border border-white/15 text-white font-bold py-3 rounded-lg hover:bg-white/5 transition-all text-label-sm text-center">Transactions</a>
+</div>
+</div>
+</div>
+<div class="glass-panel p-6 md:p-8 rounded-xl flex flex-col justify-between">
+<div class="space-y-6">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest mb-1">Total Profit</p>
+<h3 class="font-headline-md text-headline-md text-success">$<?php echo format_usd_amount($totalProfit); ?></h3>
+</div>
+<div class="p-2 bg-success/10 rounded">
+<span class="material-symbols-outlined text-success" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-4 border-t border-low">
+<div>
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest mb-1">Active Capital</p>
+<h4 class="font-headline-md text-[20px] text-on-surface">$<?php echo format_usd_amount($activeCapital); ?></h4>
+</div>
+<div>
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest mb-1">Daily Earning</p>
+<h4 class="font-headline-md text-[20px] text-on-surface">$<?php echo format_usd_amount($dailyEarning); ?></h4>
+</div>
+</div>
+</div>
+</div>
+<div class="glass-panel p-6 md:p-8 rounded-xl flex flex-col justify-between relative overflow-hidden">
+<div class="absolute -bottom-6 -right-6 opacity-5 pointer-events-none">
+<span class="material-symbols-outlined text-[100px] md:text-[120px]">diversity_3</span>
+</div>
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-4">
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest">Referral Bonus</p>
+<span class="material-symbols-outlined text-primary-container">info</span>
+</div>
+<h3 class="font-display text-4xl md:text-[48px] text-on-surface font-extrabold mb-1">$<?php echo format_usd_amount($referralBonus); ?></h3>
+<p class="text-on-surface-variant font-label-sm">Last 24h: <span class="text-success">+$<?php echo format_usd_amount($referralBonusLast24h); ?></span></p>
+</div>
+<a class="mt-6 flex items-center gap-2 text-primary-container font-bold text-label-sm hover:underline relative z-10" href="/dashboard/user/referrals">
+View Network Details <span class="material-symbols-outlined text-sm">arrow_forward</span>
 </a>
 </div>
-</div>
-<div class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 border-t border-white/10 pt-6">
+</section>
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter mb-gutter">
+<div class="lg:col-span-8 glass-panel p-6 md:p-8 rounded-xl">
+<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
 <div>
-<p class="text-slate-400 text-xs mb-1">Total Profit</p>
-<p class="font-bold text-emerald-400">$<?php echo format_usd_amount($totalProfit); ?></p>
+<h3 class="font-headline-md text-headline-md text-on-surface">Portfolio Growth</h3>
+<p class="text-on-surface-variant text-label-sm">AI Engine Yield Analysis</p>
 </div>
-<div>
-<p class="text-slate-400 text-xs mb-1">Active Capital</p>
-<p class="font-bold">$<?php echo format_usd_amount($activeCapital); ?></p>
-</div>
-<div>
-<p class="text-slate-400 text-xs mb-1">Daily Earning</p>
-<p class="font-bold text-primary">$<?php echo format_usd_amount($dailyEarning); ?></p>
-</div>
-<div>
-<p class="text-slate-400 text-xs mb-1">Referral Bonus (earned)</p>
-<p class="font-bold text-amber-400">$<?php echo format_usd_amount($referralBonus); ?></p>
-<?php if ($referralBonus > 0): ?><p class="text-[10px] text-slate-500 mt-0.5">Last 24h: $<?php echo format_usd_amount($referralBonusLast24h); ?></p><?php endif; ?>
+<div class="flex gap-1 bg-surface-container-high p-1 rounded-lg w-fit">
+<button type="button" data-period="1D" class="chart-filter-btn <?php echo $period === '1D' ? $chartBtnActive : $chartBtnIdle; ?>">1D</button>
+<button type="button" data-period="1W" class="chart-filter-btn <?php echo $period === '1W' ? $chartBtnActive : $chartBtnIdle; ?>">1W</button>
+<button type="button" data-period="1M" class="chart-filter-btn <?php echo $period === '1M' ? $chartBtnActive : $chartBtnIdle; ?>">1M</button>
+<button type="button" data-period="1Y" class="chart-filter-btn <?php echo $period === '1Y' ? $chartBtnActive : $chartBtnIdle; ?>">1Y</button>
 </div>
 </div>
-</div>
-</div>
-<!-- Live AI Trades (40%) -->
-<div class="col-span-12 lg:col-span-5 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-[320px]">
-<div class="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-white/5">
-<h3 class="font-bold flex items-center gap-2">
-<span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                            Live AI Trades
-                        </h3>
-<span class="text-xs font-bold text-primary">SCANNING...</span>
-</div>
-<div class="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3">
-<!-- Trade 1 -->
-<div class="live-trade-card flex-1 min-h-0 flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark/50 border border-slate-100 dark:border-white/5">
-<div class="flex items-center gap-3">
-<div class="trade-icon-container w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-<span class="trade-icon material-icons-round text-emerald-500 text-sm">trending_up</span>
-</div>
-<div>
-<p class="trade-pair text-xs font-bold">BTC/USDT Long</p>
-<p class="trade-time text-[10px] text-slate-400">2 mins ago</p>
-</div>
-</div>
-<span class="live-trade-amount text-sm font-bold text-emerald-500">+$245.00</span>
-</div>
-<!-- Trade 2 -->
-<div class="live-trade-card flex-1 min-h-0 flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark/50 border border-slate-100 dark:border-white/5">
-<div class="flex items-center gap-3">
-<div class="trade-icon-container w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
-<span class="trade-icon material-icons-round text-red-500 text-sm">trending_down</span>
-</div>
-<div>
-<p class="trade-pair text-xs font-bold">ETH/USDT Short</p>
-<p class="trade-time text-[10px] text-slate-400">8 mins ago</p>
-</div>
-</div>
-<span class="live-trade-amount text-sm font-bold text-red-500">-$12.40</span>
-</div>
-<!-- Trade 3 -->
-<div class="live-trade-card flex-1 min-h-0 flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark/50 border border-slate-100 dark:border-white/5">
-<div class="flex items-center gap-3">
-<div class="trade-icon-container w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-<span class="trade-icon material-icons-round text-emerald-500 text-sm">trending_up</span>
-</div>
-<div>
-<p class="trade-pair text-xs font-bold">SOL/USDT Long</p>
-<p class="trade-time text-[10px] text-slate-400">15 mins ago</p>
-</div>
-</div>
-<span class="live-trade-amount text-sm font-bold text-emerald-500">+$89.15</span>
-</div>
-</div>
-</div>
-<!-- Performance Growth (50%) -->
-<div class="col-span-12 lg:col-span-6 bg-white dark:bg-white/5 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-white/5">
-<div class="flex justify-between items-center mb-6">
-<h3 class="text-lg font-bold">Performance Growth</h3>
-<div class="flex bg-slate-100 dark:bg-white/5 p-1 rounded-lg">
-<button type="button" data-period="1D" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1D' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1D</button>
-<button type="button" data-period="1W" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1W' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1W</button>
-<button type="button" data-period="1M" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1M' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1M</button>
-<button type="button" data-period="1Y" class="chart-filter-btn px-4 py-1.5 rounded-md text-xs font-bold hover:bg-white dark:hover:bg-white/10 transition-all <?php echo $period === '1Y' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-slate-500'; ?>">1Y</button>
-</div>
-</div>
-<div class="h-40 relative flex flex-col" id="performance-chart-wrapper">
+<div class="h-48 md:h-64 relative flex flex-col" id="performance-chart-wrapper">
 <div class="flex-1 relative min-h-0" id="performance-chart">
 <?php
 $dates = [];
@@ -293,7 +225,6 @@ if (!empty($chartData)) {
     $range = $maxVal - $minVal;
     if ($range == 0) $range = 1;
     $points = [];
-    $dates = [];
     $count = count($chartData);
     foreach ($chartData as $i => $point) {
         $x = $count > 1 ? ($i / ($count - 1)) * 100 : 50;
@@ -310,78 +241,137 @@ if (!empty($chartData)) {
 <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
 <defs>
 <linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" style="stop-color:#ffc105;stop-opacity:0.2"></stop>
-<stop offset="100%" style="stop-color:#ffc105;stop-opacity:0"></stop>
+<stop offset="0%" style="stop-color:#ffc35c;stop-opacity:0.2"></stop>
+<stop offset="100%" style="stop-color:#ffc35c;stop-opacity:0"></stop>
 </linearGradient>
 </defs>
 <path d="<?php echo htmlspecialchars($areaD); ?>" fill="url(#chartGradient)"></path>
-<path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#ffc105" stroke-width="2"></path>
+<path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#ffc35c" stroke-width="2"></path>
 </svg>
 <?php } else { ?>
-<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>
+<div class="absolute inset-0 flex items-center justify-center text-on-surface-variant text-sm">No data available</div>
 <?php } ?>
 </div>
-<div class="flex justify-between mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest" id="chart-dates">
+<div class="flex justify-between mt-2 text-[10px] text-on-surface-variant font-bold uppercase tracking-widest" id="chart-dates">
 <?php if (!empty($chartData) && isset($dates)) { foreach ($dates as $d): ?><span><?php echo htmlspecialchars($d); ?></span><?php endforeach; } ?>
 </div>
 </div>
 </div>
-<!-- My Active Plans (50%) -->
-<div class="col-span-12 lg:col-span-6 bg-white dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5">
-<div class="flex justify-between items-center mb-6">
-<h3 class="text-lg font-bold">My Active Plans</h3>
-<a href="/dashboard/user/analytics" class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
-                            View All <span class="material-icons-round text-sm">arrow_forward</span>
+<div class="lg:col-span-4 glass-panel flex flex-col rounded-xl overflow-hidden min-h-[320px]">
+<div class="p-5 md:p-6 border-b border-low bg-surface-container-high/30 flex justify-between items-center">
+<h3 class="font-headline-md text-[18px] text-on-surface">Live AI Trades</h3>
+<div class="flex items-center gap-2 px-2 py-1 bg-primary-container/10 rounded-full border border-primary-container/20">
+<span class="w-1.5 h-1.5 bg-primary-container rounded-full animate-ping"></span>
+<span class="text-[10px] font-bold text-primary-container tracking-tighter uppercase">Scanning...</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto dash-scrollbar">
+<div class="live-trade-card p-5 flex items-center justify-between border-b border-low/50 hover:bg-white/[0.02] transition-colors">
+<div class="flex items-center gap-4 min-w-0">
+<div class="trade-icon-container w-10 h-10 rounded-full bg-success/10 flex items-center justify-center shrink-0">
+<span class="trade-icon material-symbols-outlined text-success">trending_up</span>
+</div>
+<div class="min-w-0">
+<h4 class="trade-pair font-bold text-on-surface text-label-sm truncate">BTC/USDT <span class="text-success text-[10px] ml-1 uppercase">Long</span></h4>
+<p class="trade-time text-[10px] text-on-surface-variant">2 mins ago</p>
+</div>
+</div>
+<span class="live-trade-amount font-data-mono text-success font-bold shrink-0">+$245.00</span>
+</div>
+<div class="live-trade-card p-5 flex items-center justify-between border-b border-low/50 hover:bg-white/[0.02] transition-colors">
+<div class="flex items-center gap-4 min-w-0">
+<div class="trade-icon-container w-10 h-10 rounded-full bg-critical/10 flex items-center justify-center shrink-0">
+<span class="trade-icon material-symbols-outlined text-critical">trending_down</span>
+</div>
+<div class="min-w-0">
+<h4 class="trade-pair font-bold text-on-surface text-label-sm truncate">ETH/USDT <span class="text-critical text-[10px] ml-1 uppercase">Short</span></h4>
+<p class="trade-time text-[10px] text-on-surface-variant">8 mins ago</p>
+</div>
+</div>
+<span class="live-trade-amount font-data-mono text-critical font-bold shrink-0">-$12.40</span>
+</div>
+<div class="live-trade-card p-5 flex items-center justify-between border-b border-low/50 hover:bg-white/[0.02] transition-colors">
+<div class="flex items-center gap-4 min-w-0">
+<div class="trade-icon-container w-10 h-10 rounded-full bg-success/10 flex items-center justify-center shrink-0">
+<span class="trade-icon material-symbols-outlined text-success">trending_up</span>
+</div>
+<div class="min-w-0">
+<h4 class="trade-pair font-bold text-on-surface text-label-sm truncate">SOL/USDT <span class="text-success text-[10px] ml-1 uppercase">Long</span></h4>
+<p class="trade-time text-[10px] text-on-surface-variant">15 mins ago</p>
+</div>
+</div>
+<span class="live-trade-amount font-data-mono text-success font-bold shrink-0">+$89.15</span>
+</div>
+<div class="p-6 flex flex-col items-center justify-center text-center opacity-40">
+<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden mb-4">
+<div class="scanning-animation h-full w-full"></div>
+</div>
+<p class="text-[10px] font-bold uppercase tracking-widest">Awaiting Volatility Trigger</p>
+</div>
+</div>
+</div>
+</section>
+<section class="glass-panel rounded-xl overflow-hidden">
+<div class="px-6 md:px-8 py-5 md:py-6 border-b border-low flex justify-between items-center gap-3">
+<h3 class="font-headline-md text-headline-md text-on-surface">My Active Plans</h3>
+<a class="text-primary-container text-label-sm font-bold hover:underline flex items-center gap-1 shrink-0" href="/dashboard/user/analytics">
+View All Plans <span class="material-symbols-outlined text-sm">open_in_new</span>
 </a>
 </div>
-<div class="space-y-4">
+<?php if (empty($activeInvestments)): ?>
+<div class="p-10 md:p-16 flex flex-col items-center justify-center text-center">
+<div class="w-20 h-20 md:w-24 md:h-24 mb-6 rounded-full bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant">inventory_2</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-2">No active investments</h4>
+<p class="text-on-surface-variant font-body-md max-w-md mb-8">You currently don't have any running investment plans. Start earning passive yield with our proprietary AI trading algorithms.</p>
+<a href="/dashboard/user/investment-plans" class="bg-primary-container text-on-primary px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold text-label-sm shadow-xl shadow-primary-container/20 hover:scale-[1.02] transition-transform flex items-center gap-3">
+<span class="material-symbols-outlined">rocket_launch</span>
+Subscribe to New Investment Plan
+</a>
+</div>
+<?php else: ?>
+<div class="p-4 md:p-6 space-y-3">
 <?php foreach ($activeInvestments as $inv):
     $startDate = new DateTime($inv['start_date']);
     $now = new DateTime();
     $daysElapsed = $now->diff($startDate)->days;
     $durationDays = (int)($inv['investment_duration_days'] ?? $inv['plan_duration_days'] ?? 30);
-    $progress = min(100, ($daysElapsed / $durationDays) * 100);
+    $progress = min(100, ($daysElapsed / max(1, $durationDays)) * 100);
     $avgYield = (($inv['yield_min'] ?? 0) + ($inv['yield_max'] ?? 0)) / 2;
-    $roi = ($inv['amount'] * $avgYield / 100) * ($daysElapsed / 30);
 ?>
-<div class="group flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-white/10 hover:border-primary/50 transition-all">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center">
-<span class="material-icons-round text-primary">auto_graph</span>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-xl border border-low hover:border-primary-container/30 transition-all">
+<div class="flex items-center gap-4 min-w-0">
+<div class="w-12 h-12 bg-primary-container/15 rounded-xl flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary-container">monitoring</span>
 </div>
-<div>
-<h4 class="font-bold"><?php echo htmlspecialchars($inv['plan_name']); ?></h4>
-<p class="text-xs text-slate-400">Start Date: <?php echo date('M j, Y', strtotime($inv['start_date'])); ?></p>
+<div class="min-w-0">
+<h4 class="font-bold text-on-surface truncate"><?php echo htmlspecialchars($inv['plan_name']); ?></h4>
+<p class="text-xs text-on-surface-variant">Start Date: <?php echo date('M j, Y', strtotime($inv['start_date'])); ?></p>
 </div>
 </div>
-<div class="w-48 text-right px-6">
-<div class="flex justify-between text-[10px] font-bold mb-1">
+<div class="lg:w-48 px-0 lg:px-4">
+<div class="flex justify-between text-[10px] font-bold mb-1 text-on-surface-variant">
 <span>PROGRESS</span>
 <span><?php echo number_format($progress, 0); ?>%</span>
 </div>
-<div class="w-full bg-slate-100 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
-<div class="bg-primary h-full rounded-full" style="width:<?php echo min(100, $progress); ?>%"></div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width:<?php echo min(100, $progress); ?>%"></div>
 </div>
 </div>
-<div class="text-right">
-<p class="text-sm font-bold">$<?php echo format_usd_amount($inv['amount']); ?></p>
-<p class="text-xs text-emerald-500">+<?php echo number_format($avgYield, 1); ?>% ROI</p>
+<div class="text-left lg:text-right">
+<p class="text-sm font-bold text-on-surface">$<?php echo format_usd_amount($inv['amount']); ?></p>
+<p class="text-xs text-success">+<?php echo number_format($avgYield, 1); ?>% ROI</p>
 </div>
 </div>
 <?php endforeach; ?>
-<?php if (empty($activeInvestments)): ?>
-<div class="text-center py-8 text-slate-500 text-sm">No active investments</div>
+<a href="/dashboard/user/investment-plans" class="block w-full py-4 border border-dashed border-low rounded-xl text-on-surface-variant font-bold hover:border-primary-container hover:text-primary-container transition-all text-center text-label-sm">
++ Subscribe to New Investment Plan
+</a>
+</div>
 <?php endif; ?>
-<!-- Add New -->
-<a href="/dashboard/user/investment-plans" class="w-full py-4 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl text-slate-400 font-bold hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
-<span class="material-icons-round">add_circle_outline</span>
-                            Subscribe to New Investment Plan
-                        </a>
-</div>
-</div>
-</div>
-</main>
-</div>
+</section>
+<?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
 <?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>window.BLOOMBIT_API_BASE = '';</script>
 <script src="/js/crypto-config.js"></script>
@@ -407,11 +397,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var absVal = Math.abs(newVal);
         
         var colorClass = '';
-        if (absVal < 50) colorClass = 'text-red-500';
-        else if (absVal >= 100) colorClass = 'text-emerald-500';
-        else colorClass = isPositive ? 'text-emerald-500' : 'text-red-500';
+        if (absVal < 50) colorClass = 'text-critical';
+        else if (absVal >= 100) colorClass = 'text-success';
+        else colorClass = isPositive ? 'text-success' : 'text-critical';
         
-        el.className = 'text-sm font-bold ' + colorClass;
+        el.className = 'live-trade-amount font-data-mono font-bold shrink-0 ' + colorClass;
         el.textContent = (newVal >= 0 ? '+' : '-') + '$' + absVal.toFixed(2);
     }
     
@@ -433,12 +423,12 @@ document.addEventListener('DOMContentLoaded', function() {
         timeEl.textContent = mins + ' min' + (mins > 1 ? 's' : '') + ' ago';
         
         if (isLong) {
-            iconContainer.className = 'w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center';
-            iconEl.className = 'material-icons-round text-emerald-500 text-sm';
+            iconContainer.className = 'trade-icon-container w-10 h-10 rounded-full bg-success/10 flex items-center justify-center shrink-0';
+            iconEl.className = 'trade-icon material-symbols-outlined text-success';
             iconEl.textContent = 'trending_up';
         } else {
-            iconContainer.className = 'w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center';
-            iconEl.className = 'material-icons-round text-red-500 text-sm';
+            iconContainer.className = 'trade-icon-container w-10 h-10 rounded-full bg-critical/10 flex items-center justify-center shrink-0';
+            iconEl.className = 'trade-icon material-symbols-outlined text-critical';
             iconEl.textContent = 'trending_down';
         }
         
@@ -493,28 +483,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         var pathD = 'M' + points.join(' L');
         var areaD = pathD + ' L' + (count > 1 ? 100 : 50) + ',100 L0,100 Z';
-        chartContainer.innerHTML = '<div class="absolute inset-0 trading-graph-bg rounded-lg"></div><svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100"><defs><linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" style="stop-color:#ffc105;stop-opacity:0.2"></stop><stop offset="100%" style="stop-color:#ffc105;stop-opacity:0"></stop></linearGradient></defs><path d="' + areaD + '" fill="url(#chartGradient)"></path><path d="' + pathD + '" fill="none" stroke="#ffc105" stroke-width="2"></path></svg>';
+        chartContainer.innerHTML = '<div class="absolute inset-0 trading-graph-bg rounded-lg"></div><svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100"><defs><linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" style="stop-color:#ffc35c;stop-opacity:0.2"></stop><stop offset="100%" style="stop-color:#ffc35c;stop-opacity:0"></stop></linearGradient></defs><path d="' + areaD + '" fill="url(#chartGradient)"></path><path d="' + pathD + '" fill="none" stroke="#ffc35c" stroke-width="2"></path></svg>';
         if (chartDates) chartDates.innerHTML = dates.map(function(d){ return '<span>' + d + '</span>'; }).join('');
+    }
+    
+    var chartActive = ['bg-surface-dim', 'text-primary-container', 'font-bold', 'shadow-sm'];
+    var chartIdle = ['text-on-surface-variant'];
+    function setChartBtnActive(btn) {
+        document.querySelectorAll('.chart-filter-btn').forEach(function (b) {
+            b.classList.remove('bg-surface-dim', 'text-primary-container', 'font-bold', 'shadow-sm', 'text-on-surface-variant');
+            b.classList.add('text-on-surface-variant');
+        });
+        btn.classList.remove('text-on-surface-variant');
+        chartActive.forEach(function (c) { btn.classList.add(c); });
     }
     
     document.querySelectorAll('.chart-filter-btn').forEach(function(btn) {
         var p = btn.getAttribute('data-period');
-        if (p === currentPeriod) {
-            btn.classList.add('bg-white', 'dark:bg-white/10', 'shadow-sm', 'text-black', 'dark:text-white');
-            btn.classList.remove('text-slate-500');
-        }
+        if (p === currentPeriod) setChartBtnActive(btn);
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            setChartBtnActive(this);
             var period = this.getAttribute('data-period');
-            document.querySelectorAll('.chart-filter-btn').forEach(function(b) {
-                b.classList.remove('bg-white', 'dark:bg-white/10', 'shadow-sm', 'text-black', 'dark:text-white');
-                b.classList.add('text-slate-500');
-            });
-            this.classList.add('bg-white', 'dark:bg-white/10', 'shadow-sm', 'text-black', 'dark:text-white');
-            this.classList.remove('text-slate-500');
             fetch('/api/user/chart-data.php?period=' + period, { credentials: 'same-origin' }).then(function(r){ return r.json(); }).then(function(res){
                 if (res.success && res.data) updateChart(res.data);
-            }).catch(function(){ if (chartContainer) chartContainer.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">Failed to load chart</div>'; });
+            }).catch(function(){ if (chartContainer) chartContainer.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-on-surface-variant text-sm">Failed to load chart</div>'; });
         });
     });
     

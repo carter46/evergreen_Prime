@@ -58,76 +58,38 @@ try {
         ];
     }
 } catch (Throwable $e) { }
+$pageTitle = $siteName . ' | Investment Plans';
+$pageHeading = 'Investment Plans';
+$pageSubtitle = 'Choose an investment plan that fits your goals';
+require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
+include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | Investment Plans</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f9bd0b",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Space Grotesk"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
-<?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<div class="mb-6">
-<h1 class="text-2xl sm:text-3xl font-bold">Investment Plans</h1>
-<p class="text-slate-500 mt-1">Choose an investment plan that fits your goals</p>
-</div>
 
 <!-- Plans Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 <?php foreach ($plans as $plan): ?>
-<div class="bg-white dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-lg transition-all">
+<div class="glass-panel rounded-2xl p-6 hover:border-primary-container/20 transition-all">
 <div class="flex items-center gap-4 mb-4">
-<div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center">
-<span class="material-icons-round text-primary text-2xl">auto_graph</span>
+<div class="w-12 h-12 bg-primary-container/20 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container text-2xl">auto_graph</span>
 </div>
 <div>
 <h3 class="text-lg font-bold"><?php echo htmlspecialchars($plan['name']); ?></h3>
-<p class="text-xs text-slate-500"><?php echo htmlspecialchars($plan['description'] ?: 'Premium investment plan'); ?></p>
+<p class="text-xs text-text-secondary"><?php echo htmlspecialchars($plan['description'] ?: 'Premium investment plan'); ?></p>
 </div>
 </div>
 
 <div class="space-y-3 mb-6">
 <div class="flex justify-between items-center">
-<span class="text-sm text-slate-500">Deposit Range</span>
+<span class="text-sm text-text-secondary">Deposit Range</span>
 <span class="text-sm font-bold">$<?php echo format_usd_amount($plan['min_deposit']); ?> - <?php echo $plan['max_deposit'] ? '$' . format_usd_amount($plan['max_deposit']) : 'Unlimited'; ?></span>
 </div>
 <div class="flex justify-between items-center">
-<span class="text-sm text-slate-500">Yield Range</span>
-<span class="text-sm font-bold text-emerald-500"><?php echo number_format($plan['yield_min'], 1); ?>% - <?php echo number_format($plan['yield_max'], 1); ?>%</span>
+<span class="text-sm text-text-secondary">Yield Range</span>
+<span class="text-sm font-bold text-success"><?php echo number_format($plan['yield_min'], 1); ?>% - <?php echo number_format($plan['yield_max'], 1); ?>%</span>
 </div>
 <div class="flex justify-between items-center">
-<span class="text-sm text-slate-500">Duration</span>
+<span class="text-sm text-text-secondary">Duration</span>
 <span class="text-sm font-bold"><?php 
 $minD = $plan['min_duration_days'] ?? $plan['duration_days'];
 $maxD = $plan['max_duration_days'] ?? $plan['duration_days'];
@@ -135,18 +97,18 @@ echo ($minD === $maxD) ? $minD . ' days' : $minD . ' - ' . $maxD . ' days';
 ?></span>
 </div>
 <div class="flex justify-between items-center">
-<span class="text-sm text-slate-500">Withdrawal</span>
+<span class="text-sm text-text-secondary">Withdrawal</span>
 <span class="text-sm font-bold"><?php echo $plan['withdrawal_days'] === 0 ? 'Instant' : 'Every ' . $plan['withdrawal_days'] . ' days'; ?></span>
 </div>
 </div>
 
 <?php if (!empty($plan['features'])): ?>
 <div class="mb-6">
-<p class="text-xs font-bold text-slate-500 uppercase mb-2">Features</p>
+<p class="text-xs font-bold text-on-surface-variant uppercase mb-2">Features</p>
 <ul class="space-y-1">
 <?php foreach (array_slice($plan['features'], 0, 4) as $feature): ?>
-<li class="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
-<span class="material-icons text-primary text-sm">check_circle</span>
+<li class="text-xs text-text-secondary flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-sm">check_circle</span>
 <?php echo htmlspecialchars($feature); ?>
 </li>
 <?php endforeach; ?>
@@ -155,7 +117,7 @@ echo ($minD === $maxD) ? $minD . ' days' : $minD . ' - ' . $maxD . ' days';
 <?php endif; ?>
 
 <?php $pMinD = $plan['min_duration_days'] ?? $plan['duration_days']; $pMaxD = $plan['max_duration_days'] ?? $plan['duration_days']; ?>
-<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-min-days="<?php echo $pMinD; ?>" data-plan-max-days="<?php echo $pMaxD; ?>" class="subscribe-plan-btn w-full bg-primary hover:bg-primary/90 text-black font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/20">
+<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-min-days="<?php echo $pMinD; ?>" data-plan-max-days="<?php echo $pMaxD; ?>" class="subscribe-plan-btn w-full bg-primary-container hover:bg-primary-container/90 text-on-primary font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary-container/20">
 Subscribe Now
 </button>
 </div>
@@ -164,7 +126,7 @@ Subscribe Now
 
 <?php if (empty($plans)): ?>
 <div class="text-center py-12">
-<p class="text-slate-500">No investment plans available at the moment.</p>
+<p class="text-text-secondary">No investment plans available at the moment.</p>
 </div>
 <?php endif; ?>
 
@@ -175,7 +137,7 @@ Subscribe Now
 <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-zinc-800">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-xl font-bold">Subscribe to <span id="modal-plan-name"></span></h2>
-<button type="button" id="subscribe-modal-close" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full"><span class="material-icons-round">close</span></button>
+<button type="button" id="subscribe-modal-close" class="p-2 hover:bg-surface-container-high rounded-full"><span class="material-symbols-outlined">close</span></button>
 </div>
 <div class="p-6">
 <form id="subscribe-form">
@@ -220,7 +182,7 @@ Subscribe Now
 <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-sm border border-emerald-200 dark:border-emerald-900/50 overflow-hidden">
 <div class="p-8 text-center">
 <div class="w-20 h-20 mx-auto mb-5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-<span class="material-icons-round text-emerald-600 dark:text-emerald-400 text-4xl">check_circle</span>
+<span class="material-symbols-outlined text-success text-4xl">check_circle</span>
 </div>
 <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1">Subscription Successful!</h3>
 <p class="text-slate-600 dark:text-slate-400 text-sm mb-1">You've successfully subscribed to <strong class="text-primary" id="success-plan-name"></strong></p>
@@ -230,8 +192,7 @@ Subscribe Now
 </div>
 </div>
 
-</main>
-</div>
+<?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
 <?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

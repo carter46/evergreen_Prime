@@ -98,68 +98,35 @@ try {
     }
 } catch (Throwable $e) { }
 $coinNames = ['BTC'=>'Bitcoin','ETH'=>'Ethereum','USDT'=>'Tether','USDC'=>'USD Coin','BUSD'=>'Binance USD','USD'=>'US Dollar','XRP'=>'XRP','SOL'=>'Solana','BNB'=>'BNB','ADA'=>'Cardano','DOGE'=>'Dogecoin','TRX'=>'TRON'];
+$pageTitle = $siteName . ' | Wallet & Withdrawals';
+$pageHeading = 'Wallet';
+$pageSubtitle = 'Manage deposits, withdrawals, and asset balances.';
+require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
+include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | Wallet &amp; Withdrawals</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f9bd0b",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Space Grotesk"]
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-                },
-            },
-        }
-    </script>
 <style>
-        body { font-family: 'Space Grotesk', sans-serif; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        /* Deposit/Withdraw drawer: bolder, more readable on desktop */
-        @media (min-width: 640px) {
-            .wallet-drawer-content label { font-size: 0.9375rem; }
-            #deposit-coin-quote, #withdraw-coin-quote { font-size: 1.125rem; font-weight: 700; }
-        }
-    </style>
-</head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display overflow-x-hidden">
-<div class="flex min-h-screen overflow-x-hidden">
-<?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
-<?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+@media (min-width: 640px) {
+    .wallet-drawer-content label { font-size: 0.9375rem; }
+    #deposit-coin-quote, #withdraw-coin-quote { font-size: 1.125rem; font-weight: 700; }
+}
+</style>
 <div class="flex-1 max-w-[1440px] w-full mx-auto">
 <div class="grid grid-cols-12 gap-8">
 <!-- Row 1: USD Balance (65%) | Security Checklist (35%) -->
 <div class="col-span-12 grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-6">
-<div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-black p-8 text-white shadow-2xl">
-<div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+<div class="balance-gradient-card relative overflow-hidden rounded-xl p-8 text-white shadow-2xl">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary-container/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl">account_balance_wallet</span>
+</div>
 <div class="relative z-10">
 <div>
-<p class="text-slate-400 text-sm font-medium mb-1">Available Balance</p>
-<h1 class="text-6xl font-bold tracking-tight">$<?php echo format_usd_amount($walletTotalUsd); ?> <span class="text-xl font-normal text-slate-400 ml-2">USD</span></h1>
-<p class="text-primary mt-2 flex items-center gap-1 flex-wrap">
+<p class="text-on-surface-variant text-sm font-medium mb-1">Available Balance</p>
+<h1 class="text-5xl md:text-6xl font-bold tracking-tight">$<?php echo format_usd_amount($walletTotalUsd); ?> <span class="text-xl font-normal text-on-surface-variant ml-2">USD</span></h1>
+<p class="text-primary-container mt-2 flex items-center gap-1 flex-wrap">
 <?php
 $parts = [];
 foreach ($topCoins as $c) {
@@ -172,34 +139,34 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 ?>
 </p>
 <div class="flex flex-wrap gap-2 sm:gap-3 mt-4">
-<button type="button" id="deposit-btn" class="bg-primary hover:bg-primary/90 text-black px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all text-sm">
-<span class="material-icons text-xs sm:text-sm">add</span> Deposit
+<button type="button" id="deposit-btn" class="bg-primary-container hover:bg-primary-container/90 text-on-primary px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all text-sm">
+<span class="material-symbols-outlined text-xs sm:text-sm">add</span> Deposit
 </button>
 <button type="button" id="withdraw-btn" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all backdrop-blur-sm text-sm">
-<span class="material-icons text-xs sm:text-sm">file_upload</span> Withdraw
+<span class="material-symbols-outlined text-xs sm:text-sm">file_upload</span> Withdraw
 </button>
 <a href="/dashboard/user/transactions" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all backdrop-blur-sm text-sm">
-<span class="material-icons text-xs sm:text-sm">history</span> History
+<span class="material-symbols-outlined text-xs sm:text-sm">history</span> History
 </a>
 </div>
 </div>
 <div class="mt-8 sm:mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 border-t border-white/10 pt-6 sm:pt-8">
 <div>
-<p class="text-slate-400 text-xs mb-1">Total Profit</p>
-<p class="font-bold text-emerald-400">$<?php echo format_usd_amount($totalProfit); ?></p>
+<p class="text-on-surface-variant text-xs mb-1">Total Profit</p>
+<p class="font-bold text-success">$<?php echo format_usd_amount($totalProfit); ?></p>
 </div>
 <div>
-<p class="text-slate-400 text-xs mb-1">Active Capital</p>
+<p class="text-on-surface-variant text-xs mb-1">Active Capital</p>
 <p class="font-bold">$<?php echo format_usd_amount($activeCapital); ?></p>
 </div>
 <div>
-<p class="text-slate-400 text-xs mb-1">Daily Earning</p>
-<p class="font-bold text-primary">$<?php echo format_usd_amount($dailyEarning); ?></p>
+<p class="text-on-surface-variant text-xs mb-1">Daily Earning</p>
+<p class="font-bold text-primary-container">$<?php echo format_usd_amount($dailyEarning); ?></p>
 </div>
 <div>
-<p class="text-slate-400 text-xs mb-1">Referral Bonus (earned)</p>
-<p class="font-bold text-amber-400">$<?php echo format_usd_amount($referralBonus); ?></p>
-<?php if ($referralBonus > 0): ?><p class="text-[10px] text-slate-500 mt-0.5">Last 24h: $<?php echo format_usd_amount($referralBonusLast24h); ?></p><?php endif; ?>
+<p class="text-on-surface-variant text-xs mb-1">Referral Bonus (earned)</p>
+<p class="font-bold text-primary-container">$<?php echo format_usd_amount($referralBonus); ?></p>
+<?php if ($referralBonus > 0): ?><p class="text-[10px] text-on-surface-variant mt-0.5">Last 24h: $<?php echo format_usd_amount($referralBonusLast24h); ?></p><?php endif; ?>
 </div>
 </div>
 </div>
@@ -218,12 +185,12 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <!-- Row 2: Your Assets (65%) | Security Checklist (35%) -->
 <div class="col-span-12 grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-6">
 <!-- Your Assets -->
-<div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm min-w-0">
-<div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-<h2 class="text-base font-bold">Your Assets</h2>
+<div class="glass-panel rounded-xl overflow-hidden min-w-0">
+<div class="p-4 border-b border-low flex items-center justify-between gap-2">
+<h2 class="text-base font-bold text-on-surface">Your Assets</h2>
 <div class="relative shrink-0">
-<span class="material-icons absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">search</span>
-<input class="pl-7 pr-3 py-1 bg-slate-50 dark:bg-slate-900 border-none rounded text-xs focus:ring-1 focus:ring-primary w-32" placeholder="Search..." type="text"/>
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs">search</span>
+<input class="pl-7 pr-3 py-1 bg-surface-container-high border border-low rounded text-xs focus:ring-1 focus:ring-primary-container w-32 text-on-surface" placeholder="Search..." type="text"/>
 </div>
 </div>
 <div class="overflow-hidden">
@@ -285,13 +252,13 @@ $<?php echo format_usd_amount($b['usd_value']); ?>
 </div>
 </div>
 <!-- Security Checklist (35%) -->
-<div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex gap-4 self-stretch">
-<div class="w-10 h-10 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center">
-<span class="material-icons text-primary">gpp_maybe</span>
+<div class="glass-panel border border-primary-container/20 rounded-xl p-4 flex gap-4 self-stretch">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container">gpp_maybe</span>
 </div>
 <div>
-<h4 class="text-sm font-bold text-slate-900 dark:text-white">Security Checklist</h4>
-<p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+<h4 class="text-sm font-bold text-on-surface">Security Checklist</h4>
+<p class="text-xs text-text-secondary mt-1 leading-relaxed">
                             Ensure 2FA is active before withdrawing. Double-check the recipient address; crypto transfers are irreversible.
                         </p>
 </div>
@@ -300,10 +267,10 @@ $<?php echo format_usd_amount($b['usd_value']); ?>
 
 <!-- Row 3: Full-width Recent History -->
 <div class="col-span-12">
-<div class="bg-white dark:bg-background-dark/40 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-<h2 class="text-lg font-bold">Recent History</h2>
-<a href="/dashboard/user/transactions" class="text-primary text-xs font-bold hover:underline">View All</a>
+<div class="glass-panel rounded-xl overflow-hidden">
+<div class="p-6 border-b border-low flex items-center justify-between">
+<h2 class="text-lg font-bold text-on-surface">Recent History</h2>
+<a href="/dashboard/user/transactions" class="text-primary-container text-xs font-bold hover:underline">View All</a>
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-left">
@@ -333,7 +300,7 @@ $<?php echo format_usd_amount($b['usd_value']); ?>
 <tr>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
-<span class="material-icons <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?> text-lg"><?php echo $isDeposit ? 'arrow_downward' : 'arrow_upward'; ?></span>
+<span class="material-symbols-outlined <?php echo $isDeposit ? 'text-success' : 'text-critical'; ?> text-lg"><?php echo $isDeposit ? 'arrow_downward' : 'arrow_upward'; ?></span>
 <div>
 <p class="text-sm font-bold"><?php echo htmlspecialchars($typeLabel); ?></p>
 <p class="text-[10px] text-slate-400"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></p>
@@ -365,12 +332,13 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 </div>
 </div>
 </div>
+<?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
 
 <div id="wallet-drawer-backdrop" class="fixed inset-0 bg-black/50 z-[45] hidden" aria-hidden="true" style="backdrop-filter:blur(2px)"></div>
 <div id="deposit-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[520px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-[50] border-l border-slate-200 dark:border-zinc-800 flex flex-col transition-transform duration-300 ease-out" style="transform:translateX(100%)">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-xl font-bold">Deposit Crypto</h2>
-<button type="button" id="deposit-drawer-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors"><span class="material-icons text-lg">close</span></button>
+<button type="button" id="deposit-drawer-close" class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-lg">close</span></button>
 </div>
 <div class="flex-1 overflow-y-auto p-6 wallet-drawer-content">
 <div id="deposit-form-step1">
@@ -412,7 +380,7 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <p class="text-sm text-amber-700 dark:text-amber-400">Time remaining: <span id="deposit-countdown-timer" class="font-mono font-bold">--:--</span></p>
 </div>
 <button type="button" id="deposit-i-have-paid-btn" class="w-full py-3 bg-primary text-black font-bold rounded-lg text-base mt-4 flex items-center justify-center gap-2">
-<span class="material-icons text-lg">check_circle</span> I have made this payment
+<span class="material-symbols-outlined text-lg">check_circle</span> I have made this payment
 </button>
 <div id="deposit-after-payment-section" class="hidden pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-4 mt-4">
 <p class="text-xs text-slate-500 dark:text-zinc-400">Add your transaction details below (optional). Then click Done.</p>
@@ -437,7 +405,7 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <div id="withdraw-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[520px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-[50] border-l border-slate-200 dark:border-zinc-800 flex flex-col transition-transform duration-300 ease-out" style="transform:translateX(100%)">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-xl font-bold">Withdraw Funds</h2>
-<button type="button" id="withdraw-drawer-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors"><span class="material-icons text-lg">close</span></button>
+<button type="button" id="withdraw-drawer-close" class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-lg">close</span></button>
 </div>
 <div class="flex-1 overflow-y-auto p-6 wallet-drawer-content">
 <form id="withdrawal-form" class="space-y-5">
@@ -473,7 +441,7 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 </div>
 <div id="withdrawal-message" class="text-sm hidden"></div>
 <button type="submit" class="w-full py-3 bg-primary text-black font-bold rounded-lg text-base flex items-center justify-center gap-2">
-Withdraw Now <span class="material-icons text-base">arrow_forward</span>
+Withdraw Now <span class="material-symbols-outlined text-base">arrow_forward</span>
 </button>
 </form>
 </div>

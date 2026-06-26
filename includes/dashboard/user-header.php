@@ -1,46 +1,55 @@
 <?php
 /**
- * Bloombit - Shared User Header (Top Bar)
- * Toggle opens sidebar on mobile/tablet.
+ * Fixed top bar for user dashboard.
  */
 $u = get_current_user_data() ?? [];
 $userName = $u['name'] ?? 'User';
-$userEmail = $u['email'] ?? '';
 $avatarUrl = $u['avatar_url'] ?? null;
 $initials = strtoupper(substr($userName ?: 'U', 0, 2));
+$isVerified = !empty($u['verified']) || (($u['kyc_status'] ?? '') === 'approved');
 ?>
-<header class="bg-white dark:bg-background-dark border-b border-primary/10 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 mb-6 sm:mb-8">
-    <div class="flex items-center justify-between gap-3 min-w-0">
-        <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-            <button type="button" id="user-sidebar-toggle" class="lg:hidden flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl hover:bg-primary/10 transition-colors min-h-[44px] min-w-[44px]" aria-label="Toggle menu">
-                <span class="material-icons-round text-2xl">menu</span>
-            </button>
-            <div class="min-w-0 flex-1">
-                <h1 class="text-lg sm:text-2xl md:text-3xl font-bold truncate">Good morning, <?php echo htmlspecialchars($userName); ?></h1>
-                <p class="text-slate-500 text-xs sm:text-sm truncate">System status: <span class="text-emerald-500 font-medium">AI Core Online</span></p>
-            </div>
-        </div>
-        <div class="flex items-center gap-1 sm:gap-3 flex-shrink-0">
-            <button type="button" class="relative w-10 h-10 flex items-center justify-center text-slate-500 hover:text-primary transition-colors rounded-xl hover:bg-primary/10 min-h-[44px] min-w-[44px]" aria-label="Notifications">
-                <span class="material-icons-round text-xl sm:text-2xl">notifications</span>
-                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full"></span>
-            </button>
-            <div class="flex items-center gap-2">
-                <div class="text-right hidden sm:block">
-                    <p class="text-sm font-bold leading-none truncate max-w-[120px]"><?php echo htmlspecialchars($userName); ?></p>
-                    <p class="text-xs text-slate-500"><?php echo !empty($u['verified']) ? 'Verified' : 'User'; ?></p>
-                </div>
-                <?php if ($avatarUrl): ?><img alt="User" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-primary shrink-0 object-cover" src="<?php echo htmlspecialchars($avatarUrl); ?>"/><?php else: ?><div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-primary bg-primary/20 flex items-center justify-center text-primary font-bold text-sm shrink-0"><?php echo htmlspecialchars($initials); ?></div><?php endif; ?>
-            </div>
-        </div>
-    </div>
+<header class="user-topbar fixed top-0 right-0 left-0 lg:left-64 border-b border-low bg-surface-dim/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-margin-desktop z-50 gap-3">
+<div class="flex items-center gap-2 min-w-0 flex-1">
+<button type="button" id="user-sidebar-toggle" class="lg:hidden shrink-0 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors" aria-label="Toggle menu">
+<span class="material-symbols-outlined text-on-surface">menu</span>
+</button>
+<div class="hidden md:flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-full border border-low w-full max-w-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md text-on-surface placeholder:text-on-surface-variant/40 w-full p-0 text-sm" placeholder="Search markets, assets, or plans..." type="search" aria-label="Search"/>
+</div>
+</div>
+<div class="flex items-center gap-3 md:gap-5 shrink-0">
+<div class="hidden sm:flex items-center gap-3 text-on-surface-variant">
+<button type="button" class="hover:text-primary-container transition-colors p-1" aria-label="Live feed"><span class="material-symbols-outlined text-[22px]">sensors</span></button>
+<button type="button" class="hover:text-primary-container transition-colors relative p-1" aria-label="Notifications">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-0.5 right-0.5 w-2 h-2 bg-primary-container rounded-full border border-surface-dim"></span>
+</button>
+</div>
+<div class="hidden md:block h-8 w-px bg-border-low"></div>
+<div class="flex items-center gap-2 md:gap-3">
+<div class="text-right hidden sm:block">
+<p class="font-label-sm text-label-sm text-on-surface font-bold truncate max-w-[140px]"><?php echo htmlspecialchars($userName); ?></p>
+<?php if ($isVerified): ?>
+<div class="flex items-center justify-end gap-1 text-[10px] text-success font-bold tracking-tight">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+Verified
+</div>
+<?php else: ?>
+<p class="text-[10px] text-text-secondary">Member</p>
+<?php endif; ?>
+</div>
+<?php if ($avatarUrl): ?>
+<img alt="" class="w-9 h-9 md:w-10 md:h-10 rounded-full border border-primary-container object-cover shrink-0" src="<?php echo htmlspecialchars($avatarUrl); ?>"/>
+<?php else: ?>
+<div class="w-9 h-9 md:w-10 md:h-10 rounded-full border border-primary-container bg-surface-container-highest flex items-center justify-center text-primary-container font-bold text-sm shrink-0"><?php echo htmlspecialchars($initials); ?></div>
+<?php endif; ?>
+</div>
+</div>
 </header>
-
-<!-- Translation widget (GTranslate) -->
 <div class="gtranslate_wrapper"></div>
 <?php require_once __DIR__ . '/../translation-widget.php'; ?>
 <style>
-  /* Dashboard-only: move language widget to bottom-right (avoid logout overlap) */
-  .gtranslate_wrapper { left: auto !important; right: 20px !important; }
-  @media (max-width: 768px) { .gtranslate_wrapper { right: 15px !important; } }
+.gtranslate_wrapper { left: auto !important; right: 20px !important; bottom: 20px !important; top: auto !important; }
+@media (max-width: 768px) { .gtranslate_wrapper { right: 12px !important; bottom: 12px !important; } }
 </style>

@@ -65,35 +65,17 @@ try {
         }
     }
 } catch (Throwable $e) {}
+$pageTitle = $siteName . ' | Referrals';
+$pageHeading = 'Referral Program';
+$pageSubtitle = 'Share your link. When people join and invest, you earn USDT bonuses from their activity.';
+require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
+include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
-<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | Referrals</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<script id="tailwind-config">
-tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#f9bd0b", "background-light": "#f8f8f5", "background-dark": "#231e0f" }, fontFamily: { "display": ["Space Grotesk", "sans-serif"] } } } };
-</script>
-<style>body { font-family: 'Space Grotesk', sans-serif; }</style>
-</head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8">
-<?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<div class="max-w-4xl mx-auto py-6 space-y-8">
-<nav class="flex text-xs text-slate-400 gap-2 mb-2"><a href="/dashboard/user/dashboard" class="hover:text-primary">Dashboard</a><span>/</span><span class="text-slate-600 dark:text-slate-300">Referrals</span></nav>
-<h1 class="text-2xl sm:text-3xl font-bold mb-1">Referral Program</h1>
-<p class="text-slate-500 dark:text-zinc-400 text-sm sm:text-base max-w-2xl mb-6">Share your link. When people join and invest, you earn USDT bonuses from their activity — on their first deposit and on every daily earning payout.</p>
-
-<!-- How it works -->
-<div class="rounded-xl p-5 sm:p-6 bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm space-y-5">
-<h2 class="text-base sm:text-lg font-semibold flex items-center gap-2"><span class="material-icons-round text-primary text-xl">help_outline</span> How it works</h2>
+<div class="max-w-4xl mx-auto space-y-6 md:space-y-8">
+<div class="glass-panel rounded-xl p-5 sm:p-6 space-y-5">
+<h2 class="text-base sm:text-lg font-semibold flex items-center gap-2 text-on-surface"><span class="material-symbols-outlined text-primary-container text-xl">help</span> How it works</h2>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div class="rounded-lg border border-primary/20 bg-primary/5 dark:bg-primary/10 p-4">
+<div class="rounded-lg border border-primary-container/20 bg-primary-container/10 p-4">
 <p class="text-xs font-bold uppercase tracking-wider text-primary mb-2">Level 1 — Direct referrals</p>
 <p class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2"><?php echo htmlspecialchars($referralPctDisplay); ?>%</p>
 <p class="text-sm text-slate-600 dark:text-zinc-300">From everyone who signs up with <strong>your</strong> code. You earn on their:</p>
@@ -127,24 +109,24 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 
 <!-- 1. Stats first -->
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div class="rounded-xl p-6 bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
-<p class="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-medium">Direct referrals</p>
-<p class="text-2xl sm:text-3xl font-bold text-primary mt-2"><?php echo (int) $referredCount; ?></p>
+<div class="glass-panel rounded-xl p-6">
+<p class="text-xs sm:text-sm text-text-secondary uppercase tracking-wider font-medium">Direct referrals</p>
+<p class="text-2xl sm:text-3xl font-bold text-primary-container mt-2"><?php echo (int) $referredCount; ?></p>
 </div>
-<div class="rounded-xl p-6 bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
-<p class="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-medium">Network (level 2)</p>
-<p class="text-2xl sm:text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2"><?php echo (int) ($indirectCount ?? 0); ?></p>
-<p class="text-[10px] text-slate-400 mt-1">People referred by your referrals</p>
+<div class="glass-panel rounded-xl p-6">
+<p class="text-xs sm:text-sm text-text-secondary uppercase tracking-wider font-medium">Network (level 2)</p>
+<p class="text-2xl sm:text-3xl font-bold text-primary-container mt-2"><?php echo (int) ($indirectCount ?? 0); ?></p>
+<p class="text-[10px] text-on-surface-variant mt-1">People referred by your referrals</p>
 </div>
-<div class="rounded-xl p-6 bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm sm:col-span-1">
-<p class="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-medium">Total earned (Bonus)</p>
-<p class="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">$<?php echo format_usd_amount($totalEarnedUsd); ?></p>
-<?php if ($totalEarnedUsd > 0): ?><p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Last 24h: $<?php echo format_usd_amount($totalLast24h ?? 0); ?></p><?php endif; ?>
+<div class="glass-panel rounded-xl p-6 sm:col-span-1">
+<p class="text-xs sm:text-sm text-text-secondary uppercase tracking-wider font-medium">Total earned (Bonus)</p>
+<p class="text-2xl sm:text-3xl font-bold text-success mt-2">$<?php echo format_usd_amount($totalEarnedUsd); ?></p>
+<?php if ($totalEarnedUsd > 0): ?><p class="text-xs text-text-secondary mt-1">Last 24h: $<?php echo format_usd_amount($totalLast24h ?? 0); ?></p><?php endif; ?>
 </div>
 </div>
 
 <!-- 2. Referral earnings history -->
-<div class="rounded-xl overflow-hidden bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
+<div class="glass-panel rounded-xl overflow-hidden">
 <h2 class="text-base sm:text-lg font-semibold px-5 sm:px-6 py-4 border-b border-slate-200/80 dark:border-slate-700/50 flex items-center gap-2"><span class="material-icons-round text-primary text-xl">payments</span> Referral earnings history</h2>
 <?php if (empty($referralEarningsHistory)): ?>
 <p class="p-6 text-slate-500 dark:text-zinc-400 text-center text-sm">No referral earnings yet. You earn when people in your network make their first deposit or receive daily payouts.</p>
@@ -188,7 +170,7 @@ foreach ($referralEarningsHistory as $e):
 </div>
 
 <!-- 3. People you referred -->
-<div class="rounded-xl overflow-hidden bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
+<div class="glass-panel rounded-xl overflow-hidden">
 <h2 class="text-base sm:text-lg font-semibold px-5 sm:px-6 py-4 border-b border-slate-200/80 dark:border-slate-700/50 flex items-center gap-2"><span class="material-icons-round text-primary text-xl">people</span> People you referred</h2>
 <?php if (empty($referrals)): ?>
 <p class="p-6 text-slate-500 dark:text-zinc-400 text-center text-sm">No referrals yet. Share your link below to get started.</p>
@@ -217,7 +199,7 @@ foreach ($referralEarningsHistory as $e):
 </div>
 
 <!-- 4. Your referral code & share link last -->
-<div class="rounded-xl p-6 sm:p-8 bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 shadow-sm">
+<div class="glass-panel rounded-xl p-6 sm:p-8">
 <h2 class="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2"><span class="material-icons-round text-primary text-xl">link</span> Your referral code &amp; link</h2>
 <?php if ($myCode): ?>
 <div class="space-y-4">
@@ -225,14 +207,14 @@ foreach ($referralEarningsHistory as $e):
 <label class="block text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mb-1.5">Code</label>
 <div class="flex flex-wrap items-center gap-2 sm:gap-3">
 <input type="text" id="referral-code" readonly value="<?php echo htmlspecialchars($myCode); ?>" class="flex-1 min-w-0 px-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-600 rounded-lg font-mono text-base sm:text-lg tracking-widest uppercase"/>
-<button type="button" id="copy-code" class="shrink-0 px-4 py-2.5 sm:py-3 bg-primary text-black font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"><span class="material-icons-round text-lg">content_copy</span> Copy code</button>
+<button type="button" id="copy-code" class="shrink-0 px-4 py-2.5 sm:py-3 bg-primary-container text-on-primary font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-lg">content_copy</span> Copy code</button>
 </div>
 </div>
 <div>
 <label class="block text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mb-1.5">Share link (goes to registration and fills your code)</label>
 <div class="flex flex-wrap items-center gap-2 sm:gap-3">
 <input type="text" id="share-url" readonly value="<?php echo htmlspecialchars($shareUrl ?? ''); ?>" class="flex-1 min-w-0 px-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-600 rounded-lg text-sm"/>
-<button type="button" id="copy-url" class="shrink-0 px-4 py-2.5 sm:py-3 bg-primary text-black font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"><span class="material-icons-round text-lg">content_copy</span> Copy link</button>
+<button type="button" id="copy-url" class="shrink-0 px-4 py-2.5 sm:py-3 bg-primary-container text-on-primary font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-lg">content_copy</span> Copy link</button>
 </div>
 </div>
 </div>
@@ -241,8 +223,8 @@ foreach ($referralEarningsHistory as $e):
 <?php endif; ?>
 </div>
 </div>
-</main>
-</div>
+<?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
+<?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 (function(){
   function copy(el) {
@@ -260,8 +242,8 @@ foreach ($referralEarningsHistory as $e):
   var urlEl = document.getElementById('share-url');
   var copyCode = document.getElementById('copy-code');
   var copyUrl = document.getElementById('copy-url');
-  if (copyCode && codeEl) copyCode.addEventListener('click', function(){ if (copy(codeEl)) { copyCode.innerHTML = '<span class="material-icons-round text-lg">content_copy</span> Copied!'; setTimeout(function(){ copyCode.innerHTML = '<span class="material-icons-round text-lg">content_copy</span> Copy code'; }, 1500); } });
-  if (copyUrl && urlEl) copyUrl.addEventListener('click', function(){ if (copy(urlEl)) { copyUrl.innerHTML = '<span class="material-icons-round text-lg">content_copy</span> Copied!'; setTimeout(function(){ copyUrl.innerHTML = '<span class="material-icons-round text-lg">content_copy</span> Copy link'; }, 1500); } });
+  if (copyCode && codeEl) copyCode.addEventListener('click', function(){ if (copy(codeEl)) { copyCode.innerHTML = '<span class="material-symbols-outlined text-lg">content_copy</span> Copied!'; setTimeout(function(){ copyCode.innerHTML = '<span class="material-symbols-outlined text-lg">content_copy</span> Copy code'; }, 1500); } });
+  if (copyUrl && urlEl) copyUrl.addEventListener('click', function(){ if (copy(urlEl)) { copyUrl.innerHTML = '<span class="material-symbols-outlined text-lg">content_copy</span> Copied!'; setTimeout(function(){ copyUrl.innerHTML = '<span class="material-symbols-outlined text-lg">content_copy</span> Copy link'; }, 1500); } });
 })();
 </script>
 </body>

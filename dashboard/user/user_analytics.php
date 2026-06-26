@@ -178,66 +178,28 @@ try {
         $payoutTotalForBreakdown += $tot;
     }
 } catch (Throwable $e) { }
+$pageTitle = $siteName . ' | Earnings Analytics & History';
+$pageHeading = 'Earnings Analytics';
+$pageSubtitle = 'Detailed performance tracking and profit distribution history.';
+require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
+include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
-<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | Earnings Analytics &amp; History</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f9bd0b",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Space Grotesk"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
 <style>
-        body { font-family: 'Space Grotesk', sans-serif; background-color: #f8f8f5; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(249, 189, 11, 0.1);
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e2e2; border-radius: 10px; }
-    </style>
-</head>
-<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display min-h-screen overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/user-sidebar.php'; ?>
-<main class="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
-<?php include __DIR__ . '/../../includes/dashboard/user-header.php'; ?>
-<div class="mb-6">
-<h1 class="text-2xl sm:text-3xl font-bold">Earnings Analytics</h1>
-<p class="text-slate-500 mt-1">Detailed performance tracking and profit distribution history.</p>
-</div>
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fadeIn 0.5s ease forwards; }
+</style>
 <!-- Top Stats Grid -->
 <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-<div class="glass-card bg-white dark:bg-zinc-900 p-5 rounded-xl">
+<div class="glass-panel p-5 rounded-xl">
 <div class="flex justify-between items-start mb-4">
 <div class="p-2 bg-primary/10 rounded-lg">
-<span class="material-icons-round text-primary">payments</span>
+<span class="material-symbols-outlined text-primary">payments</span>
 </div>
 <span class="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">+12.4%</span>
 </div>
@@ -251,10 +213,10 @@ try {
 </div>
 </div>
 </div>
-<div class="glass-card bg-white dark:bg-zinc-900 p-5 rounded-xl">
+<div class="glass-panel p-5 rounded-xl">
 <div class="flex justify-between items-start mb-4">
 <div class="p-2 bg-primary/10 rounded-lg">
-<span class="material-icons-round text-primary">trending_up</span>
+<span class="material-symbols-outlined text-primary">trending_up</span>
 </div>
 <span class="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">+1.2%</span>
 </div>
@@ -268,10 +230,10 @@ try {
 </div>
 </div>
 </div>
-<div class="glass-card bg-white dark:bg-zinc-900 p-5 rounded-xl">
+<div class="glass-panel p-5 rounded-xl">
 <div class="flex justify-between items-start mb-4">
 <div class="p-2 bg-primary/10 rounded-lg">
-<span class="material-icons-round text-primary">account_balance</span>
+<span class="material-symbols-outlined text-primary">account_balance</span>
 </div>
 <span class="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded-full">Stable</span>
 </div>
@@ -285,10 +247,10 @@ try {
 </div>
 </div>
 </div>
-<div class="glass-card bg-white dark:bg-zinc-900 p-5 rounded-xl border-primary/20 border">
+<div class="glass-panel bg-primary-container/5 p-5 rounded-xl border-primary-container/20 border">
 <div class="flex justify-between items-start mb-4">
 <div class="p-2 bg-primary/10 rounded-lg">
-<span class="material-icons-round text-primary">auto_graph</span>
+<span class="material-symbols-outlined text-primary">auto_graph</span>
 </div>
 <span class="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">Projected</span>
 </div>
@@ -308,9 +270,9 @@ try {
 <!-- Row 1: Active Plans (50%) | Cumulative Performance (50%) - full width, two columns -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
 <!-- Active Plans (50% - left) -->
-<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl min-h-0">
+<div class="glass-panel p-6 rounded-xl min-h-0">
 <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-<span class="material-icons-round text-primary text-xl">savings</span>
+<span class="material-symbols-outlined text-primary text-xl">savings</span>
                         Active Plans
 </h2>
 <?php if (!empty($activePlans)): ?>
@@ -337,7 +299,7 @@ try {
 </div>
 <?php else: ?>
 <div class="flex flex-col items-center justify-center py-12 text-slate-400">
-<span class="material-icons-round text-4xl mb-2 opacity-50">inventory_2</span>
+<span class="material-symbols-outlined text-4xl mb-2 opacity-50">inventory_2</span>
 <p class="text-sm font-medium">No active plans</p>
 <p class="text-xs mt-1">Subscribe to a plan from the dashboard to start earning</p>
 <a href="/dashboard/user/investment-plans" class="mt-4 px-6 py-2.5 bg-primary hover:bg-primary/90 text-black font-bold rounded-lg text-sm flex items-center gap-2 transition-all">
@@ -347,11 +309,11 @@ try {
 <?php endif; ?>
 </div>
 <!-- Cumulative Performance (50% - right) -->
-<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl min-h-0">
+<div class="glass-panel p-6 rounded-xl min-h-0">
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 <h2 class="text-lg font-bold flex items-center gap-2">
                         Cumulative Performance
-                        <span class="material-icons-round text-slate-400 text-base cursor-help" title="Visualizes your total earnings growth over time">info</span>
+                        <span class="material-symbols-outlined text-slate-400 text-base cursor-help" title="Visualizes your total earnings growth over time">info</span>
 </h2>
 <div class="flex bg-slate-100 dark:bg-zinc-800 p-1 rounded-lg">
 <button type="button" data-period="1D" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === '1D' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">1D</button>
@@ -406,22 +368,22 @@ if (!empty($chartData)) {
 </div>
 <!-- Row 2: Side Widgets -->
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl flex items-center gap-6">
+<div class="glass-panel p-6 rounded-xl flex items-center gap-6">
 <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center border-4 border-primary/20">
-<span class="material-icons-round text-3xl text-primary">workspace_premium</span>
+<span class="material-symbols-outlined text-3xl text-primary">workspace_premium</span>
 </div>
 <div>
 <h3 class="text-slate-400 text-sm font-medium">Winning Streak</h3>
 <p class="text-3xl font-bold"><?php echo (int)$winningStreakDays; ?> Day<?php echo ((int)$winningStreakDays) === 1 ? '' : 's'; ?></p>
 <p class="text-xs text-slate-400 mt-1 flex items-center gap-1" title="Based on consecutive days with completed payout credits">
-<span class="material-icons-round text-xs">keyboard_double_arrow_up</span>
+<span class="material-symbols-outlined text-xs">keyboard_double_arrow_up</span>
 Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$personalBestStreakDays) === 1 ? '' : 's'; ?>
 </p>
 </div>
 </div>
-<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl flex items-center gap-6">
+<div class="glass-panel p-6 rounded-xl flex items-center gap-6">
 <div class="w-16 h-16 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
-<span class="material-icons-round text-3xl text-slate-400">warning_amber</span>
+<span class="material-symbols-outlined text-3xl text-slate-400">warning_amber</span>
 </div>
 <div>
 <h3 class="text-slate-400 text-sm font-medium">Max Drawdown</h3>
@@ -429,7 +391,7 @@ Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$
 <p class="text-xs text-slate-400 mt-1" title="Computed from the cumulative net flow curve shown above">Based on cumulative curve</p>
 </div>
 </div>
-<div class="glass-card bg-white dark:bg-zinc-900 p-6 rounded-xl">
+<div class="glass-panel p-6 rounded-xl">
 <h2 class="text-sm font-bold mb-4">Earnings by Currency</h2>
 <?php
   $breakdownRows = [];
@@ -459,16 +421,16 @@ Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$
 </div>
 </div>
 <!-- History Table Section -->
-<div class="glass-card bg-white dark:bg-zinc-900 rounded-xl overflow-hidden">
+<div class="glass-panel rounded-xl overflow-hidden">
 <div class="p-6 border-b border-slate-100 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
 <h2 class="text-lg font-bold">Distribution History</h2>
 <div class="flex items-center gap-3">
 <div class="relative">
-<span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
 <input class="pl-10 pr-4 py-2 bg-slate-100 dark:bg-zinc-800 border-none rounded-lg text-sm w-full md:w-64 focus:ring-2 focus:ring-primary" placeholder="Search entries..." type="text"/>
 </div>
 <button class="p-2 border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800">
-<span class="material-icons-round text-slate-500">filter_list</span>
+<span class="material-symbols-outlined text-slate-500">filter_list</span>
 </button>
 </div>
 </div>
@@ -536,7 +498,7 @@ foreach ($analyticsTx as $tx):
 </td>
 <td class="px-6 py-4">
 <span class="flex items-center gap-1 <?php echo $statusClass; ?> font-medium">
-<span class="material-icons-round text-sm"><?php echo $statusIcon; ?></span>
+<span class="material-symbols-outlined text-sm"><?php echo $statusIcon; ?></span>
 <?php echo htmlspecialchars(ucfirst($tx['status'])); ?>
 </span>
 </td>
@@ -552,16 +514,16 @@ foreach ($analyticsTx as $tx):
 <span class="text-xs text-slate-400 font-medium">Showing <?php echo min(count($analyticsTx), 50); ?> entries</span>
 </div>
 </div>
-</main>
+<?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
 <!-- Floating Help Button -->
-<button class="fixed bottom-6 right-6 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-50">
-<span class="material-icons-round">support_agent</span>
+<button class="fixed bottom-6 right-6 w-14 h-14 bg-surface-container-highest text-on-surface rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-50">
+<span class="material-symbols-outlined">support_agent</span>
 </button>
 <?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Page load animations
-    var cards = document.querySelectorAll('.glass-card');
+    var cards = document.querySelectorAll('.glass-panel');
     cards.forEach(function(card, i) {
         card.style.opacity = '0';
         card.style.transform = 'translateY(20px)';
@@ -633,13 +595,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-<style>
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-    animation: fadeIn 0.5s ease forwards;
-}
-</style>
 </body></html>
