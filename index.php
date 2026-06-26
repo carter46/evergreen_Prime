@@ -80,7 +80,6 @@ View Live Terminal
 <?php require __DIR__ . '/includes/market-home-card.php'; ?>
 <?php endforeach; ?>
 </div>
-<?php require_once __DIR__ . '/includes/market-tv-scripts.php'; ?>
 <div class="flex justify-center mt-8 md:mt-10">
 <a class="text-primary-container bg-surface-container-lowest px-6 py-3 rounded-lg font-label-xs text-label-xs inline-block hover:opacity-90 transition-opacity" href="/trading_signals">VIEW ALL MARKETS</a>
 </div>

@@ -273,7 +273,6 @@ Get Started Now <span class="material-symbols-outlined">arrow_forward</span>
 
 <script src="/js/crypto-config.js"></script>
 <script src="/js/crypto-prices.js"></script>
-<?php require_once __DIR__ . '/includes/market-tv-scripts.php'; ?>
 <?php if ($isCrypto && $coingeckoId): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
