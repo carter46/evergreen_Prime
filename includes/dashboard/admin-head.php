@@ -89,12 +89,6 @@ body.admin-dashboard {
   padding-top: calc(5rem + env(safe-area-inset-top, 0px));
   box-sizing: border-box;
 }
-@media (min-width: 1024px) {
-  .admin-dash-main {
-    margin-left: 16rem;
-    width: calc(100% - 16rem);
-  }
-}
 .admin-dash-content {
   max-width: 1440px;
   margin-left: auto;
@@ -105,12 +99,6 @@ body.admin-dashboard {
   padding-top: env(safe-area-inset-top, 0px);
   min-height: calc(4rem + env(safe-area-inset-top, 0px));
   height: calc(4rem + env(safe-area-inset-top, 0px));
-  position: fixed;
-}
-@media (min-width: 1024px) {
-  .admin-topbar {
-    left: 16rem;
-  }
 }
 .admin-scrollbar::-webkit-scrollbar { width: 4px; }
 .admin-scrollbar::-webkit-scrollbar-track { background: #111417; }
