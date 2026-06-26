@@ -5,56 +5,27 @@ $aboutYoutubeUrl = get_site_setting('about_youtube_url', '');
 $aboutEmbedUrl = get_youtube_embed_url($aboutYoutubeUrl);
 ?>
 <!DOCTYPE html>
-
-<html class="light" lang="en"><head>
+<html class="dark" lang="en">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>About <?php echo htmlspecialchars($siteName); ?> - Our Mission &amp; Vision</title>
-<?php output_favicon_tags(); ?>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#ffc105",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Space Grotesk"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
+<?php
+$pageTitle = 'About ' . $siteName . ' - Our Mission & Vision';
+require_once __DIR__ . '/includes/marketing-head.php';
+?>
 <style>
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-            background-color: #f8f8f5;
-        }
         .glow-hover:hover {
-            box-shadow: 0 0 30px rgba(255, 193, 5, 0.15);
+            box-shadow: 0 0 30px rgba(255, 195, 92, 0.15);
         }
         .tech-line {
-            background: linear-gradient(90deg, #ffc105 0%, rgba(255, 193, 5, 0) 100%);
+            background: linear-gradient(90deg, #ffc35c 0%, rgba(255, 195, 92, 0) 100%);
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300 overflow-x-hidden">
+<body class="marketing-page font-body-md text-body-md overflow-x-hidden">
 <?php $currentPage = 'about_us'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 <!-- Hero Section: Who We Are -->
-<header class="relative pt-20 pb-32 overflow-hidden">
+<header class="relative pt-28 pb-32 overflow-hidden">
 <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 <div>
 <span class="inline-block px-3 py-1 bg-primary/10 text-primary font-semibold text-sm rounded mb-6">ESTABLISHED 2021</span>

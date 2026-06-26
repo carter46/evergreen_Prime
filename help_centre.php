@@ -1,53 +1,24 @@
 <?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); $contactEmail = get_site_setting('contact_email', 'support@example.com'); ?>
 <!DOCTYPE html>
-
-<html class="light" lang="en"><head>
+<html class="dark" lang="en">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Contact &amp; Support | <?php echo htmlspecialchars($siteName); ?></title>
-<?php output_favicon_tags(); ?>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f9bd0b",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Space Grotesk"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
+<?php
+$pageTitle = 'Contact & Support | ' . $siteName;
+require_once __DIR__ . '/includes/marketing-head.php';
+?>
 <style>
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-        }
         .bg-mesh {
-            background-color: #f8f8f5;
-            background-image: radial-gradient(at 0% 0%, rgba(249, 189, 11, 0.05) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(249, 189, 11, 0.03) 0px, transparent 50%);
+            background-color: #111417;
+            background-image: radial-gradient(at 0% 0%, rgba(255, 195, 92, 0.06) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(255, 195, 92, 0.04) 0px, transparent 50%);
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300 overflow-x-hidden">
+<body class="marketing-page font-body-md text-body-md overflow-x-hidden">
 <?php $currentPage = 'help_centre'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 <!-- Hero Section -->
-<header class="pt-16 pb-12 text-center bg-mesh">
+<header class="pt-28 pb-12 text-center bg-mesh">
 <div class="max-w-3xl mx-auto px-4">
 <span class="px-4 py-1.5 bg-primary/10 text-primary text-sm font-bold rounded-full uppercase tracking-wider">Support Center</span>
 <h1 class="mt-6 text-5xl md:text-6xl font-bold text-slate-900 dark:text-white">Get in Touch</h1>

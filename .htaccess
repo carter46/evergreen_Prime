@@ -45,6 +45,9 @@ Options -Indexes
     RewriteRule ^dashboard/admin/ai-config$ dashboard/admin/ai_bot_config.php [L]
     RewriteRule ^dashboard/admin/settings$ dashboard/admin/settings.php [L]
 
+    # Market detail pages
+    RewriteRule ^markets/([a-z0-9-]+)/?$ market.php?slug=$1 [L,QSA]
+
     # Auth pages (clean URL -> PHP)
     RewriteRule ^login$ login.php [L]
     RewriteRule ^register$ register.php [L]

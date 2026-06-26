@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/market-instruments.php';
 $siteName = get_site_name();
 $pageTitle = $siteName . ' | Professional Trading & Institutional Asset Management';
 $heroBadge = get_site_setting('hero_badge', 'Institutional Grade Security');
@@ -10,7 +11,7 @@ $statsSupport = get_site_setting('stats_roi', '24/7');
 
 $heroImg = '/uploads/images/evergren_cardphone.png';
 $heroBgImg = '/uploads/images/nasa-Q1p7bh3SHj8-unsplash.jpg';
-$tradingImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC8t20RVlMgaWNZbegnNfZpo05H-DsP08ZNR4eFxdn3auxEcHots-xhbBTK07-8o32e2aaaT-C6e8PsfJ8bl5DIPD3VvZTdgLij0I7MfF4t7Ik4sDfIirKnui2RGDr3o8g-6wwbZJbS28dKv4DD_E_eJT1QIFaskjv1mUp7vP5H_KHim-YAIMG7ZrHHh9lZb1JEycSYChDJADhS-kejRKmyKhGV44hmtxr8Hd-wLB7M7YS3aWJIYv30';
+$tradingImg = '/uploads/images/evergren_cmarket.png';
 $investImg = '/uploads/images/wallet_image3.png';
 $mobileImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAkTWR7DptUNdQXaCi5hUfal7sGJFohqmDJOScxp9_cPh6NOKifszH5a48O1ze0FLQxCosT-9xC54R_9kuPaMowJzm39CyOhSSo8VqFgfo9eES7FpOB5imMhhQ437f2Xr8G7FGgFfDMfHVaQ_FhLR4nhv2JyaWjfU2E1e4juY2sqQkyWa3yaIZLumrxp_KMx_-0rfr6-S8f2sB8F3g2WDMy8SlYAL345G0vNGvEFSmgaATja7hSBQ8_';
 $eduBeginner = 'https://lh3.googleusercontent.com/aida-public/AB6AXuClXum0n5B3Fys7n6VOV6KZhwxyShVM0LCSKgB8SowoEgxrXjNTakjFaTonTQVYfKAxjWY0GZbcHevK4tuOw6eXiW_-7bKuWD4lewm9wxl51RDLOHQa7vH3fDiQA6sUQeFVJvw9D8-CjyPJELlqVFFfRcZyL7MnmMiA9HA_An3Ae4jBpRn2BWE7G1Pk7VM_vdjw8YHZh7bO0EzfAj0XZ7tDSkBPaK_CKJXq6P_pa9rM1ALr5vlx69f4';
@@ -62,111 +63,24 @@ View Live Terminal
 <div class="mb-8">
 <h2 class="font-headline-md text-headline-md text-surface-container-lowest">Live Market Performance</h2>
 </div>
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter market-cards">
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="bitcoin">
-<div class="flex justify-between items-start mb-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full overflow-hidden bg-yellow-500/10 flex items-center justify-center shrink-0">
-<img class="crypto-logo w-7 h-7 object-contain" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="Bitcoin"/>
-</div>
-<div>
-<div class="font-bold text-surface-container-lowest crypto-symbol">BTC / USD</div>
-<div class="text-xs text-gray-400 crypto-name">Bitcoin</div>
-</div>
-</div>
-<div class="crypto-change font-bold font-data-mono text-gray-400">--</div>
-</div>
-<div class="text-2xl font-bold text-surface-container-lowest font-data-mono crypto-price">--</div>
-<div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
-<div class="h-full bg-success w-[50%] market-bar"></div>
-</div>
-</div>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="ethereum">
-<div class="flex justify-between items-start mb-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full overflow-hidden bg-blue-500/10 flex items-center justify-center shrink-0">
-<img class="crypto-logo w-7 h-7 object-contain" src="https://assets.coingecko.com/coins/images/279/large/ethereum.png" alt="Ethereum"/>
-</div>
-<div>
-<div class="font-bold text-surface-container-lowest crypto-symbol">ETH / USD</div>
-<div class="text-xs text-gray-400 crypto-name">Ethereum</div>
-</div>
-</div>
-<div class="crypto-change font-bold font-data-mono text-gray-400">--</div>
-</div>
-<div class="text-2xl font-bold text-surface-container-lowest font-data-mono crypto-price">--</div>
-<div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
-<div class="h-full bg-success w-[50%] market-bar"></div>
-</div>
-</div>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="binancecoin">
-<div class="flex justify-between items-start mb-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full overflow-hidden bg-yellow-500/10 flex items-center justify-center shrink-0">
-<img class="crypto-logo w-7 h-7 object-contain" src="https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png" alt="BNB"/>
-</div>
-<div>
-<div class="font-bold text-surface-container-lowest crypto-symbol">BNB / USD</div>
-<div class="text-xs text-gray-400 crypto-name">BNB</div>
-</div>
-</div>
-<div class="crypto-change font-bold font-data-mono text-gray-400">--</div>
-</div>
-<div class="text-2xl font-bold text-surface-container-lowest font-data-mono crypto-price">--</div>
-<div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
-<div class="h-full bg-success w-[50%] market-bar"></div>
-</div>
-</div>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow crypto-market-card" data-coin="solana">
-<div class="flex justify-between items-start mb-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full overflow-hidden bg-orange-500/10 flex items-center justify-center shrink-0">
-<img class="crypto-logo w-7 h-7 object-contain" src="https://assets.coingecko.com/coins/images/4128/large/solana.png" alt="Solana"/>
-</div>
-<div>
-<div class="font-bold text-surface-container-lowest crypto-symbol">SOL / USD</div>
-<div class="text-xs text-gray-400 crypto-name">Solana</div>
-</div>
-</div>
-<div class="crypto-change font-bold font-data-mono text-gray-400">--</div>
-</div>
-<div class="text-2xl font-bold text-surface-container-lowest font-data-mono crypto-price">--</div>
-<div class="mt-4 h-1 bg-gray-50 rounded-full overflow-hidden">
-<div class="h-full bg-success w-[50%] market-bar"></div>
-</div>
-</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter market-cards">
+<?php foreach (get_markets_by_category('crypto') as $instrument): ?>
+<?php require __DIR__ . '/includes/market-home-card.php'; ?>
+<?php endforeach; ?>
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter market-stocks mt-gutter">
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
-<tv-mini-chart symbol="NASDAQ:TSLA" style="width: 500px; height: 300px"></tv-mini-chart>
-</div>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
-<tv-mini-chart symbol="NASDAQ:MSFT" style="width: 500px; height: 300px"></tv-mini-chart>
-</div>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
-<tv-mini-chart symbol="NASDAQ:GOOGL" style="width: 500px; height: 300px"></tv-mini-chart>
-</div>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow stock-market-card">
-<tv-mini-chart symbol="NASDAQ:META" style="width: 500px; height: 300px"></tv-mini-chart>
-</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter market-stocks mt-gutter">
+<?php foreach (get_markets_by_category('stock') as $instrument): ?>
+<?php require __DIR__ . '/includes/market-home-card.php'; ?>
+<?php endforeach; ?>
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter market-forex mt-gutter">
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow forex-market-card">
-<tv-mini-chart symbol="OANDA:AUDCAD" style="width: 500px; height: 300px"></tv-mini-chart>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter market-forex mt-gutter">
+<?php foreach (get_markets_by_category('forex') as $instrument): ?>
+<?php require __DIR__ . '/includes/market-home-card.php'; ?>
+<?php endforeach; ?>
 </div>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow forex-market-card">
-<tv-mini-chart symbol="OANDA:USDJPY" style="width: 500px; height: 300px"></tv-mini-chart>
-</div>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow forex-market-card">
-<tv-mini-chart symbol="OANDA:EURJPY" style="width: 500px; height: 300px"></tv-mini-chart>
-</div>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-shadow forex-market-card">
-<tv-mini-chart symbol="FX:NZDUSD" style="width: 500px; height: 300px"></tv-mini-chart>
-</div>
-</div>
-<script type="module" src="https://widgets.tradingview-widget.com/w/en/tv-mini-chart.js"></script>
+<script src="/js/market-widgets.js"></script>
 <div class="flex justify-center mt-8 md:mt-10">
 <a class="text-primary-container bg-surface-container-lowest px-6 py-3 rounded-lg font-label-xs text-label-xs inline-block hover:opacity-90 transition-opacity" href="/trading_signals">VIEW ALL MARKETS</a>
 </div>

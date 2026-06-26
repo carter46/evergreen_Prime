@@ -1,37 +1,17 @@
 <?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); $contactEmail = get_site_setting('contact_email', 'legal@example.com'); ?>
 <!DOCTYPE html>
-
-<html class="scroll-smooth" lang="en"><head>
+<html class="dark scroll-smooth" lang="en">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> Legal Center | Terms &amp; Privacy</title>
-<?php output_favicon_tags(); ?>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f9bd0b",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Inter"]
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-                },
-            },
-        }
-    </script>
+<?php
+$pageTitle = $siteName . ' Legal Center | Terms & Privacy';
+require_once __DIR__ . '/includes/marketing-head.php';
+?>
 </head>
-<body class="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 antialiased overflow-x-hidden">
+<body class="marketing-page font-body-md text-body-md overflow-x-hidden">
 <?php $currentPage = 'legal_centre'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex justify-end gap-2 border-b border-primary/10 bg-white/80 dark:bg-background-dark/80">
+<div class="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex justify-end gap-2 border-b border-border-low">
 <button class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors" onclick="window.print()">
 <span class="material-icons text-lg">print</span>Print</button>
 <button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-slate-900 text-sm font-bold rounded-lg hover:bg-opacity-90 transition-all shadow-sm" onclick="window.print()">

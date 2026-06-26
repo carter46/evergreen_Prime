@@ -1,50 +1,22 @@
 <?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
 <!DOCTYPE html>
-<html class="light" lang="en"><head>
+<html class="dark" lang="en">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Live Chat | <?php echo htmlspecialchars($siteName); ?></title>
-<?php output_favicon_tags(); ?>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f9bd0b",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Space Grotesk"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
+<?php
+$pageTitle = 'Live Chat | ' . $siteName;
+require_once __DIR__ . '/includes/marketing-head.php';
+?>
 <style>
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        /* Smartsupp widget customization */
         .smartsupp-widget {
-            --smartsupp-primary-color: #f9bd0b !important;
+            --smartsupp-primary-color: #ffc35c !important;
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300 overflow-x-hidden">
+<body class="marketing-page font-body-md text-body-md overflow-x-hidden">
 <?php $currentPage = 'live_chat'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
-<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12">
 <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-slate-200 dark:border-white/5 p-8">
 <h1 class="text-3xl font-bold mb-6 flex items-center gap-3">
 <span class="material-icons text-primary">forum</span>

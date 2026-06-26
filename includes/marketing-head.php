@@ -10,6 +10,7 @@ $pageTitle = $pageTitle ?? get_site_name();
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 <script id="tailwind-config">
 tailwind.config = {
   darkMode: "class",
@@ -223,12 +224,117 @@ body.marketing-page {
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
+.market-card-link {
+  position: relative;
+}
+.market-card-overlay {
+  cursor: pointer;
+}
+.market-card-overlay:focus-visible {
+  outline: 2px solid #ffc35c;
+  outline-offset: 2px;
+}
+.market-view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #0b0e11;
+  background: #ffc35c;
+  border: 1px solid rgba(255, 195, 92, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  pointer-events: auto;
+  text-decoration: none;
+}
+.market-view-btn:hover {
+  background: #ffd080;
+  box-shadow: 0 4px 12px rgba(255, 195, 92, 0.35);
+  transform: translateY(-1px);
+}
+.pulse-live {
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: pulse-red 2s infinite;
+}
+@keyframes pulse-red {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+.market-card-preview {
+  user-select: none;
+}
+.market-chart-skeleton {
+  display: none;
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: market-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+.market-chart-skeleton-active {
+  display: block;
+  min-height: 168px;
+}
+.market-chart-skeleton-lg.market-chart-skeleton-active {
+  min-height: 360px;
+  margin-bottom: 1rem;
+}
+.market-chart-skeleton-active + .market-detail-chart tv-mini-chart,
+.market-chart-skeleton-active + tv-mini-chart {
+  opacity: 0.3;
+}
+.market-chart-skeleton-active:not(.market-chart-skeleton-lg) {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 1.5rem;
+  min-height: auto;
+}
+@keyframes market-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.market-hero-glow {
+  background: radial-gradient(ellipse 80% 60% at 20% 50%, rgba(255, 195, 92, 0.12), transparent);
+}
+.market-cta-glow {
+  background: radial-gradient(ellipse 70% 50% at 50% 100%, rgba(255, 195, 92, 0.08), transparent);
+}
+.market-illustration {
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  background: #1a1d21;
+}
+.market-detail-chart-wrap {
+  position: relative;
+}
+.market-detail-chart tv-mini-chart {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+  height: 360px !important;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .stock-market-card,
 .forex-market-card {
   min-height: 168px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  position: relative;
 }
 .stock-market-card tv-mini-chart,
 .forex-market-card tv-mini-chart {

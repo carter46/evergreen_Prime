@@ -609,6 +609,38 @@ function bump_user_last_balance_usd(PDO $pdo, int $userId, float $deltaUsd): voi
 }
 
 /**
+ * Output per-market SEO meta tags (title handled separately via $pageTitle).
+ */
+function output_market_seo_tags(array $instrument): void {
+    require_once __DIR__ . '/market-instruments.php';
+    $seo = $instrument['seo'] ?? [];
+    $desc = $seo['description'] ?? '';
+    $ogTitle = $seo['og_title'] ?? ($seo['title'] ?? $instrument['name']);
+    $ogDesc = $seo['og_description'] ?? $desc;
+    $slug = $instrument['slug'];
+    $canonical = get_base_url() . '/markets/' . rawurlencode($slug);
+    $illustration = market_illustration_src($instrument);
+    $ogImage = (strpos($illustration, 'http') === 0) ? $illustration : get_base_url() . $illustration;
+
+    if ($desc !== '') {
+        echo '<meta name="description" content="' . htmlspecialchars($desc) . '"/>' . "\n";
+    }
+    echo '<link rel="canonical" href="' . htmlspecialchars($canonical) . '"/>' . "\n";
+    echo '<meta property="og:type" content="website"/>' . "\n";
+    echo '<meta property="og:title" content="' . htmlspecialchars($ogTitle) . '"/>' . "\n";
+    if ($ogDesc !== '') {
+        echo '<meta property="og:description" content="' . htmlspecialchars($ogDesc) . '"/>' . "\n";
+    }
+    echo '<meta property="og:url" content="' . htmlspecialchars($canonical) . '"/>' . "\n";
+    echo '<meta property="og:image" content="' . htmlspecialchars($ogImage) . '"/>' . "\n";
+    echo '<meta name="twitter:card" content="summary_large_image"/>' . "\n";
+    echo '<meta name="twitter:title" content="' . htmlspecialchars($ogTitle) . '"/>' . "\n";
+    if ($ogDesc !== '') {
+        echo '<meta name="twitter:description" content="' . htmlspecialchars($ogDesc) . '"/>' . "\n";
+    }
+}
+
+/**
  * Get base site URL (protocol + host) - dynamic from current request.
  * Use getenv('SITE_URL') to override when needed (e.g. behind proxy).
  */
