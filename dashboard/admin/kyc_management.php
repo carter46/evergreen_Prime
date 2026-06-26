@@ -24,29 +24,13 @@ try {
 $filter = $_GET['filter'] ?? 'pending';
 $list = $filter === 'approved' ? $approved : ($filter === 'rejected' ? $rejected : $pending);
 $pendingCount = count($pending);
+
+$pageTitle = $siteName . ' Admin | KYC Management';
+require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
+$pageHeading = 'KYC Management';
+$pageSubtitle = 'Review and approve or reject user identity verification submissions';
+include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> Admin | KYC Management</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<script id="tailwind-config">
-tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#f9bd0b", "background-light": "#f8f8f5", "background-dark": "#231e0f" }, fontFamily: { "display": ["Inter", "sans-serif"] } } } };
-</script>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
-<main class="flex-1 overflow-y-auto min-w-0">
-<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
-<div class="p-4 sm:p-6 lg:p-8">
-<div class="mb-6">
-<h1 class="text-2xl font-bold mb-2">KYC Management</h1>
-<p class="text-slate-500">Review and approve or reject user identity verification submissions</p>
-</div>
 
 <div class="flex gap-2 mb-6">
 <a href="?filter=pending" class="px-4 py-2 text-xs font-bold rounded-lg <?php echo $filter === 'pending' ? 'bg-primary text-black' : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400'; ?>">
@@ -101,8 +85,8 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 </table>
 </div>
 </div>
-</div>
-</main>
+
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
 
 <!-- View modal -->
 <div id="kyc-view-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
@@ -235,4 +219,4 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
   });
 })();
 </script>
-</body></html>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-close.php'; ?>

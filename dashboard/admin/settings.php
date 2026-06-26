@@ -48,31 +48,13 @@ if (isset($_SESSION['user_id'])) {
         }
     } catch (Throwable $e) {}
 }
+
+$pageTitle = $siteName . ' | Admin Settings';
+require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
+$pageHeading = 'Admin Settings';
+$pageSubtitle = 'Site branding, admin account, and testing tools.';
+include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | Admin Settings</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#f9bd0b", "background-light": "#f8f8f5", "background-dark": "#231e0f" }, fontFamily: { "display": ["Inter", "sans-serif"] } } } };
-</script>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
-<main class="flex-1 overflow-y-auto min-w-0">
-<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
-<div class="p-4 sm:p-6 lg:p-8">
-<div class="mb-8">
-<nav class="flex text-xs text-slate-400 gap-2 mb-1"><span>Admin</span><span>/</span><span class="text-slate-600">Settings</span></nav>
-<h1 class="text-2xl font-bold">Admin Settings</h1>
-<p class="text-slate-500 dark:text-zinc-400 mt-1">Site branding, admin account, and testing tools.</p>
-</div>
 
 <div class="mb-6">
   <div class="inline-flex flex-wrap gap-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-2">
@@ -347,10 +329,8 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
 <div id="settings-test-msg" class="text-sm mt-2 hidden"></div>
 </section>
 </div>
-</div>
-</div>
-</main>
-</div>
+
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
 <?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 (function(){
@@ -589,4 +569,4 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "
   });
 })();
 </script>
-</body></html>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-close.php'; ?>

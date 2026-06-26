@@ -30,42 +30,11 @@ $siteSettings = [
     'max_active_plans_per_user' => get_site_setting('max_active_plans_per_user', '3'),
     'compounding_enabled' => get_site_setting('compounding_enabled', '0'),
 ];
+
+$pageTitle = $siteName . ' | Investment Plan Management';
+require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | Investment Plan Management</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f9bd0b",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
 <style>
-        body { font-family: 'Inter', sans-serif; }
         .custom-scrollbar {
             scrollbar-gutter: stable;
             padding-right: 0.5rem;
@@ -79,24 +48,17 @@ $siteSettings = [
         .material-icons-round { font-size: 24px; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
         .plan-card-icon { width: 48px; height: 48px; min-width: 48px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .plan-drawer-icon-btn { width: 40px; height: 40px; min-width: 40px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    </style>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
-<main class="flex-1 overflow-y-auto min-w-0">
-<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
-<div class="p-4 sm:p-6 lg:p-8">
-<!-- Top Header -->
-<header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-<div>
-<h1 class="text-2xl font-bold">Investment Plan Management</h1>
-<p class="text-slate-500 dark:text-zinc-400">Manage and configure <?php echo htmlspecialchars($siteName); ?>'s crypto investment offerings.</p>
-</div>
+</style>
+<?php
+$pageHeading = 'Investment Plan Management';
+$pageSubtitle = "Manage and configure {$siteName}'s crypto investment offerings.";
+include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
+?>
+<div class="flex justify-end mb-8">
 <button type="button" id="add-plan-btn" class="bg-primary text-zinc-900 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:shadow-lg transition-all active:scale-95">
 <span class="material-icons-round text-lg">add</span> Add New Plan
             </button>
-</header>
+</div>
 <!-- Stats Overview Row -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-between">
@@ -219,7 +181,9 @@ foreach ($adminPlans as $idx => $p):
 </div>
 </div>
 </section>
-</main>
+
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
+
 <!-- Side Slide-out Panel (Configuration Drawer) - matches user management style -->
 <div id="plan-drawer" class="fixed inset-0 z-50 overflow-hidden hidden">
 <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="plan-drawer-backdrop"></div>
@@ -489,4 +453,4 @@ if (drawer) {
 }
 })();
 </script>
-</body></html>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-close.php'; ?>

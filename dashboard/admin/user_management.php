@@ -75,47 +75,14 @@ try {
     // Admin UI uses users.last_balance_usd (cached snapshot) for stable display.
     $pagination = ['page' => $page, 'per_page' => $perPage, 'total' => $total, 'total_pages' => $total > 0 ? (int)ceil($total / $perPage) : 1];
 } catch (Throwable $e) {}
+
+$pageTitle = $siteName . ' | Admin User Directory';
+require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
+$pageHeading = 'User Directory';
+$pageSubtitle = 'Manage and monitor ' . number_format($pagination['total']) . ' platform users';
+include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | Admin User Directory</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f9bd0b",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-                },
-            },
-        }
-    </script>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
-<main class="flex-1 overflow-y-auto min-w-0">
-<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
-<div class="p-4 sm:p-6 max-w-7xl mx-auto">
-<!-- Header & Search -->
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-<div>
-<h1 class="text-2xl font-bold">User Directory</h1>
-<p class="text-slate-500 text-sm">Manage and monitor <?php echo number_format($pagination['total']); ?> platform users</p>
-</div>
+<div class="flex justify-end mb-6">
 <div class="flex items-center gap-3">
 <button type="button" id="add-user-btn" class="flex items-center gap-2 px-4 py-2 bg-primary text-background-dark font-semibold rounded-lg hover:brightness-105 transition-all shadow-sm">
 <span class="material-icons text-sm">person_add</span>
@@ -255,8 +222,8 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <?php if ($pagination['page'] < $pagination['total_pages']): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] + 1; ?>" class="p-1.5 border rounded"><span class="material-icons text-sm">chevron_right</span></a><?php endif; ?>
 </div>
 </div>
-</div>
-</main>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
+
 <!-- Floating Batch Actions Bar (Visible when rows selected) -->
 <div id="batch-actions-bar" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-zinc-900 dark:bg-zinc-800 text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 z-50 hidden">
 <div class="flex items-center gap-2 pr-6 border-r border-zinc-700">
@@ -799,4 +766,4 @@ document.getElementById('drawer-avatar-input').addEventListener('change', functi
 });
 })();
 </script>
-</body></html>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-close.php'; ?>

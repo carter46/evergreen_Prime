@@ -23,39 +23,14 @@ try {
     usort($activities, function ($a, $b) { return strtotime($b['created_at']) - strtotime($a['created_at']); });
     $activityLog = array_slice($activities, 0, $limit);
 } catch (Throwable $e) {}
+
+$pageTitle = $siteName . ' Admin | System Log';
+require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
+$pageHeading = 'System Activity Log';
+$pageSubtitle = 'Recent registrations, deposits, withdrawals, and plan activations';
+include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> Admin | System Log</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<script id="tailwind-config">
-    tailwind.config = {
-        darkMode: "class",
-        theme: {
-            extend: {
-                colors: { "primary": "#f9bd0b", "background-light": "#f8f8f5", "background-dark": "#231e0f" },
-                fontFamily: { "display": ["Inter", "sans-serif"] },
-                borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem" },
-            },
-        },
-    }
-</script>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
-<main class="flex-1 overflow-y-auto min-w-0">
-<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
-<div class="p-4 sm:p-6 lg:p-8">
-<div class="mb-6 flex items-center justify-between">
-<div>
-<h1 class="text-2xl font-bold mb-1">System Activity Log</h1>
-<p class="text-slate-500 text-sm">Recent registrations, deposits, withdrawals, and plan activations</p>
-</div>
+<div class="mb-6 flex items-center justify-end">
 <a href="/dashboard/admin" class="text-xs font-bold text-primary hover:underline uppercase">← Back to Dashboard</a>
 </div>
 <div class="bg-white dark:bg-white/5 rounded-xl border border-primary/10 shadow-sm overflow-hidden">
@@ -99,8 +74,7 @@ foreach ($activityLog as $i => $a):
 <?php endif; ?>
 </div>
 </div>
-</div>
-</main>
-</div>
+
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
 <?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
-</body></html>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-close.php'; ?>

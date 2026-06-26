@@ -15,30 +15,13 @@ $earningsPaused = $settings['earnings_paused'] === '1';
 $earningsActive = !$earningsPaused;
 $interval = $settings['distribution_interval'];
 $showStartTime = in_array($interval, ['daily', 'weekly', 'monthly'], true);
+
+$pageTitle = $siteName . ' Admin | AI Bot Config';
+require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
+$pageHeading = 'AI Bot Configuration';
+$pageSubtitle = 'Central control panel for automated earnings distribution and global system rules.';
+include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> Admin | AI Bot Config</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<script id="tailwind-config">
-tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#f9bd0b", "background-light": "#f8f8f5", "background-dark": "#231e0f" }, fontFamily: { "display": ["Inter", "sans-serif"] } } } };
-</script>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
-<main class="flex-1 overflow-y-auto min-w-0">
-<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
-<div class="p-4 sm:p-6 lg:p-8">
-<div class="mb-8">
-<h1 class="text-2xl font-bold mb-2">AI Bot Configuration</h1>
-<p class="text-slate-500 dark:text-zinc-400">Central control panel for automated earnings distribution and global system rules.</p>
-</div>
 
 <?php if ($earningsPaused): ?>
 <div class="mb-6 p-4 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 flex items-center gap-3">
@@ -133,8 +116,8 @@ Run Manual Distribution
 <div id="ai-manual-result" class="mt-4 hidden text-sm"></div>
 </section>
 </div>
-</div>
-</main>
+
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
 
 <div id="ai-toast" class="fixed bottom-4 right-4 px-4 py-3 rounded-lg bg-slate-800 text-white text-sm font-medium hidden z-50"></div>
 
@@ -205,5 +188,4 @@ Run Manual Distribution
 })();
 </script>
 <?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
-</body>
-</html>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-close.php'; ?>

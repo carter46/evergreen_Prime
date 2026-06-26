@@ -10,49 +10,19 @@ try {
     $stmt = $pdo->query("SELECT id, name, email FROM users WHERE role = 'user' AND active = 1 ORDER BY id DESC LIMIT 500");
     $usersList = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 } catch (Throwable $e) {}
+
+$pageTitle = $siteName . ' | Admin Broadcast Hub';
+require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
 ?>
-<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | Admin Broadcast Hub</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f9bd0b",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-                },
-            },
-        }
-    </script>
 <style>
-        body { font-family: 'Inter', sans-serif; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
-    </style>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
-<main class="flex-1 overflow-y-auto min-w-0">
-<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
-<div class="p-4 sm:p-6 lg:p-8 min-h-screen">
+</style>
+<?php
+$pageHeading = 'Broadcast & Communication Hub';
+include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
+?>
 <div id="mail-modal" class="fixed inset-0 bg-black/50 z-50 p-4 flex items-center justify-center overflow-y-auto hidden">
   <div class="w-full max-w-3xl max-h-[90vh] my-auto flex flex-col bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden shrink-0">
     <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between gap-4 shrink-0">
@@ -67,16 +37,6 @@ try {
     </div>
   </div>
 </div>
-<header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-<div>
-<nav class="flex text-xs text-slate-400 gap-2 mb-1">
-<span>Admin</span>
-<span>/</span>
-<span class="text-slate-600">Communications Hub</span>
-</nav>
-<h1 class="text-2xl font-bold text-slate-900">Broadcast &amp; Communication Hub</h1>
-</div>
-</header>
 <div class="grid grid-cols-12 gap-8">
 <!-- Composition Area -->
 <div class="col-span-12 space-y-6">
@@ -197,9 +157,8 @@ try {
 </div>
 
 </div>
-</div>
-</main>
-</div>
+
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
 <?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 (function(){
@@ -411,4 +370,4 @@ try {
   loadSent();
 })();
 </script>
-</body></html>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-close.php'; ?>

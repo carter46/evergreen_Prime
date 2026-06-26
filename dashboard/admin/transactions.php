@@ -75,50 +75,13 @@ function getTransactionsForFilter($filter, $type, $pendingDeposits, $pendingWith
 }
 
 $currentTransactions = getTransactionsForFilter($filter, $type, $pendingDeposits, $pendingWithdrawals, $completedDeposits, $completedWithdrawals, $rejectedDeposits, $rejectedWithdrawals, $failedDeposits, $failedWithdrawals);
+
+$pageTitle = $siteName . ' Admin | Transactions';
+require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
+$pageHeading = 'Transaction Management';
+$pageSubtitle = 'Approve or reject user deposits and withdrawal requests';
+include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> Admin | Transactions</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f9bd0b",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
-<div class="flex min-h-screen">
-<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
-<main class="flex-1 overflow-y-auto min-w-0">
-<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
-<div class="p-4 sm:p-6 lg:p-8">
-<div class="mb-6">
-<h1 class="text-2xl font-bold mb-2">Transaction Management</h1>
-<p class="text-slate-500">Approve or reject user deposits and withdrawal requests</p>
-</div>
 
 <!-- Type Tabs -->
 <div class="flex gap-2 mb-6 border-b border-slate-200 dark:border-slate-800">
@@ -265,9 +228,7 @@ echo $fmt . ' ' . htmlspecialchars($tx['currency']);
 </div>
 </div>
 
-</div>
-</main>
-</div>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
 <?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -402,4 +363,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-</body></html>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-close.php'; ?>

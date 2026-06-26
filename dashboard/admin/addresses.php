@@ -3,52 +3,35 @@ require_once __DIR__ . '/../../includes/admin-check.php';
 $currentPage = 'addresses';
 require_once __DIR__ . '/../../includes/helpers.php';
 $siteName = get_site_name();
+
+$pageTitle = $siteName . ' | Wallet Addresses';
+require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | Wallet Addresses</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<script id="tailwind-config">
-tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#f9bd0b", "background-light": "#f8f8f5", "background-dark": "#231e0f" }, fontFamily: { "display": ["Inter", "sans-serif"] }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" } } } };
-</script>
 <style>
-body { font-family: 'Inter', sans-serif; }
 .custom-scrollbar::-webkit-scrollbar { width: 8px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
 .material-icons-round { font-size: 24px; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
 </style>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
-<div class="flex min-h-screen w-full">
-<?php include __DIR__ . '/../../includes/dashboard/admin-sidebar.php'; ?>
-<main class="flex-1 min-w-0 flex flex-col overflow-hidden">
-<?php include __DIR__ . '/../../includes/dashboard/admin-header.php'; ?>
-<div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-8">
-<header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-<div>
-<h1 class="text-2xl font-bold">Wallet Addresses</h1>
-<p class="text-slate-500 dark:text-zinc-400">Manage deposit addresses for each supported coin. Users will send crypto to these addresses.</p>
-</div>
+<?php
+$pageHeading = 'Wallet Addresses';
+$pageSubtitle = 'Manage deposit addresses for each supported coin. Users will send crypto to these addresses.';
+include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
+?>
+<div class="flex justify-end mb-8">
 <button type="button" id="add-address-btn" class="w-fit shrink-0 bg-primary text-zinc-900 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:shadow-lg transition-all">
 <span class="material-icons-round text-lg">add</span> Add New Address
 </button>
-</header>
+</div>
 <div id="messageContainer" class="mb-4"></div>
 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
 <div id="addressesContainer" class="p-4 sm:p-6">
 <div class="text-center py-8 sm:py-10 text-slate-500">Loading addresses...</div>
 </div>
 </div>
-</div>
-</main>
-</div>
+
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
 
 <!-- Modal -->
 <div id="address-modal" class="fixed inset-0 z-50 hidden">
@@ -250,4 +233,4 @@ document.getElementById('address-form').addEventListener('submit', saveAddress);
 Promise.all([loadCoins(), loadAddresses()]);
 })();
 </script>
-</body></html>
+<?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-close.php'; ?>
