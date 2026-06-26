@@ -159,7 +159,7 @@ Tax-Efficient Rebalancing
 Dedicated Wealth Consultant
 </li>
 </ul>
-<a href="/plans" class="inline-block bg-surface-container-lowest text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-800 transition-colors text-label-sm">
+<a href="/about_us" class="inline-block bg-surface-container-lowest text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-800 transition-colors text-label-sm">
 Inquire About Institutional Services
 </a>
 </div>

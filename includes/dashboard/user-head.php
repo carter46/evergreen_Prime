@@ -106,9 +106,15 @@ body.user-dashboard {
 .dash-scrollbar::-webkit-scrollbar { width: 4px; }
 .dash-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .dash-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,195,92,0.25); border-radius: 10px; }
-.user-dash-main { padding-top: calc(4rem + env(safe-area-inset-top, 0px)); }
-@media (min-width: 1024px) {
-  .user-dash-main { margin-left: 16rem; }
+.user-dash-main {
+  padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+  box-sizing: border-box;
+}
+.user-dash-content {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 .user-topbar {
   padding-top: env(safe-area-inset-top, 0px);

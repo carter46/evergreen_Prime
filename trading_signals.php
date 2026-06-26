@@ -72,7 +72,7 @@ Unlock Full Feed <span class="material-symbols-outlined text-base">arrow_forward
 </div>
 <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto shrink-0">
 <a href="/register" class="btn-get-started text-center px-8 py-3 rounded-xl font-bold text-label-sm">Unlock Premium Feed</a>
-<a href="/plans" class="border border-outline text-on-surface px-8 py-3 rounded-xl font-bold text-label-sm text-center hover:bg-surface-container-high transition-colors">Compare Plans</a>
+<a href="/about_us" class="border border-outline text-on-surface px-8 py-3 rounded-xl font-bold text-label-sm text-center hover:bg-surface-container-high transition-colors">About Us</a>
 </div>
 </div>
 <p class="text-on-secondary-container text-xs mt-6 max-w-3xl leading-relaxed">
