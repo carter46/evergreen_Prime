@@ -85,7 +85,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <div class="flex justify-end mb-6">
 <div class="flex items-center gap-3">
 <button type="button" id="add-user-btn" class="flex items-center gap-2 px-4 py-2 bg-primary text-background-dark font-semibold rounded-lg hover:brightness-105 transition-all shadow-sm">
-<span class="material-icons text-sm">person_add</span>
+<span class="material-symbols-outlined text-sm">person_add</span>
                     Add User
                 </button>
 </div>
@@ -93,7 +93,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <!-- Filters -->
 <form method="get" action="/dashboard/admin/users" class="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex flex-wrap items-center gap-4 mb-6 shadow-sm">
 <div class="flex-1 min-w-[300px] relative">
-<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
 <input name="search" value="<?php echo htmlspecialchars($search); ?>" class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-zinc-800 border-none rounded-lg focus:ring-2 focus:ring-primary text-sm" placeholder="Search by name or email..." type="text"/>
 </div>
 <div class="flex items-center gap-2">
@@ -156,7 +156,7 @@ foreach ($users as $i => $u):
 </td>
 <td class="px-6 py-4 text-right">
 <div class="flex items-center justify-end">
-<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-md text-slate-500 user-edit-btn" title="Edit" data-user-id="<?php echo $u['id']; ?>"><span class="material-icons text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-md text-slate-500 user-edit-btn" title="Edit" data-user-id="<?php echo $u['id']; ?>"><span class="material-symbols-outlined text-lg">edit</span></button>
 </div>
 </td>
 </tr>
@@ -177,11 +177,11 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 ?>
 <span class="text-xs text-slate-500">Showing <?php echo $start; ?>-<?php echo $end; ?> of <?php echo number_format($pagination['total']); ?> users</span>
 <div class="flex items-center gap-2">
-<?php if ($pagination['page'] > 1): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] - 1; ?>" class="p-1 border border-slate-200 dark:border-zinc-800 rounded hover:bg-slate-50 text-slate-400"><span class="material-icons text-sm">chevron_left</span></a><?php endif; ?>
+<?php if ($pagination['page'] > 1): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] - 1; ?>" class="p-1 border border-slate-200 dark:border-zinc-800 rounded hover:bg-slate-50 text-slate-400"><span class="material-symbols-outlined text-sm">chevron_left</span></a><?php endif; ?>
 <?php for ($p = 1; $p <= min(5, $pagination['total_pages']); $p++): ?>
 <a href="<?php echo $baseUrl; ?>page=<?php echo $p; ?>" class="px-3 py-1 <?php echo $p === $pagination['page'] ? 'bg-primary text-background-dark font-bold' : 'hover:bg-slate-100 dark:hover:bg-zinc-800'; ?> text-xs rounded"><?php echo $p; ?></a>
 <?php endfor; ?>
-<?php if ($pagination['page'] < $pagination['total_pages']): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] + 1; ?>" class="p-1 border border-slate-200 dark:border-zinc-800 rounded hover:bg-slate-50 text-slate-400"><span class="material-icons text-sm">chevron_right</span></a><?php endif; ?>
+<?php if ($pagination['page'] < $pagination['total_pages']): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] + 1; ?>" class="p-1 border border-slate-200 dark:border-zinc-800 rounded hover:bg-slate-50 text-slate-400"><span class="material-symbols-outlined text-sm">chevron_right</span></a><?php endif; ?>
 </div>
 </div>
 </div>
@@ -202,12 +202,12 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full <?php echo $kc; ?> text-[10px] font-bold uppercase mt-1"><?php echo ucfirst($u['kyc_status']); ?></span>
 </div>
 </div>
-<span class="material-icons text-slate-400 user-mobile-chevron transition-transform shrink-0">expand_more</span>
+<span class="material-symbols-outlined text-slate-400 user-mobile-chevron transition-transform shrink-0">expand_more</span>
 </button>
 <div class="user-mobile-expand hidden border-t border-slate-100 dark:border-zinc-800 px-4 py-4 space-y-3">
 <div class="flex justify-between items-center"><span class="text-xs text-slate-500">Total Balance</span><span class="font-bold text-sm">$<?php echo format_usd_amount($u['total_balance_usd']); ?></span></div>
 <div class="flex justify-between items-center"><span class="text-xs text-slate-500">Active Plans</span><span class="<?php echo $u['active_plans_count'] > 0 ? 'bg-primary/20 text-primary' : 'text-slate-500'; ?> text-xs font-bold"><?php echo $u['active_plans_count']; ?> Plan<?php echo $u['active_plans_count'] !== 1 ? 's' : ''; ?></span></div>
-<button type="button" class="user-edit-btn w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-zinc-900 font-bold rounded-lg text-sm" data-user-id="<?php echo $u['id']; ?>"><span class="material-icons text-lg">edit</span>Edit User</button>
+<button type="button" class="user-edit-btn w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-zinc-900 font-bold rounded-lg text-sm" data-user-id="<?php echo $u['id']; ?>"><span class="material-symbols-outlined text-lg">edit</span>Edit User</button>
 </div>
 </div>
 <?php endforeach; ?>
@@ -217,9 +217,9 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <div class="flex items-center justify-between px-2 py-4">
 <span class="text-xs text-slate-500"><?php echo $start; ?>-<?php echo $end; ?> of <?php echo number_format($pagination['total']); ?></span>
 <div class="flex items-center gap-2">
-<?php if ($pagination['page'] > 1): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] - 1; ?>" class="p-1.5 border rounded"><span class="material-icons text-sm">chevron_left</span></a><?php endif; ?>
+<?php if ($pagination['page'] > 1): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] - 1; ?>" class="p-1.5 border rounded"><span class="material-symbols-outlined text-sm">chevron_left</span></a><?php endif; ?>
 <?php for ($p = 1; $p <= min(5, $pagination['total_pages']); $p++): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $p; ?>" class="px-2 py-1 text-xs <?php echo $p === $pagination['page'] ? 'bg-primary font-bold' : 'hover:bg-slate-100'; ?> rounded"><?php echo $p; ?></a><?php endfor; ?>
-<?php if ($pagination['page'] < $pagination['total_pages']): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] + 1; ?>" class="p-1.5 border rounded"><span class="material-icons text-sm">chevron_right</span></a><?php endif; ?>
+<?php if ($pagination['page'] < $pagination['total_pages']): ?><a href="<?php echo $baseUrl; ?>page=<?php echo $pagination['page'] + 1; ?>" class="p-1.5 border rounded"><span class="material-symbols-outlined text-sm">chevron_right</span></a><?php endif; ?>
 </div>
 </div>
 <?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
@@ -232,20 +232,20 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 </div>
 <div class="flex items-center gap-4">
 <button class="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-<span class="material-icons text-lg">mail</span>
+<span class="material-symbols-outlined text-lg">mail</span>
                 Send Email
             </button>
 <button class="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-<span class="material-icons text-lg">account_balance_wallet</span>
+<span class="material-symbols-outlined text-lg">account_balance_wallet</span>
                 Adjust Balance
             </button>
 <button class="flex items-center gap-2 text-sm font-medium text-red-400 hover:text-red-300 transition-colors">
-<span class="material-icons text-lg">delete</span>
+<span class="material-symbols-outlined text-lg">delete</span>
                 Delete
             </button>
 </div>
 <button class="ml-4 p-1 hover:bg-zinc-700 rounded-full text-zinc-400">
-<span class="material-icons text-sm">close</span>
+<span class="material-symbols-outlined text-sm">close</span>
 </button>
 </div>
 <!-- Toast for success messages -->
@@ -256,17 +256,17 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <div id="add-user-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[420px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300" style="transform: translateX(100%);">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">Add User</h2>
-<button type="button" id="add-user-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors" aria-label="Close"><span class="material-icons text-lg">close</span></button>
+<button type="button" id="add-user-close" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors" aria-label="Close"><span class="material-symbols-outlined text-lg">close</span></button>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <form id="add-user-form" class="space-y-4">
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Full Name</label><input type="text" name="name" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="John Doe"/></div>
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Email <span class="text-red-400">*</span></label><input type="email" name="email" required class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="john@example.com"/></div>
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Phone <span class="text-slate-400">(Optional)</span></label><input type="tel" name="phone" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="+1 234 567 8900"/></div>
-<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Password <span class="text-red-400">*</span></label><div class="relative"><input type="password" name="password" required minlength="8" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 pr-10 text-sm" placeholder="••••••••" autocomplete="new-password"/><button type="button" data-password-toggle class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 p-1"><span class="material-icons text-lg">visibility</span></button></div></div>
-<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Confirm Password <span class="text-red-400">*</span></label><div class="relative"><input type="password" name="confirm_password" required minlength="8" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 pr-10 text-sm" placeholder="••••••••"/><button type="button" data-password-toggle class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 p-1"><span class="material-icons text-lg">visibility</span></button></div></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Password <span class="text-red-400">*</span></label><div class="relative"><input type="password" name="password" required minlength="8" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 pr-10 text-sm" placeholder="••••••••" autocomplete="new-password"/><button type="button" data-password-toggle class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 p-1"><span class="material-symbols-outlined text-lg">visibility</span></button></div></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Confirm Password <span class="text-red-400">*</span></label><div class="relative"><input type="password" name="confirm_password" required minlength="8" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 pr-10 text-sm" placeholder="••••••••"/><button type="button" data-password-toggle class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 p-1"><span class="material-symbols-outlined text-lg">visibility</span></button></div></div>
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Referral Code <span class="text-slate-400">(Optional)</span></label><input type="text" name="referral" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm uppercase tracking-widest" placeholder="CODE2024"/></div>
-<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Profile Photo <span class="text-slate-400">(Optional)</span></label><div class="flex items-center gap-4"><div id="add-user-avatar-preview" class="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden"><span class="material-icons text-zinc-400">person</span></div><input type="file" name="avatar" accept="image/png,image/jpeg,image/webp" class="flex-1 text-sm text-zinc-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-primary file:text-black file:text-xs"/></div><p class="text-[10px] text-zinc-400 mt-1">PNG, JPEG or WEBP. Max 2MB.</p></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Profile Photo <span class="text-slate-400">(Optional)</span></label><div class="flex items-center gap-4"><div id="add-user-avatar-preview" class="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden"><span class="material-symbols-outlined text-zinc-400">person</span></div><input type="file" name="avatar" accept="image/png,image/jpeg,image/webp" class="flex-1 text-sm text-zinc-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-primary file:text-black file:text-xs"/></div><p class="text-[10px] text-zinc-400 mt-1">PNG, JPEG or WEBP. Max 2MB.</p></div>
 <div id="add-user-message" class="text-sm hidden"></div>
 <button type="submit" class="w-full px-3 py-2.5 text-sm font-bold rounded-lg bg-primary text-zinc-900 hover:brightness-105">Create User</button>
 </form>
@@ -276,7 +276,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <div id="user-profile-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[420px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-50 border-l border-slate-200 dark:border-zinc-800 flex flex-col transform translate-x-full transition-transform duration-300" style="transform: translateX(100%);">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
 <h2 class="text-lg font-bold">User Profile</h2>
-<button id="drawer-close-btn" type="button" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors" aria-label="Close"><span class="material-icons text-lg">close</span></button>
+<button id="drawer-close-btn" type="button" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors" aria-label="Close"><span class="material-symbols-outlined text-lg">close</span></button>
 </div>
 <div class="flex-1 overflow-y-auto p-6 space-y-8">
 <input type="hidden" id="drawer-user-id" value=""/>
@@ -284,7 +284,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <div class="flex items-center gap-4">
 <div class="relative group cursor-pointer" id="drawer-avatar-wrap" title="Click to update profile picture">
 <div id="drawer-avatar" class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-background-dark text-2xl font-bold overflow-hidden shrink-0"></div>
-<span class="absolute bottom-0 right-0 w-5 h-5 bg-slate-700 text-white rounded-full flex items-center justify-center"><span class="material-icons text-xs">photo_camera</span></span>
+<span class="absolute bottom-0 right-0 w-5 h-5 bg-slate-700 text-white rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-xs">photo_camera</span></span>
 <input type="file" id="drawer-avatar-input" accept="image/png,image/jpeg,image/webp" class="hidden" />
 </div>
 <div>
@@ -302,7 +302,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <form id="profile-update-form" class="space-y-4">
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Name</label><input type="text" id="drawer-edit-name" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" /></div>
 <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Email</label><input type="email" id="drawer-edit-email" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm" /></div>
-<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">New Password</label><div class="relative"><input type="password" id="drawer-edit-password" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 pr-10 text-sm" placeholder="Leave blank to keep current" autocomplete="new-password" /><button type="button" data-password-toggle class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"><span class="material-icons text-lg">visibility</span></button></div></div>
+<div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">New Password</label><div class="relative"><input type="password" id="drawer-edit-password" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 pr-10 text-sm" placeholder="Leave blank to keep current" autocomplete="new-password" /><button type="button" data-password-toggle class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"><span class="material-symbols-outlined text-lg">visibility</span></button></div></div>
 </form>
 <!-- User Wallet -->
 <div>
@@ -354,14 +354,14 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <div>
 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Security Settings</h4>
 <div class="flex items-center justify-between mb-3">
-<div class="flex items-center gap-3"><span class="material-icons">verified_user</span><span class="text-sm font-medium">Two-Factor Auth (2FA)</span></div>
+<div class="flex items-center gap-3"><span class="material-symbols-outlined">verified_user</span><span class="text-sm font-medium">Two-Factor Auth (2FA)</span></div>
 <label class="relative inline-flex items-center cursor-pointer">
 <input type="checkbox" id="drawer-2fa-toggle" class="sr-only peer" />
 <div class="w-11 h-6 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
 </label>
 </div>
 <div class="flex items-center justify-between mb-3">
-<div class="flex items-center gap-3"><span class="material-icons text-sm">badge</span><span class="text-sm font-medium">KYC Status</span></div>
+<div class="flex items-center gap-3"><span class="material-symbols-outlined text-sm">badge</span><span class="text-sm font-medium">KYC Status</span></div>
 <span id="drawer-kyc-status" class="text-xs font-bold px-2 py-0.5 rounded-full uppercase">—</span>
 </div>
 <button type="button" id="drawer-verify-kyc-btn" class="w-full mt-2 px-3 py-2 text-xs font-bold rounded-lg bg-primary/20 text-primary hover:bg-primary hover:text-black transition-colors">Verify KYC (Bypass)</button>
@@ -644,7 +644,7 @@ if (addUserForm) addUserForm.addEventListener('submit', function(e){
         document.getElementById('user-toast').classList.remove('hidden');
         closeAddUserDrawer();
         f.reset();
-        document.getElementById('add-user-avatar-preview').innerHTML = '<span class="material-icons text-zinc-400">person</span>';
+        document.getElementById('add-user-avatar-preview').innerHTML = '<span class="material-symbols-outlined text-zinc-400">person</span>';
         window.location.reload();
       } else { if (msgEl) { msgEl.textContent = res.error || 'Failed'; msgEl.className = 'text-sm text-red-500'; msgEl.classList.remove('hidden'); } }
     })
@@ -660,7 +660,7 @@ if (addUserAvatarInput) addUserAvatarInput.addEventListener('change', function()
     var r = new FileReader();
     r.onload = function(){ p.innerHTML = '<img src="'+r.result+'" alt="" class="w-full h-full object-cover"/>'; };
     r.readAsDataURL(file);
-  } else { p.innerHTML = '<span class="material-icons text-zinc-400">person</span>'; }
+  } else { p.innerHTML = '<span class="material-symbols-outlined text-zinc-400">person</span>'; }
 });
 
 document.querySelectorAll('.user-edit-btn').forEach(function(btn){

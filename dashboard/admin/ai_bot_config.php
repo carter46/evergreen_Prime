@@ -25,7 +25,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 
 <?php if ($earningsPaused): ?>
 <div class="mb-6 p-4 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 flex items-center gap-3">
-<span class="material-icons-round">pause_circle</span>
+<span class="material-symbols-outlined">pause_circle</span>
 <span class="font-semibold">Earnings distribution is paused. No credits are being made until you resume.</span>
 </div>
 <?php endif; ?>
@@ -34,7 +34,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <!-- Global Withdrawal Limits -->
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
 <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-<span class="material-icons-round text-primary">account_balance</span>
+<span class="material-symbols-outlined text-primary">account_balance</span>
 Global Withdrawal Limits (USDT)
 </h2>
 <p class="text-sm text-slate-500 dark:text-zinc-400 mb-4">System-wide min and max limits. Displayed as USD equivalent.</p>
@@ -53,7 +53,7 @@ Global Withdrawal Limits (USDT)
 <!-- Pause / Resume -->
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
 <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-<span class="material-icons-round text-primary">play_circle</span>
+<span class="material-symbols-outlined text-primary">play_circle</span>
 Earnings Distribution
 </h2>
 <div class="flex items-center justify-between gap-4">
@@ -72,7 +72,7 @@ Earnings Distribution
 <!-- Distribution Interval -->
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
 <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-<span class="material-icons-round text-primary">schedule</span>
+<span class="material-symbols-outlined text-primary">schedule</span>
 Distribution Interval
 </h2>
 <p class="text-sm text-slate-500 dark:text-zinc-400 mb-4">5 min and 12h credit continuously. Daily, Weekly, Monthly batch at the configured start time.</p>
@@ -97,7 +97,7 @@ Distribution Interval
 <!-- Save Settings -->
 <div class="flex flex-wrap gap-4">
 <button type="button" id="ai-save-settings" class="bg-primary text-zinc-900 px-6 py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2">
-<span class="material-icons-round text-lg">save</span>
+<span class="material-symbols-outlined text-lg">save</span>
 Save Settings
 </button>
 </div>
@@ -105,12 +105,12 @@ Save Settings
 <!-- Manual Distribution -->
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6 mt-8">
 <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-<span class="material-icons-round text-primary">play_arrow</span>
+<span class="material-symbols-outlined text-primary">play_arrow</span>
 Manual Distribution
 </h2>
 <p class="text-sm text-slate-500 dark:text-zinc-400 mb-4">Immediately credit all eligible users. Ignores schedules and intervals. Uses same ROI logic, credits in USDT.</p>
 <button type="button" id="ai-manual-distribute" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-colors">
-<span class="material-icons-round text-lg">send</span>
+<span class="material-symbols-outlined text-lg">send</span>
 Run Manual Distribution
 </button>
 <div id="ai-manual-result" class="mt-4 hidden text-sm"></div>

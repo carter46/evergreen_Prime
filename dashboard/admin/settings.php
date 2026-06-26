@@ -69,7 +69,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <!-- Admin Account Tab -->
 <div id="settings-panel-admin">
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
-<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">admin_panel_settings</span> Admin Account</h2>
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-primary">admin_panel_settings</span> Admin Account</h2>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <div>
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Admin Email</label>
@@ -97,7 +97,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <div id="settings-panel-branding" class="hidden">
 <!-- Site Branding -->
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
-<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">palette</span> Site Branding</h2>
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-primary">palette</span> Site Branding</h2>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <div>
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Site Name</label>
@@ -112,7 +112,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Logo</label>
 <div class="flex items-center gap-4">
 <div id="settings-logo-preview" class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
-<?php if (!empty($settings['site_logo'])): ?><img src="<?php echo htmlspecialchars($settings['site_logo']); ?>" alt="Logo" class="w-full h-full object-contain"/><?php else: ?><span class="material-icons text-slate-400">image</span><?php endif; ?>
+<?php if (!empty($settings['site_logo'])): ?><img src="<?php echo htmlspecialchars($settings['site_logo']); ?>" alt="Logo" class="w-full h-full object-contain"/><?php else: ?><span class="material-symbols-outlined text-slate-400">image</span><?php endif; ?>
 </div>
 <input type="file" id="settings-logo-input" accept="image/png,image/jpeg,image/webp" class="text-sm"/>
 </div>
@@ -121,7 +121,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Favicon</label>
 <div class="flex items-center gap-4">
 <div id="settings-favicon-preview" class="w-10 h-10 rounded bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
-<?php if (!empty($settings['site_favicon'])): ?><img src="<?php echo htmlspecialchars($settings['site_favicon']); ?>" alt="Favicon" class="w-full h-full object-contain"/><?php else: ?><span class="material-icons text-slate-400 text-lg">star</span><?php endif; ?>
+<?php if (!empty($settings['site_favicon'])): ?><img src="<?php echo htmlspecialchars($settings['site_favicon']); ?>" alt="Favicon" class="w-full h-full object-contain"/><?php else: ?><span class="material-symbols-outlined text-slate-400 text-lg">star</span><?php endif; ?>
 </div>
 <input type="file" id="settings-favicon-input" accept="image/png,image/x-icon,image/ico" class="text-sm"/>
 </div>
@@ -140,7 +140,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Homepage Floating Modal Image</label>
 <div class="flex items-center gap-4">
 <div id="settings-modal-image-preview" class="w-32 h-32 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-slate-200 dark:border-zinc-700">
-<?php if (!empty($settings['homepage_modal_image'])): ?><img src="<?php echo htmlspecialchars($settings['homepage_modal_image']); ?>" alt="Modal Image" class="w-full h-full object-contain"/><?php else: ?><span class="material-icons text-slate-400">image</span><?php endif; ?>
+<?php if (!empty($settings['homepage_modal_image'])): ?><img src="<?php echo htmlspecialchars($settings['homepage_modal_image']); ?>" alt="Modal Image" class="w-full h-full object-contain"/><?php else: ?><span class="material-symbols-outlined text-slate-400">image</span><?php endif; ?>
 </div>
 <input type="file" id="settings-modal-image-input" accept="image/png,image/jpeg,image/webp,image/jpg" class="text-sm"/>
 </div>
@@ -150,7 +150,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Header Image (About Page)</label>
 <div class="flex items-center gap-4">
 <div id="settings-header-image-preview" class="w-32 h-32 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-slate-200 dark:border-zinc-700">
-<?php if (!empty($settings['header_image'])): ?><img src="<?php echo htmlspecialchars($settings['header_image']); ?>" alt="Header Image" class="w-full h-full object-contain"/><?php else: ?><span class="material-icons text-slate-400">image</span><?php endif; ?>
+<?php if (!empty($settings['header_image'])): ?><img src="<?php echo htmlspecialchars($settings['header_image']); ?>" alt="Header Image" class="w-full h-full object-contain"/><?php else: ?><span class="material-symbols-outlined text-slate-400">image</span><?php endif; ?>
 </div>
 <input type="file" id="settings-header-image-input" accept="image/png,image/jpeg,image/webp,image/jpg" class="text-sm"/>
 </div>
@@ -182,7 +182,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 </div>
 <!-- Referral system -->
 <div class="md:col-span-2 border-t border-slate-200 dark:border-zinc-700 pt-6 mt-4">
-<h3 class="text-sm font-bold text-slate-700 dark:text-zinc-300 mb-3 flex items-center gap-2"><span class="material-icons text-primary text-lg">group_add</span> Referral System</h3>
+<h3 class="text-sm font-bold text-slate-700 dark:text-zinc-300 mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-primary text-lg">group_add</span> Referral System</h3>
 <div class="flex flex-wrap items-center gap-6">
 <div class="flex items-center gap-3">
 <input id="settings-referral-enabled" class="sr-only peer" type="checkbox" <?php echo ($settings['referral_enabled'] ?? '0') === '1' ? 'checked' : ''; ?>/>
@@ -214,7 +214,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <div id="settings-panel-email" class="hidden">
 <!-- Email Configuration -->
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
-<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">mail</span> Email Configuration</h2>
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-primary">mail</span> Email Configuration</h2>
 <p class="text-sm text-slate-500 dark:text-zinc-400 mb-6">Configure SMTP for sending and IMAP for receiving. Passwords are write-only (leave blank to keep current).</p>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -317,7 +317,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 
 <!-- Testing Section (after IMAP) -->
 <section class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-6">
-<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-icons text-primary">science</span> Testing</h2>
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-primary">science</span> Testing</h2>
 <p class="text-sm text-slate-500 dark:text-zinc-400 mb-4">After saving your email configuration, send a test email to confirm everything works.</p>
 <div class="flex flex-wrap gap-4 items-end mb-4">
 <div class="flex-1 min-w-[200px]">

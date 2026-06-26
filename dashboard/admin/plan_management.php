@@ -45,7 +45,7 @@ require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        .material-icons-round { font-size: 24px; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
+        .material-symbols-outlined { overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
         .plan-card-icon { width: 48px; height: 48px; min-width: 48px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .plan-drawer-icon-btn { width: 40px; height: 40px; min-width: 40px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 </style>
@@ -56,7 +56,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 ?>
 <div class="flex justify-end mb-8">
 <button type="button" id="add-plan-btn" class="bg-primary text-zinc-900 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:shadow-lg transition-all active:scale-95">
-<span class="material-icons-round text-lg">add</span> Add New Plan
+<span class="material-symbols-outlined text-lg">add</span> Add New Plan
             </button>
 </div>
 <!-- Stats Overview Row -->
@@ -67,7 +67,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <p class="text-2xl font-bold"><?php echo number_format($planStats['total_users']); ?></p>
 </div>
 <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-full flex items-center justify-center">
-<span class="material-icons-round">group</span>
+<span class="material-symbols-outlined">group</span>
 </div>
 </div>
 <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-between">
@@ -76,7 +76,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <p class="text-2xl font-bold">$<?php echo format_usd_amount($planStats['total_capital']); ?></p>
 </div>
 <div class="w-12 h-12 bg-green-50 dark:bg-green-900/20 text-green-600 rounded-full flex items-center justify-center">
-<span class="material-icons-round">payments</span>
+<span class="material-symbols-outlined">payments</span>
 </div>
 </div>
 <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-between">
@@ -85,7 +85,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <p class="text-2xl font-bold"><?php echo $planStats['avg_payout']; ?>%</p>
 </div>
 <div class="w-12 h-12 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-full flex items-center justify-center">
-<span class="material-icons-round">trending_up</span>
+<span class="material-symbols-outlined">trending_up</span>
 </div>
 </div>
 </div>
@@ -107,7 +107,7 @@ foreach ($adminPlans as $idx => $p):
 <div class="p-6">
 <div class="flex justify-between items-start gap-4 mb-4">
 <div class="plan-card-icon bg-slate-100 dark:bg-zinc-800 rounded-lg text-slate-600 dark:text-zinc-400 group-hover:bg-primary transition-colors group-hover:text-zinc-900">
-<span class="material-icons-round text-xl"><?php echo htmlspecialchars($planIcon); ?></span>
+<span class="material-symbols-outlined text-xl"><?php echo htmlspecialchars($planIcon); ?></span>
 </div>
 <div class="flex flex-col items-end shrink-0">
 <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full <?php echo $enabled ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'; ?> text-xs font-medium">
@@ -134,10 +134,10 @@ foreach ($adminPlans as $idx => $p):
 <div class="flex items-center justify-between gap-3 pt-6 border-t border-slate-100 dark:border-zinc-800">
 <div class="flex items-center gap-2">
 <button type="button" class="plan-edit-btn w-10 h-10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 transition-colors" data-plan-id="<?php echo (int)$p['id']; ?>">
-<span class="material-icons-round text-sm">edit</span>
+<span class="material-symbols-outlined text-sm">edit</span>
 </button>
 <button type="button" class="plan-delete-btn w-10 h-10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-zinc-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600" data-plan-id="<?php echo (int)$p['id']; ?>" data-plan-name="<?php echo htmlspecialchars($p['name']); ?>">
-<span class="material-icons-round text-sm">delete</span>
+<span class="material-symbols-outlined text-sm">delete</span>
 </button>
 <label class="relative inline-flex items-center cursor-pointer" title="<?php echo $activeUsers > 0 ? 'Cannot disable: plan has ' . $activeUsers . ' active user(s)' : ''; ?>">
 <input class="sr-only peer plan-enabled-toggle" type="checkbox" data-plan-id="<?php echo (int)$p['id']; ?>" data-active-users="<?php echo $activeUsers; ?>" <?php echo $enabled ? 'checked' : ''; ?> <?php echo $activeUsers > 0 ? 'disabled' : ''; ?>/>
@@ -156,7 +156,7 @@ foreach ($adminPlans as $idx => $p):
 <!-- Global Settings Section -->
 <section class="mb-12">
 <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
-<span class="material-icons-round text-primary">public</span> Global Parameters
+<span class="material-symbols-outlined text-primary">public</span> Global Parameters
             </h2>
 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-8">
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -194,7 +194,7 @@ foreach ($adminPlans as $idx => $p):
 <p id="plan-drawer-subtitle" class="text-xs text-slate-500 uppercase tracking-widest mt-1"></p>
 </div>
 <button type="button" id="plan-drawer-x" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full">
-<span class="material-icons-round">close</span>
+<span class="material-symbols-outlined">close</span>
 </button>
 </div>
 <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 custom-scrollbar">
@@ -219,19 +219,19 @@ foreach ($adminPlans as $idx => $p):
 <label class="block text-sm font-medium mb-2">Icon Selection</label>
 <div class="flex flex-wrap gap-3 min-w-0" id="plan-form-icon-btns">
 <div class="plan-drawer-icon-btn plan-icon-btn border-2 border-primary bg-primary/10 rounded cursor-pointer shrink-0" data-icon="trending_up">
-<span class="material-icons-round text-xl">trending_up</span>
+<span class="material-symbols-outlined text-xl">trending_up</span>
 </div>
 <div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="rocket_launch">
-<span class="material-icons-round text-xl">rocket_launch</span>
+<span class="material-symbols-outlined text-xl">rocket_launch</span>
 </div>
 <div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="diamond">
-<span class="material-icons-round text-xl">diamond</span>
+<span class="material-symbols-outlined text-xl">diamond</span>
 </div>
 <div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="currency_bitcoin">
-<span class="material-icons-round text-xl">currency_bitcoin</span>
+<span class="material-symbols-outlined text-xl">currency_bitcoin</span>
 </div>
 <div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="token">
-<span class="material-icons-round text-xl">token</span>
+<span class="material-symbols-outlined text-xl">token</span>
 </div>
 </div>
 </div>

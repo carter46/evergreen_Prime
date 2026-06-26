@@ -33,7 +33,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
       <button type="button" id="mail-modal-close" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800">Close</button>
     </div>
     <div id="mail-modal-body" class="p-4 space-y-3 overflow-y-auto min-h-0 flex-1">
-      <div class="text-center py-8 text-slate-500"><span class="material-icons-outlined animate-spin">sync</span> Loading...</div>
+      <div class="text-center py-8 text-slate-500"><span class="material-symbols-outlined animate-spin">sync</span> Loading...</div>
     </div>
   </div>
 </div>
@@ -42,7 +42,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <div class="col-span-12 space-y-6">
 <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden">
 <div class="px-6 py-4 border-b border-slate-100 dark:border-zinc-700 flex items-center gap-2">
-<span class="material-icons-outlined text-xl text-primary">email</span>
+<span class="material-symbols-outlined text-xl text-primary">email</span>
 <h2 class="text-base font-bold text-slate-900 dark:text-white">Compose Email</h2>
 </div>
 <form id="broadcast-form" class="p-6 space-y-6">
@@ -93,7 +93,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <div id="broadcast-message" class="text-sm hidden"></div>
 <div class="flex flex-col sm:flex-row gap-3">
   <button type="submit" class="sm:w-auto px-6 py-2 bg-primary text-slate-900 font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-    <span class="material-icons-outlined text-base">send</span> Send Email
+    <span class="material-symbols-outlined text-base">send</span> Send Email
   </button>
 </div>
 </form>
@@ -103,7 +103,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <!-- Mailbox Actions (Refresh / Archive) -->
 <div class="col-span-12 flex flex-wrap items-center gap-3 mb-4">
   <button type="button" id="mail-refresh-all" class="w-fit shrink-0 px-6 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
-    <span class="material-icons-outlined text-base">sync</span> Refresh Mailbox
+    <span class="material-symbols-outlined text-base">sync</span> Refresh Mailbox
   </button>
   <button type="button" id="mail-archive-db" class="w-fit shrink-0 px-4 py-2 text-sm text-slate-500 hover:text-slate-700" title="Import to database">Archive to DB</button>
   <span id="mail-sync-msg" class="text-sm hidden"></span>
@@ -113,8 +113,8 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <div class="col-span-12 w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
   <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden min-w-[280px]">
     <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between">
-      <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-icons-outlined text-base">inbox</span> Inbox</h3>
-      <button type="button" id="inbox-refresh" class="text-xs font-bold text-primary hover:underline flex items-center gap-1"><span class="material-icons-outlined text-sm">refresh</span> Refresh</button>
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-symbols-outlined text-base">inbox</span> Inbox</h3>
+      <button type="button" id="inbox-refresh" class="text-xs font-bold text-primary hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm">refresh</span> Refresh</button>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-left">
@@ -135,8 +135,8 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 
   <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden min-w-[280px]">
     <div class="p-4 border-b border-slate-100 dark:border-zinc-700 flex items-center justify-between">
-      <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-icons-outlined text-base">send</span> Sent</h3>
-      <button type="button" id="sent-refresh" class="text-xs font-bold text-primary hover:underline flex items-center gap-1"><span class="material-icons-outlined text-sm">refresh</span> Refresh</button>
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><span class="material-symbols-outlined text-base">send</span> Sent</h3>
+      <button type="button" id="sent-refresh" class="text-xs font-bold text-primary hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm">refresh</span> Refresh</button>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-left">
@@ -183,7 +183,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
   function fmtDate(d){ try{ var t=new Date(d); return t.toLocaleDateString()+' '+t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }catch(e){ return d||''; } }
   function loadInbox(){
     var tbody=document.getElementById('inbox-tbody'); if(!tbody) return;
-    tbody.innerHTML='<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500"><span class="material-icons-outlined animate-spin">sync</span> Loading…</td></tr>';
+    tbody.innerHTML='<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500"><span class="material-symbols-outlined animate-spin">sync</span> Loading…</td></tr>';
     fetch('/api/admin/imap-list.php?folder=INBOX&limit=20').then(function(r){return r.json();}).then(function(res){
       if(!res.success){ tbody.innerHTML='<tr><td colspan="4" class="px-4 py-8 text-center text-red-600">'+(res.error||'Failed')+'</td></tr>'; return; }
       var emails=res.emails||[];
@@ -196,7 +196,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
   }
   function loadSent(){
     var tbody=document.getElementById('sent-tbody'); if(!tbody) return;
-    tbody.innerHTML='<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500"><span class="material-icons-outlined animate-spin">sync</span> Loading…</td></tr>';
+    tbody.innerHTML='<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500"><span class="material-symbols-outlined animate-spin">sync</span> Loading…</td></tr>';
     fetch('/api/admin/imap-list.php?folder='+encodeURIComponent(sentFolder)+'&limit=20').then(function(r){return r.json();}).then(function(res){
       if(!res.success){ tbody.innerHTML='<tr><td colspan="4" class="px-4 py-8 text-center text-red-600">'+(res.error||'Failed')+'</td></tr>'; return; }
       var emails=res.emails||[];
@@ -220,7 +220,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
     if (!modal || !lbl || !subj || !body) return;
     lbl.textContent = folder === 'INBOX' ? 'Inbox' : 'Sent';
     subj.textContent = 'Loading…';
-    body.innerHTML = '<div class="text-center py-8 text-slate-500"><span class="material-icons-outlined animate-spin">sync</span> Loading…</div>';
+    body.innerHTML = '<div class="text-center py-8 text-slate-500"><span class="material-symbols-outlined animate-spin">sync</span> Loading…</div>';
     modal.classList.remove('hidden');
     fetch('/api/admin/imap-message.php?folder=' + encodeURIComponent(folder) + '&uid=' + encodeURIComponent(uid))
       .then(function(r){ return r.json(); })

@@ -102,7 +102,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 </span>
 </div>
 <div class="mt-4">
-<h3 class="text-xl lg:text-2xl font-bold tracking-tight text-text-primary break-all"><?php echo number_format($totalUsers); ?></h3>
+<h3 class="text-base lg:text-lg font-bold tracking-tight text-text-primary break-all"><?php echo number_format($totalUsers); ?></h3>
 <p class="text-xs text-on-surface-variant/60 mt-1">Global Active Accounts</p>
 </div>
 </div>
@@ -112,7 +112,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <span class="material-symbols-outlined text-primary-container text-lg">payments</span>
 </div>
 <div class="mt-4">
-<h3 class="text-xl lg:text-2xl font-bold tracking-tight text-text-primary break-all">$<?php echo format_usd_amount($totalEarnings); ?></h3>
+<h3 class="text-base lg:text-lg font-bold tracking-tight text-text-primary break-all">$<?php echo format_usd_amount($totalEarnings); ?></h3>
 <p class="text-xs text-on-surface-variant/60 mt-1">Platform Revenue Flow</p>
 </div>
 </div>
@@ -122,7 +122,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <span class="text-on-surface-variant text-[10px] font-bold uppercase">Stable</span>
 </div>
 <div class="mt-4">
-<h3 class="text-xl lg:text-2xl font-bold tracking-tight text-text-primary"><?php echo number_format($activeInv); ?></h3>
+<h3 class="text-base lg:text-lg font-bold tracking-tight text-text-primary"><?php echo number_format($activeInv); ?></h3>
 <p class="text-xs text-on-surface-variant/60 mt-1">Live Asset Allocation</p>
 </div>
 </div>
@@ -132,7 +132,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <span class="material-symbols-outlined text-critical text-lg animate-pulse">priority_high</span>
 </div>
 <div class="mt-4">
-<h3 class="text-xl lg:text-2xl font-bold tracking-tight text-text-primary break-all">$<?php echo format_usd_amount($pendingDepositsSum); ?></h3>
+<h3 class="text-base lg:text-lg font-bold tracking-tight text-text-primary break-all">$<?php echo format_usd_amount($pendingDepositsSum); ?></h3>
 <p class="text-xs text-critical/80 mt-1">Action Required<?php if ($pendingDepositsCount > 0): ?> · <?php echo (int) $pendingDepositsCount; ?> pending<?php endif; ?></p>
 </div>
 </div>
@@ -142,7 +142,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <span class="material-symbols-outlined text-on-surface-variant text-lg">outbox</span>
 </div>
 <div class="mt-4">
-<h3 class="text-xl lg:text-2xl font-bold tracking-tight text-text-primary"><?php echo number_format($pendingWithdrawalsCount); ?></h3>
+<h3 class="text-base lg:text-lg font-bold tracking-tight text-text-primary"><?php echo number_format($pendingWithdrawalsCount); ?></h3>
 <p class="text-xs text-on-surface-variant/60 mt-1">$<?php echo format_usd_amount($pendingWithdrawalsSum); ?> total volume</p>
 </div>
 </div>

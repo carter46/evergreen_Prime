@@ -63,7 +63,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <td class="px-6 py-4 text-right">
 <?php if ($k['status'] === 'pending'): ?>
 <div class="relative inline-block">
-<button type="button" class="kyc-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" aria-label="Actions"><span class="material-icons text-lg">more_vert</span></button>
+<button type="button" class="kyc-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" aria-label="Actions"><span class="material-symbols-outlined text-lg">more_vert</span></button>
 <div class="kyc-actions-dropdown hidden absolute right-0 top-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 min-w-[100px]">
 <button type="button" class="kyc-action-view block w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="<?php echo (int)$k['id']; ?>" data-front="<?php echo htmlspecialchars($k['front_path']); ?>" data-back="<?php echo htmlspecialchars($k['back_path'] ?? ''); ?>" data-name="<?php echo htmlspecialchars($k['full_name']); ?>" data-dob="<?php echo htmlspecialchars($k['date_of_birth'] ?? ''); ?>" data-address="<?php echo htmlspecialchars($k['address'] ?? ''); ?>">View</button>
 <button type="button" class="kyc-action-approve block w-full text-left px-3 py-2 text-sm text-green-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="<?php echo (int)$k['id']; ?>">Approve</button>
@@ -93,7 +93,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <div class="bg-white dark:bg-zinc-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
 <div class="p-4 border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center">
 <h2 id="view-modal-title" class="font-bold">KYC Document</h2>
-<button type="button" id="view-modal-close" class="text-slate-500 hover:text-slate-700"><span class="material-icons">close</span></button>
+<button type="button" id="view-modal-close" class="text-slate-500 hover:text-slate-700"><span class="material-symbols-outlined">close</span></button>
 </div>
 <div class="p-4 overflow-y-auto flex-1">
 <div id="view-modal-details" class="mb-4 text-sm text-slate-600 dark:text-slate-400"></div>

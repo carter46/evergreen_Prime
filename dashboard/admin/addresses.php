@@ -12,7 +12,7 @@ require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
-.material-icons-round { font-size: 24px; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
+.material-symbols-outlined { font-size: 24px; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
 </style>
 <?php
 $pageHeading = 'Wallet Addresses';
@@ -21,7 +21,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 ?>
 <div class="flex justify-end mb-8">
 <button type="button" id="add-address-btn" class="w-fit shrink-0 bg-primary text-zinc-900 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:shadow-lg transition-all">
-<span class="material-icons-round text-lg">add</span> Add New Address
+<span class="material-symbols-outlined text-lg">add</span> Add New Address
 </button>
 </div>
 <div id="messageContainer" class="mb-4"></div>
@@ -116,7 +116,7 @@ function renderAddresses(addresses) {
   function safeLogo(url) { return (url && /^https?:\/\//i.test(url)) ? '<img src="' + url.replace(/"/g,'&quot;') + '" alt="" class="w-8 h-8 rounded-full object-cover shrink-0"/>' : ''; }
   var rows = addresses.map(function(a){
     var logo = safeLogo(a.logo);
-    var actionsHtml = '<div class="relative inline-block"><button type="button" class="addr-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" data-id="' + a.id + '" aria-label="Actions"><span class="material-icons text-lg">more_vert</span></button><div class="addr-actions-dropdown hidden absolute right-0 top-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 min-w-[100px]"><button type="button" class="addr-action-edit block w-full text-left px-3 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + a.id + '">Edit</button><button type="button" class="addr-action-delete block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + a.id + '">Delete</button></div></div>';
+    var actionsHtml = '<div class="relative inline-block"><button type="button" class="addr-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" data-id="' + a.id + '" aria-label="Actions"><span class="material-symbols-outlined text-lg">more_vert</span></button><div class="addr-actions-dropdown hidden absolute right-0 top-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 min-w-[100px]"><button type="button" class="addr-action-edit block w-full text-left px-3 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + a.id + '">Edit</button><button type="button" class="addr-action-delete block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + a.id + '">Delete</button></div></div>';
     return '<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/50">' +
       '<td class="px-4 sm:px-6 py-3 text-sm">' + a.id + '</td>' +
       '<td class="px-4 sm:px-6 py-3 text-sm"><div class="flex items-center gap-3">' + logo + '<span><span class="font-semibold">' + escapeHtml(a.display_name || a.coin_key) + '</span> <span class="text-slate-500">' + escapeHtml(a.symbol || '') + '</span></span></div></td>' +
