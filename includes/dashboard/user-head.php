@@ -107,7 +107,7 @@ body.user-dashboard {
 .dash-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .dash-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,195,92,0.25); border-radius: 10px; }
 .user-dash-main {
-  padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+  padding-top: calc(5rem + env(safe-area-inset-top, 0px));
   box-sizing: border-box;
 }
 .user-dash-content {
@@ -118,6 +118,7 @@ body.user-dashboard {
 }
 .user-topbar {
   padding-top: env(safe-area-inset-top, 0px);
+  min-height: calc(4rem + env(safe-area-inset-top, 0px));
   height: calc(4rem + env(safe-area-inset-top, 0px));
 }
 </style>

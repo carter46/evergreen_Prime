@@ -25,7 +25,7 @@ $mobileHelpActive = ($current === 'help_centre' || $current === 'live_chat') ? '
 <div class="max-w-[1440px] mx-auto flex justify-between items-center px-4 md:px-margin-desktop h-20">
 <a class="font-display text-headline-md font-extrabold text-white tracking-tighter shrink-0" href="/"><?php echo htmlspecialchars($siteName); ?></a>
 <div class="hidden md:flex items-center gap-8">
-<a class="<?php echo $navActive('home'); ?>" href="/">Trade</a>
+<a class="<?php echo $navActive('home'); ?>" href="/">Home</a>
 <a class="<?php echo $navActive('trading_signals'); ?>" href="/trading_signals">Markets</a>
 <a class="<?php echo $navActive('about_us'); ?>" href="/about_us">About Us</a>
 <a class="<?php echo $helpNavActive; ?>" href="/help_centre">Help Center</a>
@@ -46,7 +46,7 @@ $mobileHelpActive = ($current === 'help_centre' || $current === 'live_chat') ? '
 </div>
 <div id="mobile-menu" class="hidden md:hidden border-t border-white/10 bg-surface-container-lowest">
 <div class="max-w-[1440px] mx-auto px-4 py-4 flex flex-col gap-1">
-<a class="py-3 px-4 rounded-lg hover:bg-surface-container-high font-label-sm <?php echo $mobileActive('home'); ?>" href="/">Trade</a>
+<a class="py-3 px-4 rounded-lg hover:bg-surface-container-high font-label-sm <?php echo $mobileActive('home'); ?>" href="/">Home</a>
 <a class="py-3 px-4 rounded-lg hover:bg-surface-container-high font-label-sm <?php echo $mobileActive('trading_signals'); ?>" href="/trading_signals">Markets</a>
 <a class="py-3 px-4 rounded-lg hover:bg-surface-container-high font-label-sm <?php echo $mobileActive('about_us'); ?>" href="/about_us">About Us</a>
 <a class="py-3 px-4 rounded-lg hover:bg-surface-container-high font-label-sm <?php echo $mobileHelpActive; ?>" href="/help_centre">Help Center</a>
