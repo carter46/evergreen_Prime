@@ -272,12 +272,14 @@ body.marketing-page {
 }
 .market-detail-chart-wrap {
   position: relative;
+  overflow: hidden;
 }
 .market-detail-chart-wrap tv-mini-chart {
   display: block;
   width: 100% !important;
   max-width: 100%;
   height: 360px !important;
+  margin-bottom: -32px;
 }
 .sr-only {
   position: absolute;
@@ -296,6 +298,7 @@ body.marketing-page {
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
 }
 .stock-market-card tv-mini-chart,
 .forex-market-card tv-mini-chart {
@@ -304,7 +307,7 @@ body.marketing-page {
   max-width: 500px;
   height: 300px !important;
   max-height: 300px;
-  margin: 0 auto;
+  margin: 0 auto -28px;
 }
 @media (max-width: 640px) {
   .stock-market-card tv-mini-chart,

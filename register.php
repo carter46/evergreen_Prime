@@ -7,231 +7,253 @@ if (isset($_SESSION['user_id'])) {
     exit;
 }
 $siteName = get_site_name();
+$pageTitle = 'Register | ' . $siteName;
+$authBgStyle = 'register';
+$refPrefill = isset($_GET['ref']) ? strtoupper(trim((string)$_GET['ref'])) : '';
 ?>
 <!DOCTYPE html>
-
-<html class="light" lang="en"><head>
+<html class="dark" lang="en">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Register | <?php echo htmlspecialchars($siteName); ?></title>
-<?php output_favicon_tags(); ?>
-<?php require_once __DIR__ . '/includes/pwa-head.php'; ?>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#ffc105",
-                        "background-light": "#f8f8f5",
-                        "background-dark": "#231e0f",
-                    },
-                    fontFamily: {
-                        "display": ["Space Grotesk"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
-<style>
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-    </style>
+<?php require_once __DIR__ . '/includes/auth-head.php'; ?>
 </head>
-<body class="bg-background-light dark:bg-background-dark min-h-screen flex items-center justify-center p-4 overflow-x-hidden">
-<div class="max-w-4xl w-full flex flex-col md:flex-row bg-white dark:bg-zinc-900 rounded-xl shadow-2xl overflow-hidden border border-zinc-200/50 dark:border-zinc-800/50">
-<!-- Left Side: Branding/Visual -->
-<div class="hidden md:flex md:w-5/12 bg-primary p-12 flex-col justify-between relative overflow-hidden">
-<!-- Decorative Pattern -->
-<div class="absolute inset-0 opacity-10 pointer-events-none">
-<svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<pattern height="40" id="grid" patternunits="userSpaceOnUse" width="40">
-<path d="M 40 0 L 0 0 0 40" fill="none" stroke="black" stroke-width="1"></path>
-</pattern>
-</defs>
-<rect fill="url(#grid)" height="100%" width="100%"></rect>
-</svg>
-</div>
-<div class="relative z-10">
-<a href="/" class="inline-flex items-center gap-2 text-black/70 hover:text-black transition-colors mb-12 group" aria-label="Back to home">
-<span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
-<span class="text-sm font-semibold">Back to home</span>
+<body class="auth-page font-body-md text-body-md overflow-x-hidden">
+<?php require_once __DIR__ . '/includes/auth-background.php'; ?>
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-primary-container"><?php echo htmlspecialchars($siteName); ?></div>
+<a class="flex items-center gap-2 text-text-secondary hover:text-primary-container transition-colors font-label-sm text-label-sm" href="/">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+Back to home
 </a>
-<h1 class="text-4xl font-bold text-black leading-tight mb-6">
-                    Start your <br/>journey with <br/><?php echo htmlspecialchars($siteName); ?>.
-                </h1>
-<p class="text-black/70 text-lg">
-                    Join thousands of professionals managing their digital assets with precision and ease.
-                </p>
+</nav>
+<main class="relative z-10 min-h-screen flex flex-col items-center justify-center pt-24 pb-12 px-4 md:px-margin-mobile">
+<div class="text-center mb-10 max-w-2xl mx-auto">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-primary-container/10 border border-primary-container/20 rounded-full mb-6">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="text-primary-container font-label-xs text-label-xs uppercase tracking-widest">Join 10k+ active users worldwide</span>
 </div>
-<div class="relative z-10">
-<div class="flex -space-x-3 mb-4">
-<img class="w-10 h-10 rounded-full border-2 border-primary object-cover" alt="User" src="/uploads/images/user1.jpg" onerror="this.style.display='none'"/>
-<img class="w-10 h-10 rounded-full border-2 border-primary object-cover" alt="User" src="/uploads/images/user2.jpg" onerror="this.style.display='none'"/>
-<img class="w-10 h-10 rounded-full border-2 border-primary object-cover" alt="User" src="/uploads/images/user3.jpg" onerror="this.style.display='none'"/>
+<h1 class="font-headline-lg text-headline-lg md:text-display md:font-display mb-4 text-on-surface">
+Start your journey with <span class="text-primary-container"><?php echo htmlspecialchars($siteName); ?>.</span>
+</h1>
+<p class="text-text-secondary text-body-lg font-body-lg max-w-lg mx-auto">
+Join thousands of professionals managing their digital assets with precision and ease.
+</p>
 </div>
-<p class="text-black text-sm font-medium">Join 10k+ active users worldwide</p>
+<div id="register-step-form" class="w-full max-w-xl">
+<div class="auth-glass-panel rounded-xl p-8 md:p-12 shadow-2xl">
+<form id="register-form" class="space-y-6" enctype="multipart/form-data">
+<div class="mb-2">
+<h2 class="font-headline-md text-headline-md text-primary-container mb-2">Create Account</h2>
+<p class="text-text-secondary font-body-md text-body-md">Get started with your free account today.</p>
 </div>
+<div class="w-full h-1 bg-surface-container rounded-full overflow-hidden">
+<div id="register-progress" class="bg-primary-container h-full w-1/2 transition-all duration-300"></div>
 </div>
-<!-- Right Side: Registration Form -->
-<div class="flex-1 p-8 lg:p-12">
-<div class="flex justify-between items-center mb-10">
-<div>
-<h2 class="text-2xl font-bold text-zinc-900 dark:text-white">Create Account</h2>
-<p class="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Get started with your free account today.</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest" id="register-step-label">Step 1 of 2 — Your details</p>
+<div id="register-step-1" class="space-y-6">
+<label class="flex flex-col items-center justify-center border-2 border-dashed border-border-low rounded-lg p-6 bg-surface-container/30 hover:border-primary-container/50 transition-colors group cursor-pointer" for="avatar">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-3 group-hover:scale-110 transition-transform overflow-hidden" id="avatar-preview">
+<span class="material-symbols-outlined text-text-secondary text-3xl">cloud_upload</span>
 </div>
-<div class="md:hidden shrink-0">
-<a href="/" class="inline-flex items-center gap-2 text-zinc-500 hover:text-primary transition-colors p-2" aria-label="Back to home"><span class="material-symbols-outlined">arrow_back</span></a>
-</div>
-</div>
-<div id="register-step-form" class="space-y-5">
-<form id="register-form" class="space-y-5">
-<!-- Progress Line -->
-<div class="w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden mb-8">
-<div class="bg-primary h-full w-1/4"></div>
-</div>
-<div class="grid grid-cols-1 gap-5">
-<!-- Full Name -->
-<div>
-<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="name">Full Name</label>
-<div class="relative">
-<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">person</span>
-<input name="name" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="name" placeholder="John Doe" type="text" required autocomplete="name"/>
-</div>
-</div>
-<!-- Email -->
-<div>
-<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="email">Email Address</label>
-<div class="relative">
-<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">mail</span>
-<input name="email" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="email" placeholder="john@example.com" type="email" required/>
+<span class="font-label-sm text-label-sm text-primary-container mb-1">Upload Profile Photo <span class="text-text-secondary font-normal">(Optional)</span></span>
+<span class="text-text-secondary font-label-xs text-label-xs">PNG, JPEG or WEBP. Max 2MB.</span>
+<input name="avatar" id="avatar" class="sr-only" accept="image/png,image/jpeg,image/webp" type="file"/>
+</label>
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-text-secondary ml-1" for="name">Full Name</label>
+<div class="relative flex items-center bg-bg-subtle border border-border-low rounded-lg px-4 py-3 auth-input-wrap transition-all">
+<span class="material-symbols-outlined text-text-secondary mr-3 text-[20px]">person</span>
+<input class="auth-input-plain placeholder:text-text-secondary/50" name="name" id="name" placeholder="John Doe" type="text" required autocomplete="name"/>
 </div>
 </div>
-<!-- Phone Number -->
-<div>
-<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="phone">Phone Number <span class="text-zinc-400">(Optional)</span></label>
-<div class="relative">
-<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">phone</span>
-<input name="phone" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="phone" placeholder="+1 234 567 8900" type="tel"/>
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-text-secondary ml-1" for="email">Email Address</label>
+<div class="relative flex items-center bg-bg-subtle border border-border-low rounded-lg px-4 py-3 auth-input-wrap transition-all">
+<span class="material-symbols-outlined text-text-secondary mr-3 text-[20px]">mail</span>
+<input class="auth-input-plain placeholder:text-text-secondary/50" name="email" id="email" placeholder="name@company.com" type="email" required autocomplete="email"/>
 </div>
 </div>
-<!-- Password Grid -->
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<div>
-<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="password">Password</label>
-<div class="relative">
-<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">lock</span>
-<input name="password" class="w-full pl-10 pr-10 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="password" placeholder="••••••••" type="password" required/>
-<button type="button" data-password-toggle class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-primary p-1" aria-label="Toggle password visibility"><span class="material-icons text-lg">visibility</span></button>
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-text-secondary ml-1" for="phone">Phone Number <span class="text-label-xs opacity-50">(Optional)</span></label>
+<div class="relative flex items-center bg-bg-subtle border border-border-low rounded-lg px-4 py-3 auth-input-wrap transition-all">
+<span class="material-symbols-outlined text-text-secondary mr-3 text-[20px]">phone</span>
+<input class="auth-input-plain placeholder:text-text-secondary/50" name="phone" id="phone" placeholder="+1 (555) 000-0000" type="tel" autocomplete="tel"/>
 </div>
 </div>
-<div>
-<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="confirm-password">Confirm Password</label>
-<div class="relative">
-<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">lock_reset</span>
-<input name="confirm_password" class="w-full pl-10 pr-10 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white" id="confirm-password" placeholder="••••••••" type="password" required/>
-<button type="button" data-password-toggle class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-primary p-1" aria-label="Toggle password visibility"><span class="material-icons text-lg">visibility</span></button>
+<div id="register-step1-message" class="text-sm text-red-400 hidden"></div>
+<button type="button" id="register-step1-next" class="w-full bg-primary-container text-on-primary font-bold py-4 rounded-lg hover:bg-primary transition-all duration-300 shadow-lg shadow-primary-container/10 active:scale-95 flex items-center justify-center gap-2 group">
+<span>Continue</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+<div id="register-step-2" class="space-y-6 hidden">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-text-secondary ml-1" for="password">Password</label>
+<div class="relative flex items-center bg-bg-subtle border border-border-low rounded-lg px-4 py-3 auth-input-wrap transition-all">
+<span class="material-symbols-outlined text-text-secondary mr-3 text-[20px]">lock</span>
+<input class="auth-input-plain placeholder:text-text-secondary/50" name="password" id="password" placeholder="••••••••" type="password" required autocomplete="new-password"/>
+<button type="button" data-password-toggle class="text-text-secondary hover:text-primary-container ml-2 shrink-0" aria-label="Toggle password visibility">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-text-secondary ml-1" for="confirm-password">Confirm Password</label>
+<div class="relative flex items-center bg-bg-subtle border border-border-low rounded-lg px-4 py-3 auth-input-wrap transition-all">
+<span class="material-symbols-outlined text-text-secondary mr-3 text-[20px]">lock_reset</span>
+<input class="auth-input-plain placeholder:text-text-secondary/50" name="confirm_password" id="confirm-password" placeholder="••••••••" type="password" required autocomplete="new-password"/>
+<button type="button" data-password-toggle class="text-text-secondary hover:text-primary-container ml-2 shrink-0" aria-label="Toggle password visibility">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
 </div>
 </div>
 </div>
-<!-- Referral Code (Optional) -->
-<div>
-<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="referral">Referral Code <span class="text-zinc-400">(Optional)</span></label>
-<div class="relative">
-<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">card_giftcard</span>
-<?php $refPrefill = isset($_GET['ref']) ? strtoupper(trim((string)$_GET['ref'])) : ''; ?>
-<input name="referral" class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all dark:text-white uppercase tracking-widest text-sm" id="referral" placeholder="CODE2024" type="text" value="<?php echo htmlspecialchars($refPrefill); ?>"/>
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-text-secondary ml-1" for="referral">Referral Code <span class="text-label-xs opacity-50">(Optional)</span></label>
+<div class="relative flex items-center bg-bg-subtle border border-border-low rounded-lg px-4 py-3 auth-input-wrap transition-all">
+<span class="material-symbols-outlined text-text-secondary mr-3 text-[20px]">card_giftcard</span>
+<input class="auth-input-plain placeholder:text-text-secondary/50 uppercase tracking-widest" name="referral" id="referral" placeholder="FX-PRO-2024" type="text" value="<?php echo htmlspecialchars($refPrefill); ?>"/>
 </div>
 </div>
-<!-- Profile Photo (Optional) -->
-<div>
-<label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" for="avatar">Profile Photo <span class="text-zinc-400">(Optional)</span></label>
-<div class="flex items-center gap-4">
-<div class="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0" id="avatar-preview">
-<span class="material-icons text-zinc-400 text-2xl">person</span>
-</div>
-<input name="avatar" id="avatar" class="flex-1 text-sm text-zinc-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-black file:font-medium file:cursor-pointer hover:file:bg-primary/90" accept="image/png,image/jpeg,image/webp" type="file"/>
-</div>
-<p class="text-xs text-zinc-400 mt-1">PNG, JPEG or WEBP. Max 2MB.</p>
-</div>
-<!-- Terms -->
-<div class="flex items-start gap-3 mt-2">
-<div class="flex items-center h-5">
-<input class="w-4 h-4 text-primary border-zinc-300 rounded focus:ring-primary accent-primary" id="terms" type="checkbox"/>
-</div>
-<label class="text-sm text-zinc-600 dark:text-zinc-400" for="terms">
-                            I agree to the <a class="text-primary hover:underline font-medium" href="/legal_centre">Terms of Service</a> and <a class="text-primary hover:underline font-medium" href="/legal_centre">Privacy Policy</a>.
-                        </label>
+<div class="flex items-start gap-3 py-2">
+<input class="mt-1 w-5 h-5 rounded border-border-low bg-bg-subtle text-primary-container focus:ring-primary-container/30" id="terms" type="checkbox"/>
+<label class="font-body-md text-body-md text-text-secondary leading-tight" for="terms">
+I agree to the <a class="text-primary-container hover:underline underline-offset-4" href="/legal_centre#terms">Terms of Service</a> and <a class="text-primary-container hover:underline underline-offset-4" href="/legal_centre#privacy">Privacy Policy</a>.
+</label>
 </div>
 <div id="register-form-message" class="text-sm hidden"></div>
-<!-- Submit Button -->
-<button class="w-full py-3.5 px-4 bg-primary hover:bg-primary/90 text-black font-bold rounded-lg shadow-lg shadow-primary/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 mt-4" type="submit">
-                        Create My Account
-                    </button>
+<div class="flex gap-3">
+<button type="button" id="register-step2-back" class="flex-1 py-4 rounded-lg border border-border-low text-on-surface-variant font-bold hover:border-primary-container/50 transition-colors">
+Back
+</button>
+<button type="submit" class="flex-[2] bg-primary-container text-on-primary font-bold py-4 rounded-lg hover:bg-primary transition-all duration-300 shadow-lg shadow-primary-container/10 active:scale-95 flex items-center justify-center gap-2 group">
+<span>Create My Account</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
 </div>
-<p class="text-center text-sm text-zinc-600 dark:text-zinc-400 mt-8" id="register-have-account">
-                    Already have an account? 
-                    <a class="text-primary font-bold hover:underline" href="/login">Log in here</a>
-</p>
+</div>
 </form>
-<!-- OTP Verification Step (hidden initially) -->
-<div id="register-otp-step" class="space-y-5 hidden">
-<h2 class="text-xl font-bold text-zinc-900 dark:text-white">Verify your email</h2>
-<p class="text-zinc-500 dark:text-zinc-400 text-sm" id="register-otp-email-display"></p>
-<p class="text-sm text-zinc-600 dark:text-zinc-400">Enter the 6-digit code we sent to your email.</p>
+<div id="register-otp-step" class="space-y-6 hidden">
+<h2 class="text-xl font-bold text-on-surface">Verify your email</h2>
+<p class="text-text-secondary text-sm" id="register-otp-email-display"></p>
+<p class="text-sm text-on-secondary-container">Enter the 6-digit code we sent to your email.</p>
 <div class="flex gap-2 justify-center my-6" id="register-otp-inputs">
-<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 1"/>
-<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 2"/>
-<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 3"/>
-<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 4"/>
-<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 5"/>
-<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:text-white" data-otp-digit aria-label="Digit 6"/>
+<?php for ($i = 1; $i <= 6; $i++): ?>
+<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="<?php echo $i === 1 ? 'one-time-code' : 'off'; ?>" class="w-12 h-14 text-center text-xl font-bold rounded-lg border border-outline-variant/30 bg-bg-subtle text-on-surface focus:border-primary-container focus:ring-2 focus:ring-primary-container/20" data-otp-digit aria-label="Digit <?php echo $i; ?>"/>
+<?php endfor; ?>
 </div>
 <div id="register-otp-message" class="text-sm hidden"></div>
-<button type="button" id="register-otp-resend" class="text-primary hover:underline text-sm font-medium disabled:opacity-50" disabled>Resend code (60s)</button>
-<button type="button" id="register-otp-submit" class="w-full py-3.5 px-4 bg-primary hover:bg-primary/90 text-black font-bold rounded-lg shadow-lg shadow-primary/20 transition-all mt-4">
-                        Verify & Continue
-                    </button>
+<button type="button" id="register-otp-resend" class="text-primary-container hover:underline text-sm font-medium disabled:opacity-50" disabled>Resend code (60s)</button>
+<button type="button" id="register-otp-submit" class="w-full bg-primary-container hover:bg-primary-container/90 text-on-primary font-bold py-4 rounded-lg flex items-center justify-center gap-2 mt-4">
+Verify &amp; Continue
+</button>
 </div>
-<!-- Thank You Step (hidden initially) -->
 <div id="register-thank-you" class="hidden text-center py-8">
-<div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-<span class="material-icons text-green-600 text-3xl">check_circle</span>
+<div class="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center mx-auto mb-4">
+<span class="material-symbols-outlined text-success text-3xl">check_circle</span>
 </div>
-<h2 class="text-xl font-bold text-zinc-900 dark:text-white mb-2">Thank you!</h2>
-<p class="text-zinc-500 dark:text-zinc-400 text-sm mb-4">Your account has been verified. Redirecting to your dashboard...</p>
-</div>
-</div>
+<h2 class="text-xl font-bold text-on-surface mb-2">Thank you!</h2>
+<p class="text-text-secondary text-sm mb-4">Your account has been verified. Redirecting to your dashboard...</p>
 </div>
 </div>
-
-<!-- Translation widget (GTranslate) -->
+<p class="text-center pt-6 font-body-md text-body-md text-text-secondary" id="register-have-account">
+Already have an account?
+<a class="ml-1 text-primary-container font-bold hover:underline underline-offset-4" href="/login">Log in here</a>
+</p>
+</div>
+<div class="mt-16 flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl">shield_locked</span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest">Bank-Grade Security</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl">account_balance</span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest">Regulated Entity</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl">public</span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest">Global Infrastructure</span>
+</div>
+</div>
+</main>
+<footer class="relative z-10 w-full py-12 px-4 md:px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-4 border-t border-border-low mt-12 bg-surface-dim/80">
+<div class="font-headline-md text-headline-md text-primary-container"><?php echo htmlspecialchars($siteName); ?></div>
+<div class="flex flex-wrap justify-center gap-6 text-text-secondary font-label-xs text-label-xs uppercase tracking-widest">
+<a class="hover:text-primary-container transition-colors" href="/legal_centre#privacy">Privacy Policy</a>
+<a class="hover:text-primary-container transition-colors" href="/legal_centre#terms">Terms of Service</a>
+<a class="hover:text-primary-container transition-colors" href="/legal_centre#risk-disclosure">Risk Disclosure</a>
+<a class="hover:text-primary-container transition-colors" href="/help_centre">Help Center</a>
+</div>
+<div class="text-text-secondary font-body-md text-body-md text-center md:text-right">
+© <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?>. Institutional Grade Trading.
+</div>
+</footer>
 <div class="gtranslate_wrapper"></div>
 <?php require_once __DIR__ . '/includes/translation-widget.php'; ?>
 <?php require_once __DIR__ . '/includes/live-chat-widget.php'; ?>
 <?php require_once __DIR__ . '/includes/app-script.php'; ?>
 <script>
-document.getElementById('avatar')?.addEventListener('change', function(){
-  var f = this.files[0];
-  var p = document.getElementById('avatar-preview');
-  if (!p) return;
-  if (f && /^image\/(png|jpeg|webp)$/.test(f.type)) {
-    var r = new FileReader();
-    r.onload = function(){ p.innerHTML = '<img src="'+r.result+'" alt="" class="w-full h-full object-cover"/>'; };
-    r.readAsDataURL(f);
-  } else { p.innerHTML = '<span class="material-icons text-zinc-400 text-2xl">person</span>'; }
-});
+(function () {
+  var step1 = document.getElementById('register-step-1');
+  var step2 = document.getElementById('register-step-2');
+  var progress = document.getElementById('register-progress');
+  var stepLabel = document.getElementById('register-step-label');
+  var step1Msg = document.getElementById('register-step1-message');
+  var form = document.getElementById('register-form');
+
+  function showStep(n) {
+    if (n === 1) {
+      step1.classList.remove('hidden');
+      step2.classList.add('hidden');
+      progress.style.width = '50%';
+      stepLabel.textContent = 'Step 1 of 2 — Your details';
+    } else {
+      step1.classList.add('hidden');
+      step2.classList.remove('hidden');
+      progress.style.width = '100%';
+      stepLabel.textContent = 'Step 2 of 2 — Security & preferences';
+    }
+    step1Msg.classList.add('hidden');
+  }
+
+  document.getElementById('register-step1-next')?.addEventListener('click', function () {
+    var name = form.querySelector('[name="name"]')?.value?.trim();
+    var email = form.querySelector('[name="email"]')?.value?.trim();
+    if (!name) {
+      step1Msg.textContent = 'Full name is required.';
+      step1Msg.classList.remove('hidden');
+      return;
+    }
+    if (!email) {
+      step1Msg.textContent = 'Email address is required.';
+      step1Msg.classList.remove('hidden');
+      return;
+    }
+    showStep(2);
+    form.querySelector('[name="password"]')?.focus();
+  });
+
+  document.getElementById('register-step2-back')?.addEventListener('click', function () {
+    showStep(1);
+  });
+
+  document.getElementById('avatar')?.addEventListener('change', function () {
+    var f = this.files[0];
+    var p = document.getElementById('avatar-preview');
+    if (!p) return;
+    if (f && /^image\/(png|jpeg|webp)$/.test(f.type)) {
+      var r = new FileReader();
+      r.onload = function () {
+        p.innerHTML = '<img src="' + r.result + '" alt="" class="w-full h-full object-cover"/>';
+      };
+      r.readAsDataURL(f);
+    } else {
+      p.innerHTML = '<span class="material-symbols-outlined text-text-secondary text-3xl">cloud_upload</span>';
+    }
+  });
+})();
 </script>
-</body></html>
+</body>
+</html>

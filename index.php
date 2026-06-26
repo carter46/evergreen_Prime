@@ -171,8 +171,8 @@ Inquire About Institutional Services
 <div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
 <h2 class="font-headline-lg text-headline-lg mb-4">Your Portfolio, Anywhere</h2>
 <p class="text-gray-500 font-body-lg mb-16 max-w-2xl mx-auto">Take the power of <?php echo htmlspecialchars($siteName); ?> on the go with our award-winning mobile application. Full terminal features in the palm of your hand.</p>
-<div class="relative max-w-4xl mx-auto">
-<img class="mx-auto drop-shadow-2xl max-w-full h-auto rounded-2xl md:rounded-3xl" alt="Mobile trading app" src="<?php echo htmlspecialchars($mobileImg); ?>"/>
+<div class="relative max-w-3xl mx-auto">
+<img class="mx-auto drop-shadow-2xl w-full max-w-[88%] h-auto rounded-2xl md:rounded-3xl" alt="Mobile trading app" src="<?php echo htmlspecialchars($mobileImg); ?>"/>
 <div class="flex flex-col sm:flex-row justify-center gap-4 mt-12">
 <button type="button" data-pwa-install="mobile" class="bg-black text-white px-8 py-3 rounded-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform disabled:opacity-70 disabled:hover:scale-100">
 <span class="material-symbols-outlined text-3xl">smartphone</span>

@@ -1,67 +1,65 @@
-<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); ?>
+<?php
+require_once __DIR__ . '/includes/helpers.php';
+$siteName = get_site_name();
+$pageTitle = 'Forgot Password | ' . $siteName;
+$authBgStyle = 'simple';
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title><?php echo htmlspecialchars($siteName); ?> | Forgot Password</title>
-<?php output_favicon_tags(); ?>
-<?php require_once __DIR__ . '/includes/pwa-head.php'; ?>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-  tailwind.config = {
-    darkMode: "class",
-    theme: {
-      extend: {
-        colors: {
-          "primary": "#ffc105",
-          "background-light": "#f8f8f5",
-          "background-dark": "#231e0f",
-        },
-        fontFamily: { "display": ["Space Grotesk"] },
-        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem"},
-      },
-    },
-  }
-</script>
+<?php require_once __DIR__ . '/includes/auth-head.php'; ?>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex items-center justify-center p-4 sm:p-6 overflow-x-hidden">
-<div class="w-full max-w-[440px]">
-<a href="/" class="inline-flex items-center gap-2 text-[#a18a45] hover:text-primary transition-colors mb-8 group" aria-label="Back to home">
-<span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
-<span class="text-sm font-semibold">Back to home</span>
+<body class="auth-page font-body-md text-body-md overflow-x-hidden min-h-screen">
+<?php require_once __DIR__ . '/includes/auth-background.php'; ?>
+<div class="relative z-10 flex flex-col min-h-screen w-full">
+<nav class="flex items-center justify-between px-4 md:px-margin-desktop h-20 w-full max-w-container-max mx-auto">
+<a class="flex items-center gap-2 group transition-all" href="/">
+<span class="material-symbols-outlined text-primary-container text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant group-hover:text-primary-container">Back to home</span>
 </a>
-<div class="bg-white dark:bg-[#2d2716] p-8 md:p-10 rounded-xl border border-[#eae2cd] dark:border-[#423b26] shadow-sm">
-<div class="flex flex-col gap-2 mb-8">
-<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-2">
-<span class="material-symbols-outlined text-primary text-2xl">lock_reset</span>
+</nav>
+<main class="flex-1 flex items-center justify-center px-4 md:px-margin-mobile py-8">
+<div class="w-full max-w-[480px]">
+<div class="mb-10 text-center md:text-left">
+<h1 class="font-display text-headline-md font-extrabold text-primary-container tracking-tighter mb-2"><?php echo htmlspecialchars($siteName); ?></h1>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Forgot password?</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm mx-auto md:mx-0">Enter your email and we'll send you a link to reset your password.</p>
 </div>
-<h2 class="text-2xl font-bold leading-tight tracking-tight dark:text-white">Forgot Password?</h2>
-<p class="text-[#a18a45] text-sm leading-relaxed">No worries, it happens. Enter your email and we'll send you a link to get back into your account.</p>
+<div class="auth-glass-card p-8 md:p-10 rounded-xl shadow-lg shadow-primary-container/5">
+<div class="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary-container text-2xl">lock_reset</span>
 </div>
-<form id="forgot-password-form" class="flex flex-col gap-6">
-<div class="flex flex-col gap-2">
-<label class="text-sm font-semibold text-[#1d180c] dark:text-[#eae2cd]">Email Address</label>
-<input name="email" class="w-full pl-10 pr-4 py-3 bg-background-light dark:bg-[#1d180c] border border-[#eae2cd] dark:border-[#423b26] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white placeholder:text-[#a18a45]/60" placeholder="e.g. name@company.com" type="email" required/>
+<form id="forgot-password-form" class="space-y-6">
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-widest" for="forgot-email">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">mail</span>
+<input class="auth-input" id="forgot-email" name="email" placeholder="name@company.com" type="email" required autocomplete="email"/>
+</div>
 </div>
 <div id="forgot-password-message" class="text-sm hidden"></div>
-<button type="submit" class="w-full py-3.5 bg-primary hover:bg-[#e6ae00] text-[#1d180c] font-bold rounded-lg transition-all shadow-lg shadow-primary/10 flex items-center justify-center gap-2">
-<span>Send Reset Link</span>
-<span class="material-symbols-outlined text-lg">arrow_forward</span>
+<button class="w-full bg-primary-container hover:bg-primary-container/90 active:scale-[0.98] transition-all py-4 px-6 rounded-lg flex items-center justify-center gap-2 group" type="submit">
+<span class="font-label-sm text-label-sm text-on-primary uppercase tracking-widest">Send Reset Link</span>
+<span class="material-symbols-outlined text-on-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
 </button>
 </form>
-<div class="mt-8 text-center">
-<a class="text-sm font-medium text-[#a18a45] hover:text-[#1d180c] dark:hover:text-primary underline decoration-primary/30 underline-offset-4 transition-colors" href="/login">Back to Login</a>
+<div class="mt-8 pt-8 border-t border-white/5 text-center">
+<a class="font-label-sm text-label-sm text-primary-fixed-dim hover:text-primary-container transition-colors" href="/login">Back to Login</a>
+</div>
+<div class="mt-6 flex items-center justify-center gap-2 opacity-60">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">lock</span>
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest">Secure bank-grade encryption</p>
 </div>
 </div>
-<div class="mt-8 text-center">
-<p class="text-xs font-medium uppercase tracking-widest text-[#a18a45] flex items-center justify-center gap-2">
-<span class="material-symbols-outlined text-sm">lock</span> Secure Bank-Grade Encryption
+</div>
+</main>
+<footer class="h-16 flex items-center justify-center px-4 md:px-margin-desktop opacity-50">
+<p class="font-label-xs text-label-xs text-on-surface-variant text-center">
+© <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?>.
 </p>
-</div>
+</footer>
 </div>
 <?php require_once __DIR__ . '/includes/live-chat-widget.php'; ?>
 <?php require_once __DIR__ . '/includes/app-script.php'; ?>

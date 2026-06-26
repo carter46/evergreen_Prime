@@ -26,11 +26,16 @@ $homepageModalImage = get_site_setting('homepage_modal_image', '');
 View Certificate
 </button>
 <?php endif; ?>
+<button type="button" data-pwa-install="footer" class="hidden md:inline-flex mt-4 items-center gap-2 text-label-sm font-label-sm text-on-secondary-container hover:text-primary-container transition-colors rounded-lg px-4 py-2 border border-white/10 hover:border-primary-container/40">
+<span class="material-symbols-outlined text-base">download</span>
+<span data-pwa-label>Install App</span>
+</button>
 </div>
 <div>
 <h4 class="font-bold text-primary mb-6 font-label-sm">Company</h4>
 <ul class="space-y-4">
 <li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/about_us">About Us</a></li>
+<li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/legal_centre">Legal Centre</a></li>
 <li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/about_us">Our Leadership</a></li>
 <li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="#">Careers</a></li>
 <li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="#">Press Kit</a></li>
@@ -48,10 +53,10 @@ View Certificate
 <div>
 <h4 class="font-bold text-primary mb-6 font-label-sm">Compliance</h4>
 <ul class="space-y-4">
-<li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/legal_centre">Privacy Policy</a></li>
-<li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/legal_centre">Terms of Service</a></li>
-<li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/legal_centre">Risk Disclosure</a></li>
-<li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/legal_centre">Regulatory Info</a></li>
+<li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/legal_centre#privacy">Privacy Policy</a></li>
+<li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/legal_centre#terms">Terms of Service</a></li>
+<li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/legal_centre#risk-disclosure">Risk Disclosure</a></li>
+<li><a class="text-on-secondary-container hover:text-on-surface transition-opacity font-body-md" href="/legal_centre#regulatory-info">Regulatory Info</a></li>
 </ul>
 </div>
 </div>
@@ -60,10 +65,10 @@ View Certificate
 © <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?>. High-risk investment products may not be suitable for all investors. The trading of currencies and digital assets involves significant risk. You should only invest capital you can afford to lose.
 </p>
 <div class="flex flex-wrap gap-6 mt-6">
-<a class="text-on-secondary-container font-label-xs text-label-xs hover:text-primary underline" href="/legal_centre">Privacy Policy</a>
-<a class="text-on-secondary-container font-label-xs text-label-xs hover:text-primary underline" href="/legal_centre">Risk Disclosure</a>
-<a class="text-on-secondary-container font-label-xs text-label-xs hover:text-primary underline" href="/legal_centre">Terms of Service</a>
-<a class="text-on-secondary-container font-label-xs text-label-xs hover:text-primary underline" href="/legal_centre">Security</a>
+<a class="text-on-secondary-container font-label-xs text-label-xs hover:text-primary underline" href="/legal_centre#privacy">Privacy Policy</a>
+<a class="text-on-secondary-container font-label-xs text-label-xs hover:text-primary underline" href="/legal_centre#risk-disclosure">Risk Disclosure</a>
+<a class="text-on-secondary-container font-label-xs text-label-xs hover:text-primary underline" href="/legal_centre#terms">Terms of Service</a>
+<a class="text-on-secondary-container font-label-xs text-label-xs hover:text-primary underline" href="/legal_centre#protection">Security</a>
 <a class="text-on-secondary-container font-label-xs text-label-xs hover:text-primary underline" href="/help_centre">Help Center</a>
 </div>
 </div>

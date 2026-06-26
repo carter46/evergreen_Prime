@@ -21,17 +21,17 @@
         return /android/i.test(global.navigator.userAgent);
     }
 
-    function shouldShowHeader() {
+    function shouldShowNavInstall() {
         return state === 'installing' || !!deferredPrompt || isIOS();
     }
 
-    function updateHeaderButton(btn, mode) {
-        if (mode !== 'header') return;
+    function updateNavInstallButton(btn, mode) {
+        if (mode !== 'menu' && mode !== 'footer') return;
         if (state === 'standalone' || state === 'installed') {
             btn.classList.add('hidden');
             return;
         }
-        if (shouldShowHeader()) {
+        if (shouldShowNavInstall()) {
             btn.classList.remove('hidden');
         } else {
             btn.classList.add('hidden');
@@ -86,7 +86,7 @@
             var subEl = btn.querySelector('[data-pwa-sub]');
 
             if (state === 'standalone' || state === 'installed') {
-                if (mode === 'header') {
+                if (mode === 'menu' || mode === 'footer') {
                     btn.classList.add('hidden');
                     return;
                 }
@@ -97,8 +97,8 @@
                 return;
             }
 
-            if (mode === 'header') {
-                updateHeaderButton(btn, mode);
+            if (mode === 'menu' || mode === 'footer') {
+                updateNavInstallButton(btn, mode);
             } else {
                 btn.classList.remove('hidden');
             }
@@ -118,7 +118,7 @@
             } else if (mode === 'desktop') {
                 if (labelEl) labelEl.textContent = 'Download for Desktop';
                 if (subEl) subEl.textContent = 'Install directly to your device';
-            } else if (mode === 'header') {
+            } else if (mode === 'menu' || mode === 'footer') {
                 if (labelEl) labelEl.textContent = 'Install App';
             }
         });
@@ -127,14 +127,14 @@
     function showInstallUI() {
         if (state === 'standalone' || state === 'installed') return;
         getButtons().forEach(function (btn) {
-            updateHeaderButton(btn, btn.getAttribute('data-pwa-install'));
+            updateNavInstallButton(btn, btn.getAttribute('data-pwa-install'));
         });
     }
 
     function triggerInstall(mode) {
         if (state === 'installed' || state === 'standalone') return;
 
-        if (isIOS() || (!deferredPrompt && (mode === 'mobile' || mode === 'header'))) {
+        if (isIOS() || (!deferredPrompt && (mode === 'mobile' || mode === 'menu' || mode === 'footer'))) {
             openModal(isIOS() ? 'ios' : mode);
             return;
         }
@@ -206,7 +206,7 @@
 
         if (isIOS()) {
             getButtons().forEach(function (btn) {
-                updateHeaderButton(btn, btn.getAttribute('data-pwa-install'));
+                updateNavInstallButton(btn, btn.getAttribute('data-pwa-install'));
             });
         }
     }

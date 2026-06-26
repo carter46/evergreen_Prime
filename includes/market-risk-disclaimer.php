@@ -18,7 +18,7 @@ $siteName = get_site_name();
 <li><?php echo htmlspecialchars($siteName); ?>'s AI-assisted tools support analysis and monitoring — they cannot guarantee profits or eliminate investment risk.</li>
 </ul>
 <p class="mt-6 text-sm text-on-secondary-container">
-<a href="/legal_centre" class="text-primary-container font-semibold hover:underline">Read our full risk disclosure and legal terms →</a>
+<a href="/legal_centre#risk-disclosure" class="text-primary-container font-semibold hover:underline">Read our full risk disclosure and legal terms →</a>
 </p>
 </div>
 </div>
