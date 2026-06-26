@@ -7,6 +7,7 @@ $pageTitle = $pageTitle ?? get_site_name();
 ?>
 <title><?php echo htmlspecialchars($pageTitle); ?></title>
 <?php output_favicon_tags(); ?>
+<?php require_once __DIR__ . '/pwa-head.php'; ?>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -227,8 +228,12 @@ body.marketing-page {
 .market-card-link {
   position: relative;
 }
+.market-card-preview-wrap tv-mini-chart {
+  pointer-events: none;
+}
 .market-card-overlay {
   cursor: pointer;
+  z-index: 10;
 }
 .market-card-overlay:focus-visible {
   outline: 2px solid #ffc35c;

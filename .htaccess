@@ -48,6 +48,9 @@ Options -Indexes
     # Market detail pages
     RewriteRule ^markets/([a-z0-9-]+)/?$ market.php?slug=$1 [L,QSA]
 
+    # PWA manifest
+    RewriteRule ^manifest\.webmanifest$ manifest.php [L]
+
     # Auth pages (clean URL -> PHP)
     RewriteRule ^login$ login.php [L]
     RewriteRule ^register$ register.php [L]

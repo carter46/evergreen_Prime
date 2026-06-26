@@ -92,6 +92,10 @@ View Certificate
 </script>
 <?php endif; ?>
 
+<?php require_once __DIR__ . '/pwa-install-modal.php'; ?>
+<?php $pwaInstallVer = (int) @filemtime(dirname(__DIR__) . '/js/pwa-install.js'); ?>
+<script src="/js/pwa-install.js?v=<?php echo $pwaInstallVer; ?>" defer></script>
+
 <div class="gtranslate_wrapper"></div>
 <?php require_once __DIR__ . '/app-script.php'; ?>
 <?php require_once __DIR__ . '/translation-widget.php'; ?>

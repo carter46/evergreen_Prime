@@ -609,6 +609,48 @@ function bump_user_last_balance_usd(PDO $pdo, int $userId, float $deltaUsd): voi
 }
 
 /**
+ * PWA short name (max ~12 chars for home screen).
+ */
+function get_pwa_short_name(?string $name = null): string {
+    $siteName = trim((string) ($name ?? get_site_name()));
+    if ($siteName === '') return 'EPM';
+    if (strlen($siteName) <= 12) return $siteName;
+    $parts = preg_split('/\s+/', $siteName);
+    if (count($parts) > 1) {
+        $short = $parts[0];
+        if (strlen($short) <= 12) return $short;
+    }
+    return substr($siteName, 0, 12);
+}
+
+/**
+ * Bundled PWA icon URL for a given size (180, 192, 512).
+ */
+function get_pwa_icon_url(int $size): string {
+    $allowed = [180, 192, 512];
+    if (!in_array($size, $allowed, true)) $size = 192;
+    $path = '/pwa/icons/icon-' . $size . '.png';
+    $full = dirname(__DIR__) . $path;
+    if (is_file($full)) return $path;
+    return '/pwa/icons/icon-192.png';
+}
+
+/**
+ * Output PWA head tags (manifest, meta, apple-touch-icon).
+ */
+function output_pwa_head_tags(): void {
+    $shortName = htmlspecialchars(get_pwa_short_name());
+    $icon180 = htmlspecialchars(get_pwa_icon_url(180));
+    echo '<link rel="manifest" href="/manifest.webmanifest"/>' . "\n";
+    echo '<meta name="theme-color" content="#ffc35c"/>' . "\n";
+    echo '<meta name="mobile-web-app-capable" content="yes"/>' . "\n";
+    echo '<meta name="apple-mobile-web-app-capable" content="yes"/>' . "\n";
+    echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>' . "\n";
+    echo '<meta name="apple-mobile-web-app-title" content="' . $shortName . '"/>' . "\n";
+    echo '<link rel="apple-touch-icon" href="' . $icon180 . '"/>' . "\n";
+}
+
+/**
  * Output per-market SEO meta tags (title handled separately via $pageTitle).
  */
 function output_market_seo_tags(array $instrument): void {

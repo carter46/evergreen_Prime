@@ -4,9 +4,9 @@
 (function (global) {
     'use strict';
 
-    var TV_SCRIPT = 'https://widgets.tradingview-widget.com/w/en/tv-mini-chart.js';
-    var WIDGET_READY_MS = 20000;
-    var POLL_MS = 250;
+    var WIDGET_READY_MS = 18000;
+    var FORCE_CLEAR_MS = 1500;
+    var POLL_MS = 200;
 
     function getHosts() {
         return Array.prototype.slice.call(document.querySelectorAll('tv-mini-chart'));
@@ -16,18 +16,16 @@
         return host.closest('[data-tv-widget]') || host.parentElement;
     }
 
-    function clearSkeleton(root) {
+    function removeSkeleton(root) {
         if (!root) return;
         root.querySelectorAll('.market-chart-skeleton').forEach(function (el) {
-            el.classList.remove('market-chart-skeleton-active');
-            el.hidden = true;
-            el.style.display = 'none';
+            el.remove();
         });
     }
 
     function showFallback(root, message) {
         if (!root) return;
-        clearSkeleton(root);
+        removeSkeleton(root);
         var fallback = root.querySelector('.market-chart-fallback');
         if (fallback) {
             if (message) {
@@ -37,12 +35,14 @@
             fallback.classList.remove('hidden');
             fallback.hidden = false;
         }
-        if (hostInRoot(root)) hostInRoot(root).hidden = true;
+        var host = hostInRoot(root);
+        if (host) host.hidden = true;
     }
 
     function markReady(root) {
-        if (!root) return;
-        clearSkeleton(root);
+        if (!root || root.getAttribute('data-tv-ready') === '1') return;
+        root.setAttribute('data-tv-ready', '1');
+        removeSkeleton(root);
         var fallback = root.querySelector('.market-chart-fallback');
         if (fallback) {
             fallback.classList.add('hidden');
@@ -56,19 +56,18 @@
         return root.querySelector('tv-mini-chart');
     }
 
-    function hostIsReady(host) {
+    function hostHasContent(host) {
         if (!host) return false;
+        var rect = host.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0 && host.childElementCount > 0) {
+            return true;
+        }
         var sr = host.shadowRoot;
         if (sr) {
             if (sr.querySelector('iframe')) return true;
-            if (sr.querySelector('div, canvas')) return sr.childElementCount > 0;
+            if (sr.querySelector('div, canvas, svg')) return sr.childElementCount > 0;
         }
         return !!host.querySelector('iframe');
-    }
-
-    function findTvScript() {
-        return document.querySelector('script[data-tv-mini-chart-loader]')
-            || document.querySelector('script[src*="tv-mini-chart.js"]');
     }
 
     function whenTvElementDefined() {
@@ -81,80 +80,139 @@
         return global.customElements.whenDefined('tv-mini-chart');
     }
 
-    function waitForTvScript() {
-        var tag = findTvScript();
+    function waitForTvElement() {
+        var tag = document.querySelector('script[data-tv-mini-chart-loader]')
+            || document.querySelector('script[src*="tv-mini-chart.js"]');
+
         if (!tag) {
-            tag = document.createElement('script');
-            tag.type = 'module';
-            tag.src = TV_SCRIPT;
-            tag.setAttribute('data-tv-mini-chart-loader', '1');
-            document.head.appendChild(tag);
+            return Promise.reject(new Error('TradingView script tag missing'));
         }
 
-        if (tag.getAttribute('data-loaded') === '1') {
-            return whenTvElementDefined();
+        if (global.customElements && global.customElements.get('tv-mini-chart')) {
+            return Promise.resolve();
         }
 
         return new Promise(function (resolve, reject) {
             var settled = false;
-            function done() {
+            var timeout = setTimeout(function () {
                 if (settled) return;
+                if (global.customElements && global.customElements.get('tv-mini-chart')) {
+                    settled = true;
+                    resolve();
+                    return;
+                }
                 settled = true;
-                tag.setAttribute('data-loaded', '1');
-                whenTvElementDefined().then(resolve).catch(resolve);
-            }
-            function fail() {
-                if (settled) return;
-                settled = true;
-                reject(new Error('TradingView script failed'));
-            }
-            tag.addEventListener('load', done);
-            tag.addEventListener('error', fail);
-            if (global.customElements && global.customElements.get('tv-mini-chart')) {
-                done();
-            }
+                reject(new Error('TradingView custom element not defined'));
+            }, WIDGET_READY_MS);
+
+            whenTvElementDefined()
+                .then(function () {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeout);
+                    resolve();
+                })
+                .catch(function () {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeout);
+                    reject(new Error('TradingView custom element failed'));
+                });
         });
     }
 
     function watchHost(host) {
         var root = getWidgetRoot(host);
         var symbol = (host.getAttribute('symbol') || '').trim();
+        var cleaned = false;
+
+        function finishReady() {
+            if (cleaned) return;
+            cleaned = true;
+            if (observer) observer.disconnect();
+            if (pollTimer) clearInterval(pollTimer);
+            if (forceTimer) clearTimeout(forceTimer);
+            if (failTimer) clearTimeout(failTimer);
+            markReady(root);
+        }
+
+        function finishFallback(message) {
+            if (cleaned) return;
+            cleaned = true;
+            if (observer) observer.disconnect();
+            if (pollTimer) clearInterval(pollTimer);
+            if (forceTimer) clearTimeout(forceTimer);
+            if (failTimer) clearTimeout(failTimer);
+            showFallback(root, message);
+        }
 
         if (!symbol) {
             showFallback(root, 'Chart configuration is unavailable for this market.');
             return;
         }
 
-        if (hostIsReady(host)) {
+        if (hostHasContent(host)) {
             markReady(root);
             return;
         }
 
-        var deadline = Date.now() + WIDGET_READY_MS;
-        var timer = setInterval(function () {
-            if (hostIsReady(host)) {
-                clearInterval(timer);
-                markReady(root);
-                return;
+        var observer = null;
+        var pollTimer = null;
+        var forceTimer = null;
+        var failTimer = null;
+
+        var shadowObserved = false;
+
+        if (typeof MutationObserver !== 'undefined') {
+            observer = new MutationObserver(function () {
+                if (!shadowObserved && host.shadowRoot) {
+                    observer.observe(host.shadowRoot, { childList: true, subtree: true });
+                    shadowObserved = true;
+                }
+                if (hostHasContent(host)) finishReady();
+            });
+            observer.observe(host, { childList: true, subtree: true });
+            if (host.shadowRoot) {
+                observer.observe(host.shadowRoot, { childList: true, subtree: true });
+                shadowObserved = true;
             }
-            if (Date.now() >= deadline) {
-                clearInterval(timer);
-                showFallback(root, 'Live chart could not be loaded. Please refresh or try again later.');
+        }
+
+        pollTimer = setInterval(function () {
+            if (!shadowObserved && host.shadowRoot && observer) {
+                observer.observe(host.shadowRoot, { childList: true, subtree: true });
+                shadowObserved = true;
             }
+            if (hostHasContent(host)) finishReady();
         }, POLL_MS);
+
+        forceTimer = setTimeout(function () {
+            if (hostHasContent(host)) finishReady();
+        }, FORCE_CLEAR_MS);
+
+        failTimer = setTimeout(function () {
+            if (!hostHasContent(host)) {
+                finishFallback('Live chart could not be loaded. Please refresh or try again later.');
+            } else {
+                finishReady();
+            }
+        }, WIDGET_READY_MS);
     }
 
     function initCharts() {
         var hosts = getHosts();
         if (!hosts.length) return;
 
-        waitForTvScript()
+        waitForTvElement()
             .then(function () {
                 hosts.forEach(watchHost);
             })
             .catch(function () {
                 hosts.forEach(function (host) {
-                    showFallback(getWidgetRoot(host), 'Live chart could not be loaded. Please refresh or try again later.');
+                    showFallback(
+                        getWidgetRoot(host),
+                        'Live chart could not be loaded. Please refresh or try again later.'
+                    );
                 });
             });
     }
@@ -167,7 +225,7 @@
 
     global.BloombitMarketWidgets = {
         init: initCharts,
-        hostIsReady: hostIsReady,
+        hostHasContent: hostHasContent,
         getScriptCount: function () {
             return document.querySelectorAll('script[src*="tv-mini-chart.js"]').length;
         }

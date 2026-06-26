@@ -24,6 +24,7 @@ $navActive = function ($page) use ($current) {
 <a class="<?php echo ($current === 'help_centre' || $current === 'live_chat') ? 'text-white font-bold border-b-2 border-white pb-1 font-label-sm text-label-sm' : 'text-white/80 font-medium hover:text-white transition-colors duration-200 font-label-sm text-label-sm'; ?>" href="/help_centre">Learn</a>
 </div>
 <div class="flex items-center gap-2 sm:gap-4">
+<button type="button" data-pwa-install="header" class="hidden inline-flex text-white/80 font-medium hover:text-white transition-colors px-3 py-2 font-label-sm text-label-sm min-h-[44px] items-center border border-white/20 rounded-lg" data-pwa-label>Install App</button>
 <?php if ($isLoggedIn): ?>
 <a class="hidden sm:inline-flex text-white/80 font-medium hover:text-white transition-colors px-4 py-2 font-label-sm text-label-sm min-h-[44px] items-center" href="/logout">Logout</a>
 <a class="btn-get-started font-bold px-4 sm:px-6 py-2 rounded-lg hover:scale-105 transition-transform font-label-sm text-label-sm min-h-[44px] flex items-center" href="/dashboard">Dashboard</a>
@@ -44,6 +45,7 @@ $navActive = function ($page) use ($current) {
 <a class="py-3 px-4 rounded-lg hover:bg-surface-container-high font-label-sm <?php echo ($current === 'help_centre' || $current === 'live_chat') ? 'text-white' : 'text-white/70'; ?>" href="/help_centre">Learn</a>
 <a class="py-3 px-4 rounded-lg hover:bg-surface-container-high font-label-sm text-white/70" href="/about_us">About Us</a>
 <a class="py-3 px-4 rounded-lg hover:bg-surface-container-high font-label-sm text-white/70" href="/legal_centre">Legal</a>
+<button type="button" data-pwa-install="header" class="hidden py-3 px-4 rounded-lg hover:bg-surface-container-high font-label-sm text-white/70 text-left w-full" data-pwa-label>Install App</button>
 <?php if ($isLoggedIn): ?>
 <a class="py-3 px-4 mt-2 border-t border-border-low pt-4 font-label-sm text-white" href="/dashboard">Dashboard</a>
 <a class="py-3 px-4 font-label-sm text-white/70" href="/logout">Logout</a>

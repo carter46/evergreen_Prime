@@ -15,6 +15,7 @@ $siteName = get_site_name();
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Register | <?php echo htmlspecialchars($siteName); ?></title>
 <?php output_favicon_tags(); ?>
+<?php require_once __DIR__ . '/includes/pwa-head.php'; ?>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>

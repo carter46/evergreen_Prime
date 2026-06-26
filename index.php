@@ -174,20 +174,20 @@ Inquire About Institutional Services
 <div class="relative max-w-4xl mx-auto">
 <img class="mx-auto drop-shadow-2xl max-w-full h-auto rounded-2xl md:rounded-3xl" alt="Mobile trading app" src="<?php echo htmlspecialchars($mobileImg); ?>"/>
 <div class="flex flex-col sm:flex-row justify-center gap-4 mt-12">
-<a class="bg-black text-white px-8 py-3 rounded-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform" href="/register">
-<span class="material-symbols-outlined text-3xl">apps</span>
+<button type="button" data-pwa-install="mobile" class="bg-black text-white px-8 py-3 rounded-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform disabled:opacity-70 disabled:hover:scale-100">
+<span class="material-symbols-outlined text-3xl">smartphone</span>
 <div class="text-left">
-<div class="text-[10px] uppercase opacity-70">Download on the</div>
-<div class="text-lg font-bold leading-none">App Store</div>
+<div class="text-[10px] uppercase opacity-70" data-pwa-sub>Install directly to your device</div>
+<div class="text-lg font-bold leading-none" data-pwa-label>Download for Mobile</div>
 </div>
-</a>
-<a class="bg-black text-white px-8 py-3 rounded-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform" href="/register">
-<span class="material-symbols-outlined text-3xl">play_books</span>
+</button>
+<button type="button" data-pwa-install="desktop" class="bg-black text-white px-8 py-3 rounded-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform disabled:opacity-70 disabled:hover:scale-100">
+<span class="material-symbols-outlined text-3xl">computer</span>
 <div class="text-left">
-<div class="text-[10px] uppercase opacity-70">Get it on</div>
-<div class="text-lg font-bold leading-none">Google Play</div>
+<div class="text-[10px] uppercase opacity-70" data-pwa-sub>Install directly to your device</div>
+<div class="text-lg font-bold leading-none" data-pwa-label>Download for Desktop</div>
 </div>
-</a>
+</button>
 </div>
 </div>
 </div>
