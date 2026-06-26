@@ -90,6 +90,36 @@ body.auth-page {
   color: #e1e2e7;
   -webkit-font-smoothing: antialiased;
 }
+html.auth-fit-screen,
+body.auth-fit-screen {
+  height: 100%;
+  overflow: hidden;
+}
+body.auth-fit-screen {
+  height: 100dvh;
+}
+.auth-shell {
+  height: 100%;
+  min-height: 0;
+}
+body.auth-fit-screen .auth-shell {
+  height: 100dvh;
+  overflow: hidden;
+}
+body.auth-fit-screen .auth-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 768px) {
+  body.auth-fit-screen .auth-main {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
 .auth-glass-card {
   background: rgba(30, 35, 41, 0.85);
   backdrop-filter: blur(12px);
@@ -100,32 +130,54 @@ body.auth-page {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
-.auth-input {
-  width: 100%;
-  background: #161B22;
-  border: 1px solid rgba(80, 69, 54, 0.3);
+.auth-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 0.5rem;
-  padding: 1rem 1rem 1rem 3rem;
-  color: #e1e2e7;
+  padding: 0.7rem 1rem;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.auth-input:focus {
-  outline: none;
+.auth-field:focus-within {
   border-color: #ffc35c;
-  box-shadow: 0 0 0 2px rgba(255, 195, 92, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 195, 92, 0.25);
 }
-.auth-input-wrap:focus-within {
-  border-color: #ffc35c;
-  box-shadow: 0 0 0 1px #ffc35c;
+.auth-field-icon {
+  flex-shrink: 0;
+  color: #6b7280;
+  font-size: 20px;
+  line-height: 1;
+  pointer-events: none;
 }
-.auth-input-plain {
+.auth-field input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
   background: transparent;
   border: none;
   padding: 0;
-  width: 100%;
-  color: #ffe6c3;
+  margin: 0;
+  color: #111417;
+  font-size: 1rem;
+  line-height: 1.5;
+  outline: none;
+  box-shadow: none;
 }
-.auth-input-plain:focus { outline: none; box-shadow: none; }
+.auth-field input::placeholder {
+  color: #9ca3af;
+}
+.auth-field [data-password-toggle] {
+  flex-shrink: 0;
+  color: #6b7280;
+  padding: 0.125rem;
+  margin-left: 0.25rem;
+}
+.auth-field [data-password-toggle]:hover {
+  color: #ffc35c;
+}
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
