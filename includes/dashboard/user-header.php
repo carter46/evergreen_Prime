@@ -8,17 +8,14 @@ $avatarUrl = $u['avatar_url'] ?? null;
 $initials = strtoupper(substr($userName ?: 'U', 0, 2));
 $isVerified = !empty($u['verified']) || (($u['kyc_status'] ?? '') === 'approved');
 ?>
-<header class="user-topbar fixed top-0 right-0 left-0 lg:left-64 border-b border-low bg-surface-dim/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-margin-desktop z-50 gap-3">
-<div class="flex items-center gap-2 min-w-0 flex-1">
-<button type="button" id="user-sidebar-toggle" class="lg:hidden shrink-0 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors" aria-label="Toggle menu">
+<header class="user-topbar fixed top-0 right-0 left-0 lg:left-64 border-b border-low bg-surface-dim/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-margin-desktop z-50 gap-2 md:gap-3">
+<div class="flex items-center shrink-0 w-10 lg:w-0 lg:overflow-hidden relative z-10">
+<button type="button" id="user-sidebar-toggle" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors" aria-label="Toggle menu">
 <span class="material-symbols-outlined text-on-surface">menu</span>
 </button>
-<div class="hidden md:flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-full border border-low w-full max-w-sm">
-<span class="material-symbols-outlined text-on-surface-variant text-sm">search</span>
-<input class="bg-transparent border-none focus:ring-0 text-body-md text-on-surface placeholder:text-on-surface-variant/40 w-full p-0 text-sm" placeholder="Search markets, assets, or plans..." type="search" aria-label="Search"/>
 </div>
-</div>
-<div class="flex items-center gap-3 md:gap-5 shrink-0">
+<?php require __DIR__ . '/user-social-proof.php'; ?>
+<div class="flex items-center gap-2 md:gap-5 shrink-0 relative z-10">
 <div class="hidden sm:flex items-center gap-3 text-on-surface-variant">
 <button type="button" class="hover:text-primary-container transition-colors p-1" aria-label="Live feed"><span class="material-symbols-outlined text-[22px]">sensors</span></button>
 <button type="button" class="hover:text-primary-container transition-colors relative p-1" aria-label="Notifications">

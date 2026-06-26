@@ -120,6 +120,72 @@ body.user-dashboard {
   padding-top: env(safe-area-inset-top, 0px);
   min-height: calc(4rem + env(safe-area-inset-top, 0px));
   height: calc(4rem + env(safe-area-inset-top, 0px));
+  position: fixed;
+}
+.user-social-proof {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  width: min(11rem, calc(100vw - 9.5rem));
+  max-width: 20rem;
+}
+@media (min-width: 640px) {
+  .user-social-proof { width: min(14rem, calc(100vw - 12rem)); }
+}
+@media (min-width: 768px) {
+  .user-social-proof { width: min(18rem, calc(100vw - 18rem)); max-width: 22rem; }
+}
+.user-social-proof-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(25, 28, 31, 0.92);
+  border: 1px solid rgba(255, 195, 92, 0.22);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateY(4px);
+}
+.user-social-proof-toast.is-visible {
+  opacity: 1 !important;
+  transform: translateY(0);
+}
+.user-social-proof-dot {
+  flex-shrink: 0;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: #20B26C;
+  box-shadow: 0 0 6px rgba(32, 178, 108, 0.7);
+  animation: user-social-pulse 1.8s ease-in-out infinite;
+}
+@keyframes user-social-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+.user-social-proof-text {
+  font-size: 0.625rem;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #e1e2e7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+@media (min-width: 640px) {
+  .user-social-proof-toast { padding: 0.3125rem 0.625rem; gap: 0.5rem; }
+  .user-social-proof-text { font-size: 0.6875rem; }
+}
+@media (min-width: 768px) {
+  .user-social-proof-text { font-size: 0.75rem; }
+}
+.user-social-proof-text strong {
+  color: #ffc35c;
+  font-weight: 700;
 }
 </style>
 <?php if (!empty($pageExtraStyles)) { echo $pageExtraStyles; } ?>

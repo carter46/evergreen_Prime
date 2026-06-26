@@ -7,6 +7,7 @@ $pageTitle = $pageTitle ?? get_site_name();
 ?>
 <title><?php echo htmlspecialchars($pageTitle); ?></title>
 <?php output_favicon_tags(); ?>
+<?php output_site_brand_meta_tags(); ?>
 <?php require_once __DIR__ . '/pwa-head.php'; ?>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>

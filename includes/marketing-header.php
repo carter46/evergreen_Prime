@@ -1,6 +1,6 @@
 <?php
 /**
- * Shared Marketing Header — Bloombit FX design system
+ * Shared Marketing Header
  */
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/session-bootstrap.php';

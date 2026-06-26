@@ -38,7 +38,10 @@ $email = $email ?? '';
 </div>
 </div>
 <div style="background:#f5f5f0;padding:24px 40px;border-top:1px solid #e5e5e0">
-<p style="margin:0;font-size:11px;color:#8a8a7d;text-align:center">You're receiving this because you subscribed at bloombit.com. <a href="<?= htmlspecialchars($site_url) ?>/legal_centre" style="color:#5c5c52;text-decoration:underline">Unsubscribe</a></p>
+<p style="margin:0;font-size:11px;color:#8a8a7d;text-align:center">You're receiving this because you subscribed at <?php
+$subHost = parse_url((string) $site_url, PHP_URL_HOST);
+echo htmlspecialchars($subHost ?: preg_replace('#^https?://#', '', rtrim((string) $site_url, '/')));
+?>. <a href="<?= htmlspecialchars($site_url) ?>/legal_centre" style="color:#5c5c52;text-decoration:underline">Unsubscribe</a></p>
 <p style="margin:8px 0 0;font-size:12px;color:#8a8a7d;text-align:center">© <?= date('Y') ?> <?= htmlspecialchars($siteName) ?>. All rights reserved.</p>
 </div>
 </div>

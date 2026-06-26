@@ -20,8 +20,8 @@ require_once __DIR__ . '/includes/marketing-head.php';
 <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-slate-200 dark:border-white/5 p-8">
 <h1 class="text-3xl font-bold mb-6 flex items-center gap-3">
 <span class="material-icons text-primary">forum</span>
-                Live Chat Support
-            </h1>
+Live Chat — <?php echo htmlspecialchars($siteName); ?>
+</h1>
 <div class="bg-slate-50 dark:bg-zinc-800 rounded-xl p-6 mb-6">
 <div class="flex items-center gap-3 mb-4">
 <span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>

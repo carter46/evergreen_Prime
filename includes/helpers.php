@@ -655,9 +655,13 @@ function output_pwa_head_tags(): void {
  */
 function output_market_seo_tags(array $instrument): void {
     require_once __DIR__ . '/market-instruments.php';
+    $siteName = get_site_name();
     $seo = $instrument['seo'] ?? [];
     $desc = $seo['description'] ?? '';
     $ogTitle = $seo['og_title'] ?? ($seo['title'] ?? $instrument['name']);
+    if ($ogTitle !== '' && stripos($ogTitle, $siteName) === false) {
+        $ogTitle .= ' | ' . $siteName;
+    }
     $ogDesc = $seo['og_description'] ?? $desc;
     $slug = $instrument['slug'];
     $canonical = get_base_url() . '/markets/' . rawurlencode($slug);
@@ -680,6 +684,15 @@ function output_market_seo_tags(array $instrument): void {
     if ($ogDesc !== '') {
         echo '<meta name="twitter:description" content="' . htmlspecialchars($ogDesc) . '"/>' . "\n";
     }
+}
+
+/**
+ * Output shared brand meta tags (application name, Open Graph site name).
+ */
+function output_site_brand_meta_tags(): void {
+    $name = htmlspecialchars(get_site_name());
+    echo '<meta name="application-name" content="' . $name . '"/>' . "\n";
+    echo '<meta property="og:site_name" content="' . $name . '"/>' . "\n";
 }
 
 /**
