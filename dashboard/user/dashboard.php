@@ -103,7 +103,7 @@ $chartBtnIdle = 'px-4 py-1.5 rounded text-label-xs text-on-surface-variant hover
 ?>
 <header class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8 md:mb-10">
 <div>
-<h2 class="font-headline-lg text-headline-lg text-text-primary mb-1">Good morning, <?php echo htmlspecialchars($dashboardUserName); ?></h2>
+<h2 class="font-headline-lg text-xl md:text-headline-lg text-text-primary mb-1 leading-tight">Good morning, <?php echo htmlspecialchars($dashboardUserName); ?></h2>
 <p class="text-text-secondary font-body-md">Welcome back to your institutional trading hub.</p>
 </div>
 <div class="flex items-center gap-3 bg-surface-container-high/50 border border-low px-4 py-2 rounded-full w-fit">
