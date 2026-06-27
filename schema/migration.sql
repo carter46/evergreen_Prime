@@ -636,3 +636,24 @@ ON DUPLICATE KEY UPDATE value = VALUES(value);
 UPDATE users u
 SET u.my_referral_code = CONCAT('REF', u.id)
 WHERE (u.my_referral_code IS NULL OR u.my_referral_code = '') AND u.id > 0;
+
+-- Plan type category + logo for investment plans
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'plans' AND COLUMN_NAME = 'plan_type');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE plans ADD COLUMN plan_type VARCHAR(32) NOT NULL DEFAULT ''crypto'' AFTER slug',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'plans' AND COLUMN_NAME = 'logo_url');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE plans ADD COLUMN logo_url VARCHAR(255) NULL AFTER icon',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+UPDATE plans SET plan_type = 'crypto' WHERE plan_type IS NULL OR plan_type = '';

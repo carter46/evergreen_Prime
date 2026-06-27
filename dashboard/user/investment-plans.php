@@ -1,14 +1,17 @@
 <?php
 require_once __DIR__ . '/../../includes/auth-check.php';
 require_once __DIR__ . '/../../includes/helpers.php';
+require_once __DIR__ . '/../../includes/plan-types.php';
 $currentPage = 'investment-plans';
 $siteName = get_site_name();
+$planTypes = get_plan_types();
 
 $plans = [];
 $userBalance = 0;
 $walletBalances = [];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
+    ensure_plan_schema($pdo);
     $userId = $_SESSION['user_id'];
 
     // Prefer cached USD balance from users table (stable, consistent display)
@@ -39,13 +42,15 @@ try {
     });
     
     // Fetch enabled plans
-    $stmt = $pdo->query('SELECT id, name, slug, description, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
+    $stmt = $pdo->query('SELECT id, name, slug, plan_type, description, logo_url, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $plans[] = [
             'id' => (int)$row['id'],
             'name' => $row['name'],
             'slug' => $row['slug'],
+            'plan_type' => normalize_plan_type($row['plan_type'] ?? 'crypto'),
             'description' => $row['description'] ?? '',
+            'logo_url' => $row['logo_url'] ?? null,
             'min_deposit' => (float)$row['min_deposit'],
             'max_deposit' => $row['max_deposit'] !== null ? (float)$row['max_deposit'] : null,
             'yield_min' => (float)$row['yield_min'],
@@ -58,76 +63,151 @@ try {
         ];
     }
 } catch (Throwable $e) { }
+
+$plansByType = [];
+foreach ($planTypes as $typeKey => $typeLabel) {
+    $plansByType[$typeKey] = array_values(array_filter($plans, function ($plan) use ($typeKey) {
+        return ($plan['plan_type'] ?? 'crypto') === $typeKey;
+    }));
+}
+$activePlanTypes = [];
+foreach ($planTypes as $typeKey => $typeLabel) {
+    if (!empty($plansByType[$typeKey])) {
+        $activePlanTypes[$typeKey] = $typeLabel;
+    }
+}
+$defaultTab = array_key_first($activePlanTypes) ?: 'crypto';
+$showPlanTabs = count($activePlanTypes) > 1;
+
 $pageTitle = $siteName . ' | Investment Plans';
-$pageHeading = 'Investment Plans';
-$pageSubtitle = 'Choose an investment plan that fits your goals';
+$pageHeading = 'Investments';
+$pageSubtitle = 'Browse investment opportunities and invest using your available account balance.';
 require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
 
-<!-- Plans Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-<?php foreach ($plans as $plan): ?>
-<div class="glass-panel rounded-2xl p-6 hover:border-primary-container/20 transition-all">
-<div class="flex items-center gap-4 mb-4">
-<div class="w-12 h-12 bg-primary-container/20 rounded-xl flex items-center justify-center">
-<span class="material-symbols-outlined text-primary-container text-2xl">auto_graph</span>
+<style>
+.plan-type-tab.is-active { color: #ffc35c; border-bottom-color: #ffc35c; font-weight: 700; }
+.plan-type-panel { display: none; }
+.plan-type-panel.is-active { display: grid; }
+.plan-asset-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.plan-asset-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+.plan-type-tabs-nav {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+}
+.plan-type-tabs-nav::-webkit-scrollbar { display: none; }
+.plan-type-tabs-track {
+  display: inline-flex;
+  gap: 1.5rem;
+  min-width: 100%;
+  width: max-content;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0;
+}
+@media (min-width: 768px) {
+  .plan-type-tabs-track { width: 100%; }
+}
+</style>
+
+<section class="mb-8">
+<div class="glass-panel rounded-xl p-4 md:p-6 flex flex-wrap justify-between items-center gap-4">
+<div class="flex items-center gap-4 min-w-0">
+<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary-container">account_balance_wallet</span>
 </div>
 <div>
-<h3 class="text-lg font-bold"><?php echo htmlspecialchars($plan['name']); ?></h3>
-<p class="text-xs text-text-secondary"><?php echo htmlspecialchars($plan['description'] ?: 'Premium investment plan'); ?></p>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Available to Invest</p>
+<h3 class="text-2xl md:text-3xl font-bold text-text-primary leading-none mt-1">USD <?php echo format_usd_amount($userBalance); ?></h3>
 </div>
 </div>
+<div class="flex flex-col items-start md:items-end gap-2">
+<p class="text-xs text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">info</span>
+Select a plan below to invest from your wallet balance.
+</p>
+<a href="/dashboard/user/wallet" class="inline-flex items-center gap-2 bg-primary-container hover:bg-primary-container/90 text-on-primary px-4 py-2 rounded-lg font-label-sm text-label-sm transition-colors">
+<span class="material-symbols-outlined text-sm">add</span> Add Funds
+</a>
+</div>
+</div>
+</section>
 
-<div class="space-y-3 mb-6">
-<div class="flex justify-between items-center">
-<span class="text-sm text-text-secondary">Deposit Range</span>
-<span class="text-sm font-bold">$<?php echo format_usd_amount($plan['min_deposit']); ?> - <?php echo $plan['max_deposit'] ? '$' . format_usd_amount($plan['max_deposit']) : 'Unlimited'; ?></span>
+<?php if (empty($plans)): ?>
+<div class="text-center py-12 glass-panel rounded-xl">
+<p class="text-text-secondary">No investment plans available at the moment.</p>
 </div>
-<div class="flex justify-between items-center">
-<span class="text-sm text-text-secondary">Yield Range</span>
-<span class="text-sm font-bold text-success"><?php echo number_format($plan['yield_min'], 1); ?>% - <?php echo number_format($plan['yield_max'], 1); ?>%</span>
-</div>
-<div class="flex justify-between items-center">
-<span class="text-sm text-text-secondary">Duration</span>
-<span class="text-sm font-bold"><?php 
-$minD = $plan['min_duration_days'] ?? $plan['duration_days'];
-$maxD = $plan['max_duration_days'] ?? $plan['duration_days'];
-echo ($minD === $maxD) ? $minD . ' days' : $minD . ' - ' . $maxD . ' days'; 
-?></span>
-</div>
-<div class="flex justify-between items-center">
-<span class="text-sm text-text-secondary">Withdrawal</span>
-<span class="text-sm font-bold"><?php echo $plan['withdrawal_days'] === 0 ? 'Instant' : 'Every ' . $plan['withdrawal_days'] . ' days'; ?></span>
-</div>
-</div>
-
-<?php if (!empty($plan['features'])): ?>
-<div class="mb-6">
-<p class="text-xs font-bold text-on-surface-variant uppercase mb-2">Features</p>
-<ul class="space-y-1">
-<?php foreach (array_slice($plan['features'], 0, 4) as $feature): ?>
-<li class="text-xs text-text-secondary flex items-center gap-2">
-<span class="material-symbols-outlined text-primary-container text-sm">check_circle</span>
-<?php echo htmlspecialchars($feature); ?>
-</li>
+<?php else: ?>
+<?php if ($showPlanTabs): ?>
+<nav class="plan-type-tabs-nav mb-8 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto" aria-label="Investment plan categories">
+<div class="plan-type-tabs-track">
+<?php foreach ($activePlanTypes as $typeKey => $typeLabel): ?>
+<button type="button" class="plan-type-tab shrink-0 pb-3 text-sm font-label-sm text-label-sm text-on-surface-variant hover:text-primary-container transition-colors border-b-2 border-transparent whitespace-nowrap<?php echo $typeKey === $defaultTab ? ' is-active' : ''; ?>" data-plan-tab="<?php echo htmlspecialchars($typeKey); ?>">
+<?php echo htmlspecialchars($typeLabel); ?>
+<span class="ml-1 text-[10px] opacity-60">(<?php echo count($plansByType[$typeKey]); ?>)</span>
+</button>
 <?php endforeach; ?>
-</ul>
 </div>
+</nav>
 <?php endif; ?>
 
-<?php $pMinD = $plan['min_duration_days'] ?? $plan['duration_days']; $pMaxD = $plan['max_duration_days'] ?? $plan['duration_days']; ?>
-<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-min-days="<?php echo $pMinD; ?>" data-plan-max-days="<?php echo $pMaxD; ?>" class="subscribe-plan-btn w-full bg-primary-container hover:bg-primary-container/90 text-on-primary font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary-container/20">
-Subscribe Now
+<?php foreach ($activePlanTypes as $typeKey => $typeLabel):
+    $typePlans = $plansByType[$typeKey];
+?>
+<div class="plan-type-panel grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8<?php echo ($typeKey === $defaultTab || !$showPlanTabs) ? ' is-active' : ''; ?>" data-plan-panel="<?php echo htmlspecialchars($typeKey); ?>">
+<?php foreach ($typePlans as $plan):
+    $pMinD = $plan['min_duration_days'] ?? $plan['duration_days'];
+    $pMaxD = $plan['max_duration_days'] ?? $plan['duration_days'];
+    $durationLabel = ($pMinD === $pMaxD) ? ($pMinD . ' Days') : ($pMinD . ' - ' . $pMaxD . ' Days');
+    $annualMin = ($plan['yield_min'] ?? 0) * 365;
+    if ($annualMin >= 70) {
+        $riskLabel = 'High Risk';
+        $riskClass = 'bg-critical/10 text-critical';
+    } elseif ($annualMin >= 30) {
+        $riskLabel = 'Medium Risk';
+        $riskClass = 'bg-primary-container/15 text-primary-container';
+    } else {
+        $riskLabel = 'Low Risk';
+        $riskClass = 'bg-success/10 text-success';
+    }
+?>
+<div class="plan-asset-card glass-panel rounded-xl p-5 md:p-6 flex flex-col h-full">
+<div class="flex justify-between items-start gap-3 mb-4">
+<div class="flex items-center gap-3 min-w-0">
+<?php echo plan_logo_markup($plan['logo_url'] ?? null, $plan['name'], 'w-10 h-10', 'text-sm'); ?>
+<div class="min-w-0">
+<h4 class="text-base md:text-lg font-bold text-text-primary leading-tight truncate"><?php echo htmlspecialchars($plan['name']); ?></h4>
+<p class="text-xs text-text-secondary truncate"><?php echo htmlspecialchars($plan['description'] ?: 'Premium investment plan'); ?></p>
+</div>
+</div>
+<span class="<?php echo $riskClass; ?> px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0"><?php echo $riskLabel; ?></span>
+</div>
+<div class="space-y-4 mb-6 flex-grow">
+<div class="grid grid-cols-2 gap-4">
+<div>
+<p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Expected Return</p>
+<p class="text-base font-bold text-primary-container mt-1"><?php echo htmlspecialchars(format_plan_expected_return($plan['yield_min'], $plan['yield_max'])); ?></p>
+</div>
+<div>
+<p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Min. Investment</p>
+<p class="text-base font-bold text-text-primary mt-1">USD <?php echo format_usd_amount($plan['min_deposit']); ?></p>
+</div>
+</div>
+<div class="flex justify-between items-center text-sm border-t border-low pt-3">
+<span class="text-text-secondary">Duration: <?php echo htmlspecialchars($durationLabel); ?></span>
+<span class="text-text-primary font-semibold">Up to <?php echo (int) $pMaxD; ?> days</span>
+</div>
+</div>
+<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-min-days="<?php echo $pMinD; ?>" data-plan-max-days="<?php echo $pMaxD; ?>" class="subscribe-plan-btn w-full bg-primary-container hover:bg-primary-container/90 text-on-primary font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+<span>Invest Now</span>
+<span class="material-symbols-outlined text-sm">trending_up</span>
 </button>
 </div>
 <?php endforeach; ?>
 </div>
-
-<?php if (empty($plans)): ?>
-<div class="text-center py-12">
-<p class="text-text-secondary">No investment plans available at the moment.</p>
-</div>
+<?php endforeach; ?>
 <?php endif; ?>
 
 <!-- Subscribe Modal -->
@@ -196,6 +276,17 @@ Subscribe Now
 <?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.plan-type-tab').forEach(function(tab) {
+        tab.addEventListener('click', function () {
+            var type = tab.getAttribute('data-plan-tab');
+            document.querySelectorAll('.plan-type-tab').forEach(function (t) { t.classList.remove('is-active'); });
+            document.querySelectorAll('.plan-type-panel').forEach(function (p) { p.classList.remove('is-active'); });
+            tab.classList.add('is-active');
+            var panel = document.querySelector('.plan-type-panel[data-plan-panel="' + type + '"]');
+            if (panel) panel.classList.add('is-active');
+        });
+    });
+
     var modal = document.getElementById('subscribe-modal');
     var backdrop = document.getElementById('subscribe-modal-backdrop');
     var closeBtn = document.getElementById('subscribe-modal-close');

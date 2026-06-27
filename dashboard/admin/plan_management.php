@@ -6,6 +6,7 @@ $adminPlans = [];
 $planStats = ['total_users' => 0, 'total_capital' => 0, 'avg_payout' => 0];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
+    ensure_plan_schema($pdo);
     $stmt = $pdo->query('SELECT * FROM plans ORDER BY sort_order, id');
     $adminPlans = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
@@ -25,11 +26,13 @@ try {
     $planStatsById = [];
 }
 require_once __DIR__ . '/../../includes/helpers.php';
+require_once __DIR__ . '/../../includes/plan-types.php';
 $siteName = get_site_name();
 $siteSettings = [
     'max_active_plans_per_user' => get_site_setting('max_active_plans_per_user', '3'),
     'compounding_enabled' => get_site_setting('compounding_enabled', '0'),
 ];
+$planTypes = get_plan_types();
 
 $pageTitle = $siteName . ' | Investment Plan Management';
 require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
@@ -92,31 +95,31 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <!-- Plan Grid -->
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-12 min-w-0">
 <?php 
-$iconFallbacks = ['rocket_launch', 'trending_up', 'diamond'];
-$allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 'token'];
 $tiers = ['Low', 'Medium', 'High'];
 foreach ($adminPlans as $idx => $p):
     $ps = $planStatsById[(int)$p['id']] ?? ['users' => 0, 'capital' => 0];
     $activeUsers = (int)($ps['users'] ?? 0);
     $enabled = (bool)$p['enabled'];
     $avgYield = (float) ($p['yield_min'] ?? 0);
-    $planIcon = $p['icon'] ?? $iconFallbacks[$idx % 3];
-    if (!in_array($planIcon, $allowedIcons, true)) $planIcon = $iconFallbacks[$idx % 3];
+    $planTypeKey = normalize_plan_type($p['plan_type'] ?? 'crypto');
+    $planTypeLabel = plan_type_label($planTypeKey);
+    $logoUrl = $p['logo_url'] ?? null;
 ?>
 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 hover:border-primary/50 transition-colors group relative overflow-hidden min-w-0">
 <div class="p-6">
 <div class="flex justify-between items-start gap-4 mb-4">
-<div class="plan-card-icon bg-slate-100 dark:bg-zinc-800 rounded-lg text-slate-600 dark:text-zinc-400 group-hover:bg-primary transition-colors group-hover:text-zinc-900">
-<span class="material-symbols-outlined text-xl"><?php echo htmlspecialchars($planIcon); ?></span>
+<div class="plan-card-icon rounded-lg overflow-hidden bg-slate-100 dark:bg-zinc-800">
+<?php echo plan_logo_markup($logoUrl, $p['name'], 'w-12 h-12', 'text-base'); ?>
 </div>
-<div class="flex flex-col items-end shrink-0">
+<div class="flex flex-col items-end shrink-0 gap-2">
+<span class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 text-[10px] font-bold uppercase tracking-wide"><?php echo htmlspecialchars($planTypeLabel); ?></span>
 <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full <?php echo $enabled ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'; ?> text-xs font-medium">
 <span class="w-1.5 h-1.5 rounded-full <?php echo $enabled ? 'bg-green-600' : 'bg-slate-400'; ?>"></span> <?php echo $enabled ? 'Enabled' : 'Disabled'; ?>
 </span>
 </div>
 </div>
 <h3 class="text-xl font-bold mb-1 <?php echo $enabled ? '' : 'text-slate-400'; ?>"><?php echo htmlspecialchars($p['name']); ?></h3>
-<p class="text-sm text-slate-500 mb-6 italic">$<?php echo number_format((float)$p['min_deposit']); ?> - <?php echo $p['max_deposit'] ? '$' . number_format((float)$p['max_deposit']) : '∞'; ?></p>
+<p class="text-sm text-slate-500 mb-6"><?php echo htmlspecialchars($p['description'] ?: 'No description'); ?></p>
 <div class="space-y-4 mb-6 <?php echo $enabled ? '' : 'opacity-60'; ?>">
 <div class="flex justify-between text-sm">
 <span class="text-slate-500">Active Users</span>
@@ -202,36 +205,35 @@ foreach ($adminPlans as $idx => $p):
 <input type="hidden" name="id" id="plan-form-id" value=""/>
 <input type="hidden" name="enabled" value="1"/>
 <input type="hidden" name="sort_order" value="0"/>
-<input type="hidden" name="icon" id="plan-form-icon" value="trending_up"/>
+<input type="hidden" name="logo_url" id="plan-form-logo-url" value=""/>
 <!-- Basic Info -->
 <div class="space-y-4">
 <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Basic Information</p>
 <div class="grid grid-cols-2 gap-4">
 <div class="col-span-2">
+<label class="block text-sm font-medium mb-1.5">Plan Type</label>
+<select name="plan_type" id="plan-form-type" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 text-sm" required>
+<?php foreach ($planTypes as $typeKey => $typeLabel): ?>
+<option value="<?php echo htmlspecialchars($typeKey); ?>"><?php echo htmlspecialchars($typeLabel); ?></option>
+<?php endforeach; ?>
+</select>
+</div>
+<div class="col-span-2">
 <label class="block text-sm font-medium mb-1.5">Plan Name</label>
-<input name="name" id="plan-form-name" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary" type="text" placeholder="Plan Name"/>
+<input name="name" id="plan-form-name" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 text-sm" type="text" placeholder="e.g. Bitcoin (BTC)" required/>
 </div>
 <div class="col-span-2">
 <label class="block text-sm font-medium mb-1.5">Description</label>
-<textarea name="description" id="plan-form-description" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 text-sm" rows="2" placeholder="e.g. Ideal for crypto newcomers"></textarea>
+<textarea name="description" id="plan-form-description" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 text-sm" rows="2" placeholder="e.g. Digital Gold Reserve"></textarea>
 </div>
 <div class="col-span-2">
-<label class="block text-sm font-medium mb-2">Icon Selection</label>
-<div class="flex flex-wrap gap-3 min-w-0" id="plan-form-icon-btns">
-<div class="plan-drawer-icon-btn plan-icon-btn border-2 border-primary bg-primary/10 rounded cursor-pointer shrink-0" data-icon="trending_up">
-<span class="material-symbols-outlined text-xl">trending_up</span>
-</div>
-<div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="rocket_launch">
-<span class="material-symbols-outlined text-xl">rocket_launch</span>
-</div>
-<div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="diamond">
-<span class="material-symbols-outlined text-xl">diamond</span>
-</div>
-<div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="currency_bitcoin">
-<span class="material-symbols-outlined text-xl">currency_bitcoin</span>
-</div>
-<div class="plan-drawer-icon-btn plan-icon-btn border-2 border-slate-100 dark:border-zinc-800 rounded text-slate-400 cursor-pointer hover:border-primary/50 shrink-0" data-icon="token">
-<span class="material-symbols-outlined text-xl">token</span>
+<label class="block text-sm font-medium mb-2">Plan Logo</label>
+<div class="flex items-center gap-4 min-w-0">
+<div id="plan-form-logo-preview" class="w-14 h-14 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 text-primary font-bold">?</div>
+<div class="flex-1 min-w-0">
+<input type="file" id="plan-form-logo-file" accept="image/png,image/jpeg,image/webp" class="w-full text-sm text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-primary file:text-black file:text-xs"/>
+<p class="text-[10px] text-slate-400 mt-1">PNG, JPG, or WEBP. Max 2MB. Leave empty to show name initial.</p>
+<button type="button" id="plan-form-logo-clear" class="mt-2 text-xs text-red-500 hover:underline hidden">Remove logo</button>
 </div>
 </div>
 </div>
@@ -316,40 +318,90 @@ foreach ($adminPlans as $idx => $p):
 <script>
 (function(){
 var drawer = document.getElementById('plan-drawer');
-function setIconSelection(icon) {
-  var inp = document.getElementById('plan-form-icon');
-  if (inp) inp.value = icon || 'trending_up';
-  document.querySelectorAll('.plan-icon-btn').forEach(function(b){
-    var ic = b.getAttribute('data-icon');
-    if (ic === (icon || 'trending_up')) {
-      b.classList.remove('border-slate-100', 'dark:border-zinc-800', 'text-slate-400');
-      b.classList.add('border-primary', 'bg-primary/10');
-    } else {
-      b.classList.remove('border-primary', 'bg-primary/10');
-      b.classList.add('border-slate-100', 'dark:border-zinc-800', 'text-slate-400');
-    }
+var logoUrlInput = document.getElementById('plan-form-logo-url');
+var logoPreview = document.getElementById('plan-form-logo-preview');
+var logoFileInput = document.getElementById('plan-form-logo-file');
+var logoClearBtn = document.getElementById('plan-form-logo-clear');
+var nameInput = document.getElementById('plan-form-name');
+
+function planInitial(name) {
+  name = (name || '').trim();
+  if (!name) return '?';
+  var match = name.match(/\(([^)]+)\)/);
+  if (match && match[1]) return match[1].trim().charAt(0).toUpperCase();
+  return name.charAt(0).toUpperCase();
+}
+
+function renderLogoPreview(url, name) {
+  if (!logoPreview) return;
+  if (url) {
+    logoPreview.innerHTML = '<img src="' + url + '" alt="" class="w-full h-full object-cover"/>';
+    if (logoClearBtn) logoClearBtn.classList.remove('hidden');
+  } else {
+    logoPreview.innerHTML = planInitial(name);
+    if (logoClearBtn) logoClearBtn.classList.add('hidden');
+  }
+}
+
+function setLogoUrl(url) {
+  if (logoUrlInput) logoUrlInput.value = url || '';
+  renderLogoPreview(url || '', nameInput ? nameInput.value : '');
+}
+
+if (nameInput) {
+  nameInput.addEventListener('input', function () {
+    if (!logoUrlInput || !logoUrlInput.value) renderLogoPreview('', nameInput.value);
   });
 }
-if (drawer) {
-  document.querySelectorAll('.plan-icon-btn').forEach(function(b){
-    b.addEventListener('click', function(){ setIconSelection(b.getAttribute('data-icon')); });
+
+if (logoClearBtn) {
+  logoClearBtn.addEventListener('click', function () {
+    setLogoUrl('');
+    if (logoFileInput) logoFileInput.value = '';
   });
+}
+
+if (logoFileInput) {
+  logoFileInput.addEventListener('change', function () {
+    var file = logoFileInput.files && logoFileInput.files[0];
+    if (!file) return;
+    var planId = document.getElementById('plan-form-id') ? document.getElementById('plan-form-id').value : '';
+    var fd = new FormData();
+    fd.append('file', file);
+    if (planId) fd.append('plan_id', planId);
+    fetch('/api/admin/upload-plan-logo.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res.success && res.data && res.data.url) setLogoUrl(res.data.url);
+        else alert(res.error || 'Logo upload failed');
+      })
+      .catch(function () { alert('Logo upload failed'); });
+  });
+}
+
+function resetPlanForm() {
+  document.getElementById('plan-form-id').value = '';
+  document.getElementById('plan-form-name').value = '';
+  document.getElementById('plan-form-description').value = '';
+  if (document.getElementById('plan-form-type')) document.getElementById('plan-form-type').value = 'crypto';
+  setLogoUrl('');
+  if (logoFileInput) logoFileInput.value = '';
+  document.getElementById('plan-form-min').value = '100';
+  document.getElementById('plan-form-max').value = '';
+  document.getElementById('plan-form-yield').value = '1';
+  document.getElementById('plan-form-min-days').value = '7';
+  document.getElementById('plan-form-max-days').value = '30';
+  document.getElementById('plan-form-withdrawal').value = '7';
+  document.getElementById('plan-form-features').value = '';
+  document.getElementById('plan-drawer-title').textContent = 'Add New Plan';
+  document.getElementById('plan-drawer-subtitle').textContent = '';
+}
+
+if (drawer) {
   var addPlanBtn = document.getElementById('add-plan-btn');
-  if (addPlanBtn) addPlanBtn.addEventListener('click', function(){ 
-    document.getElementById('plan-form-id').value = ''; 
-    document.getElementById('plan-form-name').value = ''; 
-    document.getElementById('plan-form-description').value = ''; 
-    setIconSelection('trending_up');
-    document.getElementById('plan-form-min').value = '100'; 
-    document.getElementById('plan-form-max').value = ''; 
-    document.getElementById('plan-form-yield').value = '1'; 
-    document.getElementById('plan-form-min-days').value = '7'; 
-    document.getElementById('plan-form-max-days').value = '30'; 
-    document.getElementById('plan-form-withdrawal').value = '7'; 
-    document.getElementById('plan-form-features').value = ''; 
-    document.getElementById('plan-drawer-title').textContent = 'Add New Plan';
-    document.getElementById('plan-drawer-subtitle').textContent = '';
-    drawer.classList.remove('hidden'); 
+  if (addPlanBtn) addPlanBtn.addEventListener('click', function(){
+    resetPlanForm();
+    drawer.classList.remove('hidden');
   });
   var drawerOverlay = drawer.querySelector('.absolute.inset-0');
   if (drawerOverlay) drawerOverlay.addEventListener('click', function(){ drawer.classList.add('hidden'); });
@@ -370,7 +422,9 @@ if (drawer) {
             document.getElementById('plan-form-id').value = p.id;
             document.getElementById('plan-form-name').value = p.name;
             document.getElementById('plan-form-description').value = p.description || '';
-            setIconSelection(p.icon || 'trending_up');
+            if (document.getElementById('plan-form-type')) document.getElementById('plan-form-type').value = p.plan_type || 'crypto';
+            setLogoUrl(p.logo_url || '');
+            if (logoFileInput) logoFileInput.value = '';
             document.getElementById('plan-form-min').value = p.min_deposit;
             document.getElementById('plan-form-max').value = p.max_deposit || '';
             document.getElementById('plan-form-yield').value = (p.yield_min !== null && p.yield_min !== undefined) ? p.yield_min : (p.yield || '');
@@ -430,7 +484,7 @@ if (drawer) {
     var features = featuresText.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
     var minDays = parseInt(document.getElementById('plan-form-min-days').value, 10);
     var maxDays = parseInt(document.getElementById('plan-form-max-days').value, 10);
-    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, description: document.getElementById('plan-form-description').value.trim(), icon: document.getElementById('plan-form-icon').value, min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_days: isNaN(minDays) ? null : minDays, max_duration_days: isNaN(maxDays) ? null : maxDays, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7, features: features, features_text: featuresText };
+    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, plan_type: document.getElementById('plan-form-type').value, description: document.getElementById('plan-form-description').value.trim(), logo_url: document.getElementById('plan-form-logo-url').value.trim(), min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_days: isNaN(minDays) ? null : minDays, max_duration_days: isNaN(maxDays) ? null : maxDays, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7, features: features, features_text: featuresText };
     fetch('/api/admin/plans.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(data) })
       .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { drawer.classList.add('hidden'); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
   });
