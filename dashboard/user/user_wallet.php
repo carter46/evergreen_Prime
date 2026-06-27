@@ -68,16 +68,16 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+.wallet-page { width: 100%; max-width: 100%; min-width: 0; overflow-x: clip; }
 @media (min-width: 640px) {
     .wallet-drawer-content label { font-size: 0.9375rem; }
     #deposit-coin-quote, #withdraw-coin-quote { font-size: 1.125rem; font-weight: 700; }
 }
 </style>
-<div class="flex-1 max-w-[1440px] w-full mx-auto">
-<div class="grid grid-cols-12 gap-8">
-<!-- Row 1: USD Balance (65%) | Security Checklist (35%) -->
-<div class="col-span-12 grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-6">
-<div class="balance-gradient-card relative overflow-hidden rounded-xl p-8 text-white shadow-2xl">
+<div class="wallet-page w-full min-w-0 space-y-4 md:space-y-8">
+<!-- Row 1: USD Balance | Coming Soon -->
+<div class="grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-4 md:gap-6 min-w-0">
+<div class="balance-gradient-card relative overflow-hidden rounded-xl p-4 sm:p-6 md:p-8 text-white shadow-2xl min-w-0">
 <div class="absolute top-0 right-0 w-64 h-64 bg-primary-container/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
 <div class="absolute top-0 right-0 p-4 opacity-10">
 <span class="material-symbols-outlined text-6xl">account_balance_wallet</span>
@@ -85,7 +85,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <div class="relative z-10">
 <div>
 <p class="text-on-surface-variant text-sm font-medium mb-1">Available Balance</p>
-<h1 class="text-5xl md:text-6xl font-bold tracking-tight">$<?php echo format_usd_amount($walletTotalUsd); ?> <span class="text-xl font-normal text-on-surface-variant ml-2">USD</span></h1>
+<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight break-words">$<?php echo format_usd_amount($walletTotalUsd); ?> <span class="text-base sm:text-xl font-normal text-on-surface-variant ml-1 sm:ml-2">USD</span></h1>
 <p class="text-primary-container mt-2 text-sm">Centralized USD wallet — invest and withdraw from one balance.</p>
 <div class="flex flex-wrap gap-2 sm:gap-3 mt-4">
 <button type="button" id="deposit-btn" class="bg-primary-container hover:bg-primary-container/90 text-on-primary px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all text-sm">
@@ -131,8 +131,8 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </div>
 </div>
 
-<!-- Row 2: Your Assets (65%) | Security Checklist (35%) -->
-<div class="col-span-12 grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-6">
+<!-- Row 2: USD Wallet | Security Checklist -->
+<div class="grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-4 md:gap-6 min-w-0">
 <!-- Your Assets -->
 <div class="glass-panel rounded-xl overflow-hidden min-w-0">
 <div class="p-4 border-b border-low flex items-center justify-between gap-2">
@@ -185,22 +185,21 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </div>
 </div>
 
-<!-- Row 3: Full-width Recent History -->
-<div class="col-span-12">
-<div class="glass-panel rounded-xl overflow-hidden">
-<div class="p-6 border-b border-low flex items-center justify-between">
-<h2 class="text-lg font-bold text-on-surface">Recent History</h2>
-<a href="/dashboard/user/transactions" class="text-primary-container text-xs font-bold hover:underline">View All</a>
+<!-- Row 3: Recent History -->
+<div class="min-w-0">
+<div class="glass-panel rounded-xl overflow-hidden min-w-0">
+<div class="p-4 sm:p-6 border-b border-low flex items-center justify-between gap-2">
+<h2 class="text-base sm:text-lg font-bold text-on-surface">Recent History</h2>
+<a href="/dashboard/user/transactions" class="text-primary-container text-xs font-bold hover:underline shrink-0">View All</a>
 </div>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
+<div class="min-w-0">
+<table class="w-full text-left table-fixed min-w-0">
 <thead>
 <tr class="text-slate-400 text-[10px] uppercase tracking-wider border-b border-slate-50 dark:border-slate-800">
-<th class="px-6 py-4 font-semibold">Type / Date</th>
-<th class="px-6 py-4 font-semibold">Asset</th>
-<th class="px-6 py-4 font-semibold text-right">Amount</th>
-<th class="px-6 py-4 font-semibold text-center">Status</th>
-<th class="px-6 py-4 font-semibold text-right">TXID</th>
+<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[38%]">Type / Date</th>
+<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[18%]">Asset</th>
+<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-right w-[22%]">Amount</th>
+<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center w-[22%]">Status</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
@@ -218,18 +217,18 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
   $typeLabel = $txTypeLabels[$tx['type']] ?? ucfirst(str_replace('_', ' ', $tx['type']));
 ?>
 <tr>
-<td class="px-6 py-4">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined <?php echo $isDeposit ? 'text-success' : 'text-critical'; ?> text-lg"><?php echo $isDeposit ? 'arrow_downward' : 'arrow_upward'; ?></span>
-<div>
-<p class="text-sm font-bold"><?php echo htmlspecialchars($typeLabel); ?></p>
-<p class="text-[10px] text-slate-400"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></p>
+<td class="px-3 sm:px-6 py-3 sm:py-4 min-w-0">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined <?php echo $isDeposit ? 'text-success' : 'text-critical'; ?> text-lg shrink-0"><?php echo $isDeposit ? 'arrow_downward' : 'arrow_upward'; ?></span>
+<div class="min-w-0">
+<p class="text-sm font-bold truncate"><?php echo htmlspecialchars($typeLabel); ?></p>
+<p class="text-[10px] text-slate-400 truncate"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></p>
 </div>
 </div>
 </td>
-<td class="px-6 py-4 text-sm font-medium"><?php echo htmlspecialchars($tx['currency']); ?></td>
-<td class="px-6 py-4 text-right text-sm font-bold <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo format_usd_amount($displayAmt); ?></td>
-<td class="px-6 py-4 text-center">
+<td class="px-3 sm:px-6 py-3 sm:py-4 text-sm font-medium"><?php echo htmlspecialchars($tx['currency']); ?></td>
+<td class="px-3 sm:px-6 py-3 sm:py-4 text-right text-sm font-bold whitespace-nowrap <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo format_usd_amount($displayAmt); ?></td>
+<td class="px-3 sm:px-6 py-3 sm:py-4 text-center">
 <?php
 $statusClass = 'bg-amber-100 text-amber-700';
 if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700';
@@ -238,16 +237,13 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 ?>
 <span class="px-2 py-1 <?php echo $statusClass; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>
-<td class="px-6 py-4 text-right font-mono text-[10px] text-slate-400"><?php echo $tx['reference'] ? substr($tx['reference'], 0, 6) . '...' . substr($tx['reference'], -4) : '—'; ?></td>
 </tr>
 <?php endforeach; ?>
 <?php if (empty($walletTransactions)): ?>
-<tr><td class="px-6 py-8 text-center text-slate-500" colspan="5">No transactions yet.</td></tr>
+<tr><td class="px-3 sm:px-6 py-8 text-center text-slate-500" colspan="4">No transactions yet.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>
-</div>
-</div>
 </div>
 </div>
 </div>
