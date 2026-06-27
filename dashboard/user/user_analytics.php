@@ -196,7 +196,6 @@ function portfolio_plan_card(array $ap, string $tab, float $userUsdBalance): voi
     $amount = (float) ($ap['amount'] ?? 0);
     $liqFee = (float) ($ap['liquidation_cost'] ?? 0);
     $invId = (int) ($ap['id'] ?? 0);
-    $canAfford = $userUsdBalance >= $liqFee;
     $invStatus = strtolower($ap['status'] ?? 'active');
     $isPaused = $invStatus === 'paused';
     ?>
@@ -227,8 +226,7 @@ function portfolio_plan_card(array $ap, string $tab, float $userUsdBalance): voi
             data-plan-name="<?= htmlspecialchars($ap['plan_name'] ?? 'Plan', ENT_QUOTES, 'UTF-8') ?>"
             data-amount="<?= htmlspecialchars(number_format($amount, 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>"
             data-fee="<?= htmlspecialchars(number_format($liqFee, 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>"
-            data-balance="<?= htmlspecialchars(number_format($userUsdBalance, 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>"
-            data-can-afford="<?= $canAfford ? '1' : '0' ?>">
+            data-balance="<?= htmlspecialchars(number_format($userUsdBalance, 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>">
             Liquidate Plan
         </button>
         <?php elseif ($tab === 'matured'): ?>
@@ -329,10 +327,9 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </section>
 <!-- Main Analytics Section -->
 <div class="space-y-8 mb-8">
-<!-- Row 1: Investment Plans (wider) | Cumulative Performance -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
-<!-- Investment Plans with tabs (2/3 width) -->
-<div class="glass-panel p-6 rounded-xl min-h-0 lg:col-span-2">
+<!-- Row 1: My Portfolio (full width) -->
+<div class="space-y-6 w-full">
+<div class="glass-panel p-6 rounded-xl min-h-0 w-full">
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
 <h2 class="text-lg font-bold flex items-center gap-2">
 <span class="material-symbols-outlined text-primary text-xl">savings</span>
@@ -347,7 +344,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </div>
 <div id="portfolio-panel-active" class="portfolio-panel">
 <?php if (!empty($activePlans)): ?>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[360px] pr-1">
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto custom-scrollbar max-h-[360px] pr-1">
 <?php foreach ($activePlans as $ap) portfolio_plan_card($ap, 'active', $userUsdBalance); ?>
 </div>
 <?php else: ?>
@@ -363,7 +360,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </div>
 <div id="portfolio-panel-matured" class="portfolio-panel hidden">
 <?php if (!empty($maturedPlans)): ?>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[360px] pr-1">
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto custom-scrollbar max-h-[360px] pr-1">
 <?php foreach ($maturedPlans as $ap) portfolio_plan_card($ap, 'matured', $userUsdBalance); ?>
 </div>
 <?php else: ?>
@@ -376,7 +373,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </div>
 <div id="portfolio-panel-liquidated" class="portfolio-panel hidden">
 <?php if (!empty($liquidatedPlans)): ?>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[360px] pr-1">
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto custom-scrollbar max-h-[360px] pr-1">
 <?php foreach ($liquidatedPlans as $ap) portfolio_plan_card($ap, 'liquidated', $userUsdBalance); ?>
 </div>
 <?php else: ?>
@@ -388,8 +385,8 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <?php endif; ?>
 </div>
 </div>
-<!-- Cumulative Performance (1/3 width) -->
-<div class="glass-panel p-6 rounded-xl min-h-0">
+<!-- Cumulative Performance (full width, below portfolio on desktop) -->
+<div class="glass-panel p-6 rounded-xl min-h-0 w-full">
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 <h2 class="text-lg font-bold flex items-center gap-2">
                         Cumulative Performance
@@ -594,14 +591,15 @@ foreach ($analyticsTx as $tx):
 <span class="text-xs text-slate-400 font-medium">Showing <?php echo min(count($analyticsTx), 50); ?> entries</span>
 </div>
 </div>
-<!-- Liquidate Plan Modal -->
-<div id="liquidate-modal" class="fixed inset-0 z-50 hidden">
+<?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
+<!-- Liquidate Plan Modal (outside main so it always overlays correctly) -->
+<div id="liquidate-modal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true" aria-labelledby="liquidate-modal-title">
 <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="liquidate-modal-backdrop"></div>
 <div class="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto">
-<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-zinc-800">
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-zinc-800 my-auto">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
-<h2 class="text-xl font-bold">Liquidate Plan</h2>
-<button type="button" id="liquidate-modal-close" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+<h2 id="liquidate-modal-title" class="text-xl font-bold">Liquidate Plan</h2>
+<button type="button" id="liquidate-modal-close" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
 </div>
 <div class="p-6">
 <div class="mb-4 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50">
@@ -621,7 +619,7 @@ foreach ($analyticsTx as $tx):
 <p class="font-bold" id="liquidate-balance-display">$0.00</p>
 </div>
 </div>
-<p id="liquidate-balance-note" class="text-sm mb-4 hidden"></p>
+<p id="liquidate-balance-note" class="text-sm mb-4"></p>
 <div id="liquidate-error" class="text-sm text-red-500 hidden mb-4"></div>
 <input type="hidden" id="liquidate-investment-id" value=""/>
 <div class="flex gap-3">
@@ -632,7 +630,6 @@ foreach ($analyticsTx as $tx):
 </div>
 </div>
 </div>
-<?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
 <!-- Floating Help Button -->
 <button class="fixed bottom-6 right-6 w-14 h-14 bg-surface-container-highest text-on-surface rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-50">
 <span class="material-symbols-outlined">support_agent</span>
@@ -743,40 +740,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeLiquidateModal() {
         if (liqModal) liqModal.classList.add('hidden');
+        document.body.style.overflow = '';
         if (liqError) { liqError.classList.add('hidden'); liqError.textContent = ''; }
+        if (liqConfirm) {
+            liqConfirm.textContent = 'Confirm Liquidation';
+        }
     }
 
     function openLiquidateModal(btn) {
         if (!liqModal || !btn) return;
-        var fee = parseFloat(btn.getAttribute('data-fee') || '0');
-        var balance = parseFloat(btn.getAttribute('data-balance') || '0');
-        var canAfford = btn.getAttribute('data-can-afford') === '1' || balance >= fee;
-        document.getElementById('liquidate-plan-name').textContent = btn.getAttribute('data-plan-name') || 'Plan';
-        document.getElementById('liquidate-plan-amount').textContent = '$' + parseFloat(btn.getAttribute('data-amount') || '0').toFixed(2);
-        document.getElementById('liquidate-fee-display').textContent = '$' + fee.toFixed(2);
-        liqBalanceDisplay.textContent = '$' + balance.toFixed(2);
-        liqBalanceDisplay.classList.remove('text-emerald-500', 'text-red-500');
-        liqBalanceNote.classList.add('hidden');
-        liqBalanceNote.classList.remove('text-emerald-600', 'text-red-500');
-        if (canAfford) {
-            liqBalanceDisplay.classList.add('text-emerald-500');
-            liqBalanceNote.textContent = 'Your balance is enough to implement the liquidation.';
-            liqBalanceNote.classList.add('text-emerald-600');
-            liqBalanceNote.classList.remove('hidden');
-            if (liqConfirm) liqConfirm.disabled = false;
-        } else {
-            liqBalanceDisplay.classList.add('text-red-500');
-            liqBalanceNote.textContent = 'Insufficient balance for the operation fee. Deposit funds to continue.';
-            liqBalanceNote.classList.add('text-red-500');
-            liqBalanceNote.classList.remove('hidden');
-            if (liqConfirm) liqConfirm.disabled = true;
+        var fee = parseFloat(btn.getAttribute('data-fee') || '0') || 0;
+        var balance = parseFloat(btn.getAttribute('data-balance') || '0') || 0;
+        var canAfford = balance + 0.000001 >= fee;
+        var planNameEl = document.getElementById('liquidate-plan-name');
+        var planAmountEl = document.getElementById('liquidate-plan-amount');
+        var feeDisplayEl = document.getElementById('liquidate-fee-display');
+
+        if (planNameEl) planNameEl.textContent = btn.getAttribute('data-plan-name') || 'Plan';
+        if (planAmountEl) planAmountEl.textContent = '$' + (parseFloat(btn.getAttribute('data-amount') || '0') || 0).toFixed(2);
+        if (feeDisplayEl) feeDisplayEl.textContent = '$' + fee.toFixed(2);
+
+        if (liqBalanceDisplay) {
+            liqBalanceDisplay.textContent = '$' + balance.toFixed(2);
+            liqBalanceDisplay.classList.remove('text-emerald-500', 'text-red-500');
+            liqBalanceDisplay.classList.add(canAfford ? 'text-emerald-500' : 'text-red-500');
+        }
+        if (liqBalanceNote) {
+            liqBalanceNote.classList.remove('text-emerald-600', 'text-red-500', 'hidden');
+            if (canAfford) {
+                liqBalanceNote.textContent = 'Your balance is enough to implement the liquidation.';
+                liqBalanceNote.classList.add('text-emerald-600');
+            } else {
+                liqBalanceNote.textContent = 'Insufficient balance for the operation fee. Deposit funds to your wallet to continue.';
+                liqBalanceNote.classList.add('text-red-500');
+            }
+        }
+        if (liqConfirm) {
+            liqConfirm.disabled = !canAfford;
+            liqConfirm.textContent = 'Confirm Liquidation';
+        }
+        if (liqError) {
+            liqError.classList.add('hidden');
+            liqError.textContent = '';
         }
         if (liqInvId) liqInvId.value = btn.getAttribute('data-investment-id') || '';
+
         liqModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     }
 
-    document.querySelectorAll('.liquidate-plan-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() { openLiquidateModal(this); });
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.liquidate-plan-btn');
+        if (btn) {
+            e.preventDefault();
+            openLiquidateModal(btn);
+        }
     });
     [liqBackdrop, liqClose, liqCancel].forEach(function(el) {
         if (el) el.addEventListener('click', closeLiquidateModal);
