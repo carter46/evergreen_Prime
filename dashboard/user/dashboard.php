@@ -120,7 +120,7 @@ $chartBtnIdle = 'px-4 py-1.5 rounded text-label-xs text-on-surface-variant hover
 <div class="relative z-10">
 <p class="font-label-xs text-label-xs text-slate-400 uppercase tracking-widest mb-2">Total USD Balance</p>
 <div class="flex flex-wrap items-baseline gap-2 md:gap-3 mb-4">
-<span class="font-display text-lg md:text-xl text-emerald-400 font-bold leading-none">$<?php echo number_format((float) $userBalance, 2, '.', ','); ?></span>
+<span class="font-display text-3xl md:text-4xl text-emerald-400 font-extrabold leading-none">$<?php echo number_format((float) $userBalance, 2, '.', ','); ?></span>
 </div>
 <div class="flex gap-3">
 <button type="button" id="deposit-btn-dash" class="flex-1 bg-primary-container text-on-primary font-bold py-3 rounded-lg hover:opacity-90 transition-all text-label-sm">Deposit</button>
@@ -133,7 +133,7 @@ $chartBtnIdle = 'px-4 py-1.5 rounded text-label-xs text-on-surface-variant hover
 <div class="flex justify-between items-start">
 <div>
 <p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest mb-1">Total Profit</p>
-<h3 class="font-headline-md text-headline-md text-success">$<?php echo format_usd_amount($totalProfit); ?></h3>
+<h3 class="font-display text-3xl md:text-4xl text-success font-extrabold leading-none">$<?php echo format_usd_amount($totalProfit); ?></h3>
 </div>
 <div class="p-2 bg-success/10 rounded">
 <span class="material-symbols-outlined text-success" style="font-variation-settings: 'FILL' 1;">trending_up</span>
@@ -160,7 +160,7 @@ $chartBtnIdle = 'px-4 py-1.5 rounded text-label-xs text-on-surface-variant hover
 <p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest">Referral Bonus</p>
 <span class="material-symbols-outlined text-primary-container">info</span>
 </div>
-<h3 class="font-display text-4xl md:text-[48px] text-on-surface font-extrabold mb-1">$<?php echo format_usd_amount($referralBonus); ?></h3>
+<h3 class="font-display text-3xl md:text-4xl text-on-surface font-extrabold leading-none mb-1">$<?php echo format_usd_amount($referralBonus); ?></h3>
 <p class="text-on-surface-variant font-label-sm">Last 24h: <span class="text-success">+$<?php echo format_usd_amount($referralBonusLast24h); ?></span></p>
 </div>
 <a class="mt-6 flex items-center gap-2 text-primary-container font-bold text-label-sm hover:underline relative z-10" href="/dashboard/user/referrals">

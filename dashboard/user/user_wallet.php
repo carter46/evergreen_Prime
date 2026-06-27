@@ -268,11 +268,41 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <input type="number" id="deposit-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-semibold" placeholder="0.00"/>
 </div>
 <div>
-<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Payment Method</label>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Deposit Method</label>
+<select id="deposit-method" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
+<option value="crypto" selected>Crypto</option>
+<option value="bank">Bank Transfer</option>
+<option value="card">Card</option>
+</select>
+</div>
+<div id="deposit-crypto-fields" class="space-y-5">
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Deposit Currency</label>
 <select id="deposit-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
 <option value="">Loading...</option>
 </select>
 <p class="mt-3 text-base sm:text-lg font-bold text-primary dark:text-primary min-h-[1.5em]" id="deposit-coin-quote">—</p>
+</div>
+</div>
+<div id="deposit-bank-fields" class="hidden space-y-3">
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Bank Account</label>
+<select id="deposit-bank-option" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
+<option value="">Loading...</option>
+</select>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400">Bank transfer details will be shown after you submit your deposit request.</p>
+<p class="text-base sm:text-lg font-bold text-primary dark:text-primary min-h-[1.5em]" id="deposit-bank-quote">—</p>
+</div>
+<div id="deposit-card-fields" class="hidden space-y-3">
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Card Option</label>
+<select id="deposit-card-option" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
+<option value="">Loading...</option>
+</select>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400">Card payment details will be shown after you submit your deposit request.</p>
+<p class="text-base sm:text-lg font-bold text-primary dark:text-primary min-h-[1.5em]" id="deposit-card-quote">—</p>
 </div>
 <div id="deposit-error" class="text-sm text-red-500 hidden"></div>
 <button type="button" id="deposit-submit-btn" class="w-full py-3 bg-primary text-black font-bold rounded-lg text-base">Submit Deposit Request</button>
@@ -480,28 +510,67 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getSelectedDepositMethod() {
-        var sel = document.getElementById('deposit-currency');
-        if (!sel || !sel.value) return null;
-        var id = parseInt(sel.value, 10);
-        return (paymentMethodsData.all || []).find(function(m){ return m.id === id; }) || null;
+        var methodType = (document.getElementById('deposit-method') || {}).value || 'crypto';
+        if (methodType === 'crypto') {
+            var sel = document.getElementById('deposit-currency');
+            if (!sel || !sel.value) return null;
+            var id = parseInt(sel.value, 10);
+            return (paymentMethodsData.crypto || []).find(function(m){ return m.id === id; }) || null;
+        }
+        if (methodType === 'bank') {
+            var banks = paymentMethodsData.bank || [];
+            if (!banks.length) return null;
+            var bankSel = document.getElementById('deposit-bank-option');
+            if (bankSel && bankSel.value) {
+                var bankId = parseInt(bankSel.value, 10);
+                return banks.find(function(m){ return m.id === bankId; }) || null;
+            }
+            return banks.length === 1 ? banks[0] : null;
+        }
+        var cards = paymentMethodsData.card || [];
+        if (!cards.length) return null;
+        var cardSel = document.getElementById('deposit-card-option');
+        if (cardSel && cardSel.value) {
+            var cardId = parseInt(cardSel.value, 10);
+            return cards.find(function(m){ return m.id === cardId; }) || null;
+        }
+        return cards.length === 1 ? cards[0] : null;
     }
 
-    function buildDepositMethodOptions(methods) {
-        var groups = [];
-        var crypto = methods.filter(function(m){ return m.method_type === 'crypto'; });
-        var bank = methods.filter(function(m){ return m.method_type === 'bank'; });
-        var card = methods.filter(function(m){ return m.method_type === 'card'; });
-        function opt(m) {
-            var label = m.method_type === 'crypto'
-                ? ((m.display_name || m.symbol) + ' (' + m.symbol + ')')
-                : (m.label || m.display_name || (m.method_type === 'bank' ? 'Bank Transfer' : 'Card'));
-            return '<option value="' + m.id + '" data-type="' + m.method_type + '"' + (m.method_type === 'crypto' ? ' data-symbol="' + (m.symbol || '') + '" data-coin-key="' + (m.coin_key || '') + '"' : '') + '>' + label + '</option>';
-        }
-        var html = '';
-        if (crypto.length) html += '<optgroup label="Crypto">' + crypto.map(opt).join('') + '</optgroup>';
-        if (bank.length) html += '<optgroup label="Bank Transfer">' + bank.map(opt).join('') + '</optgroup>';
-        if (card.length) html += '<optgroup label="Card">' + card.map(opt).join('') + '</optgroup>';
-        return html || '<option value="">No payment methods configured</option>';
+    function buildDepositCryptoOptions(methods) {
+        if (!methods || !methods.length) return '<option value="">No crypto deposit currencies</option>';
+        return methods.map(function(m){
+            return '<option value="' + m.id + '" data-symbol="' + (m.symbol || '') + '" data-coin-key="' + (m.coin_key || '') + '">' + (m.display_name || m.symbol) + ' (' + (m.symbol || '') + ')</option>';
+        }).join('');
+    }
+
+    function buildDepositBankOptions(methods) {
+        if (!methods || !methods.length) return '<option value="">No bank accounts configured</option>';
+        return methods.map(function(m){
+            var label = m.label || m.bank_name || 'Bank Transfer';
+            if (m.bank_name && m.label !== m.bank_name) label += ' — ' + m.bank_name;
+            return '<option value="' + m.id + '">' + label.replace(/</g, '&lt;') + '</option>';
+        }).join('');
+    }
+
+    function buildDepositCardOptions(methods) {
+        if (!methods || !methods.length) return '<option value="">No card options configured</option>';
+        return methods.map(function(m){
+            var brand = (m.card_brand || 'card').toUpperCase();
+            var label = m.label || (brand + ' Card');
+            return '<option value="' + m.id + '">' + label.replace(/</g, '&lt;') + '</option>';
+        }).join('');
+    }
+
+    function syncDepositMethodUI() {
+        var method = (document.getElementById('deposit-method') || {}).value || 'crypto';
+        var cryptoFields = document.getElementById('deposit-crypto-fields');
+        var bankFields = document.getElementById('deposit-bank-fields');
+        var cardFields = document.getElementById('deposit-card-fields');
+        if (cryptoFields) cryptoFields.classList.toggle('hidden', method !== 'crypto');
+        if (bankFields) bankFields.classList.toggle('hidden', method !== 'bank');
+        if (cardFields) cardFields.classList.toggle('hidden', method !== 'card');
+        updateDepositCoinQuote();
     }
 
     function renderBankDetails(el, m) {
@@ -558,8 +627,18 @@ document.addEventListener('DOMContentLoaded', function() {
             paymentMethodsData.bank = d.bank || [];
             paymentMethodsData.card = d.card || [];
             addressesData = paymentMethodsData.crypto;
-            var depositSelect = document.getElementById('deposit-currency');
-            if (depositSelect) depositSelect.innerHTML = buildDepositMethodOptions(d.methods);
+            var depositCryptoSel = document.getElementById('deposit-currency');
+            if (depositCryptoSel) depositCryptoSel.innerHTML = buildDepositCryptoOptions(paymentMethodsData.crypto);
+            var depositBankSel = document.getElementById('deposit-bank-option');
+            if (depositBankSel) depositBankSel.innerHTML = buildDepositBankOptions(paymentMethodsData.bank);
+            var depositCardSel = document.getElementById('deposit-card-option');
+            if (depositCardSel) depositCardSel.innerHTML = buildDepositCardOptions(paymentMethodsData.card);
+            var depositMethodSel = document.getElementById('deposit-method');
+            if (depositMethodSel) {
+                depositMethodSel.querySelector('option[value="bank"]').disabled = paymentMethodsData.bank.length === 0;
+                depositMethodSel.querySelector('option[value="card"]').disabled = paymentMethodsData.card.length === 0;
+                syncDepositMethodUI();
+            }
             var withdrawSelect = document.getElementById('withdraw-currency');
             var withdrawOptions = paymentMethodsData.crypto.map(function(a){
                 return '<option value="' + (a.symbol || '').toUpperCase() + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || a.symbol) + ' (' + (a.symbol || '') + ')</option>';
@@ -593,7 +672,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Deposit drawer handlers
-    document.getElementById('deposit-btn').addEventListener('click', function(){ depositStep1.classList.remove('hidden'); depositStep2.classList.add('hidden'); document.getElementById('deposit-error').classList.add('hidden'); var ref2 = document.getElementById('deposit-reference-step2'); if (ref2) ref2.value = ''; var pf = document.getElementById('deposit-proof-file'); if (pf) pf.value = ''; openDrawer(depositDrawer); });
+    document.getElementById('deposit-btn').addEventListener('click', function(){
+        depositStep1.classList.remove('hidden');
+        depositStep2.classList.add('hidden');
+        document.getElementById('deposit-error').classList.add('hidden');
+        syncDepositMethodUI();
+        var ref2 = document.getElementById('deposit-reference-step2');
+        if (ref2) ref2.value = '';
+        var pf = document.getElementById('deposit-proof-file');
+        if (pf) pf.value = '';
+        openDrawer(depositDrawer);
+    });
     document.getElementById('deposit-drawer-close').addEventListener('click', function(){ closeDrawer(depositDrawer); });
     if (depositDoneBtn) depositDoneBtn.addEventListener('click', function(){
         if (!currentDepositTxId) { closeDrawer(depositDrawer); window.location.reload(); return; }
@@ -647,14 +736,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateDepositCoinQuote() {
         var amountUsd = parseFloat(document.getElementById('deposit-amount').value) || 0;
+        var methodType = (document.getElementById('deposit-method') || {}).value || 'crypto';
         var pm = getSelectedDepositMethod();
-        var el = document.getElementById('deposit-coin-quote');
-        if (!el) return;
-        if (!pm || amountUsd <= 0) { el.textContent = '—'; return; }
-        if (pm.method_type !== 'crypto') {
-            el.textContent = 'Deposit amount: $' + amountUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
+        var coinQuote = document.getElementById('deposit-coin-quote');
+        var bankQuote = document.getElementById('deposit-bank-quote');
+        var cardQuote = document.getElementById('deposit-card-quote');
+        if (bankQuote) bankQuote.textContent = '—';
+        if (cardQuote) cardQuote.textContent = '—';
+
+        if (methodType === 'bank') {
+            if (coinQuote) coinQuote.textContent = '—';
+            if (!bankQuote) return;
+            if (!pm || amountUsd <= 0) { bankQuote.textContent = '—'; return; }
+            bankQuote.textContent = 'Deposit amount: $' + amountUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
             return;
         }
+        if (methodType === 'card') {
+            if (coinQuote) coinQuote.textContent = '—';
+            if (!cardQuote) return;
+            if (!pm || amountUsd <= 0) { cardQuote.textContent = '—'; return; }
+            cardQuote.textContent = 'Deposit amount: $' + amountUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
+            return;
+        }
+
+        var el = coinQuote;
+        if (!el) return;
+        if (!pm || amountUsd <= 0) { el.textContent = '—'; return; }
         var currency = pm.symbol || '';
         el.textContent = 'Fetching rate…';
         var coinKey = pm.coin_key || null;
@@ -688,13 +795,29 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('deposit-currency')) {
         document.getElementById('deposit-currency').addEventListener('change', updateDepositCoinQuote);
     }
+    if (document.getElementById('deposit-bank-option')) {
+        document.getElementById('deposit-bank-option').addEventListener('change', updateDepositCoinQuote);
+    }
+    if (document.getElementById('deposit-card-option')) {
+        document.getElementById('deposit-card-option').addEventListener('change', updateDepositCoinQuote);
+    }
+    var depositMethodEl = document.getElementById('deposit-method');
+    if (depositMethodEl) depositMethodEl.addEventListener('change', syncDepositMethodUI);
 
     document.getElementById('deposit-submit-btn').addEventListener('click', function(){
+        var methodType = (document.getElementById('deposit-method') || {}).value || 'crypto';
         var pm = getSelectedDepositMethod();
         var amountUsd = parseFloat(document.getElementById('deposit-amount').value) || 0;
         var errEl = document.getElementById('deposit-error');
-        if (!pm || amountUsd <= 0) {
-            errEl.textContent = 'Please enter a USD amount and select a payment method';
+        if (amountUsd <= 0) {
+            errEl.textContent = 'Please enter a USD amount';
+            errEl.classList.remove('hidden');
+            return;
+        }
+        if (!pm) {
+            if (methodType === 'crypto') errEl.textContent = 'Please select a deposit currency';
+            else if (methodType === 'bank') errEl.textContent = 'Please select a bank account';
+            else errEl.textContent = 'Please select a card option';
             errEl.classList.remove('hidden');
             return;
         }

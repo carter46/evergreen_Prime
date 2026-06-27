@@ -19,6 +19,8 @@ require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
 .pm-tab { transition: all 0.15s ease; }
 .pm-tab.active { background: white; color: #18181b; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
 .dark .pm-tab.active { background: #27272a; color: #fafafa; }
+.pm-methods-card { overflow: visible; }
+.pm-methods-table-wrap { overflow-x: auto; overflow-y: visible; }
 </style>
 <?php
 $pageHeading = 'Payment Methods';
@@ -42,7 +44,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 </button>
 </div>
 <div id="messageContainer" class="mb-4"></div>
-<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
+<div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 pm-methods-card">
 <div id="methods-container-crypto" class="pm-tab-panel p-4 sm:p-6">
 <div class="text-center py-8 sm:py-10 text-slate-500">Loading crypto methods...</div>
 </div>
@@ -52,6 +54,11 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <div id="methods-container-card" class="pm-tab-panel hidden p-4 sm:p-6">
 <div class="text-center py-8 sm:py-10 text-slate-500">Loading card methods...</div>
 </div>
+</div>
+
+<div id="pm-actions-menu" class="hidden fixed z-[100] py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-xl min-w-[120px]" role="menu" aria-hidden="true">
+<button type="button" id="pm-action-menu-edit" class="block w-full text-left px-3 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-zinc-700">Edit</button>
+<button type="button" id="pm-action-menu-delete" class="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-zinc-700">Delete</button>
 </div>
 
 <?php require_once __DIR__ . '/../../includes/dashboard/admin-layout-end.php'; ?>
@@ -208,6 +215,8 @@ var stepType = document.getElementById('method-step-type');
 var methodForm = document.getElementById('method-form');
 var editingId = null;
 var selectedType = null;
+var pmMenuId = null;
+var pmActionsMenu = document.getElementById('pm-actions-menu');
 
 function escapeHtml(text) {
   if (text == null) return '';
@@ -292,20 +301,55 @@ function loadMethods() {
 }
 
 function closeAllDropdowns() {
-  document.querySelectorAll('.pm-actions-dropdown').forEach(function(d){ d.classList.add('hidden'); });
+  if (pmActionsMenu) {
+    pmActionsMenu.classList.add('hidden');
+    pmActionsMenu.setAttribute('aria-hidden', 'true');
+  }
+  pmMenuId = null;
+}
+
+function openActionsMenu(btn, id) {
+  if (!pmActionsMenu || !btn) return;
+  pmMenuId = id;
+  pmActionsMenu.classList.remove('hidden');
+  pmActionsMenu.setAttribute('aria-hidden', 'false');
+  pmActionsMenu.style.visibility = 'hidden';
+  pmActionsMenu.style.top = '0';
+  pmActionsMenu.style.left = '0';
+  requestAnimationFrame(function(){
+    var rect = btn.getBoundingClientRect();
+    var menuW = pmActionsMenu.offsetWidth;
+    var menuH = pmActionsMenu.offsetHeight;
+    var left = rect.right - menuW;
+    var top = rect.bottom + 4;
+    if (left < 8) left = 8;
+    if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
+    if (top + menuH > window.innerHeight - 8) top = rect.top - menuH - 4;
+    if (top < 8) top = 8;
+    pmActionsMenu.style.left = left + 'px';
+    pmActionsMenu.style.top = top + 'px';
+    pmActionsMenu.style.visibility = 'visible';
+  });
 }
 
 function bindTableActions(container) {
   if (!container) return;
   container.querySelectorAll('.pm-actions-btn').forEach(function(btn){
-    btn.addEventListener('click', function(e){ e.stopPropagation(); closeAllDropdowns(); btn.nextElementSibling.classList.toggle('hidden'); });
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var id = parseInt(btn.getAttribute('data-id'), 10);
+      if (pmActionsMenu && !pmActionsMenu.classList.contains('hidden') && pmMenuId === id) {
+        closeAllDropdowns();
+        return;
+      }
+      closeAllDropdowns();
+      openActionsMenu(btn, id);
+    });
   });
-  container.querySelectorAll('.pm-action-edit').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); openEdit(parseInt(b.getAttribute('data-id'), 10)); closeAllDropdowns(); }); });
-  container.querySelectorAll('.pm-action-delete').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); confirmDelete(parseInt(b.getAttribute('data-id'), 10)); closeAllDropdowns(); }); });
 }
 
 function actionsCell(id) {
-  return '<div class="relative inline-block"><button type="button" class="pm-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" data-id="' + id + '"><span class="material-symbols-outlined text-lg">more_vert</span></button><div class="pm-actions-dropdown hidden absolute right-0 top-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 min-w-[100px]"><button type="button" class="pm-action-edit block w-full text-left px-3 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + id + '">Edit</button><button type="button" class="pm-action-delete block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + id + '">Delete</button></div></div>';
+  return '<button type="button" class="pm-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" data-id="' + id + '" aria-label="Actions"><span class="material-symbols-outlined text-lg">more_vert</span></button>';
 }
 
 function renderCryptoTable(methods) {
@@ -327,7 +371,7 @@ function renderCryptoTable(methods) {
       '<td class="px-4 sm:px-6 py-3 text-right">' + actionsCell(m.id) + '</td>' +
     '</tr>';
   }).join('');
-  c.innerHTML = '<div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Coin</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Wallet Address</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
+  c.innerHTML = '<div class="pm-methods-table-wrap"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Coin</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Wallet Address</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
   bindTableActions(c);
 }
 
@@ -348,7 +392,7 @@ function renderBankTable(methods) {
       '<td class="px-4 sm:px-6 py-3 text-right">' + actionsCell(m.id) + '</td>' +
     '</tr>';
   }).join('');
-  c.innerHTML = '<div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Label</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Bank Details</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
+  c.innerHTML = '<div class="pm-methods-table-wrap"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Label</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Bank Details</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
   bindTableActions(c);
 }
 
@@ -369,7 +413,7 @@ function renderCardTable(methods) {
       '<td class="px-4 sm:px-6 py-3 text-right">' + actionsCell(m.id) + '</td>' +
     '</tr>';
   }).join('');
-  c.innerHTML = '<div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Label</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Card Details</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
+  c.innerHTML = '<div class="pm-methods-table-wrap"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Label</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Card Details</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
   bindTableActions(c);
 }
 
@@ -574,7 +618,21 @@ document.getElementById('add-method-btn').addEventListener('click', openAdd);
 document.querySelectorAll('.pm-tab').forEach(function(btn){
   btn.addEventListener('click', function(){ switchTab(btn.getAttribute('data-tab')); });
 });
-document.addEventListener('click', function(){ closeAllDropdowns(); });
+var pmMenuEdit = document.getElementById('pm-action-menu-edit');
+var pmMenuDelete = document.getElementById('pm-action-menu-delete');
+if (pmMenuEdit) pmMenuEdit.addEventListener('click', function(e){
+  e.stopPropagation();
+  if (pmMenuId) openEdit(pmMenuId);
+  closeAllDropdowns();
+});
+if (pmMenuDelete) pmMenuDelete.addEventListener('click', function(e){
+  e.stopPropagation();
+  if (pmMenuId) confirmDelete(pmMenuId);
+  closeAllDropdowns();
+});
+document.addEventListener('click', closeAllDropdowns);
+window.addEventListener('resize', closeAllDropdowns);
+window.addEventListener('scroll', closeAllDropdowns, true);
 document.getElementById('method-modal-backdrop').addEventListener('click', closeModal);
 document.getElementById('method-modal-overlay').addEventListener('click', function(ev){ if (ev.target.id === 'method-modal-overlay') closeModal(); });
 document.getElementById('method-modal-cancel').addEventListener('click', closeModal);
