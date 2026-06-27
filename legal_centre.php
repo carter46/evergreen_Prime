@@ -1,266 +1,308 @@
-<?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); $contactEmail = get_site_setting('contact_email', 'legal@example.com'); ?>
+<?php
+require_once __DIR__ . '/includes/helpers.php';
+$siteName = get_site_name();
+$contactEmail = get_site_setting('contact_email', 'legal@example.com');
+$legalEmail = get_site_setting('legal_email', $contactEmail);
+$pageTitle = 'Legal Center | ' . $siteName;
+?>
 <!DOCTYPE html>
-<html class="scroll-smooth" lang="en">
+<html class="light scroll-smooth" lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<?php
-$pageTitle = $siteName . ' Legal Center | Terms & Privacy';
-require_once __DIR__ . '/includes/marketing-head.php';
-?>
+<?php require_once __DIR__ . '/includes/marketing-head.php'; ?>
 <style>
-.legal-hero-mesh {
-  background-color: #0b0e11;
-  background-image: radial-gradient(at 0% 0%, rgba(51, 119, 34, 0.12) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(0, 120, 174, 0.08) 0px, transparent 50%);
-}
-.legal-sidebar-link {
-  border-left: 2px solid transparent;
-  padding-left: 0.75rem;
-  color: #b1b5bd;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: color 0.2s, border-color 0.2s;
-}
-.legal-sidebar-link:hover {
-  color: #8fd977;
-  border-color: #337722;
-}
-.legal-anchor {
-  scroll-margin-top: 6.5rem;
-}
+body { background-color: #f7f9ff; scroll-behavior: smooth; }
 .legal-card {
-  background: #1d2023;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  border: 1px solid #E9E9E9;
 }
+.legal-nav-link {
+  color: #41493c;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.15s, color 0.15s;
+}
+.legal-nav-link:hover {
+  background: #e5e8ee;
+}
+.legal-nav-link.is-active {
+  background: #70c4fe;
+  color: #005076;
+  font-weight: 700;
+}
+.legal-anchor { scroll-margin-top: 6.5rem; }
 @media print {
-  aside, #utility-header, #main-navigation, footer, .legal-back-top { display: none !important; }
+  aside, #utility-header, #main-navigation, footer, .legal-print-hide { display: none !important; }
   main { max-width: 100% !important; padding: 0 !important; }
-  article { border: none !important; box-shadow: none !important; padding: 0 !important; }
+  .legal-card { border: none !important; box-shadow: none !important; }
 }
 </style>
 </head>
-<body class="marketing-page font-body-md text-body-md overflow-x-hidden">
+<body class="font-body-md text-on-surface">
 <?php $currentPage = 'legal_centre'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 
-<header class="legal-hero-mesh pb-12 text-center border-b border-gray-200">
-<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
-<span class="px-4 py-1.5 bg-fidelity-green/20 text-fidelity-green text-sm font-bold rounded-full uppercase tracking-wider">Compliance</span>
-<h1 class="mt-6 font-headline-lg text-headline-lg md:text-5xl font-bold text-on-surface">Legal Center</h1>
-<p class="mt-4 text-on-secondary-container text-body-lg max-w-2xl mx-auto">Terms of Service, Privacy Policy, and investment risk disclosures for brokerage, retirement, and wealth management services at <?php echo htmlspecialchars($siteName); ?>.</p>
-<div class="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm text-on-secondary-container">
-<span class="bg-surface-container-high text-on-surface px-3 py-1 rounded-full font-medium">Last Updated: June 27, 2026</span>
+<main class="max-w-[1152px] mx-auto px-4 md:px-gutter py-10 md:py-xl">
+<header class="mb-10 md:mb-xl legal-anchor" id="top">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface mb-xs">Legal Center</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+Terms of Service, Privacy Policy, and investment risk disclosures for <?php echo htmlspecialchars($siteName); ?> clients and partners.
+</p>
+<p class="font-label-md text-label-md text-outline mt-sm uppercase tracking-widest">Last Updated: June 27, 2026</p>
 </div>
-<div class="mt-8 flex justify-center gap-3">
-<button type="button" class="hidden md:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-on-secondary-container hover:text-fidelity-green border border-border-low rounded-lg transition-colors" onclick="window.print()">
-<span class="material-symbols-outlined text-lg">print</span>Print</button>
-<button type="button" class="inline-flex items-center gap-2 px-5 py-2.5 bg-fidelity-green text-white text-sm font-bold rounded-lg hover:opacity-90 transition-all" onclick="window.print()">
-<span class="material-symbols-outlined text-lg">download</span>Download PDF</button>
+<div class="flex gap-sm legal-print-hide">
+<button type="button" class="flex items-center gap-xs border border-surface-gray px-md py-sm rounded-lg font-label-md hover:bg-surface-container transition-colors" onclick="window.print()">
+<span class="material-symbols-outlined text-[20px]">print</span> Print
+</button>
+<button type="button" class="flex items-center gap-xs border border-surface-gray px-md py-sm rounded-lg font-label-md hover:bg-surface-container transition-colors" onclick="window.print()">
+<span class="material-symbols-outlined text-[20px]">download</span> Download PDF
+</button>
 </div>
 </div>
 </header>
 
-<main class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop py-12 md:py-16">
-<div class="flex flex-col lg:flex-row gap-10 lg:gap-12">
-<aside class="lg:w-64 shrink-0">
-<nav class="sticky top-28 space-y-8 legal-card p-5">
-<div>
-<h3 class="text-xs font-bold text-fidelity-green uppercase tracking-widest mb-4">Terms of Service</h3>
-<ul class="space-y-3">
-<li><a class="legal-sidebar-link block" href="#acceptance">Acceptance of Terms</a></li>
-<li><a class="legal-sidebar-link block" href="#risk-disclosure">Investment Risk Disclosure</a></li>
-<li><a class="legal-sidebar-link block" href="#market-volatility">Market Volatility</a></li>
-<li><a class="legal-sidebar-link block" href="#stocks-etfs">Stocks &amp; ETFs</a></li>
-<li><a class="legal-sidebar-link block" href="#real-estate">Real Estate Investments</a></li>
-<li><a class="legal-sidebar-link block" href="#responsibilities">Account Responsibilities</a></li>
-<li><a class="legal-sidebar-link block" href="#regulatory-info">Regulatory Information</a></li>
-</ul>
+<div class="flex flex-col lg:flex-row gap-lg">
+<aside class="lg:w-64 shrink-0 legal-print-hide">
+<div class="sticky top-20 w-full h-fit rounded-xl border border-surface-gray bg-surface-container-lowest p-md flex flex-col gap-xs">
+<div class="mb-sm">
+<h3 class="text-body-lg font-headline-md text-on-surface">Legal Center</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">Last updated June 2026</p>
 </div>
-<div>
-<h3 class="text-xs font-bold text-fidelity-green uppercase tracking-widest mb-4">Privacy Policy</h3>
-<ul class="space-y-3">
-<li><a class="legal-sidebar-link block" href="#collection">Information Collection</a></li>
-<li><a class="legal-sidebar-link block" href="#cookies">Cookies Policy</a></li>
-<li><a class="legal-sidebar-link block" href="#protection">Data Protection</a></li>
-<li><a class="legal-sidebar-link block" href="#rights">User Rights</a></li>
-</ul>
-</div>
-<div class="pt-4 border-t border-border-low">
-<div class="p-4 bg-fidelity-green/10 rounded-xl border border-fidelity-green/20">
-<p class="text-xs text-on-secondary-container mb-2 font-medium">Need legal assistance?</p>
-<a class="text-sm font-bold text-on-surface hover:text-fidelity-green flex items-center gap-1 transition-colors" href="mailto:<?php echo htmlspecialchars($contactEmail); ?>">
-<?php echo htmlspecialchars($contactEmail); ?>
-<span class="material-symbols-outlined text-sm">arrow_forward</span>
+<nav class="flex flex-col gap-xs" id="legal-sidebar-nav" aria-label="Legal sections">
+<a class="legal-nav-link is-active" href="#tos" data-legal-nav="tos">
+<span class="material-symbols-outlined">gavel</span>
+<span class="font-label-md text-label-md">Terms of Service</span>
 </a>
-</div>
-</div>
+<a class="legal-nav-link" href="#privacy" data-legal-nav="privacy">
+<span class="material-symbols-outlined">security</span>
+<span class="font-label-md text-label-md">Privacy Policy</span>
+</a>
+<a class="legal-nav-link" href="#risks" data-legal-nav="risks">
+<span class="material-symbols-outlined">warning</span>
+<span class="font-label-md text-label-md">Risk Disclosures</span>
+</a>
 </nav>
+</div>
 </aside>
 
-<article class="flex-1 legal-card p-6 md:p-10 lg:p-12">
-<section class="space-y-12 legal-anchor" id="terms">
-<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-3">
-<span class="w-8 h-8 rounded-full bg-fidelity-green/20 text-fidelity-green flex items-center justify-center text-sm font-bold">01</span>
-Terms of Service
-</h2>
-<div class="mt-8 legal-anchor" id="acceptance">
-<h3 class="text-lg font-semibold text-on-surface mb-3">1. Acceptance of Terms</h3>
-<p class="text-on-secondary-container leading-relaxed mb-4">
-By accessing or using the <?php echo htmlspecialchars($siteName); ?> website, brokerage accounts, retirement planning tools, investment plans, and wealth management services, you agree to these Terms of Service. If you do not agree, you must discontinue use of our platform. These terms govern your relationship with <?php echo htmlspecialchars($siteName); ?> regarding investing in stocks, exchange-traded funds (ETFs), retirement accounts, managed investment plans, and related financial services.
-</p>
+<section class="flex-1 space-y-lg min-w-0">
+<article class="legal-card bg-white rounded-xl p-md md:p-lg legal-anchor" id="tos">
+<div class="flex items-center gap-sm mb-md border-b border-surface-gray pb-sm">
+<span class="font-headline-lg text-primary">01</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Terms of Service</h2>
 </div>
-<div class="mt-8 p-6 bg-fidelity-green/5 border-l-4 border-fidelity-green rounded-r-xl legal-anchor" id="risk-disclosure">
-<h3 class="text-lg font-semibold text-on-surface mb-3 flex items-center gap-2">
-<span class="material-symbols-outlined text-fidelity-green">warning</span>
-2. Investment Risk Disclosure
-</h3>
-<p class="text-on-secondary-container leading-relaxed mb-4">
-Investing in securities—including stocks, ETFs, bonds, mutual funds, and real estate-related instruments—involves risk of loss. The value of your investments can go up or down, and you may receive back less than you originally invested. Past performance, projected returns, and historical market data are not guarantees of future results. <?php echo htmlspecialchars($siteName); ?> does not guarantee any specific investment outcome, yield, or profit.
-</p>
-<ul class="list-disc ml-6 space-y-2 text-on-secondary-container text-sm">
-<li>You should only invest money you can afford to lose without compromising essential living expenses.</li>
-<li>Investment plans, retirement projections, and calculators provide estimates only—not promises of performance.</li>
-<li><?php echo htmlspecialchars($siteName); ?> is not a tax advisor. Consult a qualified tax professional regarding IRA, Roth, and brokerage tax treatment.</li>
-<li>Nothing on this platform constitutes personalized financial, legal, or investment advice unless provided under a separate advisory agreement.</li>
-</ul>
-</div>
-<div class="mt-8 legal-anchor" id="market-volatility">
-<h3 class="text-lg font-semibold text-on-surface mb-3">3. Market Volatility &amp; Unpredictable Movement</h3>
-<p class="text-on-secondary-container leading-relaxed mb-4">
-Financial markets are inherently unpredictable. Stock prices, interest rates, inflation, geopolitical events, corporate earnings, and regulatory changes can cause rapid and significant price swings—sometimes within a single trading session. Periods of high volatility may occur without warning. You acknowledge that:
-</p>
-<ul class="list-disc ml-6 space-y-2 text-on-secondary-container text-sm">
-<li>Market downturns, corrections, and bear markets are normal parts of long-term investing.</li>
-<li>Liquidity in certain securities or real estate investments may be limited during stressed market conditions.</li>
-<li>Automated tools, research, and platform features do not eliminate market risk or ensure profitable timing.</li>
-<li>Decisions to buy, sell, or hold investments remain your responsibility unless you have a written advisory relationship with us.</li>
-</ul>
-</div>
-<div class="mt-8 legal-anchor" id="stocks-etfs">
-<h3 class="text-lg font-semibold text-on-surface mb-3">4. Stocks, ETFs &amp; Brokerage Products</h3>
-<p class="text-on-secondary-container leading-relaxed mb-4">
-When you trade or hold stocks and ETFs through <?php echo htmlspecialchars($siteName); ?>, you are subject to standard brokerage risks including company-specific failures, sector concentration, currency exposure (for international holdings), dividend changes, and ETF tracking error. Commission-free trading, if offered, does not remove market risk. Fractional share trading may have limitations on execution, corporate actions, and transferability.
-</p>
-<p class="text-on-secondary-container leading-relaxed">
-Options and other derivatives, if available, carry additional risks including total loss of premium and amplified losses. Review product disclosures before trading complex instruments.
-</p>
-</div>
-<div class="mt-8 legal-anchor" id="real-estate">
-<h3 class="text-lg font-semibold text-on-surface mb-3">5. Real Estate &amp; Alternative Investments</h3>
-<p class="text-on-secondary-container leading-relaxed mb-4">
-Real estate exposure—whether through direct property, REITs, real estate investment plans, or related funds—carries risks distinct from traditional equities. Property values may decline due to local market conditions, interest rate changes, vacancy, maintenance costs, or regulatory restrictions. Real estate investments may be illiquid, meaning you may not be able to sell quickly at a desired price.
-</p>
-<p class="text-on-secondary-container leading-relaxed">
-Any marketing materials describing real estate or alternative investment opportunities are for informational purposes. Projected income, appreciation, or yields are not assured and may differ materially from actual results.
-</p>
-</div>
-<div class="mt-8 legal-anchor" id="responsibilities">
-<h3 class="text-lg font-semibold text-on-surface mb-3">6. Account Responsibilities</h3>
-<div class="grid md:grid-cols-2 gap-6 mt-4">
-<div class="p-5 border border-border-low rounded-xl bg-surface-container-low">
-<h4 class="font-bold mb-2 text-sm text-on-surface">Security</h4>
-<p class="text-xs text-on-secondary-container">You are responsible for safeguarding login credentials, two-factor authentication devices, and account recovery information.</p>
-</div>
-<div class="p-5 border border-border-low rounded-xl bg-surface-container-low">
-<h4 class="font-bold mb-2 text-sm text-on-surface">Accurate Information</h4>
-<p class="text-xs text-on-secondary-container">You must provide truthful identity, tax, and financial information for account opening, KYC/AML compliance, and suitability assessments.</p>
-</div>
-<div class="p-5 border border-border-low rounded-xl bg-surface-container-low">
-<h4 class="font-bold mb-2 text-sm text-on-surface">Suitability</h4>
-<p class="text-xs text-on-secondary-container">You represent that you understand the risks of the investment products you select and that they align with your goals and experience.</p>
-</div>
-<div class="p-5 border border-border-low rounded-xl bg-surface-container-low">
-<h4 class="font-bold mb-2 text-sm text-on-surface">Unauthorized Activity</h4>
-<p class="text-xs text-on-secondary-container">Notify us immediately of suspected unauthorized access, fraudulent transfers, or account irregularities.</p>
-</div>
-</div>
-</div>
-<div class="mt-8 legal-anchor" id="regulatory-info">
-<h3 class="text-lg font-semibold text-on-surface mb-3">7. Regulatory Information &amp; Anti-Fraud Policy</h3>
-<p class="text-on-secondary-container leading-relaxed mb-4">
-<?php echo htmlspecialchars($siteName); ?> maintains policies against fraud, market manipulation, money laundering, and unauthorized account access. We may verify identity, monitor transactions, restrict accounts pending review, and cooperate with regulators and law enforcement where required by applicable law.
-</p>
-<p class="text-on-secondary-container leading-relaxed text-sm">
-Securities products are subject to applicable federal and state regulations. Retirement accounts (including IRAs) are governed by IRS rules regarding contributions, distributions, and penalties. Nothing in these terms waives protections you may have under consumer protection or securities laws in your jurisdiction.
-</p>
-</div>
-</section>
-
-<div class="my-16 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-
-<section class="space-y-12 legal-anchor" id="privacy">
-<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-3">
-<span class="w-8 h-8 rounded-full bg-fidelity-green/20 text-fidelity-green flex items-center justify-center text-sm font-bold">02</span>
-Privacy Policy
-</h2>
-<div class="mt-8 legal-anchor" id="collection">
-<h3 class="text-lg font-semibold text-on-surface mb-3">1. Information Collection</h3>
-<p class="text-on-secondary-container leading-relaxed mb-4">We collect information necessary to open accounts, process investments, and comply with financial regulations, including:</p>
-<ol class="list-decimal ml-6 space-y-3 text-on-secondary-container">
-<li><strong class="text-on-surface">Identity Data:</strong> Name, date of birth, government-issued ID, and contact details for KYC/AML verification.</li>
-<li><strong class="text-on-surface">Financial Data:</strong> Bank account information, funding sources, investment history, portfolio holdings, and transaction records.</li>
-<li><strong class="text-on-surface">Planning Data:</strong> Retirement goals, risk tolerance responses, and information you enter into calculators or planning tools.</li>
-<li><strong class="text-on-surface">Technical Data:</strong> IP address, device type, browser, and session logs for security and fraud prevention.</li>
-</ol>
-</div>
-<div class="mt-8 legal-anchor" id="cookies">
-<h3 class="text-lg font-semibold text-on-surface mb-3">2. Cookies &amp; Tracking</h3>
-<p class="text-on-secondary-container leading-relaxed">
-We use essential cookies to maintain secure sessions and remember preferences. Analytics cookies help us understand how visitors use our investing and planning pages so we can improve the experience. You may manage cookies through your browser settings; disabling essential cookies may limit platform functionality.
-</p>
-</div>
-<div class="mt-8 legal-anchor" id="protection">
-<h3 class="text-lg font-semibold text-on-surface mb-3">3. Data Protection &amp; Security</h3>
-<div class="flex flex-col md:flex-row gap-4 mt-4">
-<div class="flex-1 p-4 bg-fidelity-green/5 rounded-lg border border-fidelity-green/10">
-<div class="material-symbols-outlined text-fidelity-green mb-2">lock</div>
-<div class="text-sm font-bold mb-1 text-on-surface">Encryption</div>
-<p class="text-xs text-on-secondary-container">Sensitive data is encrypted in transit and at rest using industry-standard protocols.</p>
-</div>
-<div class="flex-1 p-4 bg-fidelity-green/5 rounded-lg border border-fidelity-green/10">
-<div class="material-symbols-outlined text-fidelity-green mb-2">security</div>
-<div class="text-sm font-bold mb-1 text-on-surface">Access Controls</div>
-<p class="text-xs text-on-secondary-container">Internal access to account and investment data is restricted on a need-to-know basis.</p>
-</div>
-<div class="flex-1 p-4 bg-fidelity-green/5 rounded-lg border border-fidelity-green/10">
-<div class="material-symbols-outlined text-fidelity-green mb-2">verified_user</div>
-<div class="text-sm font-bold mb-1 text-on-surface">Monitoring</div>
-<p class="text-xs text-on-secondary-container">We monitor for suspicious login attempts and unusual transaction patterns.</p>
-</div>
-</div>
-</div>
-<div class="mt-8 legal-anchor" id="rights">
-<h3 class="text-lg font-semibold text-on-surface mb-3">4. User Rights</h3>
-<p class="text-on-secondary-container leading-relaxed mb-4">Depending on your jurisdiction, you may have rights regarding your personal data, including:</p>
-<ul class="space-y-3">
-<li class="flex items-start gap-3 text-sm text-on-secondary-container"><span class="material-symbols-outlined text-fidelity-green text-sm mt-0.5">check_circle</span>Right to access personal data we hold about you.</li>
-<li class="flex items-start gap-3 text-sm text-on-secondary-container"><span class="material-symbols-outlined text-fidelity-green text-sm mt-0.5">check_circle</span>Right to correct inaccurate or incomplete information.</li>
-<li class="flex items-start gap-3 text-sm text-on-secondary-container"><span class="material-symbols-outlined text-fidelity-green text-sm mt-0.5">check_circle</span>Right to request deletion where legal and regulatory obligations permit.</li>
-<li class="flex items-start gap-3 text-sm text-on-secondary-container"><span class="material-symbols-outlined text-fidelity-green text-sm mt-0.5">check_circle</span>Right to data portability for information you provided, subject to applicable law.</li>
-</ul>
-</div>
-</section>
-
-<div class="mt-16 pt-8 border-t border-border-low">
-<div class="bg-surface-container-low p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="space-y-md">
 <div>
-<h4 class="text-lg font-bold text-on-surface mb-2">Still have questions?</h4>
-<p class="text-on-secondary-container text-sm">Our support team can help you understand your rights, risks, and account obligations.</p>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Acceptance of Terms</h3>
+<p class="text-body-md leading-relaxed text-on-surface-variant">
+By accessing or using the <?php echo htmlspecialchars($siteName); ?> website, brokerage accounts, retirement planning tools, investment plans, and wealth management services, you agree to these Terms of Service. If you do not agree, you must discontinue use of our platform.
+</p>
 </div>
-<div class="flex gap-4">
-<a href="/help_centre" class="px-6 py-2.5 border border-border-low text-sm font-semibold rounded-lg text-on-surface hover:bg-surface-container-high transition-colors">Help Center</a>
-<a href="/live_chat" class="bg-fidelity-green text-white px-6 py-2.5 text-sm font-bold rounded-lg hover:opacity-90 transition-all">Contact Support</a>
+<div class="bg-error-container/10 border-l-4 border-error p-md rounded-r-lg">
+<div class="flex items-center gap-xs mb-xs text-error">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+<h3 class="font-headline-md text-headline-md">Investment Risk Disclosure</h3>
 </div>
+<p class="text-body-md text-on-surface-variant italic">
+Investing in securities—including stocks, ETFs, bonds, mutual funds, and real estate-related instruments—involves risk of loss. The value of your investments can go up or down, and you may receive back less than you originally invested. Past performance is not a guarantee of future results.
+</p>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Market Volatility</h3>
+<p class="text-body-md leading-relaxed text-on-surface-variant mb-sm">
+Financial markets are inherently unpredictable. <?php echo htmlspecialchars($siteName); ?> provides tools to help you plan, but does not guarantee performance or eliminate market risk.
+</p>
+<ul class="list-disc pl-md space-y-xs text-body-md text-on-surface-variant">
+<li><strong>Stocks &amp; ETFs:</strong> Subject to equity market risks, sector downturns, and company-specific failures.</li>
+<li><strong>Real Estate &amp; Alternatives:</strong> May have lower liquidity and distinct valuation methodologies.</li>
+<li><strong>Retirement Accounts:</strong> Subject to IRS rules on contributions, distributions, and penalties.</li>
+</ul>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Account Responsibilities</h3>
+<div class="grid md:grid-cols-2 gap-sm">
+<div class="p-sm bg-surface rounded-lg border border-surface-gray">
+<h4 class="font-bold text-primary mb-1">Security</h4>
+<p class="text-body-sm text-on-surface-variant">Users are responsible for maintaining the confidentiality of login credentials and multi-factor authentication devices.</p>
+</div>
+<div class="p-sm bg-surface rounded-lg border border-surface-gray">
+<h4 class="font-bold text-primary mb-1">Accuracy</h4>
+<p class="text-body-sm text-on-surface-variant">All information provided during onboarding must be truthful, accurate, and kept up-to-date at all times.</p>
+</div>
+<div class="p-sm bg-surface rounded-lg border border-surface-gray">
+<h4 class="font-bold text-primary mb-1">Suitability</h4>
+<p class="text-body-sm text-on-surface-variant">Users must assess if the financial products offered align with their personal risk tolerance and financial goals.</p>
+</div>
+<div class="p-sm bg-surface rounded-lg border border-surface-gray">
+<h4 class="font-bold text-primary mb-1">Unauthorized Activity</h4>
+<p class="text-body-sm text-on-surface-variant">Any suspicious activity must be reported immediately to our security desk.</p>
+</div>
+</div>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Regulatory Information</h3>
+<p class="text-body-md text-on-surface-variant">
+<?php echo htmlspecialchars($siteName); ?> maintains policies against fraud, market manipulation, money laundering, and unauthorized account access. We verify identity and monitor transactions in accordance with applicable Anti-Money Laundering (AML) and Know Your Customer (KYC) requirements.
+</p>
 </div>
 </div>
 </article>
+
+<article class="legal-card bg-white rounded-xl p-md md:p-lg legal-anchor" id="privacy">
+<div class="flex items-center gap-sm mb-md border-b border-surface-gray pb-sm">
+<span class="font-headline-lg text-primary">02</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Privacy Policy</h2>
 </div>
+<div class="space-y-md">
+<p class="text-body-md text-on-surface-variant">
+Your privacy is paramount. This policy describes how <?php echo htmlspecialchars($siteName); ?> collects, uses, and shares your personal information.
+</p>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Information Collection</h3>
+<div class="space-y-sm">
+<div class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-fidelity-green mt-1">person</span>
+<div>
+<p class="font-bold text-on-surface">Identity &amp; Financial Data</p>
+<p class="text-body-sm text-on-surface-variant">Full name, tax identification numbers, bank account details, investment history, and net worth assessments for KYC/AML compliance.</p>
+</div>
+</div>
+<div class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-fidelity-green mt-1">analytics</span>
+<div>
+<p class="font-bold text-on-surface">Planning &amp; Technical Data</p>
+<p class="text-body-sm text-on-surface-variant">IP addresses, browser types, retirement goals, risk tolerance responses, and platform interaction data.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-md rounded-lg border border-outline-variant/30">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs flex items-center gap-xs">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+Data Protection
+</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md mt-sm">
+<div class="text-center">
+<span class="material-symbols-outlined text-fidelity-green text-3xl mb-2">lock</span>
+<p class="font-label-md text-on-surface">AES-256 Encryption</p>
+</div>
+<div class="text-center">
+<span class="material-symbols-outlined text-fidelity-green text-3xl mb-2">verified_user</span>
+<p class="font-label-md text-on-surface">Access Controls</p>
+</div>
+<div class="text-center">
+<span class="material-symbols-outlined text-fidelity-green text-3xl mb-2">admin_panel_settings</span>
+<p class="font-label-md text-on-surface">24/7 Monitoring</p>
+</div>
+</div>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Cookies &amp; Tracking</h3>
+<p class="text-body-md text-on-surface-variant">
+We use essential cookies to maintain secure sessions and remember preferences. Analytics cookies help us improve our investing and planning pages. You may manage cookies through your browser settings.
+</p>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">User Rights</h3>
+<p class="text-body-md text-on-surface-variant">
+Under applicable data protection laws, you have the right to access, rectify, or erase your personal data where legal and regulatory obligations permit. To exercise these rights, contact us at <a class="text-institutional-blue hover:underline" href="mailto:<?php echo htmlspecialchars($legalEmail); ?>"><?php echo htmlspecialchars($legalEmail); ?></a>.
+</p>
+</div>
+</div>
+</article>
+
+<article class="legal-card bg-white rounded-xl p-md md:p-lg legal-anchor" id="risks">
+<div class="flex items-center gap-sm mb-md border-b border-surface-gray pb-sm">
+<span class="font-headline-lg text-primary">03</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Risk Disclosures</h2>
+</div>
+<div class="space-y-md">
+<p class="text-body-md text-on-surface-variant">
+Before investing through <?php echo htmlspecialchars($siteName); ?>, you should understand the following material risks associated with stocks, ETFs, retirement accounts, and real estate-related investments.
+</p>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Stocks, ETFs &amp; Brokerage Products</h3>
+<p class="text-body-md text-on-surface-variant mb-sm">
+When you trade or hold stocks and ETFs, you are subject to market risk, sector concentration, currency exposure, dividend changes, and ETF tracking error. Options and derivatives, if available, carry additional risks including total loss of premium.
+</p>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Real Estate &amp; Alternative Investments</h3>
+<p class="text-body-md text-on-surface-variant mb-sm">
+Real estate exposure—through REITs, funds, or related instruments—may be illiquid. Property values can decline due to interest rates, vacancy, maintenance costs, or regulatory changes. Projected income or appreciation is not assured.
+</p>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Retirement &amp; Planning Tools</h3>
+<p class="text-body-md text-on-surface-variant">
+Retirement calculators, investment plans, and projections provide estimates only—not promises of performance. <?php echo htmlspecialchars($siteName); ?> is not a tax advisor. Consult a qualified professional regarding IRA, Roth, and brokerage tax treatment.
+</p>
+</div>
+<div class="bg-surface-container-low p-md rounded-lg border border-surface-gray">
+<p class="text-body-sm text-on-surface-variant">
+<strong class="text-on-surface">Important:</strong> Nothing on this platform constitutes personalized financial, legal, or investment advice unless provided under a separate written advisory agreement. You should only invest money you can afford to lose without compromising essential living expenses.
+</p>
+</div>
+</div>
+</article>
+</section>
+</div>
+
+<section class="mt-xl bg-primary text-on-primary rounded-2xl p-lg text-center relative overflow-hidden legal-print-hide">
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 32px 32px;"></div>
+<div class="relative z-10">
+<h2 class="font-headline-lg text-headline-lg mb-sm">Need legal assistance?</h2>
+<p class="font-body-lg text-body-lg mb-md opacity-90 max-w-xl mx-auto">
+Our compliance and support teams are available to answer your questions regarding our policies and disclosures.
+</p>
+<div class="flex flex-col sm:flex-row justify-center gap-sm">
+<a class="bg-white text-primary px-xl py-sm rounded-lg font-headline-md font-bold hover:bg-surface-container-high transition-colors flex items-center justify-center gap-xs" href="mailto:<?php echo htmlspecialchars($legalEmail); ?>">
+<span class="material-symbols-outlined">mail</span> Email Legal Desk
+</a>
+<a class="border border-white/40 bg-white/10 backdrop-blur-sm text-white px-xl py-sm rounded-lg font-headline-md font-bold hover:bg-white/20 transition-colors flex items-center justify-center gap-xs" href="/help_centre">
+<span class="material-symbols-outlined">contact_support</span> Support Center
+</a>
+</div>
+</div>
+</section>
 </main>
 
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
+<script>
+(function () {
+  var sections = ['tos', 'privacy', 'risks'];
+  var navLinks = document.querySelectorAll('[data-legal-nav]');
 
-<a class="legal-back-top fixed bottom-8 right-8 w-12 h-12 bg-surface-container-high border border-border-low rounded-full flex items-center justify-center shadow-lg text-on-secondary-container hover:text-fidelity-green transition-all z-40" href="#" aria-label="Back to top">
-<span class="material-symbols-outlined">expand_less</span>
-</a>
+  function setActive(id) {
+    navLinks.forEach(function (link) {
+      var active = link.getAttribute('data-legal-nav') === id;
+      link.classList.toggle('is-active', active);
+    });
+  }
+
+  window.addEventListener('scroll', function () {
+    var current = sections[0];
+    sections.forEach(function (section) {
+      var el = document.getElementById(section);
+      if (el && window.pageYOffset >= el.offsetTop - 140) {
+        current = section;
+      }
+    });
+    setActive(current);
+  });
+
+  navLinks.forEach(function (link) {
+    link.addEventListener('click', function () {
+      var id = link.getAttribute('data-legal-nav');
+      if (id) setActive(id);
+    });
+  });
+})();
+</script>
 </body>
 </html>

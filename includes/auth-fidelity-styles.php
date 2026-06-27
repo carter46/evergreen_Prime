@@ -115,12 +115,48 @@
 .auth-form-card .auth-form-stack:not(.hidden) {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 1rem;
 }
 .auth-form-card .auth-form-stack-tight {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
+}
+.auth-benefits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.auth-benefit-item {
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+}
+.auth-benefit-icon {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  background: rgba(51, 119, 34, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #337722;
+}
+.auth-benefit-icon .material-symbols-outlined {
+  font-size: 1rem;
+}
+.auth-benefit-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #374151;
+  margin-bottom: 0.125rem;
+}
+.auth-benefit-desc {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #6b7280;
 }
 .auth-form-card .auth-upload-box {
   background: rgba(255, 255, 255, 0.92);

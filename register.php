@@ -29,32 +29,32 @@ $refPrefill = isset($_GET['ref']) ? strtoupper(trim((string)$_GET['ref'])) : '';
 <p class="font-body-md text-body-md text-on-surface-variant mb-lg max-w-md">
 Join investors who trust <?php echo htmlspecialchars($siteName); ?> with their wealth, retirement, and future planning.
 </p>
-<div class="space-y-md">
-<div class="flex gap-md items-start">
-<div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center text-fidelity-green">
+<div class="auth-benefits-list">
+<div class="auth-benefit-item">
+<div class="auth-benefit-icon">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
 </div>
 <div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Institutional-Grade Security</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Your account is protected with advanced encryption and secure verification.</p>
+<p class="auth-benefit-title">Institutional-Grade Security</p>
+<p class="auth-benefit-desc">Your account is protected with advanced encryption and secure verification.</p>
 </div>
 </div>
-<div class="flex gap-md items-start">
-<div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center text-fidelity-green">
+<div class="auth-benefit-item">
+<div class="auth-benefit-icon">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
 </div>
 <div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Comprehensive Planning</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Access retirement tools, market insights, and portfolio tracking in one place.</p>
+<p class="auth-benefit-title">Comprehensive Planning</p>
+<p class="auth-benefit-desc">Access retirement tools, market insights, and portfolio tracking in one place.</p>
 </div>
 </div>
-<div class="flex gap-md items-start">
-<div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center text-fidelity-green">
+<div class="auth-benefit-item">
+<div class="auth-benefit-icon">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified_user</span>
 </div>
 <div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">A Legacy of Trust</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Built to help investors navigate market cycles with clarity and confidence.</p>
+<p class="auth-benefit-title">A Legacy of Trust</p>
+<p class="auth-benefit-desc">Built to help investors navigate market cycles with clarity and confidence.</p>
 </div>
 </div>
 </div>

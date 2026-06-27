@@ -58,6 +58,7 @@ $mobileNavClass = function ($page) use ($current) {
 <a class="<?php echo $navClass('planning'); ?>" href="/planning">Retirement</a>
 <a class="<?php echo $navClass('wealth'); ?>" href="/wealth-management">Wealth Management</a>
 <a class="<?php echo $navClass('blog'); ?>" href="/blog">Blog</a>
+<a class="<?php echo $navClass('legal_centre'); ?>" href="/legal_centre">Legal</a>
 </nav>
 <div class="hidden lg:block relative w-full max-w-xs shrink-0 ml-auto">
 <input class="w-full border border-gray-300 rounded-full py-1.5 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-fidelityGreen bg-white/95" placeholder="How can we help?" type="text">
@@ -100,6 +101,7 @@ $mobileNavClass = function ($page) use ($current) {
 <li><a class="block py-2.5 text-base <?php echo $mobileNavClass('planning'); ?>" href="/planning">Retirement</a></li>
 <li><a class="block py-2.5 text-base <?php echo $mobileNavClass('wealth'); ?>" href="/wealth-management">Wealth Management</a></li>
 <li><a class="block py-2.5 text-base <?php echo $mobileNavClass('blog'); ?>" href="/blog">Blog</a></li>
+<li><a class="block py-2.5 text-base <?php echo $mobileNavClass('legal_centre'); ?>" href="/legal_centre">Legal</a></li>
 </ul>
 <p class="text-xs font-bold uppercase tracking-wide text-fidelityGray mb-3">Account</p>
 <ul class="space-y-1">
