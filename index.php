@@ -11,17 +11,14 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <?php require_once __DIR__ . '/includes/marketing-head.php'; ?>
 <style>
+:root { --home-nav-offset: 3.5rem; }
 .home-account-section { position: relative; }
 .home-account-scroll-runway { position: relative; }
-.home-account-sticky-frame {
-  display: flex;
-  flex-direction: column;
-}
 .home-account-tab {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 0.75rem 0 0.75rem 1.25rem;
+  padding: 0.875rem 0 0.875rem 1.25rem;
   border-left: 4px solid transparent;
   font-size: 0.9375rem;
   color: #666;
@@ -38,33 +35,42 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 }
 @media (min-width: 1024px) {
   .home-account-scroll-runway {
-    height: calc((100vh - 3.5rem) * 4);
+    /* sticky viewport + 3 scroll steps for 4 panels */
+    margin-bottom: 0;
   }
   .home-account-sticky-frame {
     position: sticky;
-    top: 3.5rem;
-    height: calc(100vh - 3.5rem);
+    top: var(--home-nav-offset);
+    height: calc(100vh - var(--home-nav-offset));
     min-height: 28rem;
+    margin-bottom: calc((100vh - var(--home-nav-offset)) * 3);
   }
-  .home-account-sticky-frame > .home-account-grid {
-    height: 100%;
+  .home-account-grid {
+    height: calc(100vh - var(--home-nav-offset));
+    min-height: 28rem;
+    align-items: stretch;
   }
   .home-account-tab-col {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    position: relative;
     height: 100%;
+    min-height: calc(100vh - var(--home-nav-offset));
   }
   .home-account-tab-nav {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 1.75rem;
+    gap: 2rem;
     border-left: 2px solid #f3f4f6;
+    margin: 0;
   }
   .home-account-panels-stage {
     position: relative;
     height: 100%;
+    min-height: calc(100vh - var(--home-nav-offset));
     overflow: hidden;
   }
   .home-account-panel {
@@ -91,19 +97,16 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
     align-items: center;
     justify-content: center;
     height: 100%;
+    min-height: calc(100vh - var(--home-nav-offset));
   }
   .home-account-image-wrap {
     width: 100%;
-    opacity: 0;
-    transform: scale(0.98);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-  .home-account-image-wrap.is-visible {
     opacity: 1;
-    transform: scale(1);
+    transform: none;
   }
 }
 @media (max-width: 1023px) {
+  .home-account-sticky-frame { margin-bottom: 0; }
   .home-account-panel + .home-account-panel {
     border-top: 1px solid #f3f4f6;
     margin-top: 1rem;
@@ -266,7 +269,7 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 
 <!-- Image (desktop — single shared image, fades in with panel) -->
 <div class="home-account-image-col lg:col-span-4 hidden lg:flex">
-<div class="home-account-image-wrap is-visible w-full bg-fidelityLightGreen rounded-3xl p-6">
+<div class="home-account-image-wrap w-full bg-fidelityLightGreen rounded-3xl p-6">
 <img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
 </div>
@@ -384,13 +387,22 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 (function () {
     var section = document.getElementById('home-account-section');
     var runway = section ? section.querySelector('.home-account-scroll-runway') : null;
+    var stickyFrame = section ? section.querySelector('.home-account-sticky-frame') : null;
     var tabs = document.querySelectorAll('.home-account-tab');
     var mobileTabs = document.querySelectorAll('.home-account-tab-mobile');
     var panels = document.querySelectorAll('.home-account-panel');
-    var imageWrap = document.querySelector('.home-account-image-wrap');
     var panelIds = ['investing', 'retirement', 'healthcare', 'education'];
     var stickyTop = 56;
     var isDesktop = function () { return window.matchMedia('(min-width: 1024px)').matches; };
+
+    function viewportStep() {
+        return window.innerHeight - stickyTop;
+    }
+
+    function maxScrollDistance() {
+        if (!stickyFrame) return 0;
+        return viewportStep() * (panelIds.length - 1);
+    }
 
     function setActive(id) {
         tabs.forEach(function (t) {
@@ -409,21 +421,36 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
         });
     }
 
-    function scrollOffsetForIndex(index) {
-        if (!runway) return 0;
-        var viewportH = window.innerHeight - stickyTop;
-        var maxScroll = runway.offsetHeight - viewportH;
+    function getScrollProgress() {
+        if (!runway || !stickyFrame) return 0;
+        var step = viewportStep();
+        var maxScroll = maxScrollDistance();
         if (maxScroll <= 0) return 0;
-        return Math.round(maxScroll * (index / (panelIds.length - 1)));
+
+        var runwayTop = runway.getBoundingClientRect().top;
+        var runwayBottom = runway.getBoundingClientRect().bottom;
+        var pinStart = stickyTop;
+        var pinEnd = stickyTop + step;
+
+        if (runwayTop > pinStart || runwayBottom < pinEnd) {
+            return runwayTop > pinStart ? 0 : 1;
+        }
+
+        var scrolled = Math.max(0, Math.min(maxScroll, pinStart - runwayTop));
+        return scrolled / maxScroll;
     }
 
     function getActiveIndexFromScroll() {
-        if (!runway) return 0;
-        var viewportH = window.innerHeight - stickyTop;
-        var rect = runway.getBoundingClientRect();
-        var scrolled = Math.max(0, -rect.top);
-        var index = Math.floor((scrolled + viewportH * 0.35) / viewportH);
-        return Math.max(0, Math.min(panelIds.length - 1, index));
+        var progress = getScrollProgress();
+        var index = Math.floor(progress * panelIds.length);
+        if (index >= panelIds.length) index = panelIds.length - 1;
+        return index;
+    }
+
+    function scrollOffsetForIndex(index) {
+        var maxScroll = maxScrollDistance();
+        if (maxScroll <= 0) return 0;
+        return Math.round(maxScroll * (index / (panelIds.length - 1)));
     }
 
     function scrollToPanel(id) {
@@ -434,8 +461,8 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
         }
         var index = panelIds.indexOf(id);
         if (index < 0) return;
-        var top = runway.getBoundingClientRect().top + window.scrollY + scrollOffsetForIndex(index);
-        window.scrollTo({ top: top, behavior: 'smooth' });
+        var top = runway.offsetTop - stickyTop + scrollOffsetForIndex(index);
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
     }
 
     tabs.forEach(function (tab) {
