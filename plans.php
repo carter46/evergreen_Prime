@@ -1,15 +1,13 @@
 <?php
 $plans = [];
+require_once __DIR__ . '/includes/plan-types.php';
 try {
     $pdo = require __DIR__ . '/includes/db.php';
-    $cols = 'id, name, slug, min_deposit, max_deposit, yield_min, yield_max, withdrawal_days, features_json';
-    try {
-        $chk = $pdo->query("SHOW COLUMNS FROM plans LIKE 'description'");
-        if ($chk && $chk->rowCount() > 0) $cols .= ', description, icon';
-    } catch (Throwable $e) {}
-    $stmt = $pdo->query("SELECT {$cols} FROM plans WHERE enabled = 1 ORDER BY sort_order, id");
+    ensure_plan_schema($pdo);
+    $stmt = $pdo->query('SELECT id, name, slug, plan_type, description, logo_url, min_deposit, max_deposit, yield_min, yield_max, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $row['features'] = $row['features_json'] ? json_decode($row['features_json'], true) : [];
+        $row['plan_type'] = normalize_plan_type($row['plan_type'] ?? 'crypto');
         $plans[] = $row;
     }
 } catch (Throwable $e) {
@@ -65,14 +63,12 @@ foreach ($plans as $plan):
 <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-background-dark text-[10px] font-bold uppercase tracking-widest px-4 py-1 rounded-full">Most Popular</div>
 <?php endif; ?>
 <div class="mb-8">
-<div class="flex items-center gap-2 mb-2">
-<?php
-$planIcon = $plan['icon'] ?? 'trending_up';
-$allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 'token'];
-if (!in_array($planIcon, $allowedIcons, true)) $planIcon = 'trending_up';
-?>
-<span class="material-icons text-primary text-xl"><?php echo htmlspecialchars($planIcon); ?></span>
+<div class="flex items-center gap-3 mb-2">
+<?php echo plan_logo_markup($plan['logo_url'] ?? null, $plan['name'], 'w-10 h-10', 'text-sm'); ?>
+<div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-primary"><?php echo htmlspecialchars(plan_type_label($plan['plan_type'] ?? 'crypto')); ?></span>
 <h3 class="text-xl font-bold"><?php echo htmlspecialchars($plan['name']); ?></h3>
+</div>
 </div>
 <p class="text-slate-500 text-sm"><?php echo htmlspecialchars($desc); ?></p>
 </div>

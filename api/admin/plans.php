@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'name' => $r['name'],
             'slug' => $r['slug'],
             'plan_type' => normalize_plan_type($r['plan_type'] ?? 'crypto'),
+            'plan_type_label' => plan_type_label($r['plan_type'] ?? 'crypto'),
             'description' => $r['description'] ?? null,
             'icon' => $r['icon'] ?? null,
             'logo_url' => $r['logo_url'] ?? null,
@@ -171,10 +172,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $description = trim($input['description'] ?? '') ?: null;
     $planType = normalize_plan_type($input['plan_type'] ?? 'crypto');
-    $logoUrl = trim($input['logo_url'] ?? '') ?: null;
+    $logoUrl = trim($input['logo_url'] ?? '');
+    if ($logoUrl === '') {
+        $logoUrl = null;
+    }
     $allowedIcons = ['trending_up', 'rocket_launch', 'diamond', 'currency_bitcoin', 'token'];
-    $icon = trim($input['icon'] ?? '') ?: null;
-    if ($icon && !in_array($icon, $allowedIcons, true)) $icon = 'trending_up';
+    if (array_key_exists('icon', $input)) {
+        $icon = trim($input['icon'] ?? '') ?: null;
+        if ($icon && !in_array($icon, $allowedIcons, true)) {
+            $icon = 'trending_up';
+        }
+    } elseif ($id > 0) {
+        $iconStmt = $pdo->prepare('SELECT icon FROM plans WHERE id = ?');
+        $iconStmt->execute([$id]);
+        $icon = $iconStmt->fetchColumn() ?: null;
+    } else {
+        $icon = 'trending_up';
+    }
     $minDurationDays = isset($input['min_duration_days']) && $input['min_duration_days'] !== '' && $input['min_duration_days'] !== null ? (int) $input['min_duration_days'] : null;
     $maxDurationDays = isset($input['max_duration_days']) && $input['max_duration_days'] !== '' && $input['max_duration_days'] !== null ? (int) $input['max_duration_days'] : null;
     $enabled = isset($input['enabled']) ? (bool) $input['enabled'] : true;
