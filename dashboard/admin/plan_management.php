@@ -33,6 +33,7 @@ $siteSettings = [
     'compounding_enabled' => get_site_setting('compounding_enabled', '0'),
 ];
 $planTypes = get_plan_types();
+$riskOptions = get_investment_risk_options();
 
 $pageTitle = $siteName . ' | Investment Plan Management';
 require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
@@ -95,7 +96,6 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 <!-- Plan Grid -->
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-12 min-w-0">
 <?php 
-$tiers = ['Low', 'Medium', 'High'];
 foreach ($adminPlans as $idx => $p):
     $ps = $planStatsById[(int)$p['id']] ?? ['users' => 0, 'capital' => 0];
     $activeUsers = (int)($ps['users'] ?? 0);
@@ -104,6 +104,7 @@ foreach ($adminPlans as $idx => $p):
     $planTypeKey = normalize_plan_type($p['plan_type'] ?? 'crypto');
     $planTypeLabel = plan_type_label($planTypeKey);
     $logoUrl = $p['logo_url'] ?? null;
+    $riskBadge = plan_investment_risk_badge($p['investment_risk'] ?? 'mid');
 ?>
 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 hover:border-primary/50 transition-colors group relative overflow-hidden min-w-0">
 <div class="p-6">
@@ -147,7 +148,7 @@ foreach ($adminPlans as $idx => $p):
 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
 </label>
 </div>
-<span class="text-xs text-slate-400 font-medium">AI Level: <?php echo $tiers[$idx % 3]; ?></span>
+<span class="text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded <?php echo $riskBadge['class']; ?>"><?php echo htmlspecialchars($riskBadge['label']); ?></span>
 </div>
 </div>
 </div>
@@ -256,16 +257,8 @@ foreach ($adminPlans as $idx => $p):
 <input name="yield" id="plan-form-yield" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" step="0.1" value="1" required/>
 </div>
 <div>
-<label class="block text-sm font-medium mb-1.5">Min. Duration (Days)</label>
+<label class="block text-sm font-medium mb-1.5">Duration (Days)</label>
 <input name="min_duration_days" id="plan-form-min-days" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" min="1" required placeholder="e.g. 7"/>
-</div>
-<div>
-<label class="block text-sm font-medium mb-1.5">Max. Duration (Days)</label>
-<input name="max_duration_days" id="plan-form-max-days" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" min="1" required placeholder="e.g. 30"/>
-</div>
-<div>
-<label class="block text-sm font-medium mb-1.5">Withdrawal (Days)</label>
-<input name="withdrawal_days" id="plan-form-withdrawal" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" value="7"/>
 </div>
 <div>
 <label class="block text-sm font-medium mb-1.5">Referral Comm. (%)</label>
@@ -279,31 +272,18 @@ foreach ($adminPlans as $idx => $p):
 <label class="block text-sm font-medium mb-1.5">Features (one per line)</label>
 <textarea name="features_text" id="plan-form-features" class="w-full min-w-0 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 text-sm" rows="6" placeholder="e.g.&#10;$100 - $2,500 Investment Range&#10;Basic AI Trading Strategy&#10;Weekly Withdrawals"></textarea>
 </div>
-<!-- AI Strategy Selection -->
+<!-- Investment Risk -->
 <div class="space-y-4">
-<p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">AI Strategy Engine</p>
+<p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Investment Risk</p>
 <div class="grid grid-cols-3 gap-3">
+<?php foreach ($riskOptions as $riskKey => $riskLabel): ?>
 <label class="relative group cursor-pointer">
-<input class="sr-only peer" name="ai-lvl" type="radio"/>
+<input class="sr-only peer plan-form-risk" name="investment_risk" type="radio" value="<?php echo htmlspecialchars($riskKey); ?>"<?php echo $riskKey === 'mid' ? ' checked' : ''; ?>/>
 <div class="p-3 border-2 border-slate-100 dark:border-zinc-800 rounded-lg text-center peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
-<p class="text-xs font-bold uppercase">Low</p>
-<p class="text-[10px] text-slate-500">Stability focus</p>
+<p class="text-xs font-bold"><?php echo htmlspecialchars($riskLabel); ?></p>
 </div>
 </label>
-<label class="relative group cursor-pointer">
-<input checked="" class="sr-only peer" name="ai-lvl" type="radio"/>
-<div class="p-3 border-2 border-slate-100 dark:border-zinc-800 rounded-lg text-center peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
-<p class="text-xs font-bold uppercase">Med</p>
-<p class="text-[10px] text-slate-500">Market balance</p>
-</div>
-</label>
-<label class="relative group cursor-pointer">
-<input class="sr-only peer" name="ai-lvl" type="radio"/>
-<div class="p-3 border-2 border-slate-100 dark:border-zinc-800 rounded-lg text-center peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
-<p class="text-xs font-bold uppercase">High</p>
-<p class="text-[10px] text-slate-500">Max volatility</p>
-</div>
-</label>
+<?php endforeach; ?>
 </div>
 </div>
 </form>
@@ -390,9 +370,8 @@ function resetPlanForm() {
   document.getElementById('plan-form-max').value = '';
   document.getElementById('plan-form-yield').value = '1';
   document.getElementById('plan-form-min-days').value = '7';
-  document.getElementById('plan-form-max-days').value = '30';
-  document.getElementById('plan-form-withdrawal').value = '7';
   document.getElementById('plan-form-features').value = '';
+  document.querySelectorAll('.plan-form-risk').forEach(function (r) { r.checked = r.value === 'mid'; });
   document.getElementById('plan-drawer-title').textContent = 'Add New Plan';
   document.getElementById('plan-drawer-subtitle').textContent = '';
 }
@@ -429,8 +408,7 @@ if (drawer) {
             document.getElementById('plan-form-max').value = p.max_deposit || '';
             document.getElementById('plan-form-yield').value = (p.yield_min !== null && p.yield_min !== undefined) ? p.yield_min : (p.yield || '');
             document.getElementById('plan-form-min-days').value = (p.min_duration_days !== null && p.min_duration_days !== undefined) ? p.min_duration_days : (p.min_duration_months ? (p.min_duration_months * 30) : '7');
-            document.getElementById('plan-form-max-days').value = (p.max_duration_days !== null && p.max_duration_days !== undefined) ? p.max_duration_days : (p.max_duration_months ? (p.max_duration_months * 30) : '30');
-            document.getElementById('plan-form-withdrawal').value = p.withdrawal_days;
+            document.querySelectorAll('.plan-form-risk').forEach(function (r) { r.checked = r.value === (p.investment_risk || 'mid'); });
             document.getElementById('plan-form-features').value = (p.features || []).join('\n');
             document.getElementById('plan-drawer-title').textContent = 'Edit Plan: ' + p.name;
             document.getElementById('plan-drawer-subtitle').textContent = 'PLAN ID: ' + p.id;
@@ -483,8 +461,8 @@ if (drawer) {
     var featuresText = document.getElementById('plan-form-features').value || '';
     var features = featuresText.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
     var minDays = parseInt(document.getElementById('plan-form-min-days').value, 10);
-    var maxDays = parseInt(document.getElementById('plan-form-max-days').value, 10);
-    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, plan_type: document.getElementById('plan-form-type').value, description: document.getElementById('plan-form-description').value.trim(), logo_url: document.getElementById('plan-form-logo-url').value.trim(), min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_days: isNaN(minDays) ? null : minDays, max_duration_days: isNaN(maxDays) ? null : maxDays, withdrawal_days: parseInt(document.getElementById('plan-form-withdrawal').value) || 7, features: features, features_text: featuresText };
+    var riskEl = document.querySelector('.plan-form-risk:checked');
+    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, plan_type: document.getElementById('plan-form-type').value, description: document.getElementById('plan-form-description').value.trim(), logo_url: document.getElementById('plan-form-logo-url').value.trim(), investment_risk: riskEl ? riskEl.value : 'mid', min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_days: isNaN(minDays) ? null : minDays, features: features, features_text: featuresText };
     fetch('/api/admin/plans.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(data) })
       .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { drawer.classList.add('hidden'); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
   });

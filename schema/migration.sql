@@ -657,3 +657,12 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 UPDATE plans SET plan_type = 'crypto' WHERE plan_type IS NULL OR plan_type = '';
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'plans' AND COLUMN_NAME = 'investment_risk');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE plans ADD COLUMN investment_risk VARCHAR(16) NOT NULL DEFAULT ''mid'' AFTER logo_url',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

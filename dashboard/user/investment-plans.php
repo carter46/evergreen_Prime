@@ -42,7 +42,7 @@ try {
     });
     
     // Fetch enabled plans
-    $stmt = $pdo->query('SELECT id, name, slug, plan_type, description, logo_url, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
+    $stmt = $pdo->query('SELECT id, name, slug, plan_type, description, logo_url, investment_risk, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $plans[] = [
             'id' => (int)$row['id'],
@@ -51,6 +51,7 @@ try {
             'plan_type' => normalize_plan_type($row['plan_type'] ?? 'crypto'),
             'description' => $row['description'] ?? '',
             'logo_url' => $row['logo_url'] ?? null,
+            'investment_risk' => normalize_investment_risk($row['investment_risk'] ?? 'mid'),
             'min_deposit' => (float)$row['min_deposit'],
             'max_deposit' => $row['max_deposit'] !== null ? (float)$row['max_deposit'] : null,
             'yield_min' => (float)$row['yield_min'],
@@ -158,20 +159,9 @@ Select a plan below to invest from your wallet balance.
 ?>
 <div class="plan-type-panel grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8<?php echo ($typeKey === $defaultTab || !$showPlanTabs) ? ' is-active' : ''; ?>" data-plan-panel="<?php echo htmlspecialchars($typeKey); ?>">
 <?php foreach ($typePlans as $plan):
-    $pMinD = $plan['min_duration_days'] ?? $plan['duration_days'];
-    $pMaxD = $plan['max_duration_days'] ?? $plan['duration_days'];
-    $durationLabel = ($pMinD === $pMaxD) ? ($pMinD . ' Days') : ($pMinD . ' - ' . $pMaxD . ' Days');
-    $annualMin = ($plan['yield_min'] ?? 0) * 365;
-    if ($annualMin >= 70) {
-        $riskLabel = 'High Risk';
-        $riskClass = 'bg-critical/10 text-critical';
-    } elseif ($annualMin >= 30) {
-        $riskLabel = 'Medium Risk';
-        $riskClass = 'bg-primary-container/15 text-primary-container';
-    } else {
-        $riskLabel = 'Low Risk';
-        $riskClass = 'bg-success/10 text-success';
-    }
+    $planDays = plan_duration_days($plan);
+    $riskBadge = plan_investment_risk_badge($plan['investment_risk'] ?? 'mid');
+    $periodReturn = format_plan_period_return($plan['yield_min'] ?? 0, $planDays);
 ?>
 <div class="plan-asset-card glass-panel rounded-xl p-5 md:p-6 flex flex-col h-full">
 <div class="flex justify-between items-start gap-3 mb-4">
@@ -182,13 +172,13 @@ Select a plan below to invest from your wallet balance.
 <p class="text-xs text-text-secondary truncate"><?php echo htmlspecialchars($plan['description'] ?: 'Premium investment plan'); ?></p>
 </div>
 </div>
-<span class="<?php echo $riskClass; ?> px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0"><?php echo $riskLabel; ?></span>
+<span class="<?php echo $riskBadge['class']; ?> px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0"><?php echo htmlspecialchars($riskBadge['label']); ?></span>
 </div>
 <div class="space-y-4 mb-6 flex-grow">
 <div class="grid grid-cols-2 gap-4">
 <div>
 <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Expected Return</p>
-<p class="text-base font-bold text-primary-container mt-1"><?php echo htmlspecialchars(format_plan_expected_return($plan['yield_min'], $plan['yield_max'])); ?></p>
+<p class="text-base font-bold text-primary-container mt-1"><?php echo htmlspecialchars($periodReturn); ?></p>
 </div>
 <div>
 <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Min. Investment</p>
@@ -196,11 +186,11 @@ Select a plan below to invest from your wallet balance.
 </div>
 </div>
 <div class="flex justify-between items-center text-sm border-t border-low pt-3">
-<span class="text-text-secondary">Duration: <?php echo htmlspecialchars($durationLabel); ?></span>
-<span class="text-text-primary font-semibold">Up to <?php echo (int) $pMaxD; ?> days</span>
+<span class="text-text-secondary">Duration</span>
+<span class="text-text-primary font-semibold"><?php echo (int) $planDays; ?> Days</span>
 </div>
 </div>
-<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-min-days="<?php echo $pMinD; ?>" data-plan-max-days="<?php echo $pMaxD; ?>" class="subscribe-plan-btn w-full bg-primary-container hover:bg-primary-container/90 text-on-primary font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-days="<?php echo (int) $planDays; ?>" class="subscribe-plan-btn w-full bg-primary-container hover:bg-primary-container/90 text-on-primary font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
 <span>Invest Now</span>
 <span class="material-symbols-outlined text-sm">trending_up</span>
 </button>
@@ -223,9 +213,9 @@ Select a plan below to invest from your wallet balance.
 <form id="subscribe-form">
 <input type="hidden" id="subscribe-plan-id" name="plan_id"/>
 <div class="mb-4">
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Duration (Days)</label>
-<input type="number" id="subscribe-duration" min="1" max="365" step="1" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" required/>
-<p class="text-xs text-slate-500 mt-1">Choose between <span id="modal-min-days">—</span> and <span id="modal-max-days">—</span> days</p>
+<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Duration</label>
+<p id="subscribe-duration-display" class="text-sm font-semibold text-slate-800 dark:text-slate-200">—</p>
+<input type="hidden" id="subscribe-duration" name="duration_days"/>
 </div>
 <div class="mb-4">
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Pay With</label>
@@ -305,28 +295,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     var currencySelect = document.getElementById('subscribe-currency');
     var durationInput = document.getElementById('subscribe-duration');
-    var modalMinDaysEl = document.getElementById('modal-min-days');
-    var modalMaxDaysEl = document.getElementById('modal-max-days');
+    var durationDisplay = document.getElementById('subscribe-duration-display');
     var selectedBalanceEl = document.getElementById('selected-coin-balance');
-    var currentPlanMinDays = 7;
-    var currentPlanMaxDays = 30;
+    var currentPlanDays = 7;
 
-    function openModal(planId, planName, planMin, planMax, planMinDays, planMaxDays) {
+    function openModal(planId, planName, planMin, planMax, planDays) {
         planIdEl.value = planId;
         planNameEl.textContent = planName;
         currentPlanMin = planMin;
         currentPlanMax = planMax;
-        currentPlanMinDays = planMinDays || 7;
-        currentPlanMaxDays = planMaxDays || 30;
+        currentPlanDays = planDays || 7;
         planMinEl.textContent = '$' + planMin.toLocaleString();
         planMaxEl.textContent = planMax > 0 ? '$' + planMax.toLocaleString() : 'Unlimited';
-        if (modalMinDaysEl) modalMinDaysEl.textContent = currentPlanMinDays;
-        if (modalMaxDaysEl) modalMaxDaysEl.textContent = currentPlanMaxDays;
-        if (durationInput) {
-            durationInput.min = currentPlanMinDays;
-            durationInput.max = currentPlanMaxDays;
-            durationInput.value = Math.min(currentPlanMaxDays, Math.max(currentPlanMinDays, Math.round((currentPlanMinDays + currentPlanMaxDays) / 2)));
-        }
+        if (durationDisplay) durationDisplay.textContent = currentPlanDays + ' Days';
+        if (durationInput) durationInput.value = currentPlanDays;
         amountEl.value = '';
         amountEl.min = planMin;
         amountEl.max = planMax > 0 ? planMax : '';
@@ -357,9 +339,8 @@ document.addEventListener('DOMContentLoaded', function() {
             var planName = this.getAttribute('data-plan-name');
             var planMin = parseFloat(this.getAttribute('data-plan-min'));
             var planMax = parseFloat(this.getAttribute('data-plan-max')) || 0;
-            var planMinDays = parseInt(this.getAttribute('data-plan-min-days'), 10) || 7;
-            var planMaxDays = parseInt(this.getAttribute('data-plan-max-days'), 10) || 30;
-            openModal(planId, planName, planMin, planMax, planMinDays, planMaxDays);
+            var planDays = parseInt(this.getAttribute('data-plan-days'), 10) || 7;
+            openModal(planId, planName, planMin, planMax, planDays);
         });
     });
     
@@ -393,9 +374,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        var duration = parseInt(durationInput ? durationInput.value : 0, 10) || 0;
-        if (duration < currentPlanMinDays || duration > currentPlanMaxDays) {
-            errorEl.textContent = 'Duration must be between ' + currentPlanMinDays + ' and ' + currentPlanMaxDays + ' days';
+        var duration = parseInt(durationInput ? durationInput.value : 0, 10) || currentPlanDays;
+        if (duration !== currentPlanDays) {
+            errorEl.textContent = 'This plan has a fixed duration of ' + currentPlanDays + ' days';
             errorEl.classList.remove('hidden');
             return;
         }

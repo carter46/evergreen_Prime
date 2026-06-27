@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+require_once dirname(__DIR__, 2) . '/includes/plan-types.php';
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -73,16 +74,14 @@ if ($plan['max_deposit'] !== null && $amountUsd > $plan['max_deposit']) {
     exit;
 }
 
-// Resolve plan min/max duration (days)
-$planMinDays = isset($plan['min_duration_days']) && $plan['min_duration_days'] !== null ? (int) $plan['min_duration_days'] : (isset($plan['min_duration_months']) && $plan['min_duration_months'] !== null ? (int) $plan['min_duration_months'] * 30 : (int) $plan['duration_days']);
-$planMaxDays = isset($plan['max_duration_days']) && $plan['max_duration_days'] !== null ? (int) $plan['max_duration_days'] : (isset($plan['max_duration_months']) && $plan['max_duration_months'] !== null ? (int) $plan['max_duration_months'] * 30 : (int) $plan['duration_days']);
-
+// Resolve plan fixed duration (days)
+$planFixedDays = plan_duration_days($plan);
 if ($durationDays === null || $durationDays < 1) {
-    $durationDays = $planMinDays;
+    $durationDays = $planFixedDays;
 }
-if ($durationDays < $planMinDays || $durationDays > $planMaxDays) {
+if ($durationDays !== $planFixedDays) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Duration must be between ' . $planMinDays . ' and ' . $planMaxDays . ' days']);
+    echo json_encode(['success' => false, 'error' => 'This plan has a fixed duration of ' . $planFixedDays . ' days']);
     exit;
 }
 

@@ -64,6 +64,7 @@ function ensure_plan_schema(PDO $pdo): void
     $columns = [
         'plan_type' => "ALTER TABLE plans ADD COLUMN plan_type VARCHAR(32) NOT NULL DEFAULT 'crypto' AFTER slug",
         'logo_url' => 'ALTER TABLE plans ADD COLUMN logo_url VARCHAR(255) NULL AFTER icon',
+        'investment_risk' => "ALTER TABLE plans ADD COLUMN investment_risk VARCHAR(16) NOT NULL DEFAULT 'mid' AFTER logo_url",
     ];
 
     foreach ($columns as $column => $ddl) {
@@ -81,18 +82,54 @@ function ensure_plan_schema(PDO $pdo): void
     }
 }
 
-function format_plan_expected_return(float $yieldMin, float $yieldMax): string
+function format_plan_period_return(float $dailyYieldPercent, int $durationDays): string
 {
-    $annualMin = $yieldMin * 365;
-    $annualMax = $yieldMax * 365;
-    if (abs($yieldMin - $yieldMax) < 0.01) {
-        if ($annualMin >= 70) {
-            return '> ' . number_format($annualMin, 0) . '% p.a.';
-        }
-        if ($annualMin < 30) {
-            return '< ' . number_format(max($annualMin, 1), 0) . '% p.a.';
-        }
-        return number_format($annualMin, 0) . '% p.a.';
+    if ($durationDays < 1) {
+        $durationDays = 1;
     }
-    return number_format($annualMin, 0) . '–' . number_format($annualMax, 0) . '% p.a.';
+    $totalPercent = $dailyYieldPercent * $durationDays;
+    return number_format($totalPercent, 2) . '%';
+}
+
+function get_investment_risk_options(): array
+{
+    return [
+        'high' => 'High Risk',
+        'mid' => 'Mid Risk',
+        'low' => 'Low Risk',
+    ];
+}
+
+function normalize_investment_risk(?string $risk): string
+{
+    $options = get_investment_risk_options();
+    $key = strtolower(trim((string) $risk));
+    if ($key === 'medium' || $key === 'med') {
+        $key = 'mid';
+    }
+    return isset($options[$key]) ? $key : 'mid';
+}
+
+/** @return array{label: string, class: string} */
+function plan_investment_risk_badge(?string $risk): array
+{
+    $key = normalize_investment_risk($risk);
+    $label = get_investment_risk_options()[$key];
+    $classes = [
+        'high' => 'bg-critical text-white',
+        'mid' => 'bg-primary-container text-on-primary',
+        'low' => 'bg-success text-white',
+    ];
+    return ['label' => $label, 'class' => $classes[$key]];
+}
+
+function plan_duration_days(array $plan): int
+{
+    if (isset($plan['min_duration_days']) && $plan['min_duration_days'] !== null) {
+        return max(1, (int) $plan['min_duration_days']);
+    }
+    if (isset($plan['duration_days'])) {
+        return max(1, (int) $plan['duration_days']);
+    }
+    return 1;
 }
