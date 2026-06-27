@@ -37,15 +37,15 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 
 @media (min-width: 1024px) {
   .account-selector__track {
-    --pin-step: calc(100dvh - var(--home-nav-offset));
     position: relative;
-    height: calc(var(--pin-step) * 4);
+    height: 400vh;
     background: #fff;
   }
   .account-selector__sticky {
     position: sticky;
     top: var(--home-nav-offset);
-    height: var(--pin-step);
+    height: calc(100vh - var(--home-nav-offset));
+    overflow: hidden;
   }
   .account-selector__shell {
     height: 100%;
@@ -119,9 +119,9 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
     scroll-margin-top: var(--home-nav-offset);
   }
   .account-selector__step[data-step="0"] { top: 0; }
-  .account-selector__step[data-step="1"] { top: calc(var(--pin-step) * 1); }
-  .account-selector__step[data-step="2"] { top: calc(var(--pin-step) * 2); }
-  .account-selector__step[data-step="3"] { top: calc(var(--pin-step) * 3); }
+  .account-selector__step[data-step="1"] { top: 100vh; }
+  .account-selector__step[data-step="2"] { top: 200vh; }
+  .account-selector__step[data-step="3"] { top: 300vh; }
 }
 @media (max-width: 1023px) {
   .account-selector__sticky { position: relative; top: auto; height: auto; }
@@ -429,7 +429,7 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
     function readProgress() {
         var trackRect = track.getBoundingClientRect();
         var stickyTop = parseFloat(window.getComputedStyle(sticky).top) || 0;
-        var total = track.offsetHeight - sticky.offsetHeight;
+        var total = track.offsetHeight - window.innerHeight + stickyTop;
         var progress;
 
         if (!isDesktop() || total <= 0) {
