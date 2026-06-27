@@ -1,0 +1,21 @@
+---
+description: config.php is gitignored — notify user to update server when it changes
+globs: config.php,config.example.php
+alwaysApply: true
+---
+
+# config.php — server-managed, not in git
+
+`config.php` is listed in `.gitignore` and must **never** be committed.
+
+## When editing config
+
+If you change `config.php` or add new keys that belong in production config:
+
+1. **Tell the user explicitly** at the end of your response that `config.php` was changed (or that `config.example.php` was updated and they should mirror those keys on the server).
+2. Summarize **what changed** (new keys, renamed keys, removed keys) so they can update the live server copy manually.
+3. If only `config.example.php` changed, remind them to apply the same updates to `config.php` on the server — git will not deploy it.
+
+## Reference
+
+Use `config.example.php` as the committed template for structure and documentation.

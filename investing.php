@@ -186,75 +186,58 @@ $marketingRiskBadge = function (?string $risk): array {
 
 <?php endif; ?>
 </section>
-<!-- Education/Learning -->
+<!-- Education / Getting started steps -->
 <section class="py-xl bg-surface-container-low -mx-margin-mobile md:-mx-20 px-margin-mobile md:px-20 rounded-3xl mb-xl">
-<div class="flex flex-col md:flex-row justify-between items-end mb-xl gap-md">
-<div class="max-w-2xl">
-<h2 class="font-headline-lg text-headline-lg mb-sm">Learn from <?php echo htmlspecialchars($siteName); ?>'s best trading minds</h2>
-<p class="text-on-surface-variant">Join a community that helps you make smarter decisions on every trade and apply years of market experience to your strategy.</p>
-</div>
-<div class="flex gap-sm">
-<button class="p-2 rounded-full border border-outline-variant hover:bg-surface-container transition-colors">
-<span class="material-symbols-outlined">chevron_left</span>
-</button>
-<button class="p-2 rounded-full border border-outline-variant hover:bg-surface-container transition-colors">
-<span class="material-symbols-outlined">chevron_right</span>
-</button>
-</div>
+<div class="mb-xl max-w-2xl">
+<h2 class="font-headline-lg text-headline-lg mb-sm">How to register and start investing</h2>
+<p class="text-on-surface-variant">Follow these four steps to open your account, choose a plan, and begin building your portfolio with <?php echo htmlspecialchars($siteName); ?>.</p>
 </div>
 <div class="grid md:grid-cols-4 gap-md">
-<a class="group" href="#">
-<div class="bg-white p-md rounded-xl h-full border border-surface-gray group-hover:border-institutional-blue transition-colors">
-<span class="material-symbols-outlined text-institutional-blue mb-sm">video_library</span>
-<h4 class="font-headline-md text-[18px] mb-xs">Webinars</h4>
-<p class="text-body-sm text-on-surface-variant">Daily market briefings and technical analysis deep-dives.</p>
+<div class="bg-white p-md rounded-xl h-full border border-surface-gray">
+<div class="w-10 h-10 rounded-full bg-fidelity-green text-white font-bold flex items-center justify-center mb-sm text-sm">1</div>
+<h4 class="font-headline-md text-[18px] mb-xs">Create your account</h4>
+<p class="text-body-sm text-on-surface-variant">Sign up with your email, set a secure password, and complete basic profile details to get started.</p>
+<a class="inline-block mt-sm text-fidelity-green font-label-md hover:underline" href="/register">Open an account</a>
 </div>
-</a>
-<a class="group" href="#">
-<div class="bg-white p-md rounded-xl h-full border border-surface-gray group-hover:border-institutional-blue transition-colors">
-<span class="material-symbols-outlined text-institutional-blue mb-sm">podcasts</span>
-<h4 class="font-headline-md text-[18px] mb-xs">Podcasts</h4>
-<p class="text-body-sm text-on-surface-variant">Tune in for "In the Money" weekly trade ideas and strategies.</p>
+<div class="bg-white p-md rounded-xl h-full border border-surface-gray">
+<div class="w-10 h-10 rounded-full bg-fidelity-green text-white font-bold flex items-center justify-center mb-sm text-sm">2</div>
+<h4 class="font-headline-md text-[18px] mb-xs">Verify and fund</h4>
+<p class="text-body-sm text-on-surface-variant">Complete identity verification, then deposit funds using your preferred payment method so you are ready to invest.</p>
 </div>
-</a>
-<a class="group" href="#">
-<div class="bg-white p-md rounded-xl h-full border border-surface-gray group-hover:border-institutional-blue transition-colors">
-<span class="material-symbols-outlined text-institutional-blue mb-sm">groups</span>
-<h4 class="font-headline-md text-[18px] mb-xs">Coaching</h4>
-<p class="text-body-sm text-on-surface-variant">Interactive 1:many sessions with our Trading Strategy Desk.</p>
+<div class="bg-white p-md rounded-xl h-full border border-surface-gray">
+<div class="w-10 h-10 rounded-full bg-fidelity-green text-white font-bold flex items-center justify-center mb-sm text-sm">3</div>
+<h4 class="font-headline-md text-[18px] mb-xs">Choose a plan</h4>
+<p class="text-body-sm text-on-surface-variant">Review available investment plans above, compare returns and terms, and select the option that matches your goals.</p>
 </div>
-</a>
-<a class="group" href="#">
-<div class="bg-white p-md rounded-xl h-full border border-surface-gray group-hover:border-institutional-blue transition-colors">
-<span class="material-symbols-outlined text-institutional-blue mb-sm">headset_mic</span>
-<h4 class="font-headline-md text-[18px] mb-xs">Support</h4>
-<p class="text-body-sm text-on-surface-variant">1:1 help for complex trades and technical platform assistance.</p>
+<div class="bg-white p-md rounded-xl h-full border border-surface-gray">
+<div class="w-10 h-10 rounded-full bg-fidelity-green text-white font-bold flex items-center justify-center mb-sm text-sm">4</div>
+<h4 class="font-headline-md text-[18px] mb-xs">Start investing</h4>
+<p class="text-body-sm text-on-surface-variant">Confirm your investment amount, submit your order, and track performance from your dashboard as your portfolio grows.</p>
+<a class="inline-block mt-sm text-fidelity-green font-label-md hover:underline" href="<?php echo htmlspecialchars($investCtaUrl); ?>">Go to dashboard</a>
 </div>
-</a>
 </div>
 </section>
 <!-- Trust/Awards -->
 <section class="py-xl border-t border-surface-gray">
 <div class="flex flex-col md:flex-row justify-between items-center gap-lg">
-<div class="text-center md:text-left">
+<div class="text-center md:text-left md:max-w-xs">
 <h3 class="font-headline-md text-headline-md text-on-surface-variant mb-xs">Industry Recognized</h3>
 <p class="text-body-sm">Consistently ranked for advanced tools and researcher power.</p>
 </div>
-<div class="flex flex-wrap justify-center gap-xl opacity-80">
+<div class="flex flex-wrap justify-center items-center gap-xl md:gap-12">
 <div class="text-center">
-<div class="font-bold text-lg mb-1">NerdWallet</div>
+<img alt="NerdWallet" class="h-8 mx-auto mb-2 object-contain" src="/uploads/images/markets/logo-nerdwallet.svg">
 <div class="text-[10px] uppercase tracking-wider text-outline">Best for Beginners 2026</div>
 </div>
 <div class="text-center">
-<div class="font-bold text-lg mb-1">StockBrokers.com</div>
+<img alt="StockBrokers.com" class="h-8 mx-auto mb-2 object-contain" src="/uploads/images/markets/logo-stockbrokers.svg">
 <div class="text-[10px] uppercase tracking-wider text-outline">#1 Overall 2026</div>
 </div>
 <div class="text-center">
-<div class="font-bold text-lg mb-1">Kiplinger</div>
+<img alt="Kiplinger" class="h-8 mx-auto mb-2 object-contain" src="/uploads/images/markets/logo-kiplinger.svg">
 <div class="text-[10px] uppercase tracking-wider text-outline">Best Online Broker 2025</div>
 </div>
 </div>
-<button class="text-institutional-blue font-label-md border-b border-institutional-blue hover:opacity-70 transition-opacity">Compare us</button>
 </div>
 </section>
 <!-- Final CTA -->

@@ -57,13 +57,19 @@ $heroSlides = [
     padding-left: 1rem;
   }
 }
+@media (min-width: 1024px) {
+  .hero-slider {
+    height: calc(100svh - 6.5rem);
+    min-height: 520px;
+  }
+}
 </style>
 </head>
 <body class="fidelity-homepage bg-white text-fidelityDark overflow-x-hidden">
 <?php $currentPage = 'home'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 
 <!-- BEGIN: HeroSection -->
-<section class="hero-slider relative h-[280px] lg:h-[420px] overflow-hidden" aria-label="Featured highlights">
+<section class="hero-slider relative h-[280px] lg:h-auto overflow-hidden" aria-label="Featured highlights">
 <div class="absolute inset-0" aria-hidden="true">
 <?php foreach ($heroSlides as $i => $slide): ?>
 <div class="hero-slider__slide<?php echo $i === 0 ? ' is-active' : ''; ?>" style="background-image: url('<?php echo htmlspecialchars($slide); ?>');"></div>
