@@ -67,8 +67,8 @@ $marketingRiskBadge = function (?string $risk): array {
 <?php require_once __DIR__ . '/includes/marketing-head.php'; ?>
 <style>
 .marketing-plan-tab.is-active { color: #337722; border-bottom-color: #337722; font-weight: 700; }
-.marketing-plan-panel { display: none; }
-.marketing-plan-panel.is-active { display: grid; }
+.marketing-plan-panel { display: none !important; }
+.marketing-plan-panel.is-active { display: block !important; }
 .marketing-plan-tabs-nav {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -106,57 +106,6 @@ $marketingRiskBadge = function (?string $risk): array {
 <img class="relative w-full h-auto drop-shadow-2xl rounded-xl investing-hero-img" data-alt="A clean and modern high-fidelity smartphone display showcasing an advanced trading application with a bright green upward-trending line chart against a dark minimalist UI. The phone is elegantly floating in a light green studio environment with soft, professional directional lighting, creating a high-end corporate fintech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSC2yMFj3sXrbyN255I81PgE07HBquJhUXRucvnYabm7tUfkoeR_fS4zOokwVEwYvoDw-FAKqE8POB67jc8MGDUqJki8BdrdL8ff0EtI9sccebsD7fN3-2U2-WiS0jQWE1gQCc3cNHhcYx3DaAnPbAwm2uIMwqIEMds1cajhxaQQ2zRTxiuvo9ogkvnSvkuoZy4d61GCnqS8CzCbhsJVdO-AcEd-SRwfy8mqrZHoYwSBVslyoxh13QgQ"/>
 </div>
 </section>
-<!-- Platform Showcase -->
-<section class="py-xl text-center">
-<h2 class="font-headline-lg text-headline-lg mb-sm">Discover the next generation of trading with <?php echo htmlspecialchars($siteName); ?> Trader+™</h2>
-<p class="font-body-md text-body-md text-on-surface-variant mb-xl max-w-2xl mx-auto">Trade your way—anytime, anywhere—with connected mobile, web, and desktop platforms.</p>
-<div class="bento-grid">
-<!-- Large Feature -->
-<div class="col-span-12 lg:col-span-7 glass-card p-lg rounded-xl text-left flex flex-col justify-between hover-lift">
-<div>
-<div class="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-lg flex items-center justify-center mb-md">
-<span class="material-symbols-outlined">dashboard_customize</span>
-</div>
-<h3 class="font-headline-md text-headline-md mb-xs">Consistent customization</h3>
-<p class="text-on-surface-variant">Access your favorite tools, custom-built charts, real-time data, and saved orders across all devices—from anywhere. Your workspace follows you.</p>
-</div>
-<div class="mt-lg">
-<img class="w-full h-48 object-cover rounded-lg border border-surface-gray" data-alt="A wide-screen desktop monitor displaying a complex financial dashboard with multiple synchronized charts, technical analysis tools, and order entry widgets. The layout is clean and professional, using Fidelity's signature corporate color palette of whites, grays, and green accents to signify a secure and powerful trading environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCi3LorTXsv2wWN32DKxkfudRg1wjYLo6l5ui35ZLSkijt56DjoYtfvj4O2aBRpvkoZEdpnJLot1cEyHFC8feQ_9G-0mKBD0tloR8ysXP2mmh9gbkYNNdKcZQt4KWd0en2TyJh3-zPeNHgUxXRr3EVXhpSxqotYzaYJXsIBcmRfrJcZ6hRDE-2K1yxmUoohA7-60-AmQwAI9aVg7ADB2POCgdNNMgKH_RlVw2wC38yLSMLb9MB374UNHw"/>
-</div>
-</div>
-<!-- Small Feature 1 -->
-<div class="col-span-12 lg:col-span-5 glass-card p-lg rounded-xl text-left hover-lift">
-<div class="w-12 h-12 bg-primary-container text-on-primary-container rounded-lg flex items-center justify-center mb-md">
-<span class="material-symbols-outlined">devices</span>
-</div>
-<h3 class="font-headline-md text-headline-md mb-xs">Portable dynamic trading</h3>
-<p class="text-on-surface-variant">Quickly create and execute complex strategies on the go using our web-based and mobile trading solutions designed for speed and reliability.</p>
-<div class="mt-md flex gap-xs">
-<span class="px-xs py-1 bg-surface-container rounded font-label-md text-[10px]">WEB</span>
-<span class="px-xs py-1 bg-surface-container rounded font-label-md text-[10px]">MOBILE</span>
-<span class="px-xs py-1 bg-surface-container rounded font-label-md text-[10px]">DESKTOP</span>
-</div>
-</div>
-<!-- Small Feature 2 -->
-<div class="col-span-12 lg:col-span-5 glass-card p-lg rounded-xl text-left hover-lift">
-<div class="w-12 h-12 bg-tertiary-container text-on-tertiary-container rounded-lg flex items-center justify-center mb-md">
-<span class="material-symbols-outlined">insights</span>
-</div>
-<h3 class="font-headline-md text-headline-md mb-xs">Powerful investing tools</h3>
-<p class="text-on-surface-variant">Advanced charting, multi-monitor layouts, and dynamic screeners designed specifically for the requirements of high-volume active traders.</p>
-</div>
-<!-- Call to Action Card -->
-<div class="col-span-12 lg:col-span-7 bg-fidelity-green p-lg rounded-xl text-left text-on-primary flex items-center justify-between">
-<div>
-<h3 class="font-headline-md text-headline-md mb-xs">Ready to explore Trader+?</h3>
-<p class="opacity-90">Experience the future of trading across all your devices today.</p>
-</div>
-<div class="flex gap-md">
-<button class="bg-white text-fidelity-green px-md py-sm rounded font-label-md hover:bg-opacity-90 transition-all">Explore Platform</button>
-</div>
-</div>
-</div>
-</section>
 <!-- Investment Plans -->
 <section class="py-xl border-t border-surface-gray px-margin-mobile md:px-0">
 <h2 class="font-headline-lg text-headline-lg mb-sm text-center">What you get when investing and trading at <?php echo htmlspecialchars($siteName); ?></h2>
@@ -185,22 +134,23 @@ $marketingRiskBadge = function (?string $risk): array {
 <?php foreach ($activePlanTypes as $typeKey => $typeLabel):
     $typePlans = $plansByType[$typeKey];
 ?>
-<div class="marketing-plan-panel grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-lg mb-lg<?php echo ($typeKey === $defaultPlanTab || !$showPlanTabs) ? ' is-active' : ''; ?>" data-plan-panel="<?php echo htmlspecialchars($typeKey); ?>">
+<div class="marketing-plan-panel mb-lg<?php echo ($typeKey === $defaultPlanTab || !$showPlanTabs) ? ' is-active' : ''; ?>" data-plan-panel="<?php echo htmlspecialchars($typeKey); ?>">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-lg">
 <?php foreach ($typePlans as $plan):
     $planDays = plan_duration_days($plan);
     $riskBadge = $marketingRiskBadge($plan['investment_risk'] ?? 'mid');
     $periodReturn = format_plan_period_return($plan['yield_min'] ?? 0, $planDays);
 ?>
 <div class="card-shadow rounded-xl bg-white p-md md:p-lg flex flex-col h-full hover-lift">
-<div class="flex justify-between items-start gap-3 mb-md">
-<div class="flex items-center gap-3 min-w-0">
-<?php echo plan_logo_markup($plan['logo_url'] ?? null, $plan['name'], 'w-10 h-10', 'text-sm'); ?>
-<div class="min-w-0">
-<h3 class="font-headline-md text-headline-md text-on-surface leading-tight truncate"><?php echo htmlspecialchars($plan['name']); ?></h3>
-<p class="text-body-sm text-on-surface-variant truncate"><?php echo htmlspecialchars($plan['description'] ?: 'Premium investment plan'); ?></p>
+<div class="flex items-start gap-3 mb-md">
+<?php echo plan_logo_markup($plan['logo_url'] ?? null, $plan['name'], 'w-10 h-10 shrink-0', 'text-sm'); ?>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-semibold text-on-surface leading-snug"><?php echo htmlspecialchars($plan['name']); ?></h3>
+<span class="<?php echo $riskBadge['class']; ?> inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"><?php echo htmlspecialchars($riskBadge['label']); ?></span>
+<?php if (!empty($plan['description'])): ?>
+<p class="text-body-sm text-on-surface-variant mt-2 leading-relaxed"><?php echo htmlspecialchars($plan['description']); ?></p>
+<?php endif; ?>
 </div>
-</div>
-<span class="<?php echo $riskBadge['class']; ?> px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0"><?php echo htmlspecialchars($riskBadge['label']); ?></span>
 </div>
 <div class="space-y-md mb-lg flex-grow">
 <div class="grid grid-cols-2 gap-md">
@@ -230,6 +180,7 @@ $marketingRiskBadge = function (?string $risk): array {
 </a>
 </div>
 <?php endforeach; ?>
+</div>
 </div>
 <?php endforeach; ?>
 
@@ -331,7 +282,7 @@ $marketingRiskBadge = function (?string $risk): array {
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 
 <script>
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.marketing-plan-tab').forEach(function (tab) {
         tab.addEventListener('click', function () {
             var type = tab.getAttribute('data-plan-tab');
@@ -342,7 +293,7 @@ $marketingRiskBadge = function (?string $risk): array {
             if (panel) panel.classList.add('is-active');
         });
     });
-})();
+});
 (function () {
     var heroImg = document.querySelector('.investing-hero-img');
     if (!heroImg) return;

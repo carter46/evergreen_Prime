@@ -9,6 +9,61 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <?php require_once __DIR__ . '/includes/marketing-head.php'; ?>
+<style>
+.home-account-section { position: relative; }
+.home-account-sticky {
+  position: sticky;
+  top: 3.5rem;
+  height: calc(100vh - 3.5rem);
+  min-height: 32rem;
+}
+.home-account-tab {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0 0.5rem 1rem;
+  border-left: 4px solid transparent;
+  font-size: 0.875rem;
+  color: #666;
+  transition: color 0.2s, border-color 0.2s;
+}
+.home-account-tab:hover { color: #337722; }
+.home-account-tab.is-active {
+  border-left-color: #337722;
+  color: #337722;
+  font-weight: 700;
+}
+.home-account-panel {
+  min-height: calc(100vh - 3.5rem);
+  padding: 3rem 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0.25;
+  transform: translateY(2rem);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.home-account-panel.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.home-account-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.home-account-image.is-active { opacity: 1; }
+@media (max-width: 1023px) {
+  .home-account-sticky { position: relative; top: 0; height: auto; min-height: 0; }
+  .home-account-panel { min-height: auto; padding: 2rem 0; opacity: 1; transform: none; }
+  .home-account-image-wrap { min-height: 16rem; margin-top: 1.5rem; }
+}
+</style>
 </head>
 <body class="fidelity-homepage bg-white text-fidelityDark overflow-x-hidden">
 <?php $currentPage = 'home'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
@@ -33,19 +88,36 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 </section>
 <!-- END: HeroSection -->
 
-<!-- BEGIN: AccountSelectorSection -->
-<section class="py-20 mx-auto px-4 max-w-6xl">
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-<!-- Left sidebar nav -->
-<div class="lg:col-span-3 space-y-4 border-l-2 border-gray-100">
-<button class="block w-full text-left pl-4 py-2 border-l-4 border-fidelityGreen font-bold text-sm">Start investing</button>
-<button class="block w-full text-left pl-4 py-2 text-gray-500 hover:text-fidelityGreen text-sm">Save for retirement</button>
-<button class="block w-full text-left pl-4 py-2 text-gray-500 hover:text-fidelityGreen text-sm">Save for health care</button>
-<button class="block w-full text-left pl-4 py-2 text-gray-500 hover:text-fidelityGreen text-sm">Invest for a child</button>
+<!-- BEGIN: AccountSelectorSection (scroll tabs) -->
+<section class="home-account-section bg-white" id="home-account-section">
+<div class="mx-auto px-4 max-w-6xl">
+<div class="lg:grid lg:grid-cols-12 lg:gap-10">
+
+<!-- Tab nav (sticky on desktop) -->
+<div class="lg:col-span-3 hidden lg:block">
+<div class="home-account-sticky pt-8">
+<nav class="space-y-1 border-l-2 border-gray-100" aria-label="Account goals">
+<button type="button" class="home-account-tab is-active" data-account-tab="investing">Start investing</button>
+<button type="button" class="home-account-tab" data-account-tab="retirement">Save for retirement</button>
+<button type="button" class="home-account-tab" data-account-tab="healthcare">Save for health care</button>
+<button type="button" class="home-account-tab" data-account-tab="education">Invest for a child</button>
+</nav>
 </div>
-<!-- Main Content Area -->
-<div class="lg:col-span-6">
-<h2 class="text-4xl mb-8 leading-tight">Invest smart from the start with a brokerage account</h2>
+</div>
+
+<!-- Mobile tab nav -->
+<nav class="lg:hidden flex gap-2 overflow-x-auto pb-4 mb-2 border-b border-gray-100 -mx-1 px-1" aria-label="Account goals">
+<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-fidelityGreen text-white font-semibold" data-account-tab="investing">Start investing</button>
+<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-account-tab="retirement">Retirement</button>
+<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-account-tab="healthcare">Health care</button>
+<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-account-tab="education">For a child</button>
+</nav>
+
+<!-- Scrollable content panels -->
+<div class="lg:col-span-5" id="home-account-panels">
+
+<article class="home-account-panel is-visible" data-account-panel="investing" id="panel-investing">
+<h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Invest smart from the start with a brokerage account</h2>
 <div class="space-y-6 mb-10">
 <div>
 <h3 class="font-bold text-lg mb-1">$0 account fees¹</h3>
@@ -60,86 +132,112 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 <p class="text-gray-600 text-sm">Buy US stocks and ETFs for as little as $1 with fractional shares.³</p>
 </div>
 </div>
-<div class="flex items-center space-x-6">
+<div class="flex flex-wrap items-center gap-4">
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open a brokerage account</a>
 <a class="text-fidelityGreen font-bold hover:underline" href="/investing">Explore ways to invest</a>
 </div>
+<div class="lg:hidden mt-8 rounded-2xl overflow-hidden bg-fidelityLightGreen p-4">
+<img alt="<?php echo htmlspecialchars($siteName); ?> App" class="rounded-xl shadow-lg w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA">
 </div>
-<!-- Phone App Mockup Visual -->
-<div class="lg:col-span-3">
-<div class="bg-fidelityLightGreen rounded-3xl p-6 relative">
-<img alt="<?php echo htmlspecialchars($siteName); ?> App" class="rounded-2xl shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA">
-<div class="absolute -right-4 top-20 bg-white p-3 rounded shadow-lg border border-gray-100">
-<div class="text-fidelityGreen font-bold text-xs">+18.04</div>
-<div class="text-xl font-bold">0.51%</div>
+</article>
+
+<article class="home-account-panel" data-account-panel="retirement" id="panel-retirement">
+<h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Plan for the possibilities ahead with a Roth IRA</h2>
+<div class="space-y-6 mb-10">
+<div>
+<h3 class="font-bold text-lg mb-1">Tax savings</h3>
+<p class="text-gray-600 text-sm">Any investment growth in a Roth is tax-free, with tax-free withdrawals in retirement.⁴</p>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">Access to your contributions</h3>
+<p class="text-gray-600 text-sm">Any amount you add to your Roth can be withdrawn without taxes or penalties, anytime, for any reason.</p>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">Numerous ways to invest</h3>
+<p class="text-gray-600 text-sm">Whether you invest on your own or have us do it, you can choose from stocks to ETFs to crypto and more.</p>
 </div>
 </div>
+<div class="flex flex-wrap items-center gap-4">
+<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open a Roth IRA</a>
+<a class="text-fidelityGreen font-bold hover:underline" href="/planning">Explore retirement planning</a>
+</div>
+<div class="lg:hidden mt-8 rounded-2xl overflow-hidden">
+<img alt="Roth IRA" class="rounded-lg shadow-sm w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDY3iqufo2KD57yEPGm4rXJ227VAhC0aUplFZJy6Qbx-yvsd74PYZjLppio9NDPIeZCPSAXK2muoBGBO_bL4xMdO6u6UcVtlgMymzRFgQnGW7Sg_YVkSaagnuCNhn-BD25bJTRON00EpHPfAUVYIkDeSo1salecSpJpIc9K9Bdm0RKblapyV6YCtuJTsfJM5k_oHskXUeHHtQceBKP4gmhWEcYSm09rXv3PDJhAMI5zvP5vt_JnYH0z6g">
+</div>
+</article>
+
+<article class="home-account-panel" data-account-panel="healthcare" id="panel-healthcare">
+<h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Save, earn, and invest for health care with an HSA</h2>
+<div class="space-y-6 mb-10">
+<div>
+<h3 class="font-bold text-lg mb-1">Triple-tax advantage</h3>
+<p class="text-gray-600 text-sm">Get tax-deductible contributions, no immediate tax on earnings, and tax-free withdrawals for qualified medical expenses.⁵</p>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">No account fees</h3>
+<p class="text-gray-600 text-sm"><?php echo htmlspecialchars($siteName); ?>'s HSA has no account fees or minimums, and $0 commissions for US stock &amp; ETF trades.⁶</p>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">Not "use-it-or-lose-it"</h3>
+<p class="text-gray-600 text-sm">The money's always yours. You can earn interest on cash, grow your account by investing, or do both.</p>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-4">
+<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open an HSA</a>
+<a class="text-fidelityGreen font-bold hover:underline" href="#">Explore health savings</a>
+</div>
+<div class="lg:hidden mt-8 rounded-2xl overflow-hidden">
+<img alt="HSA" class="rounded-lg shadow-sm w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8ciWYMIH8LaIoT1_SlnTnSh0Qhuu0cN0dyKiNhwqoQ-9o-9vP8PBC25hkwOiJDqs9Hsn9DFAU3MchWg-JRyE5MIbpoh6ILqo1snva0YjAJDBBPNug0HP2HFLIJpRCbkg4skiwwWVTGbWyCPiswRrULzaAydUQByEk4UMFIlhJh3S_930yfsiFD3gLi6aQjSwKeNYnvpHz_tn2wu6sM_pdtrhw0wILDoFcviV-BSp5FkFwrOql_k8Arw">
+</div>
+</article>
+
+<article class="home-account-panel" data-account-panel="education" id="panel-education">
+<h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Save for the next generation's education with a 529 account</h2>
+<div class="space-y-6 mb-10">
+<div>
+<h3 class="font-bold text-lg mb-1">Tax-smart savings</h3>
+<p class="text-gray-600 text-sm">Any earnings grow federal income tax-deferred, and you can get tax-free withdrawals for qualified education expenses.</p>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">Flexible use of funds</h3>
+<p class="text-gray-600 text-sm">Pay for college, trade school, and K–12 nationwide, including tuition, fees, and books.⁷</p>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">Your money can work harder</h3>
+<p class="text-gray-600 text-sm">No minimums to open and no account fees.² Plus, start early and your money could potentially grow more.</p>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-4">
+<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open a 529 account</a>
+<a class="text-fidelityGreen font-bold hover:underline" href="/planning">Explore saving for a child</a>
+</div>
+<div class="lg:hidden mt-8 rounded-2xl overflow-hidden">
+<img alt="529 education" class="rounded-lg shadow-sm w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFZ6IgNIGjVyf4zoO6M1BJvh9BZsxKdjH277DJq9mKH5SX2-VWDPhnCMHRGrY-CPpcP5Xl02h8ii5-_95Y6uRah9kdoKkhmLc8b-VMHu2Pd42d4-3qjijK2wZmy53whrWSdoVspcZWBYg3M5cQZaOzoUq2vNTuw548O9rPmLvotQwsX2ntz3KgAk-zdHIw-QAy2wIwuKFje29-ovdzAwpOgV3FA1CgeGvimNXdh13HmwAeuOG7EOg_sA">
+</div>
+</article>
+
+</div>
+
+<!-- Sticky images (desktop) -->
+<div class="lg:col-span-4 hidden lg:block">
+<div class="home-account-sticky pt-8">
+<div class="relative h-full min-h-[20rem] home-account-image-wrap">
+<div class="bg-fidelityLightGreen rounded-3xl p-6 h-full relative overflow-hidden">
+<img alt="<?php echo htmlspecialchars($siteName); ?> App" class="home-account-image is-active rounded-2xl shadow-2xl object-cover w-full h-auto" data-account-image="investing" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA">
+<img alt="Roth IRA" class="home-account-image rounded-lg shadow-sm object-cover w-full h-full" data-account-image="retirement" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDY3iqufo2KD57yEPGm4rXJ227VAhC0aUplFZJy6Qbx-yvsd74PYZjLppio9NDPIeZCPSAXK2muoBGBO_bL4xMdO6u6UcVtlgMymzRFgQnGW7Sg_YVkSaagnuCNhn-BD25bJTRON00EpHPfAUVYIkDeSo1salecSpJpIc9K9Bdm0RKblapyV6YCtuJTsfJM5k_oHskXUeHHtQceBKP4gmhWEcYSm09rXv3PDJhAMI5zvP5vt_JnYH0z6g">
+<img alt="HSA" class="home-account-image rounded-lg shadow-sm object-cover w-full h-full" data-account-image="healthcare" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8ciWYMIH8LaIoT1_SlnTnSh0Qhuu0cN0dyKiNhwqoQ-9o-9vP8PBC25hkwOiJDqs9Hsn9DFAU3MchWg-JRyE5MIbpoh6ILqo1snva0YjAJDBBPNug0HP2HFLIJpRCbkg4skiwwWVTGbWyCPiswRrULzaAydUQByEk4UMFIlhJh3S_930yfsiFD3gLi6aQjSwKeNYnvpHz_tn2wu6sM_pdtrhw0wILDoFcviV-BSp5FkFwrOql_k8Arw">
+<img alt="529 education savings" class="home-account-image rounded-lg shadow-sm object-cover w-full h-full" data-account-image="education" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFZ6IgNIGjVyf4zoO6M1BJvh9BZsxKdjH277DJq9mKH5SX2-VWDPhnCMHRGrY-CPpcP5Xl02h8ii5-_95Y6uRah9kdoKkhmLc8b-VMHu2Pd42d4-3qjijK2wZmy53whrWSdoVspcZWBYg3M5cQZaOzoUq2vNTuw548O9rPmLvotQwsX2ntz3KgAk-zdHIw-QAy2wIwuKFje29-ovdzAwpOgV3FA1CgeGvimNXdh13HmwAeuOG7EOg_sA">
+</div>
+</div>
+</div>
+</div>
+
 </div>
 </div>
 </section>
 <!-- END: AccountSelectorSection -->
 
-<!-- BEGIN: AlternatingSections -->
-<!-- Roth IRA -->
-<section class="py-20 bg-gray-50">
-<div class="mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center max-w-6xl">
-<div class="order-2 lg:order-1">
-<h2 class="text-4xl mb-8">Plan for the possibilities ahead with a Roth IRA</h2>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-<div>
-<h4 class="font-bold mb-2">Tax savings</h4>
-<p class="text-sm text-gray-600">Any earnings growth in a Roth is tax-free, with tax-free withdrawals in retirement.⁴</p>
-</div>
-<div>
-<h4 class="font-bold mb-2">Access to your contributions</h4>
-<p class="text-sm text-gray-600">Any amount you add to your Roth can be withdrawn without taxes or penalties, anytime, for any reason.</p>
-</div>
-<div>
-<h4 class="font-bold mb-2">Numerous ways to invest</h4>
-<p class="text-sm text-gray-600">Whether you invest on your own or have us do it, you can choose from stocks to ETFs to crypto and more.</p>
-</div>
-</div>
-<div class="flex items-center space-x-6">
-<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold" href="/register">Open a Roth IRA</a>
-<a class="text-fidelityGreen font-bold hover:underline" href="/planning">Explore retirement planning</a>
-</div>
-</div>
-<div class="order-1 lg:order-2">
-<img alt="Roth IRA visual" class="rounded-lg shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDY3iqufo2KD57yEPGm4rXJ227VAhC0aUplFZJy6Qbx-yvsd74PYZjLppio9NDPIeZCPSAXK2muoBGBO_bL4xMdO6u6UcVtlgMymzRFgQnGW7Sg_YVkSaagnuCNhn-BD25bJTRON00EpHPfAUVYIkDeSo1salecSpJpIc9K9Bdm0RKblapyV6YCtuJTsfJM5k_oHskXUeHHtQceBKP4gmhWEcYSm09rXv3PDJhAMI5zvP5vt_JnYH0z6g">
-</div>
-</div>
-</section>
-
-<!-- HSA Section -->
-<section class="py-20 bg-white">
-<div class="mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center max-w-6xl">
-<div>
-<img alt="HSA visual" class="rounded-lg shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8ciWYMIH8LaIoT1_SlnTnSh0Qhuu0cN0dyKiNhwqoQ-9o-9vP8PBC25hkwOiJDqs9Hsn9DFAU3MchWg-JRyE5MIbpoh6ILqo1snva0YjAJDBBPNug0HP2HFLIJpRCbkg4skiwwWVTGbWyCPiswRrULzaAydUQByEk4UMFIlhJh3S_930yfsiFD3gLi6aQjSwKeNYnvpHz_tn2wu6sM_pdtrhw0wILDoFcviV-BSp5FkFwrOql_k8Arw">
-</div>
-<div>
-<h2 class="text-4xl mb-8">Save, earn, and invest for health care with an HSA</h2>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-<div>
-<h4 class="font-bold mb-2">Triple-tax advantage</h4>
-<p class="text-sm text-gray-600">Get tax-deductible contributions, no immediate tax on earnings, and tax-free withdrawals for qualified medical expenses.⁵</p>
-</div>
-<div>
-<h4 class="font-bold mb-2">No account fees</h4>
-<p class="text-sm text-gray-600"><?php echo htmlspecialchars($siteName); ?>'s HSA has no account fees or minimums, and $0 commissions for US stock &amp; ETF trades.⁶</p>
-</div>
-<div class="col-span-full">
-<h4 class="font-bold mb-2">Not "use-it-or-lose-it"</h4>
-<p class="text-sm text-gray-600">The money's always yours. You can earn interest on cash, grow your account by investing, or do both.</p>
-</div>
-</div>
-<div class="flex items-center space-x-6">
-<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold" href="/register">Open an HSA</a>
-<a class="text-fidelityGreen font-bold hover:underline" href="#">Explore health savings at <?php echo htmlspecialchars($siteName); ?></a>
-</div>
-</div>
-</div>
-</section>
-<!-- END: AlternatingSections -->
+<!-- BEGIN: AlternatingSections (removed — content in scroll tabs above) -->
 
 <!-- BEGIN: PartnerSection -->
 <section class="py-0">
@@ -241,5 +339,61 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 <!-- END: WhyChooseSection -->
 
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
+
+<script>
+(function () {
+    var tabs = document.querySelectorAll('.home-account-tab');
+    var mobileTabs = document.querySelectorAll('.home-account-tab-mobile');
+    var panels = document.querySelectorAll('.home-account-panel');
+    var images = document.querySelectorAll('.home-account-image');
+    var panelIds = ['investing', 'retirement', 'healthcare', 'education'];
+
+    function setActive(id, scroll) {
+        tabs.forEach(function (t) {
+            t.classList.toggle('is-active', t.getAttribute('data-account-tab') === id);
+        });
+        mobileTabs.forEach(function (t) {
+            var active = t.getAttribute('data-account-tab') === id;
+            t.classList.toggle('bg-fidelityGreen', active);
+            t.classList.toggle('text-white', active);
+            t.classList.toggle('font-semibold', active);
+            t.classList.toggle('bg-gray-100', !active);
+            t.classList.toggle('text-gray-600', !active);
+        });
+        panels.forEach(function (p) {
+            p.classList.toggle('is-visible', p.getAttribute('data-account-panel') === id);
+        });
+        images.forEach(function (img) {
+            img.classList.toggle('is-active', img.getAttribute('data-account-image') === id);
+        });
+        if (scroll) {
+            var el = document.getElementById('panel-' + id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            setActive(tab.getAttribute('data-account-tab'), true);
+        });
+    });
+    mobileTabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            setActive(tab.getAttribute('data-account-tab'), true);
+        });
+    });
+
+    if (panels.length && window.matchMedia('(min-width: 1024px)').matches) {
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.35) {
+                    setActive(entry.target.getAttribute('data-account-panel'), false);
+                }
+            });
+        }, { root: null, rootMargin: '-35% 0px -35% 0px', threshold: [0, 0.35, 0.5, 0.75, 1] });
+        panels.forEach(function (panel) { observer.observe(panel); });
+    }
+})();
+</script>
 </body>
 </html>
