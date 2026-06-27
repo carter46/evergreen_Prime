@@ -197,6 +197,22 @@ body.marketing-page {
   font-size: 0.85rem;
   font-weight: 500;
 }
+/* Utility bar scrolls away; only green nav sticks on scroll */
+#utility-header {
+  position: relative;
+  z-index: 40;
+}
+#main-navigation {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+/* overflow-x: hidden on body breaks position:sticky — use clip instead */
+body.fidelity-homepage,
+body.fidelity-subpage {
+  overflow-x: clip;
+}
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;

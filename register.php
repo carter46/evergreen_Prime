@@ -23,8 +23,8 @@ $refPrefill = isset($_GET['ref']) ? strtoupper(trim((string)$_GET['ref'])) : '';
 <?php require_once __DIR__ . '/includes/auth-fidelity-header.php'; ?>
 
 <main class="flex-1 pt-16 flex flex-col">
-<div class="relative z-10 w-full max-w-[1152px] mx-auto px-margin-mobile md:px-margin-desktop py-lg flex flex-col md:flex-row gap-lg items-start">
-<div class="w-full md:w-1/2 mt-lg">
+<div class="relative z-10 w-full max-w-[1152px] mx-auto px-margin-mobile md:px-margin-desktop py-lg flex flex-col lg:flex-row gap-lg items-start">
+<div id="register-intro-panel" class="w-full lg:w-1/2 mt-lg">
 <h1 class="auth-hero-title text-on-surface mb-sm">Secure your financial future starting today.</h1>
 <p class="font-body-md text-body-md text-on-surface-variant mb-lg max-w-md">
 Join investors who trust <?php echo htmlspecialchars($siteName); ?> with their wealth, retirement, and future planning.
@@ -58,9 +58,13 @@ Join investors who trust <?php echo htmlspecialchars($siteName); ?> with their w
 </div>
 </div>
 </div>
+<button type="button" id="register-get-started" class="register-get-started-btn auth-btn-primary mt-lg w-full sm:w-auto px-8 active:scale-[0.98] transition-all flex items-center justify-center gap-xs">
+<span>Get Started</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
 </div>
 
-<div id="register-step-form" class="w-full md:w-1/2 max-w-md">
+<div id="register-step-form" class="hidden w-full lg:w-1/2 max-w-md lg:max-w-none mx-auto lg:mx-0">
 <div class="auth-form-card">
 <div id="register-form-chrome" class="auth-form-intro">
 <h2>Create Account</h2>
@@ -196,6 +200,22 @@ Already have an account?
 <?php require_once __DIR__ . '/includes/app-script.php'; ?>
 <script>
 (function () {
+  var getStartedBtn = document.getElementById('register-get-started');
+  var introPanel = document.getElementById('register-intro-panel');
+  var formPanel = document.getElementById('register-step-form');
+
+  if (getStartedBtn && formPanel) {
+    getStartedBtn.addEventListener('click', function () {
+      formPanel.classList.remove('hidden');
+      getStartedBtn.classList.add('hidden');
+      if (window.matchMedia('(max-width: 1023px)').matches && introPanel) {
+        introPanel.classList.add('hidden');
+      }
+      var firstField = formPanel.querySelector('#name');
+      if (firstField) firstField.focus();
+    });
+  }
+
   var step1 = document.getElementById('register-step-1');
   var step2 = document.getElementById('register-step-2');
   var progress = document.getElementById('register-progress');

@@ -22,6 +22,8 @@ $mobileNavClass = function ($page) use ($current) {
     return 'text-fidelityDark hover:text-fidelityGreen';
 };
 ?>
+<!-- BEGIN: SiteHeader -->
+<div id="marketing-site-header">
 <!-- BEGIN: UtilityHeader -->
 <div id="utility-header" class="bg-white border-b border-gray-200">
 <div class="mx-auto px-4 flex justify-between items-center h-12 max-w-6xl">
@@ -47,7 +49,7 @@ $mobileNavClass = function ($page) use ($current) {
 </div>
 <!-- END: UtilityHeader -->
 <!-- BEGIN: MainNavigation -->
-<header id="main-navigation" class="sticky top-0 z-50 shadow-sm bg-fidelityGreen">
+<header id="main-navigation" class="shadow-sm bg-fidelityGreen">
 <div class="mx-auto px-4 flex items-center h-14 max-w-6xl gap-3 lg:gap-4">
 <button type="button" id="marketing-sidebar-toggle" class="lg:hidden shrink-0 w-10 h-10 flex items-center justify-center rounded-lg text-white hover:bg-white/10 transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="marketing-sidebar">
 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -67,6 +69,8 @@ $mobileNavClass = function ($page) use ($current) {
 </div>
 </header>
 <!-- END: MainNavigation -->
+</div>
+<!-- END: SiteHeader -->
 
 <!-- BEGIN: MarketingMobileSidebar -->
 <div id="marketing-sidebar-overlay" class="fixed inset-0 bg-black/50 z-[60] lg:hidden hidden" aria-hidden="true"></div>

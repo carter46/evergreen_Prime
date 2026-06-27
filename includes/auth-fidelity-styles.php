@@ -264,4 +264,18 @@
   padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
 }
+.register-get-started-btn {
+  background: #337722;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  min-height: 2.5rem;
+  border: none;
+  cursor: pointer;
+}
+.register-get-started-btn:hover {
+  background: #285e1b;
+}
 </style>
