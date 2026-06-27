@@ -32,7 +32,7 @@ $navClass = function ($page) use ($current) {
 </a>
 <a class="<?php echo $navClass('addresses'); ?>" href="/dashboard/admin/addresses">
 <span class="material-symbols-outlined text-[20px] shrink-0">account_balance_wallet</span>
-<span class="font-label-sm text-label-sm truncate">Wallet Addresses</span>
+<span class="font-label-sm text-label-sm truncate">Payment Methods</span>
 </a>
 <a class="<?php echo $navClass('transactions'); ?>" href="/dashboard/admin/transactions">
 <span class="material-symbols-outlined text-[20px] shrink-0">history</span>

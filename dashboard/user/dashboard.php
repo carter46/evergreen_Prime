@@ -118,9 +118,9 @@ $chartBtnIdle = 'px-4 py-1.5 rounded text-label-xs text-on-surface-variant hover
 <span class="material-symbols-outlined text-5xl md:text-6xl">account_balance_wallet</span>
 </div>
 <div class="relative z-10">
-<p class="font-label-xs text-label-xs text-slate-400 uppercase tracking-widest mb-3">Total USD Balance</p>
+<p class="font-label-xs text-label-xs text-slate-400 uppercase tracking-widest mb-2">Total USD Balance</p>
 <div class="flex flex-wrap items-baseline gap-2 md:gap-3 mb-4">
-<span class="font-display text-4xl md:text-[48px] text-primary-container font-extrabold leading-none">$<?php echo format_usd_amount($userBalance); ?></span>
+<span class="font-display text-lg md:text-xl text-emerald-400 font-bold leading-none">$<?php echo number_format((float) $userBalance, 2, '.', ','); ?></span>
 </div>
 <div class="flex gap-3">
 <button type="button" id="deposit-btn-dash" class="flex-1 bg-primary-container text-on-primary font-bold py-3 rounded-lg hover:opacity-90 transition-all text-label-sm">Deposit</button>

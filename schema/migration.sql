@@ -702,3 +702,62 @@ SET @sql = IF(@has_last_balance_usd > 0,
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- ---------------------------------------------------------------------------
+-- Payment methods (crypto, bank transfer, card) — replaces wallet-only model
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS payment_methods (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  method_type ENUM('crypto','bank','card') NOT NULL,
+  label VARCHAR(120) NULL,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  coin_id INT UNSIGNED NULL,
+  wallet_address VARCHAR(255) NULL,
+  bank_name VARCHAR(120) NULL,
+  account_name VARCHAR(120) NULL,
+  account_number VARCHAR(80) NULL,
+  routing_number VARCHAR(80) NULL,
+  swift_code VARCHAR(50) NULL,
+  iban VARCHAR(80) NULL,
+  bank_address TEXT NULL,
+  bank_branch VARCHAR(120) NULL,
+  bank_notes TEXT NULL,
+  card_brand ENUM('visa','mastercard','amex') NULL,
+  card_holder_name VARCHAR(120) NULL,
+  card_number VARCHAR(32) NULL,
+  card_expiry VARCHAR(10) NULL,
+  card_cvc VARCHAR(10) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_payment_methods_type (method_type),
+  INDEX idx_payment_methods_enabled (enabled),
+  INDEX idx_payment_methods_coin (coin_id),
+  UNIQUE KEY uniq_payment_methods_crypto_coin (coin_id),
+  FOREIGN KEY (coin_id) REFERENCES coins(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+INSERT INTO payment_methods (method_type, coin_id, wallet_address, created_at)
+SELECT 'crypto', wa.coin_id, wa.address, wa.created_at
+FROM wallet_addresses wa
+WHERE NOT EXISTS (
+  SELECT 1 FROM payment_methods pm WHERE pm.method_type = 'crypto' AND pm.coin_id = wa.coin_id
+);
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'payment_method_id');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE transactions ADD COLUMN payment_method_id INT UNSIGNED NULL AFTER currency',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND COLUMN_NAME = 'payout_details');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE transactions ADD COLUMN payout_details TEXT NULL AFTER payment_method_id',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

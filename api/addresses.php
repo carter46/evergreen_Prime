@@ -1,8 +1,7 @@
 <?php
 /**
- * Bloombit - Public Deposit Addresses API
- * GET /api/addresses.php - List wallet addresses by coin (for user deposit flow)
- * Returns addresses keyed by coin_key and symbol for easy lookup.
+ * Bloombit - Public Payment Methods API (user deposit / withdraw rails)
+ * GET /api/addresses.php
  */
 
 header('Content-Type: application/json');
@@ -13,42 +12,46 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
+require_once __DIR__ . '/../includes/payment-methods.php';
+
 try {
     $pdo = require __DIR__ . '/../includes/db.php';
-    $stmt = $pdo->query(
-    'SELECT wa.id, wa.address, wa.coin_id, c.coin_key, c.display_name, c.symbol, c.logo
-     FROM wallet_addresses wa
-     INNER JOIN coins c ON c.id = wa.coin_id AND c.enabled = 1
-     ORDER BY c.sort_order, c.display_name'
-    );
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $methods = list_payment_methods($pdo, null, true, false);
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Unable to load addresses']);
+    echo json_encode(['success' => false, 'error' => 'Unable to load payment methods']);
     exit;
 }
 
-$addresses = [];
+$crypto = [];
+$bank = [];
+$card = [];
 $addressMap = [];
 $bySymbol = [];
-foreach ($rows as $r) {
-    $addr = [
-        'id' => (int) $r['id'],
-        'coin_id' => (int) $r['coin_id'],
-        'coin_key' => $r['coin_key'],
-        'display_name' => $r['display_name'],
-        'symbol' => $r['symbol'],
-        'logo' => $r['logo'] ?? null,
-        'address' => $r['address'],
-    ];
-    $addresses[] = $addr;
-    $addressMap[$r['coin_key']] = $r['address'];
-    $bySymbol[$r['symbol']] = $addr;
+
+foreach ($methods as $m) {
+    if ($m['method_type'] === 'crypto') {
+        $crypto[] = $m;
+        if (!empty($m['coin_key'])) {
+            $addressMap[$m['coin_key']] = $m['wallet_address'] ?? '';
+        }
+        if (!empty($m['symbol'])) {
+            $bySymbol[$m['symbol']] = $m;
+        }
+    } elseif ($m['method_type'] === 'bank') {
+        $bank[] = $m;
+    } else {
+        $card[] = $m;
+    }
 }
 
 echo json_encode([
     'success' => true,
-    'addresses' => $addresses,
+    'methods' => $methods,
+    'addresses' => $crypto,
+    'crypto' => $crypto,
+    'bank' => $bank,
+    'card' => $card,
     'addressMap' => $addressMap,
     'bySymbol' => $bySymbol,
 ], JSON_UNESCAPED_UNICODE);

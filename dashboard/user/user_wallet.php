@@ -257,7 +257,7 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <div id="wallet-drawer-backdrop" class="fixed inset-0 bg-black/50 z-[45] hidden" aria-hidden="true" style="backdrop-filter:blur(2px)"></div>
 <div id="deposit-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[520px] max-w-full bg-white dark:bg-zinc-900 shadow-2xl z-[50] border-l border-slate-200 dark:border-zinc-800 flex flex-col transition-transform duration-300 ease-out" style="transform:translateX(100%)">
 <div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
-<h2 class="text-xl font-bold">Deposit Crypto</h2>
+<h2 class="text-xl font-bold">Deposit Funds</h2>
 <button type="button" id="deposit-drawer-close" class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-lg">close</span></button>
 </div>
 <div class="flex-1 overflow-y-auto p-6 wallet-drawer-content">
@@ -268,7 +268,7 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <input type="number" id="deposit-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-semibold" placeholder="0.00"/>
 </div>
 <div>
-<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Select Currency</label>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Payment Method</label>
 <select id="deposit-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
 <option value="">Loading...</option>
 </select>
@@ -282,17 +282,19 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <div class="space-y-5">
 <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
 <p class="text-base font-bold text-emerald-700 dark:text-emerald-300 mb-2">Deposit request submitted!</p>
-<p class="text-sm text-emerald-600 dark:text-emerald-400">Please send your funds to the address below. Your deposit will be credited after admin approval.</p>
+<p id="deposit-step2-instructions" class="text-sm text-emerald-600 dark:text-emerald-400">Complete your payment using the details below. Your deposit will be credited after admin approval.</p>
 </div>
-<div>
+<div id="deposit-crypto-address-wrap">
 <label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Send to Address</label>
 <div class="flex items-center gap-2">
 <input type="text" id="deposit-address-display" readonly class="flex-1 bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-sm font-mono border border-slate-200 dark:border-zinc-700"/>
 <button type="button" id="deposit-copy-addr" class="px-4 py-3 bg-primary text-black font-bold rounded-lg text-sm">Copy</button>
 </div>
 </div>
+<div id="deposit-bank-details-wrap" class="hidden space-y-2 text-sm bg-slate-50 dark:bg-zinc-800 rounded-lg p-4 border border-slate-200 dark:border-zinc-700"></div>
+<div id="deposit-card-details-wrap" class="hidden space-y-2 text-sm bg-slate-50 dark:bg-zinc-800 rounded-lg p-4 border border-slate-200 dark:border-zinc-700"></div>
 <div class="pt-4 border-t border-slate-200 dark:border-zinc-800">
-<p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Selected Currency: <span id="deposit-selected-currency" class="font-bold"></span></p>
+<p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Payment Method: <span id="deposit-selected-currency" class="font-bold"></span></p>
 <p class="text-sm text-slate-600 dark:text-slate-400">Amount: <span id="deposit-selected-amount" class="font-bold"></span></p>
 </div>
 <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
@@ -350,8 +352,11 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 <label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Withdrawal Method</label>
 <select name="withdrawal_method" id="withdraw-method" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
 <option value="crypto" selected>Crypto</option>
+<option value="bank">Bank Transfer</option>
+<option value="card">Card</option>
 </select>
 </div>
+<div id="withdraw-crypto-fields">
 <div>
 <label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Payout Currency</label>
 <select name="currency" id="withdraw-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
@@ -362,7 +367,64 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 </div>
 <div>
 <label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Recipient Address</label>
-<input name="address" id="withdraw-address" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700" placeholder="Paste external wallet address" type="text" required/>
+<input name="address" id="withdraw-address" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700" placeholder="Paste external wallet address" type="text"/>
+</div>
+</div>
+<div id="withdraw-bank-fields" class="hidden space-y-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Bank Name</label>
+<input type="text" id="withdraw-bank-name" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700"/>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Account Name</label>
+<input type="text" id="withdraw-account-name" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Account Number</label>
+<input type="text" id="withdraw-account-number" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-mono"/>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Routing Number</label>
+<input type="text" id="withdraw-routing-number" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700"/>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">SWIFT / IBAN</label>
+<input type="text" id="withdraw-swift-iban" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700" placeholder="SWIFT or IBAN (optional)"/>
+</div>
+</div>
+</div>
+<div id="withdraw-card-fields" class="hidden space-y-4">
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Card Brand</label>
+<select id="withdraw-card-brand" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
+<option value="">Select card</option>
+<option value="visa">Visa</option>
+<option value="mastercard">Mastercard</option>
+<option value="amex">American Express</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Cardholder Name</label>
+<input type="text" id="withdraw-card-holder" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700"/>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Card Number</label>
+<input type="text" id="withdraw-card-number" inputmode="numeric" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-mono"/>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Expiry</label>
+<input type="text" id="withdraw-card-expiry" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700" placeholder="MM/YY"/>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">CVC</label>
+<input type="text" id="withdraw-card-cvc" inputmode="numeric" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700"/>
+</div>
+</div>
+</div>
 </div>
 <div id="withdrawal-message" class="text-sm hidden"></div>
 <button type="submit" class="w-full py-3 bg-primary text-black font-bold rounded-lg text-base flex items-center justify-center gap-2">
@@ -387,6 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var depositDoneMsg = document.getElementById('deposit-done-message');
     var depositDoneBtn = document.getElementById('deposit-close-btn');
     var addressesData = null;
+    var paymentMethodsData = { crypto: [], bank: [], card: [] };
     var currentDepositTxId = null;
     var currentDepositExpiresAtMs = null;
     var depositCountdownIv = null;
@@ -416,24 +479,101 @@ document.addEventListener('DOMContentLoaded', function() {
         closeDrawer(withdrawDrawer);
     }
 
-    // Load addresses for both drawers
+    function getSelectedDepositMethod() {
+        var sel = document.getElementById('deposit-currency');
+        if (!sel || !sel.value) return null;
+        var id = parseInt(sel.value, 10);
+        return (paymentMethodsData.all || []).find(function(m){ return m.id === id; }) || null;
+    }
+
+    function buildDepositMethodOptions(methods) {
+        var groups = [];
+        var crypto = methods.filter(function(m){ return m.method_type === 'crypto'; });
+        var bank = methods.filter(function(m){ return m.method_type === 'bank'; });
+        var card = methods.filter(function(m){ return m.method_type === 'card'; });
+        function opt(m) {
+            var label = m.method_type === 'crypto'
+                ? ((m.display_name || m.symbol) + ' (' + m.symbol + ')')
+                : (m.label || m.display_name || (m.method_type === 'bank' ? 'Bank Transfer' : 'Card'));
+            return '<option value="' + m.id + '" data-type="' + m.method_type + '"' + (m.method_type === 'crypto' ? ' data-symbol="' + (m.symbol || '') + '" data-coin-key="' + (m.coin_key || '') + '"' : '') + '>' + label + '</option>';
+        }
+        var html = '';
+        if (crypto.length) html += '<optgroup label="Crypto">' + crypto.map(opt).join('') + '</optgroup>';
+        if (bank.length) html += '<optgroup label="Bank Transfer">' + bank.map(opt).join('') + '</optgroup>';
+        if (card.length) html += '<optgroup label="Card">' + card.map(opt).join('') + '</optgroup>';
+        return html || '<option value="">No payment methods configured</option>';
+    }
+
+    function renderBankDetails(el, m) {
+        if (!el || !m) return;
+        var rows = [
+            ['Bank', m.bank_name],
+            ['Account Name', m.account_name],
+            ['Account Number', m.account_number],
+            ['Routing', m.routing_number],
+            ['SWIFT', m.swift_code],
+            ['IBAN', m.iban],
+            ['Branch', m.bank_branch],
+            ['Address', m.bank_address],
+            ['Notes', m.bank_notes]
+        ].filter(function(r){ return r[1]; });
+        el.innerHTML = rows.map(function(r){
+            return '<div class="flex justify-between gap-3 py-1 border-b border-slate-200/60 dark:border-zinc-700/60 last:border-0"><span class="text-slate-500 shrink-0">' + r[0] + '</span><span class="font-semibold text-right break-all">' + String(r[1]).replace(/</g,'&lt;') + '</span></div>';
+        }).join('');
+    }
+
+    function renderCardDetails(el, m) {
+        if (!el || !m) return;
+        var brand = (m.card_brand || 'card').toUpperCase();
+        var rows = [
+            ['Brand', brand],
+            ['Cardholder', m.card_holder_name],
+            ['Card Number', m.card_number],
+            ['Expiry', m.card_expiry]
+        ].filter(function(r){ return r[1]; });
+        el.innerHTML = rows.map(function(r){
+            return '<div class="flex justify-between gap-3 py-1 border-b border-slate-200/60 dark:border-zinc-700/60 last:border-0"><span class="text-slate-500 shrink-0">' + r[0] + '</span><span class="font-semibold text-right break-all">' + String(r[1]).replace(/</g,'&lt;') + '</span></div>';
+        }).join('');
+    }
+
+    function syncWithdrawMethodUI() {
+        var method = (document.getElementById('withdraw-method') || {}).value || 'crypto';
+        document.getElementById('withdraw-crypto-fields').classList.toggle('hidden', method !== 'crypto');
+        document.getElementById('withdraw-bank-fields').classList.toggle('hidden', method !== 'bank');
+        document.getElementById('withdraw-card-fields').classList.toggle('hidden', method !== 'card');
+        if (method !== 'crypto') {
+            var quote = document.getElementById('withdraw-coin-quote');
+            if (quote) quote.textContent = '—';
+        } else {
+            updateWithdrawCoinQuote();
+        }
+    }
+
+    // Load payment methods for both drawers
     var urlAction = (function(){ var m = window.location.search.match(/[?&]action=([^&]+)/); return m ? m[1] : null; })();
     fetch('/api/addresses.php').then(function(r){ return r.json(); }).then(function(d){
-        if (d.success && d.addresses && d.addresses.length > 0) {
-            addressesData = d.addresses;
+        if (d.success && d.methods && d.methods.length > 0) {
+            paymentMethodsData.all = d.methods;
+            paymentMethodsData.crypto = d.crypto || d.addresses || [];
+            paymentMethodsData.bank = d.bank || [];
+            paymentMethodsData.card = d.card || [];
+            addressesData = paymentMethodsData.crypto;
             var depositSelect = document.getElementById('deposit-currency');
+            if (depositSelect) depositSelect.innerHTML = buildDepositMethodOptions(d.methods);
             var withdrawSelect = document.getElementById('withdraw-currency');
-            var depositOptions = d.addresses.map(function(a){
-                return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ')</option>';
-            }).join('');
-            if (depositSelect) depositSelect.innerHTML = depositOptions;
-            var withdrawOptions = d.addresses.map(function(a){
+            var withdrawOptions = paymentMethodsData.crypto.map(function(a){
                 return '<option value="' + (a.symbol || '').toUpperCase() + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || a.symbol) + ' (' + (a.symbol || '') + ')</option>';
             }).join('');
             if (withdrawSelect) {
-                withdrawSelect.innerHTML = withdrawOptions || '<option value="">No payout currencies configured</option>';
+                withdrawSelect.innerHTML = withdrawOptions || '<option value="">No crypto payout currencies</option>';
                 updateWithdrawBalance();
                 updateWithdrawCoinQuote();
+            }
+            var withdrawMethodSel = document.getElementById('withdraw-method');
+            if (withdrawMethodSel) {
+                withdrawMethodSel.querySelector('option[value="bank"]').disabled = paymentMethodsData.bank.length === 0;
+                withdrawMethodSel.querySelector('option[value="card"]').disabled = paymentMethodsData.card.length === 0;
+                syncWithdrawMethodUI();
             }
             // Auto-open drawer if redirected from dashboard with action param
             if (urlAction === 'deposit' && depositDrawer) {
@@ -507,16 +647,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateDepositCoinQuote() {
         var amountUsd = parseFloat(document.getElementById('deposit-amount').value) || 0;
-        var currency = document.getElementById('deposit-currency').value;
+        var pm = getSelectedDepositMethod();
         var el = document.getElementById('deposit-coin-quote');
         if (!el) return;
-        if (!currency || amountUsd <= 0) { el.textContent = '—'; return; }
+        if (!pm || amountUsd <= 0) { el.textContent = '—'; return; }
+        if (pm.method_type !== 'crypto') {
+            el.textContent = 'Deposit amount: $' + amountUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
+            return;
+        }
+        var currency = pm.symbol || '';
         el.textContent = 'Fetching rate…';
-        var coinKey = (function(){
-            var sel = document.getElementById('deposit-currency');
-            if (!sel || !sel.options[sel.selectedIndex]) return null;
-            return sel.options[sel.selectedIndex].getAttribute('data-coin-key') || null;
-        })();
+        var coinKey = pm.coin_key || null;
         if (!coinKey && window.BloombitCryptoConfig && window.BloombitCryptoConfig.getCoinIdBySymbol) {
             coinKey = window.BloombitCryptoConfig.getCoinIdBySymbol(currency);
         }
@@ -549,11 +690,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.getElementById('deposit-submit-btn').addEventListener('click', function(){
-        var currency = document.getElementById('deposit-currency').value;
+        var pm = getSelectedDepositMethod();
         var amountUsd = parseFloat(document.getElementById('deposit-amount').value) || 0;
         var errEl = document.getElementById('deposit-error');
-        if (!currency || amountUsd <= 0) {
-            errEl.textContent = 'Please enter a USD amount and select a currency';
+        if (!pm || amountUsd <= 0) {
+            errEl.textContent = 'Please enter a USD amount and select a payment method';
             errEl.classList.remove('hidden');
             return;
         }
@@ -561,7 +702,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/user/deposit.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ currency: currency, amount_usd: amountUsd })
+            body: JSON.stringify({ payment_method_id: pm.id, amount_usd: amountUsd })
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
                 currentDepositTxId = res.data && res.data.transaction_id ? res.data.transaction_id : null;
@@ -609,11 +750,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 tickCountdown();
                 depositCountdownIv = setInterval(tickCountdown, 1000);
 
-                var addr = addressesData ? addressesData.find(function(a){ return (a.symbol || '').toUpperCase() === (currency || '').toUpperCase(); }) : null;
-                document.getElementById('deposit-address-display').value = addr ? addr.address : '';
-                document.getElementById('deposit-selected-currency').textContent = currency;
-                var coinAmt = res.data && res.data.coin_amount != null ? res.data.coin_amount : amountUsd;
-                document.getElementById('deposit-selected-amount').textContent = (typeof coinAmt === 'number' ? coinAmt.toFixed(8) : coinAmt) + ' ' + currency;
+                pm = (res.data && res.data.payment_method) ? res.data.payment_method : pm;
+                var cryptoWrap = document.getElementById('deposit-crypto-address-wrap');
+                var bankWrap = document.getElementById('deposit-bank-details-wrap');
+                var cardWrap = document.getElementById('deposit-card-details-wrap');
+                if (cryptoWrap) cryptoWrap.classList.toggle('hidden', pm.method_type !== 'crypto');
+                if (bankWrap) bankWrap.classList.toggle('hidden', pm.method_type !== 'bank');
+                if (cardWrap) cardWrap.classList.toggle('hidden', pm.method_type !== 'card');
+
+                if (pm.method_type === 'crypto') {
+                    document.getElementById('deposit-address-display').value = pm.wallet_address || pm.address || '';
+                } else if (pm.method_type === 'bank') {
+                    renderBankDetails(bankWrap, pm);
+                } else if (pm.method_type === 'card') {
+                    renderCardDetails(cardWrap, pm);
+                }
+
+                var step2Instructions = document.getElementById('deposit-step2-instructions');
+                if (step2Instructions) {
+                    if (pm.method_type === 'crypto') {
+                        step2Instructions.textContent = 'Please send your funds to the address below. Your deposit will be credited after admin approval.';
+                    } else if (pm.method_type === 'bank') {
+                        step2Instructions.textContent = 'Transfer funds to the bank account below. Your deposit will be credited after admin approval.';
+                    } else {
+                        step2Instructions.textContent = 'Complete payment using the card details below. Your deposit will be credited after admin approval.';
+                    }
+                }
+
+                var methodLabel = pm.method_type === 'crypto'
+                    ? (pm.symbol || 'Crypto')
+                    : (pm.label || pm.display_name || (pm.method_type === 'bank' ? 'Bank Transfer' : 'Card'));
+                document.getElementById('deposit-selected-currency').textContent = methodLabel;
+                if (pm.method_type === 'crypto') {
+                    var currency = pm.symbol || '';
+                    var coinAmt = res.data && res.data.coin_amount != null ? res.data.coin_amount : amountUsd;
+                    document.getElementById('deposit-selected-amount').textContent = (typeof coinAmt === 'number' ? coinAmt.toFixed(8) : coinAmt) + ' ' + currency;
+                } else {
+                    document.getElementById('deposit-selected-amount').textContent = '$' + amountUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
+                }
                 depositStep1.classList.add('hidden');
                 depositStep2.classList.remove('hidden');
                 if (depositIHavePaidBtn) depositIHavePaidBtn.classList.remove('hidden');
@@ -649,6 +823,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (withdrawBtn && withdrawDrawer) {
         withdrawBtn.addEventListener('click', function(){ 
             if (withdrawDrawer) {
+                syncWithdrawMethodUI();
                 openDrawer(withdrawDrawer); 
                 updateWithdrawBalance();
                 updateWithdrawCoinQuote();
@@ -710,18 +885,71 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('withdraw-currency')) {
         document.getElementById('withdraw-currency').addEventListener('change', function(){ updateWithdrawBalance(); updateWithdrawCoinQuote(); });
     }
+    var withdrawMethodEl = document.getElementById('withdraw-method');
+    if (withdrawMethodEl) withdrawMethodEl.addEventListener('change', syncWithdrawMethodUI);
     document.getElementById('withdrawal-form').addEventListener('submit', function(e){
         e.preventDefault();
-        var currency = document.getElementById('withdraw-currency').value;
+        var method = (document.getElementById('withdraw-method') || {}).value || 'crypto';
         var amountUsd = parseFloat(document.getElementById('withdraw-amount').value) || 0;
-        var address = document.getElementById('withdraw-address').value.trim();
         var msgEl = document.getElementById('withdrawal-message');
-        if (!currency || amountUsd <= 0 || !address) {
-            msgEl.textContent = 'Please fill all fields';
-            msgEl.className = 'text-sm text-red-500';
-            msgEl.classList.remove('hidden');
-            return;
+        var payload = { withdrawal_method: method, amount_usd: amountUsd };
+
+        if (method === 'crypto') {
+            var currency = document.getElementById('withdraw-currency').value;
+            var address = document.getElementById('withdraw-address').value.trim();
+            if (!currency || amountUsd <= 0 || !address) {
+                msgEl.textContent = 'Please fill all fields';
+                msgEl.className = 'text-sm text-red-500';
+                msgEl.classList.remove('hidden');
+                return;
+            }
+            payload.currency = currency;
+            payload.address = address;
+        } else if (method === 'bank') {
+            var bankName = (document.getElementById('withdraw-bank-name') || {}).value.trim();
+            var accountName = (document.getElementById('withdraw-account-name') || {}).value.trim();
+            var accountNumber = (document.getElementById('withdraw-account-number') || {}).value.trim();
+            var routingNumber = (document.getElementById('withdraw-routing-number') || {}).value.trim();
+            var swiftIban = (document.getElementById('withdraw-swift-iban') || {}).value.trim();
+            if (!bankName || !accountName || !accountNumber || amountUsd <= 0) {
+                msgEl.textContent = 'Bank name, account name, account number, and amount are required';
+                msgEl.className = 'text-sm text-red-500';
+                msgEl.classList.remove('hidden');
+                return;
+            }
+            var payoutDetails = {
+                bank_name: bankName,
+                account_name: accountName,
+                account_number: accountNumber
+            };
+            if (routingNumber) payoutDetails.routing_number = routingNumber;
+            if (swiftIban) {
+                if (/^[A-Z]{2}[0-9A-Z]{13,32}$/i.test(swiftIban.replace(/\s/g, ''))) {
+                    payoutDetails.iban = swiftIban.replace(/\s/g, '');
+                } else {
+                    payoutDetails.swift_code = swiftIban;
+                }
+            }
+            payload.payout_details = payoutDetails;
+        } else {
+            var cardBrand = (document.getElementById('withdraw-card-brand') || {}).value;
+            var cardNumber = ((document.getElementById('withdraw-card-number') || {}).value || '').replace(/\D/g, '');
+            var cardHolder = (document.getElementById('withdraw-card-holder') || {}).value.trim();
+            var cardExpiry = (document.getElementById('withdraw-card-expiry') || {}).value.trim();
+            if (!cardBrand || !cardNumber || amountUsd <= 0) {
+                msgEl.textContent = 'Card brand, card number, and amount are required';
+                msgEl.className = 'text-sm text-red-500';
+                msgEl.classList.remove('hidden');
+                return;
+            }
+            payload.payout_details = {
+                card_brand: cardBrand,
+                card_number: cardNumber,
+                card_holder_name: cardHolder || undefined,
+                card_expiry: cardExpiry || undefined
+            };
         }
+
         msgEl.classList.add('hidden');
         var maxWithdrawLimitEl = document.getElementById('withdraw-max-limit');
         var maxWithdrawLimitUsd = parseFloat(maxWithdrawLimitEl ? maxWithdrawLimitEl.textContent : '') || 0;
@@ -746,7 +974,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/user/withdraw.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ withdrawal_method: 'crypto', currency: currency, amount_usd: amountUsd, address: address })
+            body: JSON.stringify(payload)
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
                 msgEl.textContent = res.data.message || 'Withdrawal request submitted';
