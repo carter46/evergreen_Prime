@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/helpers.php';
 $siteName = get_site_name();
 $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
+$accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,19 +12,18 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 <?php require_once __DIR__ . '/includes/marketing-head.php'; ?>
 <style>
 .home-account-section { position: relative; }
-.home-account-sticky {
-  position: sticky;
-  top: 3.5rem;
-  height: calc(100vh - 3.5rem);
-  min-height: 32rem;
+.home-account-scroll-runway { position: relative; }
+.home-account-sticky-frame {
+  display: flex;
+  flex-direction: column;
 }
 .home-account-tab {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 0.5rem 0 0.5rem 1rem;
+  padding: 0.75rem 0 0.75rem 1.25rem;
   border-left: 4px solid transparent;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: #666;
   transition: color 0.2s, border-color 0.2s;
 }
@@ -34,34 +34,81 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
   font-weight: 700;
 }
 .home-account-panel {
-  min-height: calc(100vh - 3.5rem);
-  padding: 3rem 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  opacity: 0.25;
-  transform: translateY(2rem);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  padding: 2rem 0;
 }
-.home-account-panel.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+@media (min-width: 1024px) {
+  .home-account-scroll-runway {
+    height: calc((100vh - 3.5rem) * 4);
+  }
+  .home-account-sticky-frame {
+    position: sticky;
+    top: 3.5rem;
+    height: calc(100vh - 3.5rem);
+    min-height: 28rem;
+  }
+  .home-account-sticky-frame > .home-account-grid {
+    height: 100%;
+  }
+  .home-account-tab-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+  }
+  .home-account-tab-nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.75rem;
+    border-left: 2px solid #f3f4f6;
+  }
+  .home-account-panels-stage {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+  }
+  .home-account-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.5rem 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(1.5rem);
+    transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s;
+    pointer-events: none;
+  }
+  .home-account-panel.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .home-account-image-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+  .home-account-image-wrap {
+    width: 100%;
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .home-account-image-wrap.is-visible {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
-.home-account-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  opacity: 0;
-  transition: opacity 0.6s ease;
-  pointer-events: none;
-}
-.home-account-image.is-active { opacity: 1; }
 @media (max-width: 1023px) {
-  .home-account-sticky { position: relative; top: 0; height: auto; min-height: 0; }
-  .home-account-panel { min-height: auto; padding: 2rem 0; opacity: 1; transform: none; }
-  .home-account-image-wrap { min-height: 16rem; margin-top: 1.5rem; }
+  .home-account-panel + .home-account-panel {
+    border-top: 1px solid #f3f4f6;
+    margin-top: 1rem;
+    padding-top: 2.5rem;
+  }
 }
 </style>
 </head>
@@ -90,19 +137,18 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 
 <!-- BEGIN: AccountSelectorSection (scroll tabs) -->
 <section class="home-account-section bg-white" id="home-account-section">
-<div class="mx-auto px-4 max-w-6xl">
-<div class="lg:grid lg:grid-cols-12 lg:gap-10">
+<div class="home-account-scroll-runway">
+<div class="home-account-sticky-frame">
+<div class="mx-auto px-4 max-w-6xl h-full home-account-grid lg:grid lg:grid-cols-12 lg:gap-10">
 
-<!-- Tab nav (sticky on desktop) -->
-<div class="lg:col-span-3 hidden lg:block">
-<div class="home-account-sticky pt-8">
-<nav class="space-y-1 border-l-2 border-gray-100" aria-label="Account goals">
+<!-- Tab nav (desktop — vertically centered) -->
+<div class="home-account-tab-col lg:col-span-3 hidden lg:block">
+<nav class="home-account-tab-nav" aria-label="Account goals">
 <button type="button" class="home-account-tab is-active" data-account-tab="investing">Start investing</button>
 <button type="button" class="home-account-tab" data-account-tab="retirement">Save for retirement</button>
 <button type="button" class="home-account-tab" data-account-tab="healthcare">Save for health care</button>
 <button type="button" class="home-account-tab" data-account-tab="education">Invest for a child</button>
 </nav>
-</div>
 </div>
 
 <!-- Mobile tab nav -->
@@ -113,8 +159,8 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 <button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-account-tab="education">For a child</button>
 </nav>
 
-<!-- Scrollable content panels -->
-<div class="lg:col-span-5" id="home-account-panels">
+<!-- Content panels (one visible at a time on desktop) -->
+<div class="lg:col-span-5 home-account-panels-stage" id="home-account-panels">
 
 <article class="home-account-panel is-visible" data-account-panel="investing" id="panel-investing">
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Invest smart from the start with a brokerage account</h2>
@@ -137,7 +183,7 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 <a class="text-fidelityGreen font-bold hover:underline" href="/investing">Explore ways to invest</a>
 </div>
 <div class="lg:hidden mt-8 rounded-2xl overflow-hidden bg-fidelityLightGreen p-4">
-<img alt="<?php echo htmlspecialchars($siteName); ?> App" class="rounded-xl shadow-lg w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA">
+<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-xl shadow-lg w-full" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
 </article>
 
@@ -161,8 +207,8 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open a Roth IRA</a>
 <a class="text-fidelityGreen font-bold hover:underline" href="/planning">Explore retirement planning</a>
 </div>
-<div class="lg:hidden mt-8 rounded-2xl overflow-hidden">
-<img alt="Roth IRA" class="rounded-lg shadow-sm w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDY3iqufo2KD57yEPGm4rXJ227VAhC0aUplFZJy6Qbx-yvsd74PYZjLppio9NDPIeZCPSAXK2muoBGBO_bL4xMdO6u6UcVtlgMymzRFgQnGW7Sg_YVkSaagnuCNhn-BD25bJTRON00EpHPfAUVYIkDeSo1salecSpJpIc9K9Bdm0RKblapyV6YCtuJTsfJM5k_oHskXUeHHtQceBKP4gmhWEcYSm09rXv3PDJhAMI5zvP5vt_JnYH0z6g">
+<div class="lg:hidden mt-8 rounded-2xl overflow-hidden bg-fidelityLightGreen p-4">
+<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-xl shadow-lg w-full" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
 </article>
 
@@ -186,8 +232,8 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open an HSA</a>
 <a class="text-fidelityGreen font-bold hover:underline" href="#">Explore health savings</a>
 </div>
-<div class="lg:hidden mt-8 rounded-2xl overflow-hidden">
-<img alt="HSA" class="rounded-lg shadow-sm w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8ciWYMIH8LaIoT1_SlnTnSh0Qhuu0cN0dyKiNhwqoQ-9o-9vP8PBC25hkwOiJDqs9Hsn9DFAU3MchWg-JRyE5MIbpoh6ILqo1snva0YjAJDBBPNug0HP2HFLIJpRCbkg4skiwwWVTGbWyCPiswRrULzaAydUQByEk4UMFIlhJh3S_930yfsiFD3gLi6aQjSwKeNYnvpHz_tn2wu6sM_pdtrhw0wILDoFcviV-BSp5FkFwrOql_k8Arw">
+<div class="lg:hidden mt-8 rounded-2xl overflow-hidden bg-fidelityLightGreen p-4">
+<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-xl shadow-lg w-full" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
 </article>
 
@@ -211,27 +257,21 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open a 529 account</a>
 <a class="text-fidelityGreen font-bold hover:underline" href="/planning">Explore saving for a child</a>
 </div>
-<div class="lg:hidden mt-8 rounded-2xl overflow-hidden">
-<img alt="529 education" class="rounded-lg shadow-sm w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFZ6IgNIGjVyf4zoO6M1BJvh9BZsxKdjH277DJq9mKH5SX2-VWDPhnCMHRGrY-CPpcP5Xl02h8ii5-_95Y6uRah9kdoKkhmLc8b-VMHu2Pd42d4-3qjijK2wZmy53whrWSdoVspcZWBYg3M5cQZaOzoUq2vNTuw548O9rPmLvotQwsX2ntz3KgAk-zdHIw-QAy2wIwuKFje29-ovdzAwpOgV3FA1CgeGvimNXdh13HmwAeuOG7EOg_sA">
+<div class="lg:hidden mt-8 rounded-2xl overflow-hidden bg-fidelityLightGreen p-4">
+<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-xl shadow-lg w-full" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
 </article>
 
 </div>
 
-<!-- Sticky images (desktop) -->
-<div class="lg:col-span-4 hidden lg:block">
-<div class="home-account-sticky pt-8">
-<div class="relative h-full min-h-[20rem] home-account-image-wrap">
-<div class="bg-fidelityLightGreen rounded-3xl p-6 h-full relative overflow-hidden">
-<img alt="<?php echo htmlspecialchars($siteName); ?> App" class="home-account-image is-active rounded-2xl shadow-2xl object-cover w-full h-auto" data-account-image="investing" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA">
-<img alt="Roth IRA" class="home-account-image rounded-lg shadow-sm object-cover w-full h-full" data-account-image="retirement" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDY3iqufo2KD57yEPGm4rXJ227VAhC0aUplFZJy6Qbx-yvsd74PYZjLppio9NDPIeZCPSAXK2muoBGBO_bL4xMdO6u6UcVtlgMymzRFgQnGW7Sg_YVkSaagnuCNhn-BD25bJTRON00EpHPfAUVYIkDeSo1salecSpJpIc9K9Bdm0RKblapyV6YCtuJTsfJM5k_oHskXUeHHtQceBKP4gmhWEcYSm09rXv3PDJhAMI5zvP5vt_JnYH0z6g">
-<img alt="HSA" class="home-account-image rounded-lg shadow-sm object-cover w-full h-full" data-account-image="healthcare" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8ciWYMIH8LaIoT1_SlnTnSh0Qhuu0cN0dyKiNhwqoQ-9o-9vP8PBC25hkwOiJDqs9Hsn9DFAU3MchWg-JRyE5MIbpoh6ILqo1snva0YjAJDBBPNug0HP2HFLIJpRCbkg4skiwwWVTGbWyCPiswRrULzaAydUQByEk4UMFIlhJh3S_930yfsiFD3gLi6aQjSwKeNYnvpHz_tn2wu6sM_pdtrhw0wILDoFcviV-BSp5FkFwrOql_k8Arw">
-<img alt="529 education savings" class="home-account-image rounded-lg shadow-sm object-cover w-full h-full" data-account-image="education" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFZ6IgNIGjVyf4zoO6M1BJvh9BZsxKdjH277DJq9mKH5SX2-VWDPhnCMHRGrY-CPpcP5Xl02h8ii5-_95Y6uRah9kdoKkhmLc8b-VMHu2Pd42d4-3qjijK2wZmy53whrWSdoVspcZWBYg3M5cQZaOzoUq2vNTuw548O9rPmLvotQwsX2ntz3KgAk-zdHIw-QAy2wIwuKFje29-ovdzAwpOgV3FA1CgeGvimNXdh13HmwAeuOG7EOg_sA">
-</div>
-</div>
+<!-- Image (desktop — single shared image, fades in with panel) -->
+<div class="home-account-image-col lg:col-span-4 hidden lg:flex">
+<div class="home-account-image-wrap is-visible w-full bg-fidelityLightGreen rounded-3xl p-6">
+<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
 </div>
 
+</div>
 </div>
 </div>
 </section>
@@ -342,13 +382,17 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 
 <script>
 (function () {
+    var section = document.getElementById('home-account-section');
+    var runway = section ? section.querySelector('.home-account-scroll-runway') : null;
     var tabs = document.querySelectorAll('.home-account-tab');
     var mobileTabs = document.querySelectorAll('.home-account-tab-mobile');
     var panels = document.querySelectorAll('.home-account-panel');
-    var images = document.querySelectorAll('.home-account-image');
+    var imageWrap = document.querySelector('.home-account-image-wrap');
     var panelIds = ['investing', 'retirement', 'healthcare', 'education'];
+    var stickyTop = 56;
+    var isDesktop = function () { return window.matchMedia('(min-width: 1024px)').matches; };
 
-    function setActive(id, scroll) {
+    function setActive(id) {
         tabs.forEach(function (t) {
             t.classList.toggle('is-active', t.getAttribute('data-account-tab') === id);
         });
@@ -363,35 +407,67 @@ $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
         panels.forEach(function (p) {
             p.classList.toggle('is-visible', p.getAttribute('data-account-panel') === id);
         });
-        images.forEach(function (img) {
-            img.classList.toggle('is-active', img.getAttribute('data-account-image') === id);
-        });
-        if (scroll) {
+    }
+
+    function scrollOffsetForIndex(index) {
+        if (!runway) return 0;
+        var viewportH = window.innerHeight - stickyTop;
+        var maxScroll = runway.offsetHeight - viewportH;
+        if (maxScroll <= 0) return 0;
+        return Math.round(maxScroll * (index / (panelIds.length - 1)));
+    }
+
+    function getActiveIndexFromScroll() {
+        if (!runway) return 0;
+        var viewportH = window.innerHeight - stickyTop;
+        var rect = runway.getBoundingClientRect();
+        var scrolled = Math.max(0, -rect.top);
+        var index = Math.floor((scrolled + viewportH * 0.35) / viewportH);
+        return Math.max(0, Math.min(panelIds.length - 1, index));
+    }
+
+    function scrollToPanel(id) {
+        if (!isDesktop() || !runway) {
             var el = document.getElementById('panel-' + id);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
         }
+        var index = panelIds.indexOf(id);
+        if (index < 0) return;
+        var top = runway.getBoundingClientRect().top + window.scrollY + scrollOffsetForIndex(index);
+        window.scrollTo({ top: top, behavior: 'smooth' });
     }
 
     tabs.forEach(function (tab) {
         tab.addEventListener('click', function () {
-            setActive(tab.getAttribute('data-account-tab'), true);
+            var id = tab.getAttribute('data-account-tab');
+            setActive(id);
+            scrollToPanel(id);
         });
     });
     mobileTabs.forEach(function (tab) {
         tab.addEventListener('click', function () {
-            setActive(tab.getAttribute('data-account-tab'), true);
+            var id = tab.getAttribute('data-account-tab');
+            setActive(id);
+            scrollToPanel(id);
         });
     });
 
-    if (panels.length && window.matchMedia('(min-width: 1024px)').matches) {
-        var observer = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting && entry.intersectionRatio >= 0.35) {
-                    setActive(entry.target.getAttribute('data-account-panel'), false);
-                }
-            });
-        }, { root: null, rootMargin: '-35% 0px -35% 0px', threshold: [0, 0.35, 0.5, 0.75, 1] });
-        panels.forEach(function (panel) { observer.observe(panel); });
+    var ticking = false;
+    function onScroll() {
+        if (!isDesktop() || !runway) return;
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(function () {
+            setActive(panelIds[getActiveIndexFromScroll()]);
+            ticking = false;
+        });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    if (isDesktop()) {
+        setActive(panelIds[getActiveIndexFromScroll()]);
     }
 })();
 </script>

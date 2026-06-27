@@ -45,7 +45,7 @@ $navClass = function ($page) use ($current) {
 <!-- BEGIN: MainNavigation -->
 <header id="main-navigation" class="sticky top-0 z-50 shadow-sm bg-fidelityGreen">
 <div class="mx-auto px-4 flex items-center h-14 max-w-6xl gap-4">
-<nav class="hidden lg:flex flex-1 items-center justify-evenly fidelity-nav-text text-white min-w-0">
+<nav class="hidden lg:flex flex-1 items-center justify-start gap-10 fidelity-nav-text text-white min-w-0">
 <a class="<?php echo $navClass('home'); ?>" href="/">Home</a>
 <a class="<?php echo $navClass('investing'); ?>" href="/investing">Investing</a>
 <a class="<?php echo $navClass('planning'); ?>" href="/planning">Retirement</a>
