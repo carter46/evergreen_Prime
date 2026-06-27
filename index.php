@@ -3,6 +3,13 @@ require_once __DIR__ . '/includes/helpers.php';
 $siteName = get_site_name();
 $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA';
+$heroSlides = [
+    '/uploads/images/nasa-Q1p7bh3SHj8-unsplash.jpg',
+    '/uploads/images/bloombit.jpg',
+    '/uploads/images/evergren_cmarket.png',
+    '/uploads/images/wallet_image3.png',
+    '/uploads/images/evergren_mockup.png',
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,15 +40,37 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
   transform: translateX(-50%);
   z-index: 1;
 }
+.hero-slider__slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+.hero-slider__slide.is-active {
+  opacity: 1;
+}
+@media (max-width: 1023px) {
+  .account-timeline__heading {
+    border-left: 4px solid #337722;
+    padding-left: 1rem;
+  }
+}
 </style>
 </head>
 <body class="fidelity-homepage bg-white text-fidelityDark overflow-x-hidden">
 <?php $currentPage = 'home'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 
 <!-- BEGIN: HeroSection -->
-<section class="relative h-[500px] bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDbM31HCVx6ysE9wVDhMXr1U63qboojZDtUXf73Qvgv530A03SthuSjWuxijfKcKoQLMLrQKIytflMVkUxiGjhEh2rONrIlnCYEWddGjF2SXM5dps7rCX8a9zSec4ezTgmFsP1-7Rl-CA27NiGz8e1AkuzxXTvbJ0Zga_gEmDMtUEQWmnIuhb198t9W9D9BdjnPS6ofngxbaa3lsH-MIUMTVYHVQ-PXGzy7ZqCUktyhdgrwOp63ifjpUw');">
-<div class="absolute inset-0 bg-black/10"></div>
-<div class="mx-auto px-4 h-full flex items-center relative z-10 max-w-6xl">
+<section class="hero-slider relative h-[280px] lg:h-[420px] overflow-hidden" aria-label="Featured highlights">
+<div class="absolute inset-0" aria-hidden="true">
+<?php foreach ($heroSlides as $i => $slide): ?>
+<div class="hero-slider__slide<?php echo $i === 0 ? ' is-active' : ''; ?>" style="background-image: url('<?php echo htmlspecialchars($slide); ?>');"></div>
+<?php endforeach; ?>
+</div>
+<div class="absolute inset-0 bg-black/20" aria-hidden="true"></div>
+<div class="hidden lg:flex mx-auto px-4 h-full items-center relative z-10 max-w-6xl">
 <div class="bg-white/95 p-10 max-w-lg shadow-xl">
 <h1 class="text-4xl mb-4 leading-tight">Invest today and plan for tomorrow</h1>
 <p class="text-gray-600 mb-8">We can help you get started.</p>
@@ -51,12 +80,23 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 </div>
 </div>
 </div>
-<!-- Man in yellow jacket visual position indicator -->
-<div class="absolute right-1/4 bottom-10">
-<div class="w-20 h-40 bg-yellow-400/20 rounded-full blur-xl"></div>
-</div>
 </section>
 <!-- END: HeroSection -->
+
+<!-- BEGIN: HeroMobileCta -->
+<section class="lg:hidden bg-white border-b border-gray-100">
+<div class="mx-auto px-4 py-8 max-w-6xl">
+<div class="bg-white p-6 shadow-md border border-gray-100">
+<h1 class="text-3xl mb-3 leading-tight">Invest today and plan for tomorrow</h1>
+<p class="text-gray-600 mb-6">We can help you get started.</p>
+<div class="flex flex-col sm:flex-row gap-3">
+<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold text-center hover:bg-fidelityGreenHover transition-colors" href="/register">Open an account</a>
+<a class="border-2 border-fidelityDark text-fidelityDark px-8 py-3 rounded-full font-bold text-center hover:bg-gray-100 transition-colors" href="/planning">I need guidance</a>
+</div>
+</div>
+</div>
+</section>
+<!-- END: HeroMobileCta -->
 
 <!-- BEGIN: AccountTimelineSection -->
 <section class="py-16 lg:py-24 bg-white" id="account-selector">
@@ -68,10 +108,12 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <!-- 1. Start investing — text left, image right -->
 <div class="relative pb-16 lg:pb-24 last:pb-0">
 <span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
-<div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-<div class="lg:pr-10">
+<div class="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+<div class="account-timeline__content order-2 lg:order-1 lg:pr-10">
+<div class="account-timeline__heading">
 <p class="text-fidelityGreen font-bold text-sm mb-3">Start investing</p>
-<h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Invest smart from the start with a brokerage account</h2>
+<h2 class="text-3xl lg:text-4xl mb-8 leading-tight lg:mb-8">Invest smart from the start with a brokerage account</h2>
+</div>
 <div class="space-y-6 mb-10">
 <div>
 <h3 class="font-bold text-lg mb-1">$0 account fees¹</h3>
@@ -91,7 +133,7 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <a class="text-fidelityGreen font-bold hover:underline" href="/investing">Explore ways to invest</a>
 </div>
 </div>
-<div class="mt-10 lg:mt-0 lg:pl-10">
+<div class="account-timeline__media order-1 lg:order-2 mb-8 lg:mb-0 lg:pl-10">
 <div class="bg-fidelityLightGreen rounded-3xl p-6">
 <img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
@@ -102,15 +144,17 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <!-- 2. Retirement — image left, text right -->
 <div class="relative pb-16 lg:pb-24 last:pb-0">
 <span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
-<div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-<div class="order-2 lg:order-1 mt-10 lg:mt-0 lg:pr-10">
+<div class="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+<div class="account-timeline__media order-1 lg:order-1 mb-8 lg:mb-0 lg:pr-10">
 <div class="bg-fidelityLightGreen rounded-3xl p-6">
 <img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
 </div>
-<div class="order-1 lg:order-2 lg:pl-10 lg:text-left">
+<div class="account-timeline__content order-2 lg:order-2 lg:pl-10">
+<div class="account-timeline__heading">
 <p class="text-fidelityGreen font-bold text-sm mb-3">Save for retirement</p>
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Plan for the possibilities ahead with a Roth IRA</h2>
+</div>
 <div class="space-y-6 mb-10">
 <div>
 <h3 class="font-bold text-lg mb-1">Tax savings</h3>
@@ -136,10 +180,12 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <!-- 3. Health care — text left, image right -->
 <div class="relative pb-16 lg:pb-24 last:pb-0">
 <span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
-<div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-<div class="lg:pr-10">
+<div class="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+<div class="account-timeline__content order-2 lg:order-1 lg:pr-10">
+<div class="account-timeline__heading">
 <p class="text-fidelityGreen font-bold text-sm mb-3">Save for health care</p>
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Save, earn, and invest for health care with an HSA</h2>
+</div>
 <div class="space-y-6 mb-10">
 <div>
 <h3 class="font-bold text-lg mb-1">Triple-tax advantage</h3>
@@ -159,7 +205,7 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <a class="text-fidelityGreen font-bold hover:underline" href="#">Explore health savings</a>
 </div>
 </div>
-<div class="mt-10 lg:mt-0 lg:pl-10">
+<div class="account-timeline__media order-1 lg:order-2 mb-8 lg:mb-0 lg:pl-10">
 <div class="bg-fidelityLightGreen rounded-3xl p-6">
 <img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
@@ -170,15 +216,17 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <!-- 4. Education — image left, text right -->
 <div class="relative pb-0">
 <span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
-<div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-<div class="order-2 lg:order-1 mt-10 lg:mt-0 lg:pr-10">
+<div class="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+<div class="account-timeline__media order-1 lg:order-1 mb-8 lg:mb-0 lg:pr-10">
 <div class="bg-fidelityLightGreen rounded-3xl p-6">
 <img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
 </div>
-<div class="order-1 lg:order-2 lg:pl-10">
+<div class="account-timeline__content order-2 lg:order-2 lg:pl-10">
+<div class="account-timeline__heading">
 <p class="text-fidelityGreen font-bold text-sm mb-3">Invest for a child</p>
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Save for the next generation's education with a 529 account</h2>
+</div>
 <div class="space-y-6 mb-10">
 <div>
 <h3 class="font-bold text-lg mb-1">Tax-smart savings</h3>
@@ -307,5 +355,17 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 
+<script>
+(function () {
+    var slides = document.querySelectorAll('.hero-slider__slide');
+    if (!slides.length) return;
+    var index = 0;
+    setInterval(function () {
+        slides[index].classList.remove('is-active');
+        index = (index + 1) % slides.length;
+        slides[index].classList.add('is-active');
+    }, 5000);
+})();
+</script>
 </body>
 </html>
