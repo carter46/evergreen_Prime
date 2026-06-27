@@ -77,6 +77,15 @@ $mobileNavClass = function ($page) use ($current) {
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
 </button>
 </div>
+<?php if (!$isLoggedIn): ?>
+<div class="px-4 py-3 border-b border-gray-100">
+<a class="block w-full text-center border border-fidelityGreen text-fidelityGreen px-6 py-2.5 rounded-full font-bold hover:bg-gray-50 transition-colors" href="/login">Log in</a>
+</div>
+<?php else: ?>
+<div class="px-4 py-3 border-b border-gray-100">
+<a class="block w-full text-center border border-fidelityGreen text-fidelityGreen px-6 py-2.5 rounded-full font-bold hover:bg-gray-50 transition-colors" href="/logout">Log out</a>
+</div>
+<?php endif; ?>
 <div class="p-4 border-b border-gray-100">
 <label class="sr-only" for="marketing-sidebar-search">Search</label>
 <div class="relative">
@@ -98,18 +107,9 @@ $mobileNavClass = function ($page) use ($current) {
 <li><a class="block py-2.5 text-base text-fidelityDark hover:text-fidelityGreen" href="/live_chat"><?php echo htmlspecialchars($siteName); ?> Assistant</a></li>
 <?php if ($isLoggedIn): ?>
 <li><a class="block py-2.5 text-base text-fidelityDark hover:text-fidelityGreen" href="/dashboard">Profile</a></li>
-<li><a class="block py-2.5 text-base text-fidelityDark hover:text-fidelityGreen" href="/logout">Log out</a></li>
-<?php else: ?>
-<li><a class="block py-2.5 text-base text-fidelityDark hover:text-fidelityGreen" href="/login">Profile</a></li>
-<li><a class="block py-2.5 text-base text-fidelityDark hover:text-fidelityGreen" href="/login">Log in</a></li>
 <?php endif; ?>
 </ul>
 </nav>
-<?php if (!$isLoggedIn): ?>
-<div class="p-4 border-t border-gray-100">
-<a class="block w-full text-center bg-fidelityGreen text-white px-6 py-3 rounded-full font-bold hover:bg-fidelityGreenHover transition-colors" href="/register">Open an account</a>
-</div>
-<?php endif; ?>
 </aside>
 <script>
 (function () {
