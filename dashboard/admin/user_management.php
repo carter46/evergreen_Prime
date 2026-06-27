@@ -307,8 +307,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
 <!-- User Wallet -->
 <div>
   <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Balance</h4>
-  <div id="drawer-total-balance" class="text-2xl font-bold text-emerald-600 mb-2">$0.00</div>
-  <div id="drawer-wallet-breakdown" class="text-sm text-slate-600 dark:text-slate-400 space-y-0.5 mb-4"></div>
+  <div id="drawer-total-balance" class="text-2xl font-bold text-emerald-600 mb-4">$0.00</div>
   <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 mt-4">Total Profit</h4>
   <div id="drawer-total-profit" class="text-xl font-bold text-emerald-500 mb-2">$0.00</div>
   <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 mt-4">Referral Bonus (earned)</h4>
@@ -330,15 +329,10 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
         <option value="debit">Debit</option>
       </select>
     </div>
-    <div id="drawer-adjust-currency-wrap">
-      <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Currency</label>
-      <select id="drawer-adjust-currency" class="w-full bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 text-sm">
-        <option value="">Loading...</option>
-      </select>
-    </div>
     <div>
-      <label id="drawer-adjust-amount-label" class="block text-xs font-bold text-slate-400 uppercase mb-1">Amount</label>
+      <label id="drawer-adjust-amount-label" class="block text-xs font-bold text-slate-400 uppercase mb-1">Amount (USD)</label>
       <input type="number" id="drawer-adjust-amount" step="any" min="0" class="w-full bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 text-sm" placeholder="0"/>
+      <p id="drawer-adjust-balance-hint" class="hidden text-xs text-slate-500 dark:text-zinc-400 mt-1">Credits or debits the user's USD wallet.</p>
       <p id="drawer-adjust-profit-hint" class="hidden text-xs text-slate-500 dark:text-zinc-400 mt-1">Stat-only change — does not affect wallet balance.</p>
     </div>
     <div id="drawer-adjust-error" class="text-sm text-red-500 hidden"></div>
@@ -383,54 +377,19 @@ var drawer = document.getElementById('user-profile-drawer');
 var backdrop = document.getElementById('user-drawer-backdrop');
 if (!drawer) return;
 
-var allCoinsCache = [];
-var currentUserWallet = [];
 function syncAdjustPlaceUI() {
   var place = (document.getElementById('drawer-adjust-place') || {}).value || 'balance';
-  var currencyWrap = document.getElementById('drawer-adjust-currency-wrap');
-  var amountLabel = document.getElementById('drawer-adjust-amount-label');
+  var balanceHint = document.getElementById('drawer-adjust-balance-hint');
   var profitHint = document.getElementById('drawer-adjust-profit-hint');
   var isStatOnly = place === 'profit' || place === 'referral';
-  if (currencyWrap) currencyWrap.classList.toggle('hidden', isStatOnly);
-  if (amountLabel) amountLabel.textContent = isStatOnly ? 'Amount (USD)' : 'Amount';
+  if (balanceHint) balanceHint.classList.toggle('hidden', isStatOnly);
   if (profitHint) {
     profitHint.classList.toggle('hidden', !isStatOnly);
     if (place === 'profit') profitHint.textContent = 'Profit changes do not affect wallet balance.';
     else if (place === 'referral') profitHint.textContent = 'Referral bonus (earned) changes do not affect wallet balance.';
     else profitHint.textContent = 'Stat-only change — does not affect wallet balance.';
   }
-  if (!isStatOnly) {
-    var typeSel = document.getElementById('drawer-adjust-type');
-    populateCurrencySelect(typeSel && typeSel.value === 'debit', currentUserWallet);
-  }
 }
-function populateCurrencySelect(isDebit, walletBalances) {
-  var sel = document.getElementById('drawer-adjust-currency');
-  if (!sel) return;
-  if (isDebit && walletBalances && walletBalances.length > 0) {
-    var withBalance = walletBalances.filter(function(b){ return (parseFloat(b.amount) || 0) > 0; });
-    if (withBalance.length === 0) { sel.innerHTML = '<option value="">No balance to debit</option>'; return; }
-    sel.innerHTML = withBalance.map(function(b){ return '<option value="'+b.currency+'">'+b.currency+' ('+parseFloat(b.amount).toFixed(4)+')</option>'; }).join('');
-  } else {
-    if (allCoinsCache.length > 0) {
-      sel.innerHTML = allCoinsCache.map(function(c){ return '<option value="'+c.symbol+'">'+c.display_name+' ('+c.symbol+')</option>'; }).join('');
-      return;
-    }
-    fetch('/api/admin/coins.php').then(function(r){ return r.json(); }).then(function(d){
-      if (d.success && d.coins && d.coins.length > 0) {
-        allCoinsCache = d.coins.filter(function(c){ return c.enabled; });
-        if (allCoinsCache.length === 0) allCoinsCache = [{symbol:'USD',display_name:'US Dollar'},{symbol:'USDT',display_name:'Tether'},{symbol:'BTC',display_name:'Bitcoin'},{symbol:'ETH',display_name:'Ethereum'}];
-      } else {
-        allCoinsCache = [{symbol:'USD',display_name:'US Dollar'},{symbol:'USDT',display_name:'Tether'},{symbol:'BTC',display_name:'Bitcoin'},{symbol:'ETH',display_name:'Ethereum'}];
-      }
-      sel.innerHTML = allCoinsCache.map(function(c){ return '<option value="'+c.symbol+'">'+c.display_name+' ('+c.symbol+')</option>'; }).join('');
-    }).catch(function(){ sel.innerHTML = '<option value="USD">USD</option><option value="USDT">USDT</option><option value="BTC">BTC</option>'; });
-  }
-}
-fetch('/api/admin/coins.php').then(function(r){ return r.json(); }).then(function(d){
-  if (d.success && d.coins) allCoinsCache = d.coins.filter(function(c){ return c.enabled; });
-  if (allCoinsCache.length === 0) allCoinsCache = [{symbol:'USD',display_name:'US Dollar'},{symbol:'USDT',display_name:'Tether'},{symbol:'BTC',display_name:'Bitcoin'},{symbol:'ETH',display_name:'Ethereum'}];
-}).catch(function(){});
 
 function openDrawer() { closeAddUserDrawer(); drawer.style.transform = 'translateX(0)'; if (backdrop) backdrop.classList.remove('hidden'); }
 function closeDrawer() { drawer.style.transform = 'translateX(100%)'; if (backdrop) backdrop.classList.add('hidden'); }
@@ -467,24 +426,6 @@ function loadUser(id) {
     if (totalProfitEl) totalProfitEl.textContent = '$' + (parseFloat(u.total_profit || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' USD';
     var totalReferralEl = document.getElementById('drawer-total-referral-bonus');
     if (totalReferralEl) totalReferralEl.textContent = '$' + (parseFloat(u.total_referral_bonus || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' USD';
-    var breakdownEl = document.getElementById('drawer-wallet-breakdown');
-    if (breakdownEl) {
-      var wb = (u.wallet_balances || []).filter(function(b){ return (parseFloat(b.amount) || 0) > 0; });
-      if (wb.length > 0) {
-        var fmtAmt = function(amt, cur) {
-          amt = parseFloat(amt);
-          if (amt <= 0) return '0';
-          if (['USD','USDT','USDC','BUSD'].indexOf(cur) >= 0) return '$' + amt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          if (amt >= 1000) return amt.toLocaleString('en-US', { maximumFractionDigits: 0 });
-          if (amt >= 1) return amt.toFixed(2);
-          if (amt >= 0.01) return amt.toFixed(4);
-          return amt.toFixed(6).replace(/\.?0+$/, '');
-        };
-        breakdownEl.innerHTML = wb.map(function(b){ return '<div class="flex justify-between"><span>'+b.currency+'</span><span>'+fmtAmt(b.amount, b.currency)+'</span></div>'; }).join('');
-      } else {
-        breakdownEl.innerHTML = '<span class="text-slate-400">No balances</span>';
-      }
-    }
     var adjustPanel = document.getElementById('drawer-adjust-panel');
     if (adjustPanel) adjustPanel.classList.add('hidden');
     var placeSel = document.getElementById('drawer-adjust-place');
@@ -494,9 +435,6 @@ function loadUser(id) {
     if (amountInput) amountInput.value = '';
     var errEl = document.getElementById('drawer-adjust-error');
     if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
-    currentUserWallet = u.wallet_balances || [];
-    var typeSel = document.getElementById('drawer-adjust-type');
-    populateCurrencySelect(typeSel && typeSel.value === 'debit', currentUserWallet);
 
     var inv = document.getElementById('drawer-investments');
     inv.innerHTML = '';
@@ -537,11 +475,6 @@ document.getElementById('drawer-adjust-balance-btn').addEventListener('click', f
   }
 });
 document.getElementById('drawer-adjust-place').addEventListener('change', syncAdjustPlaceUI);
-document.getElementById('drawer-adjust-type').addEventListener('change', function(){
-  var place = (document.getElementById('drawer-adjust-place') || {}).value;
-  if (place === 'profit' || place === 'referral') return;
-  populateCurrencySelect(this.value === 'debit', currentUserWallet);
-});
 function doPlanAction(action, invId, userId, confirmMsg) {
   if (!invId || !userId) return;
   if (confirmMsg && !confirm(confirmMsg)) return;
@@ -595,10 +528,8 @@ document.getElementById('drawer-adjust-go').addEventListener('click', function()
   } else if (place === 'referral') {
     payload.action = 'adjust_referral_bonus';
   } else {
-    var currency = document.getElementById('drawer-adjust-currency').value;
-    if (!currency) { if (errEl) { errEl.textContent = 'Select a currency'; errEl.classList.remove('hidden'); } return; }
     payload.action = 'adjust_balance';
-    payload.currency = currency;
+    payload.currency = 'USD';
   }
   fetch('/api/admin/users.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     .then(function(r){ return r.json(); })

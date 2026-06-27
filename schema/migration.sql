@@ -666,3 +666,39 @@ SET @sql = IF(@col_exists = 0,
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- ---------------------------------------------------------------------------
+-- One-time: merge legacy stablecoin wallet rows into centralized USD balance
+-- (USDT, USDC, BUSD, DAI → single USD row per user). Safe to re-run (idempotent).
+-- Does NOT convert volatile coins (BTC, ETH, etc.) — handle those manually if any exist.
+-- ---------------------------------------------------------------------------
+
+INSERT INTO wallet_balances (user_id, currency, amount)
+SELECT
+    wb.user_id,
+    'USD',
+    SUM(CASE WHEN wb.amount > 0 THEN wb.amount ELSE 0 END)
+FROM wallet_balances wb
+WHERE UPPER(wb.currency) IN ('USD', 'USDT', 'USDC', 'BUSD', 'DAI')
+GROUP BY wb.user_id
+HAVING SUM(CASE WHEN wb.amount > 0 THEN wb.amount ELSE 0 END) > 0
+ON DUPLICATE KEY UPDATE amount = VALUES(amount);
+
+UPDATE wallet_balances
+SET amount = 0
+WHERE UPPER(currency) IN ('USDT', 'USDC', 'BUSD', 'DAI');
+
+SET @has_last_balance_usd = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'last_balance_usd'
+);
+SET @sql = IF(@has_last_balance_usd > 0,
+    'UPDATE users u
+     INNER JOIN wallet_balances wb ON wb.user_id = u.id AND UPPER(wb.currency) = ''USD''
+     SET u.last_balance_usd = ROUND(wb.amount, 2),
+         u.last_balance_usd_updated_at = NOW()
+     WHERE u.role = ''user''',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

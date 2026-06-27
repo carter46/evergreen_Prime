@@ -381,7 +381,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'adjust_balance':
             $type = strtolower(trim($input['type'] ?? ''));
-            $currency = strtoupper(trim($input['currency'] ?? ''));
             $amount = (float) ($input['amount'] ?? 0);
             if ($type !== 'credit' && $type !== 'debit') {
                 http_response_code(400);
@@ -393,51 +392,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => false, 'error' => 'Amount must be greater than 0']);
                 exit;
             }
-            $allowedCurrencies = ['USD','USDT','USDC','BUSD','BTC','ETH','SOL','BNB','XRP','ADA','DOGE','TRX'];
-            $currencyValid = in_array($currency, $allowedCurrencies);
-            if (!$currencyValid) {
-                $stmtCheck = $pdo->prepare('SELECT 1 FROM coins WHERE UPPER(symbol) = ? AND enabled = 1 LIMIT 1');
-                $stmtCheck->execute([$currency]);
-                $currencyValid = (bool) $stmtCheck->fetch();
-            }
-            if ($currency === '' || !$currencyValid) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Invalid or disabled currency']);
-                exit;
-            }
             $amountStr = number_format($amount, 18, '.', '');
             $adminId = (int) ($_SESSION['user_id'] ?? 0);
             $ref = 'admin_' . ($type === 'credit' ? 'credit' : 'debit') . '_' . $adminId . '_' . $userId . '_' . date('Ymd_His');
-            // Fetch user email and name for email notification
             $userStmt = $pdo->prepare('SELECT email, name FROM users WHERE id = ?');
             $userStmt->execute([$userId]);
             $user = $userStmt->fetch(PDO::FETCH_ASSOC);
             $userEmail = $user['email'] ?? null;
             $userName = $user['name'] ?? 'User';
-            
+
             $pdo->beginTransaction();
             try {
                 require_once dirname(__DIR__, 2) . '/includes/usd-wallet.php';
-                $stableCurrencies = ['USD', 'USDT', 'USDC', 'BUSD', 'DAI'];
-                $isStableAdj = in_array($currency, $stableCurrencies, true);
+                $walletCurrency = user_usd_wallet_currency();
                 if ($type === 'credit') {
-                    if ($isStableAdj) {
-                        credit_user_usd($pdo, $userId, (float) $amountStr);
-                    } else {
-                        $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                            ->execute([$userId, $currency, $amountStr]);
-                        require_once dirname(__DIR__, 2) . '/includes/helpers.php';
-                        refresh_user_last_balance_usd($pdo, $userId);
-                    }
-                    // Record transaction so it appears in user history
+                    credit_user_usd($pdo, $userId, (float) $amountStr);
                     $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
-                        ->execute([$userId, 'deposit', $amountStr, $isStableAdj ? user_usd_wallet_currency() : $currency, 'completed', $ref]);
-                    if (!$isStableAdj) {
-                        // refresh already called above for non-stable legacy path
-                    }
+                        ->execute([$userId, 'deposit', $amountStr, $walletCurrency, 'completed', $ref]);
                     $pdo->commit();
-                    
-                    // Send email notification
+
                     if ($userEmail) {
                         try {
                             require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
@@ -445,56 +418,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $mail->clearAddresses();
                             $mail->addAddress($userEmail);
                             $mail->Subject = 'Account Balance Credited - ' . get_site_name();
-                            // USD equivalent is only deterministic for stable settlement currencies.
-                            $curUpper = strtoupper($currency);
-                            $amountUsd = in_array($curUpper, ['USD','USDT','USDC','BUSD','DAI'], true) ? (float) $amountStr : (float) $amountStr;
                             $mail->Body = renderEmailTemplate('balance-adjustment.php', [
                                 'name' => $userName,
                                 'type' => 'credit',
                                 'amount' => $amountStr,
-                                'currency' => $currency,
-                                'amountUsd' => $amountUsd,
+                                'currency' => 'USD',
+                                'amountUsd' => (float) $amountStr,
                             ]);
-                            $mail->AltBody = "Your account has been credited with $currency " . number_format((float)$amountStr, 8, '.', ',') . ".";
+                            $mail->AltBody = 'Your account has been credited with USD ' . number_format((float) $amountStr, 2, '.', ',') . '.';
                             $mail->isHTML(true);
                             $mail->send();
                         } catch (Throwable $e) {
-                            // Email failure should not block the operation
                         }
                     }
-                    
+
                     echo json_encode(['success' => true, 'data' => ['message' => 'Balance credited']]);
                 } else {
-                    if ($isStableAdj) {
-                        if (!debit_user_usd($pdo, $userId, (float) $amountStr)) {
-                            $pdo->rollBack();
-                            http_response_code(400);
-                            echo json_encode(['success' => false, 'error' => 'Insufficient USD balance']);
-                            exit;
-                        }
-                    } else {
-                    // Lock row to prevent race conditions
-                    $stmt = $pdo->prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ? FOR UPDATE');
-                    $stmt->execute([$userId, $currency]);
-                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                    $current = $row ? (float) $row['amount'] : 0;
-                    if ($current < $amount) {
+                    if (!debit_user_usd($pdo, $userId, (float) $amountStr)) {
                         $pdo->rollBack();
                         http_response_code(400);
-                        echo json_encode(['success' => false, 'error' => 'Insufficient balance']);
+                        echo json_encode(['success' => false, 'error' => 'Insufficient USD balance']);
                         exit;
                     }
-                    $pdo->prepare('UPDATE wallet_balances SET amount = amount - ? WHERE user_id = ? AND currency = ?')
-                        ->execute([$amountStr, $userId, $currency]);
-                    require_once dirname(__DIR__, 2) . '/includes/helpers.php';
-                    refresh_user_last_balance_usd($pdo, $userId);
-                    }
-                    // Record transaction so it appears in user history
                     $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
-                        ->execute([$userId, 'withdrawal', $amountStr, $isStableAdj ? user_usd_wallet_currency() : $currency, 'completed', $ref]);
+                        ->execute([$userId, 'withdrawal', $amountStr, $walletCurrency, 'completed', $ref]);
                     $pdo->commit();
-                    
-                    // Send email notification
+
                     if ($userEmail) {
                         try {
                             require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
@@ -502,24 +451,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $mail->clearAddresses();
                             $mail->addAddress($userEmail);
                             $mail->Subject = 'Account Balance Debited - ' . get_site_name();
-                            // Calculate USD equivalent (for stablecoins, use 1:1; for others, use amount as USD estimate)
-                            $curUpper = strtoupper($currency);
-                            $amountUsd = in_array($curUpper, ['USD','USDT','USDC','BUSD','DAI'], true) ? (float)$amountStr : (float)$amountStr;
                             $mail->Body = renderEmailTemplate('balance-adjustment.php', [
                                 'name' => $userName,
                                 'type' => 'debit',
                                 'amount' => $amountStr,
-                                'currency' => $currency,
-                                'amountUsd' => $amountUsd,
+                                'currency' => 'USD',
+                                'amountUsd' => (float) $amountStr,
                             ]);
-                            $mail->AltBody = "Your account has been debited with $currency " . number_format((float)$amountStr, 8, '.', ',') . ".";
+                            $mail->AltBody = 'Your account has been debited with USD ' . number_format((float) $amountStr, 2, '.', ',') . '.';
                             $mail->isHTML(true);
                             $mail->send();
                         } catch (Throwable $e) {
-                            // Email failure should not block the operation
                         }
                     }
-                    
+
                     echo json_encode(['success' => true, 'data' => ['message' => 'Balance debited']]);
                 }
             } catch (Throwable $e) {
