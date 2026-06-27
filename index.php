@@ -11,101 +11,27 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <?php require_once __DIR__ . '/includes/marketing-head.php'; ?>
 <style>
-:root { --home-nav-offset: 3.5rem; }
-
-/* Account selector — Stay Eazi-style: sticky side columns + tall scroll column */
-.account-tab {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0.875rem 0 0.875rem 1.25rem;
-  border: none;
-  border-left: 4px solid transparent;
-  font-size: 0.9375rem;
-  color: #666;
-  background: none;
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
+.account-timeline__line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e5e7eb;
+  transform: translateX(-50%);
 }
-.account-tab:hover { color: #337722; }
-.account-tab.is-active {
-  border-left-color: #337722;
-  color: #337722;
-  font-weight: 700;
-}
-.account-panel { padding: 2rem 0; }
-
-@media (min-width: 1024px) {
-  .account-selector {
-    padding: 4rem 0;
-    position: relative;
-  }
-  .account-selector__grid {
-    display: grid;
-    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(280px, 360px);
-    gap: clamp(2rem, 4vw, 4rem);
-    align-items: start;
-  }
-  .account-selector__nav-col,
-  .account-selector__media {
-    position: sticky;
-    top: var(--home-nav-offset);
-    align-self: start;
-    min-height: calc(100vh - var(--home-nav-offset));
-    display: flex;
-    align-items: center;
-  }
-  .account-selector__nav {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    border-left: 2px solid #f3f4f6;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
-  .account-selector__scroll {
-    position: relative;
-    min-height: 400vh;
-  }
-  .account-selector__panels-inner {
-    position: sticky;
-    top: var(--home-nav-offset);
-    min-height: calc(100vh - var(--home-nav-offset));
-    display: flex;
-    align-items: center;
-  }
-  .account-selector__panels {
-    position: relative;
-    width: 100%;
-    min-height: calc(100vh - var(--home-nav-offset) - 4rem);
-  }
-  .account-panel {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(1.5rem);
-    transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
-    pointer-events: none;
-  }
-  .account-panel.is-active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-}
-@media (max-width: 1023px) {
-  .account-panel + .account-panel {
-    border-top: 1px solid #f3f4f6;
-    margin-top: 1rem;
-    padding-top: 2.5rem;
-  }
+.account-timeline__dot {
+  position: absolute;
+  left: 50%;
+  top: 2.5rem;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #337722;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px #337722;
+  transform: translateX(-50%);
+  z-index: 1;
 }
 </style>
 </head>
@@ -132,31 +58,19 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 </section>
 <!-- END: HeroSection -->
 
-<!-- BEGIN: AccountSelectorSection -->
-<section class="account-selector bg-white" id="account-selector">
-<div class="mx-auto px-4 max-w-6xl account-selector__grid">
+<!-- BEGIN: AccountTimelineSection -->
+<section class="py-16 lg:py-24 bg-white" id="account-selector">
+<div class="mx-auto px-4 max-w-6xl">
+<div class="account-timeline relative">
 
-<aside class="account-selector__nav-col hidden lg:flex">
-<nav class="account-selector__nav" aria-label="Account goals">
-<button type="button" class="account-tab is-active" data-tab="investing">Start investing</button>
-<button type="button" class="account-tab" data-tab="retirement">Save for retirement</button>
-<button type="button" class="account-tab" data-tab="healthcare">Save for health care</button>
-<button type="button" class="account-tab" data-tab="education">Invest for a child</button>
-</nav>
-</aside>
+<div class="account-timeline__line hidden lg:block" aria-hidden="true"></div>
 
-<nav class="lg:hidden col-span-full flex gap-2 overflow-x-auto pb-4 mb-2 border-b border-gray-100 -mx-1 px-1" aria-label="Account goals">
-<button type="button" class="account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-fidelityGreen text-white font-semibold" data-tab-mobile="investing">Start investing</button>
-<button type="button" class="account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-tab-mobile="retirement">Retirement</button>
-<button type="button" class="account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-tab-mobile="healthcare">Health care</button>
-<button type="button" class="account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-tab-mobile="education">For a child</button>
-</nav>
-
-<div class="account-selector__scroll" id="account-selector-scroll">
-<div class="account-selector__panels-inner">
-<div class="account-selector__panels">
-
-<article class="account-panel is-active" data-panel="investing" id="panel-investing">
+<!-- 1. Start investing — text left, image right -->
+<div class="relative pb-16 lg:pb-24 last:pb-0">
+<span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
+<div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+<div class="lg:pr-10">
+<p class="text-fidelityGreen font-bold text-sm mb-3">Start investing</p>
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Invest smart from the start with a brokerage account</h2>
 <div class="space-y-6 mb-10">
 <div>
@@ -176,12 +90,26 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open a brokerage account</a>
 <a class="text-fidelityGreen font-bold hover:underline" href="/investing">Explore ways to invest</a>
 </div>
-<div class="lg:hidden mt-8 rounded-2xl overflow-hidden bg-fidelityLightGreen p-4">
-<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-xl shadow-lg w-full" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
-</article>
+<div class="mt-10 lg:mt-0 lg:pl-10">
+<div class="bg-fidelityLightGreen rounded-3xl p-6">
+<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
+</div>
+</div>
+</div>
+</div>
 
-<article class="account-panel" data-panel="retirement" id="panel-retirement">
+<!-- 2. Retirement — image left, text right -->
+<div class="relative pb-16 lg:pb-24 last:pb-0">
+<span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
+<div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+<div class="order-2 lg:order-1 mt-10 lg:mt-0 lg:pr-10">
+<div class="bg-fidelityLightGreen rounded-3xl p-6">
+<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
+</div>
+</div>
+<div class="order-1 lg:order-2 lg:pl-10 lg:text-left">
+<p class="text-fidelityGreen font-bold text-sm mb-3">Save for retirement</p>
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Plan for the possibilities ahead with a Roth IRA</h2>
 <div class="space-y-6 mb-10">
 <div>
@@ -201,12 +129,16 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open a Roth IRA</a>
 <a class="text-fidelityGreen font-bold hover:underline" href="/planning">Explore retirement planning</a>
 </div>
-<div class="lg:hidden mt-8 rounded-2xl overflow-hidden bg-fidelityLightGreen p-4">
-<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-xl shadow-lg w-full" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
-</article>
+</div>
+</div>
 
-<article class="account-panel" data-panel="healthcare" id="panel-healthcare">
+<!-- 3. Health care — text left, image right -->
+<div class="relative pb-16 lg:pb-24 last:pb-0">
+<span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
+<div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+<div class="lg:pr-10">
+<p class="text-fidelityGreen font-bold text-sm mb-3">Save for health care</p>
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Save, earn, and invest for health care with an HSA</h2>
 <div class="space-y-6 mb-10">
 <div>
@@ -226,12 +158,26 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open an HSA</a>
 <a class="text-fidelityGreen font-bold hover:underline" href="#">Explore health savings</a>
 </div>
-<div class="lg:hidden mt-8 rounded-2xl overflow-hidden bg-fidelityLightGreen p-4">
-<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-xl shadow-lg w-full" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
-</article>
+<div class="mt-10 lg:mt-0 lg:pl-10">
+<div class="bg-fidelityLightGreen rounded-3xl p-6">
+<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
+</div>
+</div>
+</div>
+</div>
 
-<article class="account-panel" data-panel="education" id="panel-education">
+<!-- 4. Education — image left, text right -->
+<div class="relative pb-0">
+<span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
+<div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+<div class="order-2 lg:order-1 mt-10 lg:mt-0 lg:pr-10">
+<div class="bg-fidelityLightGreen rounded-3xl p-6">
+<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
+</div>
+</div>
+<div class="order-1 lg:order-2 lg:pl-10">
+<p class="text-fidelityGreen font-bold text-sm mb-3">Invest for a child</p>
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Save for the next generation's education with a 529 account</h2>
 <div class="space-y-6 mb-10">
 <div>
@@ -251,26 +197,14 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open a 529 account</a>
 <a class="text-fidelityGreen font-bold hover:underline" href="/planning">Explore saving for a child</a>
 </div>
-<div class="lg:hidden mt-8 rounded-2xl overflow-hidden bg-fidelityLightGreen p-4">
-<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-xl shadow-lg w-full" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
-</div>
-</article>
-
 </div>
 </div>
 </div>
 
-<div class="account-selector__media hidden lg:flex">
-<div class="w-full bg-fidelityLightGreen rounded-3xl p-6">
-<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
-</div>
-
 </div>
 </section>
-<!-- END: AccountSelectorSection -->
-
-<!-- BEGIN: AlternatingSections (removed — content in scroll tabs above) -->
+<!-- END: AccountTimelineSection -->
 
 <!-- BEGIN: PartnerSection -->
 <section class="py-0">
@@ -373,121 +307,5 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 
-<script>
-(function () {
-    'use strict';
-
-    var PANELS = ['investing', 'retirement', 'healthcare', 'education'];
-    var PANEL_COUNT = PANELS.length;
-    var DESKTOP_QUERY = window.matchMedia('(min-width: 1024px)');
-
-    var section = document.getElementById('account-selector');
-    var scrollCol = document.getElementById('account-selector-scroll');
-    if (!section || !scrollCol) return;
-
-    var tabs = section.querySelectorAll('[data-tab]');
-    var mobileTabs = section.querySelectorAll('[data-tab-mobile]');
-    var panelEls = section.querySelectorAll('[data-panel]');
-    var activeIndex = -1;
-
-    function isDesktop() {
-        return DESKTOP_QUERY.matches;
-    }
-
-    function getStickyTop() {
-        var navCol = section.querySelector('.account-selector__nav-col');
-        if (!navCol) return 56;
-        return parseFloat(window.getComputedStyle(navCol).top) || 56;
-    }
-
-    function readProgress() {
-        var rect = scrollCol.getBoundingClientRect();
-        var stickyTop = getStickyTop();
-        var total = scrollCol.offsetHeight - window.innerHeight;
-        var progress;
-
-        if (!isDesktop() || total <= 0) {
-            return 0;
-        }
-        progress = (stickyTop - rect.top) / total;
-        return Math.max(0, Math.min(1, progress));
-    }
-
-    function setActiveIndex(index) {
-        var id = PANELS[index];
-        tabs.forEach(function (el) {
-            el.classList.toggle('is-active', el.getAttribute('data-tab') === id);
-        });
-        mobileTabs.forEach(function (el) {
-            var on = el.getAttribute('data-tab-mobile') === id;
-            el.classList.toggle('bg-fidelityGreen', on);
-            el.classList.toggle('text-white', on);
-            el.classList.toggle('font-semibold', on);
-            el.classList.toggle('bg-gray-100', !on);
-            el.classList.toggle('text-gray-600', !on);
-        });
-        panelEls.forEach(function (el) {
-            el.classList.toggle('is-active', el.getAttribute('data-panel') === id);
-        });
-    }
-
-    function goToIndex(index) {
-        var rect;
-        var total;
-        var stickyTop;
-        var target;
-
-        if (index < 0 || index >= PANEL_COUNT) {
-            return;
-        }
-        if (!isDesktop()) {
-            var panel = document.getElementById('panel-' + PANELS[index]);
-            if (panel) {
-                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            return;
-        }
-        rect = scrollCol.getBoundingClientRect();
-        total = scrollCol.offsetHeight - window.innerHeight;
-        stickyTop = getStickyTop();
-        target = window.scrollY + rect.top - stickyTop + (total * index / PANEL_COUNT);
-        window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
-    }
-
-    function onScroll() {
-        var index;
-        if (!isDesktop()) {
-            return;
-        }
-        index = Math.floor(readProgress() * PANEL_COUNT);
-        if (index >= PANEL_COUNT) {
-            index = PANEL_COUNT - 1;
-        }
-        if (index === activeIndex) {
-            return;
-        }
-        activeIndex = index;
-        setActiveIndex(index);
-    }
-
-    tabs.forEach(function (tab) {
-        tab.addEventListener('click', function () {
-            goToIndex(PANELS.indexOf(tab.getAttribute('data-tab')));
-        });
-    });
-    mobileTabs.forEach(function (tab) {
-        tab.addEventListener('click', function () {
-            goToIndex(PANELS.indexOf(tab.getAttribute('data-tab-mobile')));
-        });
-    });
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', function () {
-        activeIndex = -1;
-        onScroll();
-    });
-    onScroll();
-})();
-</script>
 </body>
 </html>
