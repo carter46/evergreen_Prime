@@ -20,9 +20,9 @@ if ($tickerText === '') {
 <span class="material-symbols-outlined text-on-surface">menu</span>
 </button>
 </div>
-<div class="relative flex items-center justify-center min-w-0 h-full py-1">
+<div class="user-ticker-center relative min-w-0 h-full py-1 lg:pl-2">
 <?php include __DIR__ . '/user-social-proof.php'; ?>
-<div class="user-ticker-wrap min-w-0 mx-auto">
+<div class="user-ticker-wrap min-w-0">
 <span class="user-ticker-dot" aria-hidden="true"></span>
 <marquee class="user-ticker-marquee" scrollamount="4" aria-live="polite"><?php echo $tickerText; ?></marquee>
 </div>

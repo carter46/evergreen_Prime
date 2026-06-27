@@ -74,6 +74,46 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 #deposit-drawer .text-slate-500, #withdraw-drawer .text-slate-500,
 #deposit-drawer .text-slate-600, #withdraw-drawer .text-slate-600 { color: #41493c !important; }
 #deposit-drawer #deposit-submit-btn, #withdraw-drawer button[type="submit"] { background: #337722 !important; color: #fff !important; }
+.wallet-assets-table th,
+.wallet-assets-table td { font-size: 0.8125rem; }
+.wallet-assets-table .wallet-asset-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.wallet-assets-table .wallet-asset-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+}
+.wallet-assets-table .wallet-asset-name { font-size: 0.75rem; font-weight: 700; }
+.wallet-assets-table .wallet-asset-code { font-size: 10px; color: #41493c; }
+.wallet-recent-table th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #41493c;
+}
+@media (max-width: 639px) {
+  .wallet-assets-table th,
+  .wallet-assets-table td { padding: 0.5rem 0.65rem; }
+  .wallet-assets-table .wallet-asset-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+  .wallet-assets-table .wallet-asset-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .wallet-assets-table .wallet-asset-icon .material-symbols-outlined { font-size: 14px !important; }
+  .wallet-assets-table .wallet-asset-name { font-size: 11px; }
+  .wallet-assets-table .wallet-asset-code { font-size: 9px; }
+  .wallet-recent-table th,
+  .wallet-recent-table td { padding: 0.65rem 0.5rem; font-size: 11px; }
+  .wallet-recent-table .material-symbols-outlined { font-size: 16px !important; }
+}
 @media (min-width: 640px) {
     .wallet-drawer-content label { font-size: 0.9375rem; }
     #deposit-coin-quote, #withdraw-coin-quote { font-size: 1.125rem; font-weight: 700; }
@@ -137,35 +177,35 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <h4 class="font-headline-md text-headline-md font-hanken">Your Assets</h4>
 </div>
 <div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead class="bg-surface-container-low border-b border-surface-gray">
+<table class="w-full text-left table-fixed min-w-0">
+<thead class="border-b border-surface-gray">
 <tr>
-<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase">Asset</th>
-<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase">Balance</th>
-<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase text-right">Action</th>
+<th class="px-3 py-2 font-semibold text-[9px] uppercase tracking-wider text-on-surface-variant w-2/5">Asset</th>
+<th class="px-3 py-2 font-semibold text-[9px] uppercase tracking-wider text-on-surface-variant text-right w-1/5">Balance</th>
+<th class="px-3 py-2 font-semibold text-[9px] uppercase tracking-wider text-on-surface-variant text-right w-2/5">Action</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-surface-gray font-body-sm text-body-sm wallet-assets-table">
+<tbody class="divide-y divide-surface-gray wallet-assets-table">
 <?php if ($walletTotalUsd > 0): ?>
 <tr class="hover:bg-surface-container-lowest transition-colors">
-<td class="p-md">
-<div class="flex items-center gap-sm min-w-0">
-<div class="w-8 h-8 rounded-full bg-[#26A17B]/10 flex items-center justify-center text-[#26A17B] shrink-0">
-<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+<td class="px-3 py-3">
+<div class="wallet-asset-cell">
+<div class="wallet-asset-icon rounded-full bg-[#26A17B]/10 flex items-center justify-center text-[#26A17B]">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
 </div>
 <div class="min-w-0">
-<p class="font-bold">US Dollar</p>
-<p class="text-xs text-on-surface-variant">USD</p>
+<p class="wallet-asset-name truncate">US Dollar</p>
+<p class="wallet-asset-code">USD</p>
 </div>
 </div>
 </td>
-<td class="p-md font-bold">$<?php echo format_usd_amount($walletTotalUsd); ?></td>
-<td class="p-md text-right">
-<a href="/dashboard/user/investment-plans" class="text-institutional-blue font-bold hover:underline">INVEST</a>
+<td class="px-3 py-3 text-right font-medium text-xs truncate">$<?php echo format_usd_amount($walletTotalUsd); ?></td>
+<td class="px-3 py-3 text-right">
+<a href="/dashboard/user/investment-plans" class="text-[10px] font-bold px-2 py-1 rounded bg-fidelity-green/10 text-fidelity-green hover:bg-fidelity-green hover:text-white transition-all">INVEST</a>
 </td>
 </tr>
 <?php else: ?>
-<tr><td class="p-md text-center text-on-surface-variant" colspan="3">No balance yet. Deposit funds to get started.</td></tr>
+<tr><td class="px-3 py-6 text-center text-on-surface-variant text-xs" colspan="3">No balance yet. Deposit funds to get started.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>
@@ -177,16 +217,17 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <a href="/dashboard/user/transactions" class="text-institutional-blue text-xs font-bold hover:underline">View All</a>
 </div>
 <div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead class="bg-surface-container-low border-b border-surface-gray">
-<tr>
-<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase">Type</th>
-<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase">Amount</th>
-<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase">Status</th>
-<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase text-right">Date</th>
+<table class="w-full text-left wallet-recent-table">
+<thead>
+<tr class="border-b border-surface-gray">
+<th class="px-4 sm:px-6 py-3 sm:py-4 font-semibold">Type / Date</th>
+<th class="px-4 sm:px-6 py-3 sm:py-4 font-semibold hidden sm:table-cell">Asset</th>
+<th class="px-4 sm:px-6 py-3 sm:py-4 font-semibold text-right">Amount</th>
+<th class="px-4 sm:px-6 py-3 sm:py-4 font-semibold text-center">Status</th>
+<th class="px-4 sm:px-6 py-3 sm:py-4 font-semibold text-right hidden md:table-cell">TXID</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-surface-gray font-body-sm text-body-sm">
+<tbody class="divide-y divide-surface-gray">
 <?php
   $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus', 'profit_adjustment' => 'Profit adjustment', 'referral_bonus_adjustment' => 'Referral bonus adjustment'];
   foreach ($walletTransactions as $tx):
@@ -197,28 +238,31 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
     $isDeposit = in_array($tx['type'], ['deposit','payout','referral_bonus','deposit_bonus']);
   }
   $displayAmt = in_array($tx['type'], ['profit_adjustment', 'referral_bonus_adjustment'], true) ? abs($txAmt) : $txAmt;
-  $date = !empty($tx['created_at']) ? date('M j, Y H:i', strtotime($tx['created_at'])) : '';
   $typeLabel = $txTypeLabels[$tx['type']] ?? ucfirst(str_replace('_', ' ', $tx['type']));
-  $statusClass = 'bg-tertiary-container/10 text-tertiary';
-  if ($tx['status'] === 'completed') $statusClass = 'bg-primary-container/10 text-fidelity-green';
-  elseif ($tx['status'] === 'rejected' || $tx['status'] === 'failed') $statusClass = 'bg-error-container text-error';
+  $statusClass = 'bg-amber-100 text-amber-700';
+  if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700';
+  elseif ($tx['status'] === 'rejected' || $tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 ?>
 <tr class="hover:bg-surface-container-lowest transition-colors">
-<td class="p-md">
-<div class="flex flex-col min-w-0">
-<span class="font-bold text-on-surface"><?php echo htmlspecialchars($typeLabel); ?></span>
-<span class="text-xs text-on-surface-variant"><?php echo htmlspecialchars($tx['currency']); ?></span>
+<td class="px-4 sm:px-6 py-3 sm:py-4">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined <?php echo $isDeposit ? 'text-fidelity-green' : 'text-error'; ?> text-lg shrink-0"><?php echo $isDeposit ? 'arrow_downward' : 'arrow_upward'; ?></span>
+<div class="min-w-0">
+<p class="text-xs sm:text-sm font-bold text-on-surface truncate"><?php echo htmlspecialchars($typeLabel); ?></p>
+<p class="text-[10px] text-on-surface-variant"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></p>
+</div>
 </div>
 </td>
-<td class="p-md <?php echo $isDeposit ? 'text-fidelity-green' : 'text-error'; ?> font-bold whitespace-nowrap"><?php echo $isDeposit ? '+' : '-'; ?><?php echo format_usd_amount($displayAmt); ?> <?php echo htmlspecialchars($tx['currency']); ?></td>
-<td class="p-md">
-<span class="px-2 py-0.5 <?php echo $statusClass; ?> rounded text-xs font-bold capitalize"><?php echo htmlspecialchars($tx['status']); ?></span>
+<td class="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium hidden sm:table-cell"><?php echo htmlspecialchars($tx['currency']); ?></td>
+<td class="px-4 sm:px-6 py-3 sm:py-4 text-right text-xs sm:text-sm font-bold whitespace-nowrap <?php echo $isDeposit ? 'text-fidelity-green' : 'text-error'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo format_usd_amount($displayAmt); ?></td>
+<td class="px-4 sm:px-6 py-3 sm:py-4 text-center">
+<span class="px-2 py-1 <?php echo $statusClass; ?> text-[9px] sm:text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>
-<td class="p-md text-right text-on-surface-variant whitespace-nowrap"><?php echo date('M j, H:i', strtotime($tx['created_at'])); ?></td>
+<td class="px-4 sm:px-6 py-3 sm:py-4 text-right font-mono text-[10px] text-on-surface-variant hidden md:table-cell"><?php echo $tx['reference'] ? substr($tx['reference'], 0, 6) . '...' . substr($tx['reference'], -4) : '—'; ?></td>
 </tr>
 <?php endforeach; ?>
 <?php if (empty($walletTransactions)): ?>
-<tr><td class="p-md text-center text-on-surface-variant" colspan="4">No transactions yet.</td></tr>
+<tr><td class="px-6 py-8 text-center text-on-surface-variant text-sm" colspan="5">No transactions yet.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>

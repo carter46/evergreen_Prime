@@ -197,8 +197,8 @@ body.user-dashboard {
 .dash-card-referral-dark .dash-card-link { color: rgba(255, 255, 255, 0.9) !important; }
 .dash-card-referral-dark .dash-card-accent { color: #7dd87a !important; }
 .dash-card-light-green {
-  background: linear-gradient(165deg, #eef6eb 0%, #f7f9ff 42%, #f3faf0 100%);
-  border-color: rgba(51, 119, 34, 0.15);
+  background: linear-gradient(165deg, #dcecd6 0%, #e4f0df 38%, #d6e8cf 100%);
+  border-color: rgba(51, 119, 34, 0.22);
 }
 .dash-insight-tile {
   display: flex;
@@ -219,22 +219,22 @@ body.user-dashboard {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(calc(100vw - 8.5rem), 22rem);
+  width: min(calc(100vw - 7.5rem), 16rem);
   display: flex;
   justify-content: center;
   z-index: 5;
   pointer-events: none;
 }
-@media (min-width: 640px) {
+@media (min-width: 1024px) {
   .user-social-proof { display: none; }
 }
 .user-social-proof-toast {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   background: #ebeef4;
   border-radius: 9999px;
-  padding: 0.3rem 0.85rem;
+  padding: 0.28rem 0.7rem;
   max-width: 100%;
   transition: opacity 0.5s ease;
   opacity: 0;
@@ -284,16 +284,28 @@ body.user-dashboard {
 .user-ticker-wrap {
   background: #ebeef4;
   border-radius: 9999px;
-  padding: 0.25rem 1rem;
+  padding: 0.25rem 0.75rem;
   display: none;
   align-items: center;
   gap: 0.5rem;
-  width: 100%;
-  max-width: min(42rem, calc(100vw - 18rem));
+  width: auto;
+  max-width: min(22rem, calc(100vw - 20rem));
   overflow: hidden;
+  margin-right: auto;
 }
-@media (min-width: 640px) {
+@media (min-width: 1024px) {
   .user-ticker-wrap { display: flex; }
+}
+.user-ticker-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+}
+@media (min-width: 1024px) {
+  .user-ticker-center { justify-content: flex-start; }
 }
 .user-ticker-dot {
   flex-shrink: 0;
@@ -304,15 +316,16 @@ body.user-dashboard {
   animation: user-social-pulse 1.8s ease-in-out infinite;
 }
 .user-ticker-marquee {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 11px;
+  line-height: 15px;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   color: #41493c;
   white-space: nowrap;
   overflow: hidden;
   flex: 1;
   min-width: 0;
+  max-width: 18rem;
 }
 @keyframes user-social-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
