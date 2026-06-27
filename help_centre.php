@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
-$pageTitle = 'Customer Service | Fidelity';
+$siteName = get_site_name();
+$pageTitle = 'Customer Service | ' . $siteName;
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en">
@@ -81,7 +82,7 @@ $pageTitle = 'Customer Service | Fidelity';
 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-md p-md bg-white rounded-xl border border-surface-gray">
 <span class="material-symbols-outlined text-fidelity-green text-3xl">smart_toy</span>
 <div class="flex-grow">
-<h4 class="font-label-md text-label-md uppercase text-fidelity-green">Fidelity Assistant</h4>
+<h4 class="font-label-md text-label-md uppercase text-fidelity-green"><?php echo htmlspecialchars($siteName); ?> Assistant</h4>
 <p class="font-headline-md text-headline-md text-xl">Instant AI Support</p>
 <p class="font-body-sm text-body-sm text-on-surface-variant">Available 24/7 for quick answers</p>
 </div>

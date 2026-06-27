@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
-$pageTitle = 'Wealth Management Offerings | Fidelity';
+$siteName = get_site_name();
+$pageTitle = 'Wealth Management Offerings | ' . $siteName;
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en">
@@ -38,11 +39,11 @@ $pageTitle = 'Wealth Management Offerings | Fidelity';
 <p class="text-on-surface-variant max-w-2xl mx-auto font-body-md">We support a broad range of financial needs with service and dedication. From retirement to building an enduring legacy.</p>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
-<!-- Fidelity Go -->
+<!-- Digital advice tier -->
 <div class="bento-card bg-white p-md rounded-lg flex flex-col h-full">
 <div class="mb-lg">
 <span class="text-fidelity-green text-label-md font-bold uppercase tracking-widest mb-xs block">Digital Advice</span>
-<h3 class="font-headline-md text-headline-md mb-xs">Fidelity Go®</h3>
+<h3 class="font-headline-md text-headline-md mb-xs"><?php echo htmlspecialchars($siteName); ?> Go®</h3>
 <p class="text-on-surface-variant text-body-sm h-12">Professional, affordable money management with automatic rebalancing.</p>
 </div>
 <div class="mt-auto border-t border-surface-gray pt-md">
@@ -104,7 +105,7 @@ $pageTitle = 'Wealth Management Offerings | Fidelity';
 <!-- Features Section -->
 <section class="py-xl bg-background">
 <div class="max-w-[1152px] mx-auto px-margin-desktop">
-<h2 class="font-headline-lg text-headline-lg text-on-surface mb-lg text-center">What Fidelity Wealth Management can offer you</h2>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-lg text-center">What <?php echo htmlspecialchars($siteName); ?> Wealth Management can offer you</h2>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
 <div class="text-center group">
 <div class="w-20 h-20 mx-auto bg-surface-container rounded-full flex items-center justify-center mb-md group-hover:bg-institutional-blue/10 transition-colors">
@@ -147,14 +148,14 @@ $pageTitle = 'Wealth Management Offerings | Fidelity';
 </div>
 <div>
 <h3 class="font-headline-md text-headline-md mb-xs">Award-winning service that sets us apart</h3>
-<p class="text-white/80 font-body-md">Fidelity Wealth Management was named the overall winner in Kiplinger's Readers' Choice Awards for its exceptional financial advice, trustworthiness, and client satisfaction.</p>
+<p class="text-white/80 font-body-md"><?php echo htmlspecialchars($siteName); ?> Wealth Management was named the overall winner in Kiplinger's Readers' Choice Awards for its exceptional financial advice, trustworthiness, and client satisfaction.</p>
 </div>
 </div>
 </section>
 <!-- Insights/Articles Grid -->
 <section class="py-xl bg-surface-container-low">
 <div class="max-w-[1152px] mx-auto px-margin-desktop">
-<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xl">Insights and strategies from Fidelity Wealth Management</h2>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xl">Insights and strategies from <?php echo htmlspecialchars($siteName); ?> Wealth Management</h2>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
 <!-- Article 1 -->
 <div class="bg-white rounded-lg overflow-hidden bento-card border border-surface-gray flex flex-col">

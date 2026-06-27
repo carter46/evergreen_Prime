@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/helpers.php';
 $siteName = get_site_name();
+$footerLegal = get_site_setting('footer_legal_line', '');
 $homepageModalImage = get_site_setting('homepage_modal_image', '');
 ?>
 <!-- BEGIN: Footer -->
@@ -8,7 +9,7 @@ $homepageModalImage = get_site_setting('homepage_modal_image', '');
 <div class="mx-auto px-4 max-w-6xl">
 <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
 <div>
-<h5 class="font-bold mb-4">About Fidelity</h5>
+<h5 class="font-bold mb-4">About <?php echo htmlspecialchars($siteName); ?></h5>
 <ul class="text-sm text-gray-600 space-y-2">
 <li class=""><a class="hover:underline" href="/live_chat">Contact Us</a></li>
 <li class=""><a class="hover:underline" href="#">Careers</a></li>
@@ -41,8 +42,12 @@ $homepageModalImage = get_site_setting('homepage_modal_image', '');
 </div>
 </div>
 <div class="pt-8 border-t border-gray-200 text-center text-xs text-gray-500">
-<p class="">© 1998-<?php echo date('Y'); ?> FMR LLC. All rights reserved.</p>
-<p class="mt-2">Fidelity Brokerage Services LLC, Member NYSE, SIPC, 900 Salem Street, Smithfield, RI 02917</p>
+<p class="">© <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?>. All rights reserved.</p>
+<?php if ($footerLegal !== ''): ?>
+<p class="mt-2"><?php echo htmlspecialchars($footerLegal); ?></p>
+<?php else: ?>
+<p class="mt-2"><?php echo htmlspecialchars($siteName); ?> — Member NYSE, SIPC.</p>
+<?php endif; ?>
 </div>
 </div>
 </footer>

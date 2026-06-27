@@ -1,10 +1,11 @@
 <?php
 /**
- * Shared Marketing Header — Fidelity homepage design (utility bar + main navigation).
+ * Shared Marketing Header — utility bar + main navigation.
  */
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/session-bootstrap.php';
 $siteName = get_site_name();
+$siteLogo = get_site_setting('site_logo', '');
 $currentUser = get_current_user_data();
 $isLoggedIn = !empty($currentUser);
 $current = $currentPage ?? '';
@@ -19,7 +20,7 @@ $navClass = function ($page) use ($current) {
 <div id="utility-header" class="bg-white border-b border-gray-200 py-2">
 <div class="mx-auto px-4 flex justify-end items-center space-x-6 text-xs text-fidelityGray max-w-6xl">
 <a class="hover:underline" href="/help_centre">Customer Service</a>
-<a class="hover:underline" href="/live_chat">Fidelity Assistant</a>
+<a class="hover:underline" href="/live_chat"><?php echo htmlspecialchars($siteName); ?> Assistant</a>
 <?php if ($isLoggedIn): ?>
 <a class="hover:underline" href="/dashboard">Profile</a>
 <a class="bg-fidelityGreen text-white px-4 py-1 rounded-full font-bold hover:bg-fidelityGreenHover" href="/dashboard">Dashboard</a>
@@ -38,16 +39,19 @@ $navClass = function ($page) use ($current) {
 <!-- Logo -->
 <div class="flex-shrink-0 mr-8">
 <a href="/">
-<img alt="Fidelity Investments" class="h-8" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCl4yTOAuZhyPUw2t4cUG2u6-qlk1Y9Riwvk_4QUgCFtmNuE69JxnZmwAMDuas547HUTAbUy-2VeHSLRRS040j2-beCp1ERNuiIysI8EBMWMfB3aaPQFyliEqG395gdWMZkc6hlApiGHhSPR_0vWeTnMMsgO-1wozgvWXiDmKaAndna4zjovsXylE2jv_mgpGUjkLdBWNvKidT7QtSJkassBvCrQtQPp3k6RlNc5H9buUhO0A5gK1sv4g">
+<?php if (!empty($siteLogo)): ?>
+<img alt="<?php echo htmlspecialchars($siteName); ?>" class="h-8" src="<?php echo htmlspecialchars($siteLogo); ?>">
+<?php else: ?>
+<span class="text-white font-bold text-xl tracking-tight"><?php echo htmlspecialchars($siteName); ?></span>
+<?php endif; ?>
 </a>
 </div>
 <!-- Primary Nav -->
 <nav class="hidden lg:flex space-x-6 fidelity-nav-text text-white">
-<a class="<?php echo $navClass('accounts'); ?>" href="/register">Accounts &amp; Trade</a>
+<a class="<?php echo $navClass('home'); ?>" href="/">Home</a>
 <a class="<?php echo $navClass('investing'); ?>" href="/investing">Investing</a>
 <a class="<?php echo $navClass('planning'); ?>" href="/planning">Retirement</a>
 <a class="<?php echo $navClass('wealth'); ?>" href="/wealth-management">Wealth Management</a>
-<a class="<?php echo $navClass('news'); ?>" href="#">News &amp; Research</a>
 </nav>
 <!-- Search -->
 <div class="ml-auto relative w-64">

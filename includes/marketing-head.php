@@ -106,8 +106,8 @@ tailwind.config = {
         unit: '4px'
       },
       fontFamily: {
-        sans: ['"Fidelity Sans"', 'Helvetica', 'Arial', 'sans-serif'],
-        serif: ['"Fidelity Serif"', 'Georgia', 'serif'],
+        sans: ['Helvetica', 'Arial', 'sans-serif'],
+        serif: ['Georgia', 'serif'],
         'display-lg': ['Hanken Grotesk'],
         'headline-lg-mobile': ['Hanken Grotesk'],
         'label-md': ['Inter'],
@@ -139,7 +139,7 @@ tailwind.config = {
 </script>
 <style data-purpose="custom-typography">
 @font-face {
-  font-family: 'Fidelity Sans';
+  font-family: 'Site Sans';
   src: local('Arial');
 }
 .fidelity-homepage h1,

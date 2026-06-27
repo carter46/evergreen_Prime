@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
-$pageTitle = 'Fidelity Investments - Retirement Plans, Investing, Brokerage';
+$siteName = get_site_name();
+$pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -67,7 +68,7 @@ $pageTitle = 'Fidelity Investments - Retirement Plans, Investing, Brokerage';
 <!-- Phone App Mockup Visual -->
 <div class="lg:col-span-3">
 <div class="bg-fidelityLightGreen rounded-3xl p-6 relative">
-<img alt="Fidelity App" class="rounded-2xl shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA">
+<img alt="<?php echo htmlspecialchars($siteName); ?> App" class="rounded-2xl shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA">
 <div class="absolute -right-4 top-20 bg-white p-3 rounded shadow-lg border border-gray-100">
 <div class="text-fidelityGreen font-bold text-xs">+18.04</div>
 <div class="text-xl font-bold">0.51%</div>
@@ -124,7 +125,7 @@ $pageTitle = 'Fidelity Investments - Retirement Plans, Investing, Brokerage';
 </div>
 <div>
 <h4 class="font-bold mb-2">No account fees</h4>
-<p class="text-sm text-gray-600">Fidelity's HSA has no account fees or minimums, and $0 commissions for US stock &amp; ETF trades.⁶</p>
+<p class="text-sm text-gray-600"><?php echo htmlspecialchars($siteName); ?>'s HSA has no account fees or minimums, and $0 commissions for US stock &amp; ETF trades.⁶</p>
 </div>
 <div class="col-span-full">
 <h4 class="font-bold mb-2">Not "use-it-or-lose-it"</h4>
@@ -133,7 +134,7 @@ $pageTitle = 'Fidelity Investments - Retirement Plans, Investing, Brokerage';
 </div>
 <div class="flex items-center space-x-6">
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold" href="/register">Open an HSA</a>
-<a class="text-fidelityGreen font-bold hover:underline" href="#">Explore health savings at Fidelity</a>
+<a class="text-fidelityGreen font-bold hover:underline" href="#">Explore health savings at <?php echo htmlspecialchars($siteName); ?></a>
 </div>
 </div>
 </div>
@@ -144,18 +145,18 @@ $pageTitle = 'Fidelity Investments - Retirement Plans, Investing, Brokerage';
 <section class="py-0">
 <div class="mx-auto flex flex-col lg:flex-row bg-white max-w-6xl">
 <div class="lg:w-2/3">
-<img alt="Fidelity Advisors" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGNI9MvKH4eR-H4wbkZQtqLrkuQFRt-B8yuqIg2po_PHYBT5n95rGn79ffTEhyPEciibrnTd8JfWRcVzdo6cMkXqWMtyVUI-JFkYGPNejK833re5GWabG4e7JtAyjGy2pJsjzC1Y20KaQDx7wYgjya6SmunmGwHgUee647bJH3C7N0ved2CeN5MqfQtNwqsBezHpyIeM6j0IyhxnfG-oVvTwrxAj9oJYrBFUlef2P4ASP4xjeS0drytQ">
+<img alt="<?php echo htmlspecialchars($siteName); ?> Advisors" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGNI9MvKH4eR-H4wbkZQtqLrkuQFRt-B8yuqIg2po_PHYBT5n95rGn79ffTEhyPEciibrnTd8JfWRcVzdo6cMkXqWMtyVUI-JFkYGPNejK833re5GWabG4e7JtAyjGy2pJsjzC1Y20KaQDx7wYgjya6SmunmGwHgUee647bJH3C7N0ved2CeN5MqfQtNwqsBezHpyIeM6j0IyhxnfG-oVvTwrxAj9oJYrBFUlef2P4ASP4xjeS0drytQ">
 </div>
 <div class="lg:w-1/3 bg-gray-50 p-12 flex flex-col justify-center">
 <h2 class="text-3xl mb-6">A partner to help bring your plans to life</h2>
-<p class="text-gray-600 mb-8 text-lg">Collaborate with a dedicated Fidelity advisor to build a comprehensive wealth management strategy designed to help you meet your goals and evolving needs.</p>
+<p class="text-gray-600 mb-8 text-lg">Collaborate with a dedicated <?php echo htmlspecialchars($siteName); ?> advisor to build a comprehensive wealth management strategy designed to help you meet your goals and evolving needs.</p>
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold inline-block text-center hover:bg-fidelityGreenHover transition-colors w-max" href="#">Find an advisor</a>
 </div>
 </div>
 <div class="bg-gray-100 py-4 text-center">
 <p class="text-xs text-fidelityGray">
-        Review Fidelity Brokerage Services with <a class="text-blue-600 underline" href="#">FINRA's BrokerCheck</a> |
-        <a class="text-blue-600 underline" href="#">Regulatory summary of Fidelity services (PDF)</a>
+        Review <?php echo htmlspecialchars($siteName); ?> Brokerage Services with <a class="text-blue-600 underline" href="#">FINRA's BrokerCheck</a> |
+        <a class="text-blue-600 underline" href="#">Regulatory summary of <?php echo htmlspecialchars($siteName); ?> services (PDF)</a>
 </p>
 </div>
 </section>
@@ -211,7 +212,7 @@ $pageTitle = 'Fidelity Investments - Retirement Plans, Investing, Brokerage';
 <section class="py-20 bg-white">
 <div class="mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center max-w-6xl">
 <div>
-<h2 class="text-4xl mb-8">Why choose Fidelity?</h2>
+<h2 class="text-4xl mb-8">Why choose <?php echo htmlspecialchars($siteName); ?>?</h2>
 <p class="text-lg text-gray-600 mb-8">Our objective insights and disciplined approach have helped generations of customers through all kinds of markets.</p>
 <ul class="space-y-4">
 <li class="flex items-start">
@@ -233,7 +234,7 @@ $pageTitle = 'Fidelity Investments - Retirement Plans, Investing, Brokerage';
 </ul>
 </div>
 <div class="relative rounded-2xl overflow-hidden">
-<img alt="Fidelity Customers" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCamvPpRWXXo06xfhs2MhOWcBVF1JncodJZxIDVpxGDf217WzcamtCt4x3ft5_GliedbgSuGCg3RhIxRzW_1aWBORQUWq8u5W0ev0qzvfSkzESeswVEfjsfm6skJ_e5QHzhjz1ffFf0yKnrfeZl_H82SqxOPLDNgACMl5GYDl1o2H7NED4Pdnp6azY8b_OJVbHa65QZJx9-7HJVaWMhSc_qtrgr1p0imf0NU-EtKhBbc1DM6UkD5iXK_w">
+<img alt="<?php echo htmlspecialchars($siteName); ?> Customers" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCamvPpRWXXo06xfhs2MhOWcBVF1JncodJZxIDVpxGDf217WzcamtCt4x3ft5_GliedbgSuGCg3RhIxRzW_1aWBORQUWq8u5W0ev0qzvfSkzESeswVEfjsfm6skJ_e5QHzhjz1ffFf0yKnrfeZl_H82SqxOPLDNgACMl5GYDl1o2H7NED4Pdnp6azY8b_OJVbHa65QZJx9-7HJVaWMhSc_qtrgr1p0imf0NU-EtKhBbc1DM6UkD5iXK_w">
 </div>
 </div>
 </section>

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
-$pageTitle = 'Retirement Planning | Fidelity';
+$siteName = get_site_name();
+$pageTitle = 'Retirement Planning | ' . $siteName;
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en">

@@ -1,6 +1,63 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
-$pageTitle = 'Advanced Trading | Fidelity';
+require_once __DIR__ . '/includes/plan-types.php';
+require_once __DIR__ . '/includes/session-bootstrap.php';
+$siteName = get_site_name();
+$isLoggedIn = !empty($_SESSION['user_id'] ?? null);
+$investCtaUrl = $isLoggedIn ? '/dashboard/user/investment-plans' : '/register';
+$pageTitle = 'Advanced Trading | ' . $siteName;
+
+$plans = [];
+$planTypes = get_plan_types();
+try {
+    $pdo = require __DIR__ . '/includes/db.php';
+    ensure_plan_schema($pdo);
+    $stmt = $pdo->query('SELECT id, name, slug, plan_type, description, logo_url, investment_risk, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, liquidation_cost, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $plans[] = [
+            'id' => (int) $row['id'],
+            'name' => $row['name'],
+            'slug' => $row['slug'],
+            'plan_type' => normalize_plan_type($row['plan_type'] ?? 'crypto'),
+            'description' => $row['description'] ?? '',
+            'logo_url' => $row['logo_url'] ?? null,
+            'investment_risk' => normalize_investment_risk($row['investment_risk'] ?? 'mid'),
+            'min_deposit' => (float) $row['min_deposit'],
+            'max_deposit' => $row['max_deposit'] !== null ? (float) $row['max_deposit'] : null,
+            'yield_min' => (float) $row['yield_min'],
+            'yield_max' => (float) $row['yield_max'],
+            'duration_days' => (int) $row['duration_days'],
+            'min_duration_days' => isset($row['min_duration_days']) && $row['min_duration_days'] !== null ? (int) $row['min_duration_days'] : (isset($row['min_duration_months']) && $row['min_duration_months'] !== null ? (int) $row['min_duration_months'] * 30 : (int) $row['duration_days']),
+            'liquidation_cost' => isset($row['liquidation_cost']) ? (float) $row['liquidation_cost'] : 0.0,
+        ];
+    }
+} catch (Throwable $e) {
+    // DB unavailable
+}
+
+$plansByType = [];
+foreach ($planTypes as $typeKey => $typeLabel) {
+    $plansByType[$typeKey] = array_values(array_filter($plans, fn ($plan) => ($plan['plan_type'] ?? 'crypto') === $typeKey));
+}
+$activePlanTypes = [];
+foreach ($planTypes as $typeKey => $typeLabel) {
+    if (!empty($plansByType[$typeKey])) {
+        $activePlanTypes[$typeKey] = $typeLabel;
+    }
+}
+$defaultPlanTab = array_key_first($activePlanTypes) ?: 'crypto';
+$showPlanTabs = count($activePlanTypes) > 1;
+
+$marketingRiskBadge = function (?string $risk): array {
+    $key = normalize_investment_risk($risk);
+    $label = get_investment_risk_options()[$key];
+    $classes = [
+        'high' => 'bg-red-100 text-red-700',
+        'mid' => 'bg-fidelity-green/10 text-fidelity-green',
+        'low' => 'bg-institutional-blue/10 text-institutional-blue',
+    ];
+    return ['label' => $label, 'class' => $classes[$key]];
+};
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en">
@@ -8,6 +65,17 @@ $pageTitle = 'Advanced Trading | Fidelity';
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <?php require_once __DIR__ . '/includes/marketing-head.php'; ?>
+<style>
+.marketing-plan-tab.is-active { color: #337722; border-bottom-color: #337722; font-weight: 700; }
+.marketing-plan-panel { display: none; }
+.marketing-plan-panel.is-active { display: grid; }
+.marketing-plan-tabs-nav {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.marketing-plan-tabs-nav::-webkit-scrollbar { display: none; }
+</style>
 </head>
 <body class="fidelity-subpage bg-surface font-body-md text-on-surface antialiased overflow-x-hidden">
 <?php $currentPage = 'investing'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
@@ -40,7 +108,7 @@ $pageTitle = 'Advanced Trading | Fidelity';
 </section>
 <!-- Platform Showcase -->
 <section class="py-xl text-center">
-<h2 class="font-headline-lg text-headline-lg mb-sm">Discover the next generation of trading with Fidelity Trader+™</h2>
+<h2 class="font-headline-lg text-headline-lg mb-sm">Discover the next generation of trading with <?php echo htmlspecialchars($siteName); ?> Trader+™</h2>
 <p class="font-body-md text-body-md text-on-surface-variant mb-xl max-w-2xl mx-auto">Trade your way—anytime, anywhere—with connected mobile, web, and desktop platforms.</p>
 <div class="bento-grid">
 <!-- Large Feature -->
@@ -89,57 +157,89 @@ $pageTitle = 'Advanced Trading | Fidelity';
 </div>
 </div>
 </section>
-<!-- Feature Grid -->
-<section class="py-xl border-t border-surface-gray">
-<h2 class="font-headline-lg text-headline-lg mb-xl text-center">What you get when investing and trading at Fidelity</h2>
-<div class="grid md:grid-cols-3 gap-lg">
-<div class="p-md border border-surface-gray rounded-xl bg-white hover-lift">
-<div class="text-institutional-blue mb-md">
-<span class="material-symbols-outlined text-[40px]" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<!-- Investment Plans -->
+<section class="py-xl border-t border-surface-gray px-margin-mobile md:px-0">
+<h2 class="font-headline-lg text-headline-lg mb-sm text-center">What you get when investing and trading at <?php echo htmlspecialchars($siteName); ?></h2>
+<p class="font-body-md text-body-md text-on-surface-variant text-center mb-xl max-w-2xl mx-auto">Browse our investment plans and start growing your portfolio with transparent terms and competitive returns.</p>
+
+<?php if (empty($plans)): ?>
+<div class="text-center py-12 border border-surface-gray rounded-xl bg-white">
+<p class="text-on-surface-variant">No investment plans available at the moment.</p>
+<a href="<?php echo htmlspecialchars($investCtaUrl); ?>" class="inline-block mt-md bg-fidelity-green text-white px-lg py-sm rounded-lg font-label-md hover:opacity-90 transition-all">Open an account</a>
 </div>
-<h3 class="font-headline-md text-headline-md mb-sm">Industry-leading research</h3>
-<p class="text-body-sm text-on-surface-variant mb-md">Fine-tune trading strategies with research across stocks, options, crypto, and mutual funds. Use screeners to spark new ideas.</p>
-<a class="text-institutional-blue font-label-md hover:underline flex items-center gap-xs" href="#">
-                        Access research tools <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+<?php else: ?>
+
+<?php if ($showPlanTabs): ?>
+<nav class="marketing-plan-tabs-nav mb-lg overflow-x-auto border-b border-surface-gray" aria-label="Investment plan categories">
+<div class="inline-flex gap-md min-w-full md:w-full pb-0">
+<?php foreach ($activePlanTypes as $typeKey => $typeLabel): ?>
+<button type="button" class="marketing-plan-tab shrink-0 pb-3 text-sm font-label-md text-on-surface-variant hover:text-fidelity-green transition-colors border-b-2 border-transparent whitespace-nowrap<?php echo $typeKey === $defaultPlanTab ? ' is-active' : ''; ?>" data-plan-tab="<?php echo htmlspecialchars($typeKey); ?>">
+<?php echo htmlspecialchars($typeLabel); ?>
+<span class="ml-1 text-[10px] opacity-60">(<?php echo count($plansByType[$typeKey]); ?>)</span>
+</button>
+<?php endforeach; ?>
+</div>
+</nav>
+<?php endif; ?>
+
+<?php foreach ($activePlanTypes as $typeKey => $typeLabel):
+    $typePlans = $plansByType[$typeKey];
+?>
+<div class="marketing-plan-panel grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-lg mb-lg<?php echo ($typeKey === $defaultPlanTab || !$showPlanTabs) ? ' is-active' : ''; ?>" data-plan-panel="<?php echo htmlspecialchars($typeKey); ?>">
+<?php foreach ($typePlans as $plan):
+    $planDays = plan_duration_days($plan);
+    $riskBadge = $marketingRiskBadge($plan['investment_risk'] ?? 'mid');
+    $periodReturn = format_plan_period_return($plan['yield_min'] ?? 0, $planDays);
+?>
+<div class="card-shadow rounded-xl bg-white p-md md:p-lg flex flex-col h-full hover-lift">
+<div class="flex justify-between items-start gap-3 mb-md">
+<div class="flex items-center gap-3 min-w-0">
+<?php echo plan_logo_markup($plan['logo_url'] ?? null, $plan['name'], 'w-10 h-10', 'text-sm'); ?>
+<div class="min-w-0">
+<h3 class="font-headline-md text-headline-md text-on-surface leading-tight truncate"><?php echo htmlspecialchars($plan['name']); ?></h3>
+<p class="text-body-sm text-on-surface-variant truncate"><?php echo htmlspecialchars($plan['description'] ?: 'Premium investment plan'); ?></p>
+</div>
+</div>
+<span class="<?php echo $riskBadge['class']; ?> px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0"><?php echo htmlspecialchars($riskBadge['label']); ?></span>
+</div>
+<div class="space-y-md mb-lg flex-grow">
+<div class="grid grid-cols-2 gap-md">
+<div>
+<p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Expected Return</p>
+<p class="text-base font-bold text-fidelity-green mt-1"><?php echo htmlspecialchars($periodReturn); ?></p>
+</div>
+<div>
+<p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Min. Investment</p>
+<p class="text-base font-bold text-on-surface mt-1">USD <?php echo format_usd_amount($plan['min_deposit']); ?></p>
+</div>
+</div>
+<div class="flex justify-between items-center text-body-sm border-t border-surface-gray pt-sm">
+<span class="text-on-surface-variant">Duration</span>
+<span class="text-on-surface font-semibold"><?php echo (int) $planDays; ?> Days</span>
+</div>
+<?php if (!empty($plan['liquidation_cost']) && (float) $plan['liquidation_cost'] > 0): ?>
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Early Exit Fee</span>
+<span class="text-amber-600 font-semibold">USD <?php echo format_usd_amount($plan['liquidation_cost']); ?></span>
+</div>
+<?php endif; ?>
+</div>
+<a href="<?php echo htmlspecialchars($investCtaUrl); ?>" class="w-full bg-fidelity-green hover:opacity-90 text-white font-label-md text-center py-sm rounded-lg transition-all flex items-center justify-center gap-xs">
+<span>Invest Now</span>
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
 </a>
 </div>
-<div class="p-md border border-surface-gray rounded-xl bg-white hover-lift">
-<div class="text-fidelity-green mb-md">
-<span class="material-symbols-outlined text-[40px]" style="font-variation-settings: 'FILL' 1;">call_split</span>
+<?php endforeach; ?>
 </div>
-<h3 class="font-headline-md text-headline-md mb-sm">Options strategies</h3>
-<p class="text-body-sm text-on-surface-variant mb-md">Pursue opportunities intelligently with professional trade ideas and support, regardless of your experience level.</p>
-<div class="flex flex-col gap-xs">
-<a class="text-institutional-blue font-label-md hover:underline flex items-center gap-xs" href="#">
-                            Apply to trade options <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-</a>
-<a class="text-institutional-blue font-label-md hover:underline flex items-center gap-xs" href="#">
-                            Learn about options <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-</a>
-</div>
-</div>
-<div class="p-md border border-surface-gray rounded-xl bg-white hover-lift">
-<div class="text-on-tertiary-fixed-variant mb-md">
-<span class="material-symbols-outlined text-[40px]" style="font-variation-settings: 'FILL' 1;">account_balance</span>
-</div>
-<h3 class="font-headline-md text-headline-md mb-sm">Margin buying power</h3>
-<p class="text-body-sm text-on-surface-variant mb-md">Leverage advanced strategies and access additional cash flow without disrupting long-term goals. Low rates and easy access.</p>
-<div class="flex flex-col gap-xs">
-<a class="text-institutional-blue font-label-md hover:underline flex items-center gap-xs" href="#">
-                            Add margin <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-</a>
-<a class="text-institutional-blue font-label-md hover:underline flex items-center gap-xs" href="#">
-                            Learn about margin <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-</a>
-</div>
-</div>
-</div>
+<?php endforeach; ?>
+
+<?php endif; ?>
 </section>
 <!-- Education/Learning -->
 <section class="py-xl bg-surface-container-low -mx-margin-mobile md:-mx-20 px-margin-mobile md:px-20 rounded-3xl mb-xl">
 <div class="flex flex-col md:flex-row justify-between items-end mb-xl gap-md">
 <div class="max-w-2xl">
-<h2 class="font-headline-lg text-headline-lg mb-sm">Learn from Fidelity's best trading minds</h2>
+<h2 class="font-headline-lg text-headline-lg mb-sm">Learn from <?php echo htmlspecialchars($siteName); ?>'s best trading minds</h2>
 <p class="text-on-surface-variant">Join a community that helps you make smarter decisions on every trade and apply years of market experience to your strategy.</p>
 </div>
 <div class="flex gap-sm">
@@ -212,8 +312,8 @@ $pageTitle = 'Advanced Trading | Fidelity';
 <div class="absolute top-0 right-0 p-lg opacity-10">
 <span class="material-symbols-outlined text-[120px]">trending_up</span>
 </div>
-<h2 class="font-display-lg text-display-lg mb-sm relative z-10">Get started with Fidelity</h2>
-<p class="text-body-lg text-on-surface-variant mb-lg relative z-10">Make your first investment today—open a Fidelity brokerage account in just minutes.</p>
+<h2 class="font-display-lg text-display-lg mb-sm relative z-10">Get started with <?php echo htmlspecialchars($siteName); ?></h2>
+<p class="text-body-lg text-on-surface-variant mb-lg relative z-10">Make your first investment today—open a <?php echo htmlspecialchars($siteName); ?> brokerage account in just minutes.</p>
 <a href="/register" class="inline-block bg-fidelity-green text-on-primary font-headline-md text-headline-md px-xl py-md rounded-lg shadow-md hover:opacity-90 transition-all relative z-10">
                     Open a brokerage account
                 </a>
@@ -231,6 +331,18 @@ $pageTitle = 'Advanced Trading | Fidelity';
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
 
 <script>
+(function () {
+    document.querySelectorAll('.marketing-plan-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            var type = tab.getAttribute('data-plan-tab');
+            document.querySelectorAll('.marketing-plan-tab').forEach(function (t) { t.classList.remove('is-active'); });
+            document.querySelectorAll('.marketing-plan-panel').forEach(function (p) { p.classList.remove('is-active'); });
+            tab.classList.add('is-active');
+            var panel = document.querySelector('.marketing-plan-panel[data-plan-panel="' + type + '"]');
+            if (panel) panel.classList.add('is-active');
+        });
+    });
+})();
 (function () {
     var heroImg = document.querySelector('.investing-hero-img');
     if (!heroImg) return;
