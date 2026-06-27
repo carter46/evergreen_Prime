@@ -95,6 +95,7 @@ $pageTitle = $siteName . ' | Dashboard';
 $hour = (int) date('G');
 $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
 $growthPct = $userBalance > 0 ? min(99.9, ($totalProfit / max(1, $userBalance)) * 100) : 0;
+$activePlanCount = count($activeInvestments);
 require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 ?>
 <style>
@@ -105,21 +106,21 @@ $chartBtnActive = 'px-3 py-1 font-label-md text-label-md bg-white shadow-sm roun
 $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded transition-colors text-on-surface-variant';
 ?>
 <section class="mb-xl">
-<h2 class="font-hanken font-bold text-headline-lg text-primary"><?php echo $greeting; ?>, <?php echo htmlspecialchars($dashboardUserName); ?>.</h2>
+<h2 class="font-hanken font-bold dash-greeting text-primary"><?php echo $greeting; ?>, <?php echo htmlspecialchars($dashboardUserName); ?>.</h2>
 <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Welcome back to your institutional trading hub.</p>
 </section>
 <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
-<div class="bg-surface-container-lowest border border-surface-gray p-md flex flex-col justify-between hover:active-glow transition-all rounded">
+<div class="dash-card-balance-green bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div>
-<span class="font-label-md text-label-md text-on-surface-variant">Total USD Balance</span>
-<h3 class="font-hanken font-extrabold text-headline-md text-on-surface mt-base">$<?php echo number_format((float) $userBalance, 0, '.', ','); ?> <span class="text-label-md font-medium text-on-surface-variant opacity-60">USDT</span></h3>
+<span class="font-label-md text-label-md dash-card-label uppercase tracking-wider">Total USD Balance</span>
+<h3 class="font-hanken font-extrabold text-headline-md dash-card-value mt-base">$<?php echo number_format((float) $userBalance, 0, '.', ','); ?> <span class="text-label-md font-medium dash-card-muted opacity-80">USDT</span></h3>
 </div>
 <div class="flex gap-xs mt-md">
-<button type="button" id="deposit-btn-dash" class="flex-1 bg-primary text-white text-[12px] font-bold py-2 rounded-lg transition-transform active:scale-95">Deposit</button>
-<a href="/dashboard/user/transactions" class="flex-1 border border-surface-gray text-on-surface text-[12px] font-bold py-2 rounded-lg hover:bg-surface-container transition-colors text-center">Transactions</a>
+<button type="button" id="deposit-btn-dash" class="flex-1 dash-btn-solid text-[12px] font-bold py-2 rounded-lg transition-transform active:scale-95">Deposit</button>
+<a href="/dashboard/user/transactions" class="flex-1 dash-btn-outline border text-[12px] font-bold py-2 rounded-lg transition-colors text-center">Transactions</a>
 </div>
 </div>
-<div class="bg-surface-container-lowest border border-surface-gray p-md flex flex-col justify-between hover:active-glow transition-all rounded">
+<div class="dash-card-light-green bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div>
 <span class="font-label-md text-label-md text-on-surface-variant">Total Profit</span>
 <h3 class="font-hanken font-extrabold text-headline-md text-fidelity-green mt-base">+$<?php echo format_usd_amount($totalProfit); ?></h3>
@@ -131,7 +132,7 @@ $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded
 </div>
 <?php endif; ?>
 </div>
-<div class="bg-surface-container-lowest border border-surface-gray p-md flex flex-col justify-between hover:active-glow transition-all rounded">
+<div class="dash-card-light-green bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div class="space-y-md">
 <div>
 <span class="font-label-md text-label-md text-on-surface-variant">Active Capital</span>
@@ -143,13 +144,13 @@ $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded
 </div>
 </div>
 </div>
-<div class="bg-surface-container-lowest border border-surface-gray p-md flex flex-col justify-between hover:active-glow transition-all rounded">
+<div class="dash-card-referral-dark bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div>
-<span class="font-label-md text-label-md text-on-surface-variant">Referral Bonus</span>
-<h3 class="font-hanken font-extrabold text-headline-md text-on-surface mt-base">$<?php echo format_usd_amount($referralBonus); ?></h3>
-<p class="font-label-md text-[11px] text-on-surface-variant mt-1">Last 24h: <span class="text-fidelity-green">+$<?php echo format_usd_amount($referralBonusLast24h); ?></span></p>
+<span class="font-label-md text-label-md dash-card-label uppercase tracking-wider">Referral Bonus</span>
+<h3 class="font-hanken font-extrabold text-headline-md dash-card-value mt-base">$<?php echo format_usd_amount($referralBonus); ?></h3>
+<p class="font-label-md text-[11px] dash-card-muted mt-1">Last 24h: <span class="dash-card-accent">+$<?php echo format_usd_amount($referralBonusLast24h); ?></span></p>
 </div>
-<a class="inline-flex items-center gap-1 font-label-md text-institutional-blue font-bold mt-md hover:underline" href="/dashboard/user/referrals">
+<a class="inline-flex items-center gap-1 font-label-md dash-card-link font-bold mt-md hover:underline" href="/dashboard/user/referrals">
 View Network Details
 <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
 </a>
@@ -160,7 +161,7 @@ View Network Details
 <div class="bg-surface-container-lowest border border-surface-gray p-md relative overflow-hidden h-[450px] flex flex-col rounded">
 <div class="flex justify-between items-center mb-lg relative z-10 flex-wrap gap-3">
 <div>
-<h4 class="font-hanken font-bold text-headline-md text-on-surface">AI Engine Yield Analysis</h4>
+<h4 class="font-hanken font-bold text-headline-md text-on-surface">Market Engine Yield Analysis</h4>
 <p class="font-body-sm text-body-sm text-on-surface-variant">Growth visualization for institutional nodes</p>
 </div>
 <div class="flex bg-surface-container rounded-lg p-1 gap-1">
@@ -214,8 +215,8 @@ if (!empty($chartData)) {
 <div class="absolute inset-0 opacity-5 pointer-events-none rounded" style="background-image: radial-gradient(#185e08 1px, transparent 1px); background-size: 20px 20px;"></div>
 </div>
 <div class="grid grid-cols-2 gap-md">
-<div class="bg-surface-container-low border border-surface-gray p-sm rounded-lg flex items-center gap-md">
-<div class="w-12 h-12 bg-white rounded flex items-center justify-center shadow-sm">
+<div class="dash-card-light-green border border-surface-gray p-sm rounded-lg dash-insight-tile">
+<div class="w-12 h-12 bg-white rounded flex items-center justify-center shadow-sm shrink-0">
 <span class="material-symbols-outlined text-fidelity-green">query_stats</span>
 </div>
 <div>
@@ -223,8 +224,8 @@ if (!empty($chartData)) {
 <p class="font-hanken font-bold text-body-lg text-on-surface">Low Risk Profile</p>
 </div>
 </div>
-<div class="bg-surface-container-low border border-surface-gray p-sm rounded-lg flex items-center gap-md">
-<div class="w-12 h-12 bg-white rounded flex items-center justify-center shadow-sm">
+<div class="dash-card-light-green border border-surface-gray p-sm rounded-lg dash-insight-tile">
+<div class="w-12 h-12 bg-white rounded flex items-center justify-center shadow-sm shrink-0">
 <span class="material-symbols-outlined text-institutional-blue">security</span>
 </div>
 <div>
@@ -237,7 +238,7 @@ if (!empty($chartData)) {
 <div class="space-y-lg">
 <div class="bg-surface-container-lowest border border-surface-gray p-md rounded">
 <div class="flex justify-between items-center mb-md">
-<h4 class="font-hanken font-bold text-body-lg text-on-surface">Live AI Trades</h4>
+<h4 class="font-hanken font-bold text-body-lg text-on-surface">Live Market Trades</h4>
 <span class="w-2 h-2 bg-error rounded-full animate-ping"></span>
 </div>
 <?php if (!empty($showTradeTabs)): ?>
@@ -251,15 +252,12 @@ if (!empty($chartData)) {
 <?php
 $initialTradePlans = $plansByTypeForTrades[$defaultTradeTab] ?? ['Basic', 'Standard', 'Premium'];
 $tradeSamples = array_slice($initialTradePlans, 0, 3);
-$tradeAmounts = ['+$245.00', '-$12.40', '+$89.15'];
-$tradeDirs = ['Long', 'Short', 'Long'];
-$tradeMins = [2, 8, 15];
-$tradeColors = ['orange', 'yellow', 'blue'];
-$tradeSymbols = ['BTC', 'BNB', 'ADA'];
 foreach ($tradeSamples as $ti => $planName):
-    $isLong = ($tradeDirs[$ti] ?? 'Long') === 'Long';
-    $sym = $tradeSymbols[$ti] ?? 'AI';
-    $color = $tradeColors[$ti] ?? 'gray';
+    $isLong = ($ti % 2 === 0);
+    $tradeMins = max(1, ($ti + 1) * 3 + ($ti * 2));
+    $tradeAmountVal = max(0, (($ti + 1) * 47.5) + fmod(crc32($planName . (string) $ti), 200));
+    $tradeAmountStr = ($isLong ? '+' : '-') . '$' . number_format($tradeAmountVal, 2);
+    $color = ['orange', 'yellow', 'blue'][$ti] ?? 'gray';
 ?>
 <div class="live-trade-card flex items-center justify-between p-sm border-b border-surface-gray/50 hover:bg-surface-container-low transition-colors group">
 <div class="flex items-center gap-sm min-w-0">
@@ -268,10 +266,10 @@ foreach ($tradeSamples as $ti => $planName):
 </div>
 <div class="min-w-0">
 <p class="trade-pair font-label-md text-[12px] font-bold text-on-surface truncate"><?php echo htmlspecialchars($planName); ?></p>
-<span class="trade-time text-[10px] <?php echo $isLong ? 'text-fidelity-green' : 'text-error'; ?> font-medium uppercase tracking-tight"><?php echo $isLong ? 'Long Position' : 'Short Position'; ?> &middot; <?php echo (int) $tradeMins[$ti]; ?>m ago</span>
+<span class="trade-time text-[10px] <?php echo $isLong ? 'text-fidelity-green' : 'text-error'; ?> font-medium uppercase tracking-tight"><?php echo $isLong ? 'Long Position' : 'Short Position'; ?> &middot; <?php echo (int) $tradeMins; ?>m ago</span>
 </div>
 </div>
-<p class="live-trade-amount font-hanken font-bold <?php echo $isLong ? 'text-fidelity-green' : 'text-on-surface-variant'; ?> text-body-md shrink-0"><?php echo $tradeAmounts[$ti]; ?></p>
+<p class="live-trade-amount font-hanken font-bold <?php echo $isLong ? 'text-fidelity-green' : 'text-on-surface-variant'; ?> text-body-md shrink-0"><?php echo $tradeAmountStr; ?></p>
 </div>
 <?php endforeach; ?>
 </div>
@@ -429,7 +427,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateChart(data) {
         if (!chartContainer) return;
         if (!data || data.length === 0) {
-            chartContainer.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>';
+            chartContainer.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-on-surface-variant text-sm">No data available</div>';
             if (chartDates) chartDates.innerHTML = '';
             return;
         }

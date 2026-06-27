@@ -19,7 +19,10 @@ $profileVerified = !empty($profileUser['verified']);
 $profileKycStatus = $profileUser['kyc_status'] ?? 'none';
 $profile2FA = isset($profileUser['two_factor_enabled']) ? (bool)$profileUser['two_factor_enabled'] : false;
 $pageTitle = $siteName . ' | Profile and Security Settings';
+$pageHeading = 'System Settings';
+$pageSubtitle = 'Manage your profile, security preferences, and account details.';
 require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
+include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
 <div class="max-w-7xl mx-auto">
 <!-- Profile Header Section -->
@@ -36,7 +39,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 <div class="flex items-center gap-3">
 <h1 class="text-2xl font-bold" data-profile-name><?php echo htmlspecialchars($profileName); ?></h1>
 <?php if ($profileVerified): ?>
-<span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
+<span class="bg-fidelity-green/10 text-fidelity-green text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
 <span class="material-symbols-outlined text-[14px]">verified</span> Verified
 </span>
 <?php endif; ?>
@@ -88,7 +91,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 </div>
 <div id="profile-save-message" class="text-sm hidden"></div>
 <div class="mt-8 flex justify-end">
-<button type="submit" class="bg-primary-container text-on-primary px-8 py-2.5 rounded-lg font-bold hover:bg-primary-container/90 transition-all">
+<button type="submit" class="bg-fidelity-green text-white px-8 py-2.5 rounded-lg font-bold hover:opacity-90 transition-all">
                             Save Changes
                         </button>
 </div>
@@ -104,7 +107,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 </div>
 <label class="relative inline-flex items-center cursor-pointer">
 <input id="2fa-toggle" class="sr-only peer" type="checkbox" <?php echo $profile2FA ? 'checked' : ''; ?>/>
-<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-background-dark/60 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+<div class="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-surface-gray after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-fidelity-green"></div>
 </label>
 </div>
 <h3 class="font-bold text-lg mb-1">Two-Factor Auth</h3>
@@ -178,21 +181,21 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 </h3>
 <div class="space-y-4">
 <div class="flex items-center gap-4">
-<div class="w-8 h-8 rounded-full <?php echo $profileVerified ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-slate-100 dark:bg-background-dark/60 text-slate-400'; ?> flex items-center justify-center">
+<div class="w-8 h-8 rounded-full <?php echo $profileVerified ? 'bg-fidelity-green/10 text-fidelity-green' : 'bg-surface-container-high text-on-surface-variant'; ?> flex items-center justify-center">
 <span class="material-symbols-outlined text-sm"><?php echo $profileVerified ? 'check' : 'mail'; ?></span>
 </div>
 <div class="flex-1">
 <p class="text-sm font-bold">Email Verified</p>
-<p class="text-xs text-slate-400"><?php echo $profileVerified ? 'Confirmed' : 'Pending'; ?></p>
+<p class="text-xs text-on-surface-variant"><?php echo $profileVerified ? 'Confirmed' : 'Pending'; ?></p>
 </div>
 </div>
 <div class="flex items-center gap-4">
-<div class="w-8 h-8 rounded-full <?php echo $profileKycStatus === 'verified' ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : ($profileKycStatus === 'pending' ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-background-dark/60 text-slate-400'); ?> flex items-center justify-center">
+<div class="w-8 h-8 rounded-full <?php echo $profileKycStatus === 'verified' ? 'bg-fidelity-green/10 text-fidelity-green' : ($profileKycStatus === 'pending' ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-on-surface-variant'); ?> flex items-center justify-center">
 <span class="material-symbols-outlined text-sm"><?php echo $profileKycStatus === 'verified' ? 'check' : ($profileKycStatus === 'pending' ? 'hourglass_empty' : 'verified_user'); ?></span>
 </div>
 <div class="flex-1">
 <p class="text-sm font-bold">KYC Status</p>
-<p class="text-xs text-slate-400"><?php
+<p class="text-xs text-on-surface-variant"><?php
 if ($profileKycStatus === 'verified') echo 'Verified';
 elseif ($profileKycStatus === 'pending') echo 'Documents under review';
 elseif ($profileKycStatus === 'rejected') echo 'Please resubmit documents';
@@ -201,7 +204,7 @@ else echo 'Complete verification to withdraw';
 </div>
 </div>
 </div>
-<a href="/dashboard/user/kyc" class="mt-8 block w-full bg-primary-container/10 text-primary-container hover:bg-primary-container hover:text-on-primary transition-all font-bold py-3 rounded-lg flex items-center justify-center gap-2 text-center">
+<a href="/dashboard/user/kyc" class="mt-8 block w-full bg-fidelity-green/10 text-fidelity-green hover:bg-fidelity-green hover:text-white transition-all font-bold py-3 rounded-lg flex items-center justify-center gap-2 text-center">
 <span class="material-symbols-outlined text-sm"><?php echo in_array($profileKycStatus, ['verified']) ? 'visibility' : 'upload'; ?></span>
                         <?php echo in_array($profileKycStatus, ['verified']) ? 'View KYC' : 'Upload Documents'; ?>
                     </a>
@@ -228,53 +231,53 @@ else echo 'Complete verification to withdraw';
 </div>
 <?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
 <!-- Disable 2FA OTP Modal -->
-<div id="2fa-otp-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-<div class="bg-white dark:bg-background-dark rounded-xl max-w-md w-full p-8 shadow-2xl">
+<div id="2fa-otp-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-xl max-w-md w-full p-8 shadow-2xl border border-surface-gray">
 <div class="flex justify-between items-center mb-6">
 <h2 class="text-xl font-bold">Verify to Disable 2FA</h2>
 <button type="button" id="2fa-otp-modal-close" class="text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined">close</span></button>
 </div>
-<p class="text-sm text-slate-500 mb-4">We'll send a 6-digit code to your email. Enter it below to disable 2FA.</p>
+<p class="text-sm text-on-surface-variant mb-4">We'll send a 6-digit code to your email. Enter it below to disable 2FA.</p>
 <div class="flex gap-2 justify-center my-6" id="2fa-otp-inputs">
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 1"/>
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 2"/>
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 3"/>
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 4"/>
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 5"/>
-<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-slate-50 dark:bg-zinc-800 border rounded-lg focus:ring-2 focus:ring-primary" data-2fa-digit aria-label="Digit 6"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-surface-container-low border border-surface-gray rounded-lg focus:ring-2 focus:ring-fidelity-green" data-2fa-digit aria-label="Digit 1"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-surface-container-low border border-surface-gray rounded-lg focus:ring-2 focus:ring-fidelity-green" data-2fa-digit aria-label="Digit 2"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-surface-container-low border border-surface-gray rounded-lg focus:ring-2 focus:ring-fidelity-green" data-2fa-digit aria-label="Digit 3"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-surface-container-low border border-surface-gray rounded-lg focus:ring-2 focus:ring-fidelity-green" data-2fa-digit aria-label="Digit 4"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-surface-container-low border border-surface-gray rounded-lg focus:ring-2 focus:ring-fidelity-green" data-2fa-digit aria-label="Digit 5"/>
+<input type="text" maxlength="1" class="w-12 h-14 text-center text-xl font-bold bg-surface-container-low border border-surface-gray rounded-lg focus:ring-2 focus:ring-fidelity-green" data-2fa-digit aria-label="Digit 6"/>
 </div>
 <div id="2fa-otp-message" class="text-sm hidden mb-4"></div>
 <button type="button" id="2fa-otp-resend" class="text-primary hover:underline text-sm font-medium disabled:opacity-50 mb-4">Resend code</button>
 <div class="flex gap-2 pt-2">
 <button type="button" id="2fa-otp-submit" class="flex-1 bg-primary text-black font-bold py-2.5 rounded-lg hover:bg-primary/90">Verify & Disable</button>
-<button type="button" id="2fa-otp-cancel" class="px-4 py-2.5 text-slate-600 dark:text-slate-400 font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800">Cancel</button>
+<button type="button" id="2fa-otp-cancel" class="px-4 py-2.5 text-on-surface-variant font-medium rounded-lg hover:bg-surface-container-low">Cancel</button>
 </div>
 </div>
 </div>
 <!-- Change Password Modal -->
-<div id="password-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-<div class="bg-white dark:bg-background-dark rounded-xl max-w-md w-full p-8 shadow-2xl">
+<div id="password-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-xl max-w-md w-full p-8 shadow-2xl border border-surface-gray">
 <div class="flex justify-between items-center mb-6">
 <h2 class="text-xl font-bold">Change Password</h2>
 <button type="button" id="password-modal-close" class="text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined">close</span></button>
 </div>
 <form id="password-form" class="space-y-4">
 <div>
-<label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Current password</label>
-<input type="password" id="pw-current" required class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Enter current password"/>
+<label class="block text-sm font-medium text-on-surface-variant mb-1">Current password</label>
+<input type="password" id="pw-current" required class="w-full bg-surface-container-low border border-surface-gray rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-fidelity-green focus:border-fidelity-green" placeholder="Enter current password"/>
 </div>
 <div>
-<label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">New password (min 8 characters)</label>
-<input type="password" id="pw-new" required minlength="8" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Enter new password"/>
+<label class="block text-sm font-medium text-on-surface-variant mb-1">New password (min 8 characters)</label>
+<input type="password" id="pw-new" required minlength="8" class="w-full bg-surface-container-low border border-surface-gray rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-fidelity-green focus:border-fidelity-green" placeholder="Enter new password"/>
 </div>
 <div>
-<label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Confirm new password</label>
-<input type="password" id="pw-confirm" required minlength="8" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Confirm new password"/>
+<label class="block text-sm font-medium text-on-surface-variant mb-1">Confirm new password</label>
+<input type="password" id="pw-confirm" required minlength="8" class="w-full bg-surface-container-low border border-surface-gray rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-fidelity-green focus:border-fidelity-green" placeholder="Confirm new password"/>
 </div>
 <div id="password-modal-message" class="text-sm hidden"></div>
 <div class="flex gap-2 pt-2">
 <button type="submit" class="flex-1 bg-primary text-black font-bold py-2.5 rounded-lg hover:bg-primary/90">Change Password</button>
-<button type="button" id="password-modal-cancel" class="px-4 py-2.5 text-slate-600 dark:text-slate-400 font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800">Cancel</button>
+<button type="button" id="password-modal-cancel" class="px-4 py-2.5 text-on-surface-variant font-medium rounded-lg hover:bg-surface-container-low">Cancel</button>
 </div>
 </form>
 </div>

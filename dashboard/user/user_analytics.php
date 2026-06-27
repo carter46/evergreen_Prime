@@ -186,6 +186,11 @@ try {
     }
 } catch (Throwable $e) { }
 
+$profitGrowthPct = ($userUsdBalance + $activeCapital) > 0
+    ? min(99.9, ($totalProfit / max(1, $userUsdBalance + $activeCapital)) * 100)
+    : 0;
+$dailyYieldPct = $activeCapital > 0 ? min(99.9, ($dailyAvgReturn / $activeCapital) * 100) : 0;
+
 function portfolio_plan_card(array $ap, string $tab, float $userUsdBalance): void {
     $startDate = $ap['start_date'] ?? $ap['created_at'] ?? null;
     $durationDays = (int) ($ap['investment_duration_days'] ?? $ap['plan_duration_days'] ?? 0);
@@ -199,29 +204,29 @@ function portfolio_plan_card(array $ap, string $tab, float $userUsdBalance): voi
     $invStatus = strtolower($ap['status'] ?? 'active');
     $isPaused = $invStatus === 'paused';
     ?>
-    <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-700">
+    <div class="p-4 rounded-xl bg-surface-container-low border border-surface-gray">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <span class="font-bold text-base truncate"><?= htmlspecialchars($ap['plan_name'] ?? 'Plan') ?></span>
+            <span class="font-bold text-base truncate text-on-surface"><?= htmlspecialchars($ap['plan_name'] ?? 'Plan') ?></span>
         <?php if ($tab === 'active'): ?>
             <?php if ($isPaused): ?>
-            <span class="px-2 py-1 bg-slate-500/20 text-slate-500 text-xs font-bold rounded-full shrink-0">Paused</span>
+            <span class="px-2 py-1 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-full shrink-0">Paused</span>
             <?php else: ?>
-            <span class="px-2 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full shrink-0">Active</span>
+            <span class="px-2 py-1 bg-fidelity-green/10 text-fidelity-green text-xs font-bold rounded-full shrink-0">Active</span>
             <?php endif; ?>
         <?php elseif ($tab === 'matured'): ?>
-            <span class="px-2 py-1 bg-blue-500/20 text-blue-500 text-xs font-bold rounded-full shrink-0">Matured</span>
+            <span class="px-2 py-1 bg-institutional-blue/10 text-institutional-blue text-xs font-bold rounded-full shrink-0">Matured</span>
         <?php else: ?>
-            <span class="px-2 py-1 bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold rounded-full shrink-0">Liquidated</span>
+            <span class="px-2 py-1 bg-error/10 text-error text-xs font-bold rounded-full shrink-0">Liquidated</span>
         <?php endif; ?>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm mb-3">
-            <div><span class="text-slate-400 block text-xs">Amount</span><span class="font-bold">$<?= format_usd_amount($amount) ?></span></div>
-            <div><span class="text-slate-400 block text-xs">Yield</span><span class="font-bold text-emerald-500"><?= number_format($yieldMin, 1) ?>–<?= number_format($yieldMax, 1) ?>%</span></div>
-            <div><span class="text-slate-400 block text-xs"><?= $tab === 'active' ? 'Days left' : 'Duration' ?></span><span class="font-bold"><?= $tab === 'active' ? (int) $daysLeft : $durationDays . ' days' ?></span></div>
+            <div><span class="text-on-surface-variant block text-xs">Amount</span><span class="font-bold text-on-surface">$<?= format_usd_amount($amount) ?></span></div>
+            <div><span class="text-on-surface-variant block text-xs">Yield</span><span class="font-bold text-fidelity-green"><?= number_format($yieldMin, 1) ?>–<?= number_format($yieldMax, 1) ?>%</span></div>
+            <div><span class="text-on-surface-variant block text-xs"><?= $tab === 'active' ? 'Days left' : 'Duration' ?></span><span class="font-bold text-on-surface"><?= $tab === 'active' ? (int) $daysLeft : $durationDays . ' days' ?></span></div>
         </div>
         <?php if ($tab === 'active'): ?>
         <button type="button"
-            class="liquidate-plan-btn w-full py-2 rounded-lg border border-amber-500/50 text-amber-600 dark:text-amber-400 text-sm font-semibold hover:bg-amber-500/10 transition-colors"
+            class="liquidate-plan-btn w-full py-2 rounded-lg border border-error/30 text-error text-sm font-semibold hover:bg-error/5 transition-colors"
             data-investment-id="<?= $invId ?>"
             data-plan-name="<?= htmlspecialchars($ap['plan_name'] ?? 'Plan', ENT_QUOTES, 'UTF-8') ?>"
             data-amount="<?= htmlspecialchars(number_format($amount, 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>"
@@ -230,9 +235,9 @@ function portfolio_plan_card(array $ap, string $tab, float $userUsdBalance): voi
             Liquidate Plan
         </button>
         <?php elseif ($tab === 'matured'): ?>
-        <p class="text-xs text-slate-500">Principal returned to your USD wallet at maturity.</p>
+        <p class="text-xs text-on-surface-variant">Principal returned to your USD wallet at maturity.</p>
         <?php else: ?>
-        <p class="text-xs text-slate-500">Early exit — operation fee deducted from your balance.</p>
+        <p class="text-xs text-on-surface-variant">Early exit — operation fee deducted from your balance.</p>
         <?php endif; ?>
     </div>
     <?php
@@ -245,83 +250,69 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
 <style>
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #E9E9E9; border-radius: 10px; }
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
+.analytics-filter-btn.is-active { background: #fff; color: #185e08; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.portfolio-tab.is-active { color: #185e08; border-bottom-color: #185e08; }
 </style>
 <!-- Top Stats Grid -->
-<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-<div class="bento-card p-5 rounded-xl">
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md mb-lg">
+<div class="dash-card-light-green bento-card p-md rounded">
 <div class="flex justify-between items-start mb-4">
-<div class="p-2 bg-primary/10 rounded-lg">
-<span class="material-symbols-outlined text-primary">payments</span>
+<div class="p-2 bg-fidelity-green/10 rounded-lg">
+<span class="material-symbols-outlined text-fidelity-green">payments</span>
 </div>
-<span class="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">+12.4%</span>
+<?php if ($profitGrowthPct > 0): ?>
+<span class="text-xs font-bold text-fidelity-green bg-fidelity-green/10 px-2 py-1 rounded-full">+<?php echo number_format($profitGrowthPct, 1); ?>%</span>
+<?php endif; ?>
 </div>
-<h3 class="text-slate-400 text-sm font-medium">Total Profit</h3>
+<h3 class="text-on-surface-variant text-sm font-medium font-label-md">Total Profit</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$<?php echo format_usd_amount($totalProfit); ?></span>
-</div>
-<div class="mt-4 h-8 w-full">
-<div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
-<div class="absolute bottom-0 left-0 w-full h-4 bg-primary/20" style="clip-path: polygon(0 80%, 10% 60%, 20% 75%, 30% 40%, 40% 50%, 50% 30%, 60% 45%, 70% 20%, 80% 35%, 90% 10%, 100% 25%, 100% 100%, 0 100%);"></div>
+<span class="text-2xl font-bold tracking-tight font-hanken text-on-surface">$<?php echo format_usd_amount($totalProfit); ?></span>
 </div>
 </div>
-</div>
-<div class="bento-card p-5 rounded-xl">
+<div class="dash-card-light-green bento-card p-md rounded">
 <div class="flex justify-between items-start mb-4">
-<div class="p-2 bg-primary/10 rounded-lg">
-<span class="material-symbols-outlined text-primary">trending_up</span>
+<div class="p-2 bg-fidelity-green/10 rounded-lg">
+<span class="material-symbols-outlined text-fidelity-green">trending_up</span>
 </div>
-<span class="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">+1.2%</span>
+<?php if ($dailyYieldPct > 0): ?>
+<span class="text-xs font-bold text-fidelity-green bg-fidelity-green/10 px-2 py-1 rounded-full"><?php echo number_format($dailyYieldPct, 2); ?>% / day</span>
+<?php endif; ?>
 </div>
-<h3 class="text-slate-400 text-sm font-medium">Daily Avg. Return</h3>
+<h3 class="text-on-surface-variant text-sm font-medium font-label-md">Daily Avg. Return</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$<?php echo format_usd_amount($dailyAvgReturn); ?></span>
-</div>
-<div class="mt-4 h-8 w-full">
-<div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
-<div class="absolute bottom-0 left-0 w-full h-4 bg-primary/20" style="clip-path: polygon(0 50%, 10% 55%, 20% 45%, 30% 60%, 40% 40%, 50% 55%, 60% 45%, 70% 50%, 80% 40%, 90% 60%, 100% 50%, 100% 100%, 0 100%);"></div>
+<span class="text-2xl font-bold tracking-tight font-hanken text-on-surface">$<?php echo format_usd_amount($dailyAvgReturn); ?></span>
 </div>
 </div>
-</div>
-<div class="bento-card p-5 rounded-xl">
+<div class="dash-card-light-green bento-card p-md rounded">
 <div class="flex justify-between items-start mb-4">
-<div class="p-2 bg-primary/10 rounded-lg">
-<span class="material-symbols-outlined text-primary">account_balance</span>
+<div class="p-2 bg-fidelity-green/10 rounded-lg">
+<span class="material-symbols-outlined text-fidelity-green">account_balance</span>
 </div>
-<span class="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded-full">Stable</span>
+<span class="text-xs font-bold text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full"><?php echo count($activePlans) > 0 ? 'Stable' : 'No plans'; ?></span>
 </div>
-<h3 class="text-slate-400 text-sm font-medium">Active Capital</h3>
+<h3 class="text-on-surface-variant text-sm font-medium font-label-md">Active Capital</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$<?php echo format_usd_amount($activeCapital); ?></span>
-</div>
-<div class="mt-4 h-8 w-full">
-<div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
-<div class="absolute bottom-0 left-0 w-full h-4 bg-primary/20" style="clip-path: polygon(0 20%, 100% 20%, 100% 100%, 0 100%);"></div>
+<span class="text-2xl font-bold tracking-tight font-hanken text-on-surface">$<?php echo format_usd_amount($activeCapital); ?></span>
 </div>
 </div>
-</div>
-<div class="bento-card bg-primary-container/5 p-5 rounded-xl border-primary-container/20 border">
+<div class="dash-card-light-green bento-card p-md rounded">
 <div class="flex justify-between items-start mb-4">
-<div class="p-2 bg-primary/10 rounded-lg">
-<span class="material-symbols-outlined text-primary">auto_graph</span>
+<div class="p-2 bg-fidelity-green/10 rounded-lg">
+<span class="material-symbols-outlined text-fidelity-green">auto_graph</span>
 </div>
-<span class="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">Projected</span>
+<span class="text-xs font-bold text-fidelity-green bg-fidelity-green/10 px-2 py-1 rounded-full">Projected</span>
 </div>
-<h3 class="text-slate-400 text-sm font-medium">Est. Monthly Earnings</h3>
+<h3 class="text-on-surface-variant text-sm font-medium font-label-md">Est. Monthly Earnings</h3>
 <div class="flex items-end gap-2 mt-1">
-<span class="text-2xl font-bold tracking-tight">$<?php echo format_usd_amount($estMonthlyEarnings); ?></span>
-</div>
-<div class="mt-4 h-8 w-full">
-<div class="w-full h-full bg-primary/5 rounded relative overflow-hidden">
-<div class="absolute bottom-0 left-0 w-full h-4 bg-primary/20" style="clip-path: polygon(0 80%, 25% 60%, 50% 40%, 75% 20%, 100% 0%, 100% 100%, 0 100%);"></div>
-</div>
+<span class="text-2xl font-bold tracking-tight font-hanken text-on-surface">$<?php echo format_usd_amount($estMonthlyEarnings); ?></span>
 </div>
 </div>
 </section>
@@ -337,10 +328,10 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </h2>
 <a href="/dashboard/user/investment-plans" class="text-sm text-primary font-semibold hover:underline">Browse plans →</a>
 </div>
-<div class="flex gap-1 mb-4 border-b border-slate-200 dark:border-zinc-700 overflow-x-auto">
-<button type="button" class="portfolio-tab px-4 py-2 text-sm font-semibold border-b-2 border-primary text-primary whitespace-nowrap" data-tab="active">Active <span class="text-slate-400 font-normal">(<?= count($activePlans) ?>)</span></button>
-<button type="button" class="portfolio-tab px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white whitespace-nowrap" data-tab="matured">Matured <span class="text-slate-400 font-normal">(<?= count($maturedPlans) ?>)</span></button>
-<button type="button" class="portfolio-tab px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white whitespace-nowrap" data-tab="liquidated">Liquidated <span class="text-slate-400 font-normal">(<?= count($liquidatedPlans) ?>)</span></button>
+<div class="flex gap-1 mb-4 border-b border-surface-gray overflow-x-auto">
+<button type="button" class="portfolio-tab is-active px-4 py-2 text-sm font-semibold border-b-2 border-primary text-primary whitespace-nowrap" data-tab="active">Active <span class="text-on-surface-variant font-normal">(<?= count($activePlans) ?>)</span></button>
+<button type="button" class="portfolio-tab px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-on-surface-variant hover:text-primary whitespace-nowrap" data-tab="matured">Matured <span class="text-on-surface-variant font-normal">(<?= count($maturedPlans) ?>)</span></button>
+<button type="button" class="portfolio-tab px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-on-surface-variant hover:text-primary whitespace-nowrap" data-tab="liquidated">Liquidated <span class="text-on-surface-variant font-normal">(<?= count($liquidatedPlans) ?>)</span></button>
 </div>
 <div id="portfolio-panel-active" class="portfolio-panel">
 <?php if (!empty($activePlans)): ?>
@@ -348,11 +339,11 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <?php foreach ($activePlans as $ap) portfolio_plan_card($ap, 'active', $userUsdBalance); ?>
 </div>
 <?php else: ?>
-<div class="flex flex-col items-center justify-center py-12 text-slate-400">
+<div class="flex flex-col items-center justify-center py-12 text-on-surface-variant">
 <span class="material-symbols-outlined text-4xl mb-2 opacity-50">inventory_2</span>
 <p class="text-sm font-medium">No active plans</p>
 <p class="text-xs mt-1">Subscribe to a plan to start earning</p>
-<a href="/dashboard/user/investment-plans" class="mt-4 px-6 py-2.5 bg-primary hover:bg-primary/90 text-black font-bold rounded-lg text-sm flex items-center gap-2 transition-all">
+<a href="/dashboard/user/investment-plans" class="mt-4 px-6 py-2.5 bg-fidelity-green hover:opacity-90 text-white font-bold rounded-lg text-sm flex items-center gap-2 transition-all">
 <span class="material-symbols-outlined text-lg" style="font-size:1.125rem">rocket_launch</span> Get Started
 </a>
 </div>
@@ -364,7 +355,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <?php foreach ($maturedPlans as $ap) portfolio_plan_card($ap, 'matured', $userUsdBalance); ?>
 </div>
 <?php else: ?>
-<div class="flex flex-col items-center justify-center py-12 text-slate-400 text-center px-4">
+<div class="flex flex-col items-center justify-center py-12 text-on-surface-variant text-center px-4">
 <span class="material-symbols-outlined text-4xl mb-2 opacity-50">event_available</span>
 <p class="text-sm font-medium">No matured plans yet</p>
 <p class="text-xs mt-1">When a plan reaches its duration, principal is credited to your USD wallet automatically.</p>
@@ -377,7 +368,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <?php foreach ($liquidatedPlans as $ap) portfolio_plan_card($ap, 'liquidated', $userUsdBalance); ?>
 </div>
 <?php else: ?>
-<div class="flex flex-col items-center justify-center py-12 text-slate-400 text-center px-4">
+<div class="flex flex-col items-center justify-center py-12 text-on-surface-variant text-center px-4">
 <span class="material-symbols-outlined text-4xl mb-2 opacity-50">cancel</span>
 <p class="text-sm font-medium">No liquidated plans</p>
 <p class="text-xs mt-1">Plans you exit early will appear here.</p>
@@ -390,14 +381,14 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 <h2 class="text-lg font-bold flex items-center gap-2">
                         Cumulative Performance
-                        <span class="material-symbols-outlined text-slate-400 text-base cursor-help" title="Visualizes your total earnings growth over time">info</span>
+                        <span class="material-symbols-outlined text-on-surface-variant text-base cursor-help" title="Visualizes your total earnings growth over time">info</span>
 </h2>
-<div class="flex bg-slate-100 dark:bg-zinc-800 p-1 rounded-lg">
-<button type="button" data-period="1D" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === '1D' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">1D</button>
-<button type="button" data-period="1W" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === '1W' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">1W</button>
-<button type="button" data-period="1M" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === '1M' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">1M</button>
-<button type="button" data-period="1Y" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === '1Y' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">1Y</button>
-<button type="button" data-period="ALL" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white dark:hover:bg-zinc-700 transition-all <?php echo $period === 'ALL' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''; ?>">ALL</button>
+<div class="flex bg-surface-container rounded-lg p-1 gap-1">
+<button type="button" data-period="1D" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white transition-all<?php echo $period === '1D' ? ' is-active' : ''; ?>">1D</button>
+<button type="button" data-period="1W" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white transition-all<?php echo $period === '1W' ? ' is-active' : ''; ?>">1W</button>
+<button type="button" data-period="1M" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white transition-all<?php echo $period === '1M' ? ' is-active' : ''; ?>">1M</button>
+<button type="button" data-period="1Y" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white transition-all<?php echo $period === '1Y' ? ' is-active' : ''; ?>">1Y</button>
+<button type="button" data-period="ALL" class="analytics-filter-btn px-3 py-1 text-xs font-semibold rounded hover:bg-white transition-all<?php echo $period === 'ALL' ? ' is-active' : ''; ?>">ALL</button>
 </div>
 </div>
 <div class="relative h-[300px] w-full" id="analytics-chart">
@@ -424,21 +415,21 @@ if (!empty($chartData)) {
 <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
 <defs>
 <linearGradient id="analyticsChartGradient" x1="0" x2="0" y1="0" y2="1">
-<stop offset="0%" stop-color="#f9bd0b" stop-opacity="0.2"></stop>
-<stop offset="100%" stop-color="#f9bd0b" stop-opacity="0"></stop>
+<stop offset="0%" stop-color="#337722" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#337722" stop-opacity="0"></stop>
 </linearGradient>
 </defs>
 <path d="<?php echo htmlspecialchars($areaD); ?>" fill="url(#analyticsChartGradient)"></path>
-<path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#f9bd0b" stroke-width="3"></path>
+<path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#337722" stroke-width="3"></path>
 <?php foreach ($points as $i => $p): if ($i % floor($count / 5) === 0 || $i === $count - 1): list($px, $py) = explode(',', $p); ?>
-<circle cx="<?php echo $px; ?>" cy="<?php echo $py; ?>" fill="#f9bd0b" r="4"></circle>
+<circle cx="<?php echo $px; ?>" cy="<?php echo $py; ?>" fill="#337722" r="4"></circle>
 <?php endif; endforeach; ?>
 </svg>
-<div class="flex justify-between mt-4 px-2 text-xs text-slate-400 font-medium">
+<div class="flex justify-between mt-4 px-2 text-xs text-on-surface-variant font-medium">
 <?php foreach ($dates as $d): ?><span><?php echo htmlspecialchars($d); ?></span><?php endforeach; ?>
 </div>
 <?php } else { ?>
-<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>
+<div class="absolute inset-0 flex items-center justify-center text-on-surface-variant text-sm">No data available</div>
 <?php } ?>
 </div>
 </div>
@@ -450,22 +441,22 @@ if (!empty($chartData)) {
 <span class="material-symbols-outlined text-3xl text-primary">workspace_premium</span>
 </div>
 <div>
-<h3 class="text-slate-400 text-sm font-medium">Winning Streak</h3>
+<h3 class="text-on-surface-variant text-sm font-medium">Winning Streak</h3>
 <p class="text-3xl font-bold"><?php echo (int)$winningStreakDays; ?> Day<?php echo ((int)$winningStreakDays) === 1 ? '' : 's'; ?></p>
-<p class="text-xs text-slate-400 mt-1 flex items-center gap-1" title="Based on consecutive days with completed payout credits">
+<p class="text-xs text-on-surface-variant mt-1 flex items-center gap-1" title="Based on consecutive days with completed payout credits">
 <span class="material-symbols-outlined text-xs">keyboard_double_arrow_up</span>
 Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$personalBestStreakDays) === 1 ? '' : 's'; ?>
 </p>
 </div>
 </div>
 <div class="bento-card p-6 rounded-xl flex items-center gap-6">
-<div class="w-16 h-16 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
-<span class="material-symbols-outlined text-3xl text-slate-400">warning_amber</span>
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant">warning_amber</span>
 </div>
 <div>
-<h3 class="text-slate-400 text-sm font-medium">Max Drawdown</h3>
+<h3 class="text-on-surface-variant text-sm font-medium">Max Drawdown</h3>
 <p class="text-3xl font-bold"><?php echo $maxDrawdownPct === null ? '—' : number_format((float)$maxDrawdownPct, 1) . '%'; ?></p>
-<p class="text-xs text-slate-400 mt-1" title="Computed from the cumulative net flow curve shown above">Based on cumulative curve</p>
+<p class="text-xs text-on-surface-variant mt-1" title="Computed from the cumulative net flow curve shown above">Based on cumulative curve</p>
 </div>
 </div>
 <div class="bento-card p-6 rounded-xl">
@@ -484,7 +475,7 @@ Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$
 <?php foreach ($breakdownRows as $idx => $b): ?>
 <div class="flex items-center justify-between text-xs">
   <span class="flex items-center gap-2">
-    <span class="w-2 h-2 rounded-full <?php echo $idx === 0 ? 'bg-primary' : ($idx === 1 ? 'bg-emerald-500' : ($idx === 2 ? 'bg-amber-500' : 'bg-slate-200')); ?>"></span>
+    <span class="w-2 h-2 rounded-full <?php echo $idx === 0 ? 'bg-primary' : ($idx === 1 ? 'bg-emerald-500' : ($idx === 2 ? 'bg-amber-500' : 'bg-surface-container-high')); ?>"></span>
     <?php echo htmlspecialchars($b['cur']); ?>
   </span>
   <span class="font-bold"><?php echo number_format((float)$b['pct'], 0); ?>%</span>
@@ -492,29 +483,29 @@ Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$
 <?php endforeach; ?>
 </div>
 <?php else: ?>
-<div class="text-sm text-slate-400">No payout data yet.</div>
+<div class="text-sm text-on-surface-variant">No payout data yet.</div>
 <?php endif; ?>
 </div>
 </div>
 </div>
 <!-- History Table Section -->
 <div class="bento-card rounded-xl overflow-hidden">
-<div class="p-6 border-b border-slate-100 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="p-6 border-b border-surface-gray flex flex-col md:flex-row md:items-center justify-between gap-4">
 <h2 class="text-lg font-bold">Distribution History</h2>
 <div class="flex items-center gap-3">
 <div class="relative">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-<input class="pl-10 pr-4 py-2 bg-slate-100 dark:bg-zinc-800 border-none rounded-lg text-sm w-full md:w-64 focus:ring-2 focus:ring-primary" placeholder="Search entries..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container border-none rounded-lg text-sm w-full md:w-64 focus:ring-2 focus:ring-primary" placeholder="Search entries..." type="text"/>
 </div>
-<button class="p-2 border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800">
-<span class="material-symbols-outlined text-slate-500">filter_list</span>
+<button class="p-2 border border-surface-gray rounded-lg hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-on-surface-variant">filter_list</span>
 </button>
 </div>
 </div>
 <div class="overflow-x-auto custom-scrollbar">
 <table class="w-full text-left border-collapse">
 <thead>
-<tr class="bg-slate-50 dark:bg-zinc-800/50 text-slate-400 text-xs font-bold uppercase tracking-wider">
+<tr class="bg-surface-container-low text-on-surface-variant text-xs font-bold uppercase tracking-wider">
 <th class="px-6 py-4">Date &amp; Time</th>
 <th class="px-6 py-4">Investment Plan</th>
 <th class="px-6 py-4">Asset</th>
@@ -523,7 +514,7 @@ Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$
 <th class="px-6 py-4">Status</th>
 </tr>
 </thead>
-<tbody class="text-sm divide-y divide-slate-100 dark:divide-zinc-800">
+<tbody class="text-sm divide-y divide-surface-gray">
 <?php
 $coinLogosAnalytics = [
     'BTC' => 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
@@ -545,13 +536,13 @@ foreach ($analyticsTx as $tx):
     $isProfitCredit = $txType === 'payout' || ($txType === 'profit_adjustment' && $txAmt >= 0);
     $displayAmt = in_array($txType, ['profit_adjustment', 'referral_bonus_adjustment'], true) ? abs($txAmt) : $txAmt;
     $logo = $coinLogosAnalytics[strtoupper($tx['currency'])] ?? null;
-    $statusClass = $tx['status'] === 'completed' ? 'text-emerald-500' : ($tx['status'] === 'rejected' ? 'text-red-500' : 'text-amber-500');
+    $statusClass = $tx['status'] === 'completed' ? 'text-fidelity-green' : ($tx['status'] === 'rejected' ? 'text-red-500' : 'text-amber-500');
     $statusIcon = $tx['status'] === 'completed' ? 'check_circle' : ($tx['status'] === 'rejected' ? 'cancel' : 'schedule');
 ?>
-<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-colors animate-fade-in">
+<tr class="hover:bg-surface-container-low transition-colors animate-fade-in">
 <td class="px-6 py-4">
 <p class="font-semibold"><?php echo date('M j, Y', strtotime($tx['created_at'])); ?></p>
-<p class="text-xs text-slate-400"><?php echo date('H:i', strtotime($tx['created_at'])); ?></p>
+<p class="text-xs text-on-surface-variant"><?php echo date('H:i', strtotime($tx['created_at'])); ?></p>
 </td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
@@ -565,12 +556,12 @@ foreach ($analyticsTx as $tx):
 <span class="font-medium"><?php echo htmlspecialchars($tx['currency']); ?></span>
 </div>
 </td>
-<td class="px-6 py-4 font-bold <?php echo $isProfitLike ? ($isProfitCredit ? 'text-emerald-500' : 'text-red-500') : 'text-slate-600'; ?>"><?php echo $isProfitLike ? ($isProfitCredit ? '+' : '-') : ''; ?>$<?php echo format_usd_amount($displayAmt); ?></td>
+<td class="px-6 py-4 font-bold <?php echo $isProfitLike ? ($isProfitCredit ? 'text-fidelity-green' : 'text-red-500') : 'text-on-surface'; ?>"><?php echo $isProfitLike ? ($isProfitCredit ? '+' : '-') : ''; ?>$<?php echo format_usd_amount($displayAmt); ?></td>
 <td class="px-6 py-4">
 <?php if ($isProfitLike && $isProfitCredit && $txType === 'payout'): ?>
-<span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded font-bold text-xs"><?php echo number_format((($tx['amount'] / ($activeCapital ?: 1)) * 100), 1); ?>%</span>
+<span class="px-2 py-1 bg-fidelity-green/10 text-fidelity-green rounded font-bold text-xs"><?php echo number_format((($tx['amount'] / ($activeCapital ?: 1)) * 100), 1); ?>%</span>
 <?php else: ?>
-<span class="px-2 py-1 bg-slate-100 dark:bg-zinc-800 text-slate-500 rounded font-bold text-xs">—</span>
+<span class="px-2 py-1 bg-surface-container text-on-surface-variant rounded font-bold text-xs">—</span>
 <?php endif; ?>
 </td>
 <td class="px-6 py-4">
@@ -582,13 +573,13 @@ foreach ($analyticsTx as $tx):
 </tr>
 <?php endforeach; ?>
 <?php if (empty($analyticsTx)): ?>
-<tr><td class="px-6 py-8 text-center text-slate-500" colspan="6">No transactions yet.</td></tr>
+<tr><td class="px-6 py-8 text-center text-on-surface-variant" colspan="6">No transactions yet.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>
 </div>
-<div class="p-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
-<span class="text-xs text-slate-400 font-medium">Showing <?php echo min(count($analyticsTx), 50); ?> entries</span>
+<div class="p-4 border-t border-surface-gray flex items-center justify-between">
+<span class="text-xs text-on-surface-variant font-medium">Showing <?php echo min(count($analyticsTx), 50); ?> entries</span>
 </div>
 </div>
 <?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
@@ -596,35 +587,35 @@ foreach ($analyticsTx as $tx):
 <div id="liquidate-modal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true" aria-labelledby="liquidate-modal-title">
 <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="liquidate-modal-backdrop"></div>
 <div class="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto">
-<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-zinc-800 my-auto">
-<div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
-<h2 id="liquidate-modal-title" class="text-xl font-bold">Liquidate Plan</h2>
-<button type="button" id="liquidate-modal-close" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+<div class="bg-white rounded-xl shadow-2xl w-full max-w-md border border-surface-gray my-auto">
+<div class="p-6 border-b border-surface-gray flex items-center justify-between">
+<h2 id="liquidate-modal-title" class="text-xl font-bold text-on-surface">Liquidate Plan</h2>
+<button type="button" id="liquidate-modal-close" class="p-2 hover:bg-surface-container-low rounded-full" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
 </div>
 <div class="p-6">
-<div class="mb-4 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50">
-<p class="text-sm text-amber-800 dark:text-amber-200 font-semibold flex items-start gap-2">
+<div class="mb-4 p-4 rounded-lg bg-error-container/30 border border-error/20">
+<p class="text-sm text-error font-semibold flex items-start gap-2">
 <span class="material-symbols-outlined text-lg shrink-0">warning</span>
 <span>Early liquidation attracts an operation fee, which will be deducted from your USD balance.</span>
 </p>
 </div>
-<p class="text-sm text-slate-600 dark:text-slate-400 mb-4">You are about to liquidate <strong id="liquidate-plan-name" class="text-slate-900 dark:text-white"></strong> (<span id="liquidate-plan-amount"></span> principal).</p>
+<p class="text-sm text-on-surface-variant mb-4">You are about to liquidate <strong id="liquidate-plan-name" class="text-on-surface"></strong> (<span id="liquidate-plan-amount"></span> principal).</p>
 <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
-<div class="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800">
-<p class="text-xs text-slate-400 uppercase font-bold mb-1">Operation Fee</p>
-<p class="font-bold text-amber-600 dark:text-amber-400" id="liquidate-fee-display">$0.00</p>
+<div class="p-3 rounded-lg bg-surface-container-low">
+<p class="text-xs text-on-surface-variant uppercase font-bold mb-1">Operation Fee</p>
+<p class="font-bold text-error" id="liquidate-fee-display">$0.00</p>
 </div>
-<div class="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800">
-<p class="text-xs text-slate-400 uppercase font-bold mb-1">Your USD Balance</p>
-<p class="font-bold" id="liquidate-balance-display">$0.00</p>
+<div class="p-3 rounded-lg bg-surface-container-low">
+<p class="text-xs text-on-surface-variant uppercase font-bold mb-1">Your USD Balance</p>
+<p class="font-bold text-on-surface" id="liquidate-balance-display">$0.00</p>
 </div>
 </div>
-<p id="liquidate-balance-note" class="text-sm mb-4"></p>
-<div id="liquidate-error" class="text-sm text-red-500 hidden mb-4"></div>
+<p id="liquidate-balance-note" class="text-sm mb-4 text-on-surface-variant"></p>
+<div id="liquidate-error" class="text-sm text-error hidden mb-4"></div>
 <input type="hidden" id="liquidate-investment-id" value=""/>
 <div class="flex gap-3">
-<button type="button" id="liquidate-cancel-btn" class="flex-1 px-4 py-2 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg">Cancel</button>
-<button type="button" id="liquidate-confirm-btn" class="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">Confirm Liquidation</button>
+<button type="button" id="liquidate-cancel-btn" class="flex-1 px-4 py-2 bg-surface-container text-on-surface font-bold rounded-lg">Cancel</button>
+<button type="button" id="liquidate-confirm-btn" class="flex-1 px-4 py-2 bg-fidelity-green hover:opacity-90 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">Confirm Liquidation</button>
 </div>
 </div>
 </div>
@@ -668,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateAnalyticsChart(data) {
         if (!chartWrapper) return;
         if (!data || data.length === 0) {
-            chartWrapper.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No data available</div>';
+            chartWrapper.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-on-surface-variant text-sm">No data available</div>';
             return;
         }
         var maxVal = Math.max.apply(null, data.map(function(d){ return d.value; }));
@@ -688,7 +679,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         var pathD = 'M' + points.join(' L');
         var areaD = pathD + ' L1000,300 L0,300 Z';
-        chartWrapper.innerHTML = '<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300"><defs><linearGradient id="analyticsChartGradient" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f9bd0b" stop-opacity="0.2"></stop><stop offset="100%" stop-color="#f9bd0b" stop-opacity="0"></stop></linearGradient></defs><path d="' + areaD + '" fill="url(#analyticsChartGradient)"></path><path d="' + pathD + '" fill="none" stroke="#f9bd0b" stroke-width="3"></path></svg><div class="flex justify-between mt-4 px-2 text-xs text-slate-400 font-medium">' + dates.map(function(d){ return '<span>' + d + '</span>'; }).join('') + '</div>';
+        chartWrapper.innerHTML = '<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300"><defs><linearGradient id="analyticsChartGradient" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#337722" stop-opacity="0.2"></stop><stop offset="100%" stop-color="#337722" stop-opacity="0"></stop></linearGradient></defs><path d="' + areaD + '" fill="url(#analyticsChartGradient)"></path><path d="' + pathD + '" fill="none" stroke="#337722" stroke-width="3"></path></svg><div class="flex justify-between mt-4 px-2 text-xs text-on-surface-variant font-medium">' + dates.map(function(d){ return '<span>' + d + '</span>'; }).join('') + '</div>';
         animateChart(chartWrapper);
     }
 
@@ -698,14 +689,12 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             var period = this.getAttribute('data-period');
             document.querySelectorAll('.analytics-filter-btn').forEach(function(b) {
-                b.classList.remove('bg-white', 'dark:bg-zinc-700', 'shadow-sm');
-                b.classList.add('hover:bg-white', 'dark:hover:bg-zinc-700');
+                b.classList.remove('is-active');
             });
-            this.classList.add('bg-white', 'dark:bg-zinc-700', 'shadow-sm');
-            this.classList.remove('hover:bg-white', 'dark:hover:bg-zinc-700');
+            this.classList.add('is-active');
             fetch('/api/user/chart-data.php?period=' + encodeURIComponent(period) + '&type=analytics', { credentials: 'same-origin' }).then(function(r){ return r.json(); }).then(function(res){
                 if (res.success && res.data) updateAnalyticsChart(res.data);
-            }).catch(function(){ if (chartWrapper) chartWrapper.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">Failed to load chart</div>'; });
+            }).catch(function(){ if (chartWrapper) chartWrapper.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-on-surface-variant text-sm">Failed to load chart</div>'; });
         });
     });
 
@@ -714,11 +703,11 @@ document.addEventListener('DOMContentLoaded', function() {
         tabBtn.addEventListener('click', function() {
             var tab = this.getAttribute('data-tab');
             document.querySelectorAll('.portfolio-tab').forEach(function(b) {
-                b.classList.remove('border-primary', 'text-primary');
-                b.classList.add('border-transparent', 'text-slate-500');
+                b.classList.remove('is-active', 'border-primary', 'text-primary');
+                b.classList.add('border-transparent', 'text-on-surface-variant');
             });
-            this.classList.add('border-primary', 'text-primary');
-            this.classList.remove('border-transparent', 'text-slate-500');
+            this.classList.add('is-active', 'border-primary', 'text-primary');
+            this.classList.remove('border-transparent', 'text-on-surface-variant');
             document.querySelectorAll('.portfolio-panel').forEach(function(panel) {
                 panel.classList.add('hidden');
             });
@@ -762,8 +751,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (liqBalanceDisplay) {
             liqBalanceDisplay.textContent = '$' + balance.toFixed(2);
-            liqBalanceDisplay.classList.remove('text-emerald-500', 'text-red-500');
-            liqBalanceDisplay.classList.add(canAfford ? 'text-emerald-500' : 'text-red-500');
+            liqBalanceDisplay.classList.remove('text-fidelity-green', 'text-red-500');
+            liqBalanceDisplay.classList.add(canAfford ? 'text-fidelity-green' : 'text-red-500');
         }
         if (liqBalanceNote) {
             liqBalanceNote.classList.remove('text-emerald-600', 'text-red-500', 'hidden');

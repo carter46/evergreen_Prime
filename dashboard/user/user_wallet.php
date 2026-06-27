@@ -66,6 +66,14 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
 <style>
 .wallet-page { width: 100%; max-width: 100%; min-width: 0; overflow-x: clip; }
+#deposit-drawer, #withdraw-drawer { background: #ffffff !important; border-color: #E9E9E9 !important; color: #181c20; }
+#deposit-drawer .border-b, #withdraw-drawer .border-b, #deposit-drawer .border-t, #withdraw-drawer .border-t { border-color: #E9E9E9 !important; }
+#deposit-drawer label, #withdraw-drawer label { color: #41493c !important; }
+#deposit-drawer input, #deposit-drawer select, #withdraw-drawer input, #withdraw-drawer select,
+#deposit-drawer textarea { background: #f1f4fa !important; border-color: #E9E9E9 !important; color: #181c20 !important; }
+#deposit-drawer .text-slate-500, #withdraw-drawer .text-slate-500,
+#deposit-drawer .text-slate-600, #withdraw-drawer .text-slate-600 { color: #41493c !important; }
+#deposit-drawer #deposit-submit-btn, #withdraw-drawer button[type="submit"] { background: #337722 !important; color: #fff !important; }
 @media (min-width: 640px) {
     .wallet-drawer-content label { font-size: 0.9375rem; }
     #deposit-coin-quote, #withdraw-coin-quote { font-size: 1.125rem; font-weight: 700; }
@@ -73,27 +81,27 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </style>
 <div class="wallet-page w-full min-w-0 space-y-lg">
 <div class="grid grid-cols-1 md:grid-cols-4 gap-md">
-<div class="md:col-span-2 bento-card p-md bg-gradient-to-br from-surface-container-lowest to-surface-container-low flex flex-col justify-between rounded">
+<div class="md:col-span-2 dash-card-balance-green bento-card p-md flex flex-col justify-between rounded">
 <div>
-<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Available Balance</p>
+<p class="font-label-md text-label-md dash-card-label uppercase tracking-wider mb-xs">Available Balance</p>
 <div class="flex items-baseline gap-xs flex-wrap">
-<h3 class="font-display-lg text-display-lg font-hanken text-fidelity-green">$<?php echo format_usd_amount($walletTotalUsd); ?></h3>
-<span class="font-body-md text-body-md text-on-surface-variant">USD / <?php echo number_format($walletTotalUsd, 0); ?> USDT</span>
+<h3 class="font-display-lg text-display-lg font-hanken dash-card-value">$<?php echo format_usd_amount($walletTotalUsd); ?></h3>
+<span class="font-body-md text-body-md dash-card-muted">USD / <?php echo number_format($walletTotalUsd, 0); ?> USDT</span>
 </div>
 </div>
 <div class="flex gap-sm mt-lg flex-wrap">
-<button type="button" id="deposit-btn" class="flex-1 min-w-[120px] py-sm bg-fidelity-green text-on-primary font-bold rounded-lg text-sm hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-xs">
+<button type="button" id="deposit-btn" class="flex-1 min-w-[120px] py-sm dash-btn-solid font-bold rounded-lg text-sm hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-xs">
 <span class="material-symbols-outlined text-[18px]">add_circle</span> Deposit
 </button>
-<button type="button" id="withdraw-btn" class="flex-1 min-w-[120px] py-sm border border-fidelity-green text-fidelity-green font-bold rounded-lg text-sm hover:bg-surface-container-low active:scale-95 transition-all flex items-center justify-center gap-xs">
+<button type="button" id="withdraw-btn" class="flex-1 min-w-[120px] py-sm border border-white/50 text-white font-bold rounded-lg text-sm hover:bg-white/10 active:scale-95 transition-all flex items-center justify-center gap-xs">
 <span class="material-symbols-outlined text-[18px]">logout</span> Withdraw
 </button>
-<a href="/dashboard/user/transactions" class="w-12 py-sm bg-surface-container-high text-on-surface-variant rounded-lg flex items-center justify-center hover:bg-surface-variant transition-colors shrink-0">
+<a href="/dashboard/user/transactions" class="w-12 py-sm bg-white/15 text-white rounded-lg flex items-center justify-center hover:bg-white/25 transition-colors shrink-0">
 <span class="material-symbols-outlined">history</span>
 </a>
 </div>
 </div>
-<div class="bento-card p-md rounded">
+<div class="dash-card-light-green bento-card p-md rounded">
 <p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Total Profit</p>
 <h3 class="font-headline-lg text-headline-lg font-hanken text-on-surface mb-sm">$<?php echo format_usd_amount($totalProfit); ?></h3>
 <div class="flex items-center gap-xs text-fidelity-green bg-primary-container/10 w-fit px-xs py-0.5 rounded">
@@ -101,7 +109,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <span class="text-xs font-bold font-label-md">All Time</span>
 </div>
 </div>
-<div class="bento-card p-md rounded">
+<div class="dash-card-light-green bento-card p-md rounded">
 <p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Active Capital</p>
 <h3 class="font-headline-lg text-headline-lg font-hanken text-on-surface mb-sm">$<?php echo format_usd_amount($activeCapital); ?></h3>
 <p class="font-label-md text-label-md text-on-surface-variant italic"><?php echo $activeCapital > 0 ? 'Active plans running' : 'No active plans'; ?></p>
