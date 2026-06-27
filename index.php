@@ -63,6 +63,15 @@ $heroSlides = [
     min-height: 520px;
   }
 }
+.account-timeline__media {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+}
+.account-timeline__media.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>
 </head>
 <body class="fidelity-homepage bg-white text-fidelityDark overflow-x-hidden">
@@ -76,33 +85,21 @@ $heroSlides = [
 <?php endforeach; ?>
 </div>
 <div class="absolute inset-0 bg-black/20" aria-hidden="true"></div>
-<div class="hidden lg:flex mx-auto px-4 h-full items-center relative z-10 max-w-6xl">
-<div class="bg-white/95 p-10 max-w-lg shadow-xl">
-<h1 class="text-4xl mb-4 leading-tight">Invest today and plan for tomorrow</h1>
-<p class="text-gray-600 mb-8">We can help you get started.</p>
-<div class="flex space-x-4">
-<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover transition-colors" href="/register">Open an account</a>
-<a class="border-2 border-fidelityDark text-fidelityDark px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors" href="/planning">I need guidance</a>
-</div>
-</div>
-</div>
-</section>
-<!-- END: HeroSection -->
-
-<!-- BEGIN: HeroMobileCta -->
-<section class="lg:hidden bg-white border-b border-gray-100">
-<div class="mx-auto px-4 py-8 max-w-6xl">
-<div class="bg-white p-6 shadow-md border border-gray-100">
-<h1 class="text-3xl mb-3 leading-tight">Invest today and plan for tomorrow</h1>
-<p class="text-gray-600 mb-6">We can help you get started.</p>
-<div class="flex flex-col sm:flex-row gap-3">
+<div class="absolute inset-0 z-10 flex items-center">
+<div class="w-full mx-auto px-4 max-w-6xl">
+<div class="bg-white/95 p-6 lg:p-10 max-w-lg shadow-xl">
+<h1 class="text-3xl lg:text-4xl mb-3 lg:mb-4 leading-tight">Invest today and plan for tomorrow</h1>
+<p class="text-gray-600 mb-6 lg:mb-8">We can help you get started.</p>
+<div class="flex flex-col sm:flex-row lg:flex-row gap-3 lg:gap-4 lg:space-x-0">
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold text-center hover:bg-fidelityGreenHover transition-colors" href="/register">Open an account</a>
 <a class="border-2 border-fidelityDark text-fidelityDark px-8 py-3 rounded-full font-bold text-center hover:bg-gray-100 transition-colors" href="/planning">I need guidance</a>
 </div>
 </div>
 </div>
+</div>
+</div>
 </section>
-<!-- END: HeroMobileCta -->
+<!-- END: HeroSection -->
 
 <!-- BEGIN: AccountTimelineSection -->
 <section class="py-16 lg:py-24 bg-white" id="account-selector">
@@ -112,7 +109,7 @@ $heroSlides = [
 <div class="account-timeline__line hidden lg:block" aria-hidden="true"></div>
 
 <!-- 1. Start investing — text left, image right -->
-<div class="relative pb-16 lg:pb-24 last:pb-0">
+<div class="account-timeline__item relative pb-16 lg:pb-24 last:pb-0">
 <span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
 <div class="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-center">
 <div class="account-timeline__content order-2 lg:order-1 lg:pr-10">
@@ -148,7 +145,7 @@ $heroSlides = [
 </div>
 
 <!-- 2. Retirement — image left, text right -->
-<div class="relative pb-16 lg:pb-24 last:pb-0">
+<div class="account-timeline__item relative pb-16 lg:pb-24 last:pb-0">
 <span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
 <div class="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-center">
 <div class="account-timeline__media order-1 lg:order-1 mb-8 lg:mb-0 lg:pr-10">
@@ -184,7 +181,7 @@ $heroSlides = [
 </div>
 
 <!-- 3. Health care — text left, image right -->
-<div class="relative pb-16 lg:pb-24 last:pb-0">
+<div class="account-timeline__item relative pb-16 lg:pb-24 last:pb-0">
 <span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
 <div class="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-center">
 <div class="account-timeline__content order-2 lg:order-1 lg:pr-10">
@@ -220,7 +217,7 @@ $heroSlides = [
 </div>
 
 <!-- 4. Education — image left, text right -->
-<div class="relative pb-0">
+<div class="account-timeline__item relative pb-0">
 <span class="account-timeline__dot hidden lg:block" aria-hidden="true"></span>
 <div class="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-center">
 <div class="account-timeline__media order-1 lg:order-1 mb-8 lg:mb-0 lg:pr-10">
@@ -364,13 +361,28 @@ $heroSlides = [
 <script>
 (function () {
     var slides = document.querySelectorAll('.hero-slider__slide');
-    if (!slides.length) return;
-    var index = 0;
-    setInterval(function () {
-        slides[index].classList.remove('is-active');
-        index = (index + 1) % slides.length;
-        slides[index].classList.add('is-active');
-    }, 5000);
+    if (slides.length) {
+        var index = 0;
+        setInterval(function () {
+            slides[index].classList.remove('is-active');
+            index = (index + 1) % slides.length;
+            slides[index].classList.add('is-active');
+        }, 5000);
+    }
+    var mediaEls = document.querySelectorAll('.account-timeline__media');
+    if (mediaEls.length && 'IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+        mediaEls.forEach(function (el) { observer.observe(el); });
+    } else {
+        mediaEls.forEach(function (el) { el.classList.add('is-visible'); });
+    }
 })();
 </script>
 </body>

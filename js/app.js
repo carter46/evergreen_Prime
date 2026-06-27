@@ -329,6 +329,7 @@
             loginEmail = email;
             loginRedirect = redirect || '/dashboard';
             form.classList.add('hidden');
+            document.getElementById('login-card-intro')?.classList.add('hidden');
             if (haveAccount) haveAccount.classList.add('hidden');
             otpEmailDisplay.textContent = 'Code sent to ' + email;
             otpStep.classList.remove('hidden');
@@ -548,6 +549,8 @@
         function showOtpStep(email) {
             registerEmail = email;
             form.classList.add('hidden');
+            document.getElementById('register-form-chrome')?.classList.add('hidden');
+            document.getElementById('register-form-footer')?.classList.add('hidden');
             if (haveAccount) haveAccount.classList.add('hidden');
             otpEmailDisplay.textContent = 'Code sent to ' + email;
             otpStep.classList.remove('hidden');

@@ -1,7 +1,10 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/blog-posts.php';
 $siteName = get_site_name();
 $pageTitle = 'Customer Service | ' . $siteName;
+$helpBlogSlugs = ['managing-market-volatility', 'diversify-across-asset-classes', 'what-is-an-ira', 'three-as-of-saving'];
+$helpBlogPosts = get_blog_posts_by_slugs($helpBlogSlugs);
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en">
@@ -157,14 +160,16 @@ $pageTitle = 'Customer Service | ' . $siteName;
 </div>
 <div class="p-lg bg-white border border-surface-gray rounded-xl hover:bg-surface-container-lowest transition-all group">
 <h3 class="font-headline-md text-headline-md mb-md flex items-center justify-between">
-                        News &amp; Research
-                        <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">analytics</span>
+                        Blog
+                        <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">article</span>
 </h3>
 <ul class="space-y-sm">
-<li><a class="font-body-md text-body-md text-institutional-blue hover:underline" href="/trading_signals">Stock Market Overview</a></li>
-<li><a class="font-body-md text-body-md text-institutional-blue hover:underline" href="/trading_signals">Mutual Fund Screener</a></li>
-<li><a class="font-body-md text-body-md text-institutional-blue hover:underline" href="/dashboard">Alerts &amp; Notifications</a></li>
-<li><a class="font-body-md text-body-md text-institutional-blue hover:underline" href="/trading_signals">Earnings Calendar</a></li>
+<?php foreach ($helpBlogPosts as $post):
+    $blogUrl = '/blog/' . rawurlencode($post['slug']);
+?>
+<li><a class="font-body-md text-body-md text-institutional-blue hover:underline" href="<?php echo htmlspecialchars($blogUrl); ?>"><?php echo htmlspecialchars($post['title']); ?></a></li>
+<?php endforeach; ?>
+<li><a class="font-body-md text-body-md text-institutional-blue hover:underline font-semibold" href="/blog">View all articles →</a></li>
 </ul>
 </div>
 <div class="p-lg bg-fidelity-green text-white rounded-xl flex flex-col justify-between">
@@ -173,29 +178,6 @@ $pageTitle = 'Customer Service | ' . $siteName;
 <p class="font-body-sm text-body-sm mb-md opacity-90">Our dedicated team is here to help with complex financial needs and institutional wealth management.</p>
 </div>
 <a href="/live_chat" class="block w-full py-3 text-center bg-white text-fidelity-green font-label-md rounded-xl hover:bg-surface-container-lowest transition-colors">Schedule a Consultation</a>
-</div>
-</div>
-</section>
-<!-- Investor Center Section -->
-<section class="py-xl bg-surface-container-high">
-<div class="max-content px-margin-mobile">
-<div class="flex flex-col md:flex-row gap-lg bg-white p-lg rounded-2xl border border-surface-gray items-center">
-<div class="flex-1">
-<div class="flex items-center gap-md mb-md">
-<span class="material-symbols-outlined text-fidelity-green text-4xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
-<h2 class="font-headline-lg text-headline-lg">Find an Investor Center</h2>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-lg">Visit one of our hundreds of locations for face-to-face assistance and professional financial guidance.</p>
-<div class="flex gap-xs">
-<div class="relative flex-1">
-<input class="w-full h-12 px-4 bg-surface-container-low border border-surface-gray rounded-xl font-body-md focus:ring-institutional-blue focus:border-institutional-blue outline-none" placeholder="Enter ZIP Code" type="text"/>
-</div>
-<button type="button" class="px-8 h-12 bg-on-surface text-white font-label-md rounded-xl hover:bg-black transition-colors">Search</button>
-</div>
-</div>
-<div class="flex-1 w-full h-[250px] rounded-xl overflow-hidden">
-<img class="w-full h-full object-cover" alt="Investor center map" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvBHAwHNQ70bktcDLCmdUvNZkJOTkTbUmVZfuym4X7sxv1iUNHRX8qlrFZ_Mh0nyaCYXbIYqyW6YaCsuccXVRh-iuZaZBw2NMtnvDVMJP5340aUjJC7rF5DY0L4ke7MB_Kz_SNszGGmhdQjG74tz5um8-Zw_jaKGhd--M4uYfFg8mwd6Fdgt6g9bFRlEfBzW8DmyZ1I2Cmw034GgWexCaT0fhgQFl2EFIK7Y0cUOgYrhkmTwQFwd10tQ"/>
-</div>
 </div>
 </div>
 </section>
