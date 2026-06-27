@@ -225,7 +225,13 @@
     function showMessage(el, text, isError = false) {
         if (!el) return;
         el.textContent = text;
-        el.className = 'text-sm mt-2 ' + (isError ? 'text-red-500' : 'text-green-600');
+        const inAuthCard = el.closest('.auth-form-card');
+        if (inAuthCard) {
+            el.className = 'text-sm ' + (isError ? 'text-red-100' : 'text-white');
+        } else {
+            el.className = 'text-sm mt-2 ' + (isError ? 'text-red-500' : 'text-green-600');
+        }
+        el.classList.remove('hidden');
         el.style.display = 'block';
     }
 

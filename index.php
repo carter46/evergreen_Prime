@@ -85,17 +85,30 @@ $heroSlides = [
 <?php endforeach; ?>
 </div>
 <div class="absolute inset-0 bg-black/20" aria-hidden="true"></div>
-<div class="absolute inset-0 z-10 flex items-center">
+
+<!-- Desktop only: CTA overlays hero -->
+<div class="hidden lg:flex absolute inset-0 z-10 items-center">
 <div class="w-full mx-auto px-4 max-w-6xl">
-<div class="bg-white/95 p-6 lg:p-10 max-w-lg shadow-xl">
-<h1 class="text-3xl lg:text-4xl mb-3 lg:mb-4 leading-tight">Invest today and plan for tomorrow</h1>
-<p class="text-gray-600 mb-6 lg:mb-8">We can help you get started.</p>
-<div class="flex flex-col sm:flex-row lg:flex-row gap-3 lg:gap-4 lg:space-x-0">
+<div class="bg-white/95 p-10 max-w-lg shadow-xl">
+<h1 class="text-4xl mb-4 leading-tight">Invest today and plan for tomorrow</h1>
+<p class="text-gray-600 mb-8">We can help you get started.</p>
+<div class="flex flex-row gap-4">
 <a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold text-center hover:bg-fidelityGreenHover transition-colors" href="/register">Open an account</a>
 <a class="border-2 border-fidelityDark text-fidelityDark px-8 py-3 rounded-full font-bold text-center hover:bg-gray-100 transition-colors" href="/planning">I need guidance</a>
 </div>
 </div>
 </div>
+</div>
+</section>
+
+<!-- Mobile only: CTA stands alone below hero image -->
+<section class="lg:hidden bg-white px-4 py-6" aria-label="Get started">
+<div class="max-w-lg mx-auto bg-white p-6 shadow-xl border border-gray-100 rounded-lg">
+<h1 class="text-3xl mb-3 leading-tight">Invest today and plan for tomorrow</h1>
+<p class="text-gray-600 mb-6">We can help you get started.</p>
+<div class="flex flex-col sm:flex-row gap-3">
+<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold text-center hover:bg-fidelityGreenHover transition-colors" href="/register">Open an account</a>
+<a class="border-2 border-fidelityDark text-fidelityDark px-8 py-3 rounded-full font-bold text-center hover:bg-gray-100 transition-colors" href="/planning">I need guidance</a>
 </div>
 </div>
 </section>
