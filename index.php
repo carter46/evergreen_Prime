@@ -11,9 +11,10 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <?php require_once __DIR__ . '/includes/marketing-head.php'; ?>
 <style>
-:root { --home-nav-offset: 3.5rem; }
-.home-account-section { position: relative; }
-.home-account-scroll-runway { position: relative; }
+:root {
+  --home-nav-offset: 3.5rem;
+  --pin-panels: 4;
+}
 .home-account-tab {
   display: block;
   width: 100%;
@@ -23,6 +24,11 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
   font-size: 0.9375rem;
   color: #666;
   transition: color 0.2s, border-color 0.2s;
+  background: none;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  cursor: pointer;
 }
 .home-account-tab:hover { color: #337722; }
 .home-account-tab.is-active {
@@ -30,48 +36,60 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
   color: #337722;
   font-weight: 700;
 }
-.home-account-panel {
-  padding: 2rem 0;
-}
+.home-account-panel { padding: 2rem 0; }
 @media (min-width: 1024px) {
-  .home-account-scroll-runway {
-    /* sticky viewport + 3 scroll steps for 4 panels */
-    margin-bottom: 0;
+  /*
+   * Sticky-scroll architecture:
+   * - pin-track: total scroll height = panels × viewport step (no spacers/margins)
+   * - pin-sticky: one viewport step, position sticky
+   * - scroll range while pinned = track height − sticky height = (panels−1) × step
+   */
+  .home-account-pin-track {
+    --pin-step: calc(100vh - var(--home-nav-offset));
+    height: calc(var(--pin-step) * var(--pin-panels));
   }
-  .home-account-sticky-frame {
+  .home-account-pin-sticky {
     position: sticky;
     top: var(--home-nav-offset);
-    height: calc(100vh - var(--home-nav-offset));
-    min-height: 28rem;
-    margin-bottom: calc((100vh - var(--home-nav-offset)) * 3);
+    height: var(--pin-step);
+    overflow: hidden;
   }
-  .home-account-grid {
-    height: calc(100vh - var(--home-nav-offset));
-    min-height: 28rem;
-    align-items: stretch;
+  .home-account-pin-layout {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 2.5rem;
+    height: 100%;
   }
-  .home-account-tab-col {
+  .home-account-pin-aside {
+    grid-column: span 3;
     position: relative;
     height: 100%;
-    min-height: calc(100vh - var(--home-nav-offset));
   }
-  .home-account-tab-nav {
+  .home-account-pin-nav {
     position: absolute;
+    top: 50%;
     left: 0;
     right: 0;
-    top: 50%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     gap: 2rem;
     border-left: 2px solid #f3f4f6;
     margin: 0;
+    padding: 0;
   }
-  .home-account-panels-stage {
+  .home-account-pin-content {
+    grid-column: span 5;
     position: relative;
     height: 100%;
-    min-height: calc(100vh - var(--home-nav-offset));
     overflow: hidden;
+  }
+  .home-account-pin-media {
+    grid-column: span 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
   }
   .home-account-panel {
     position: absolute;
@@ -79,34 +97,22 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 1.5rem 0;
+    padding: 0;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(1.5rem);
-    transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s;
+    transform: translateY(1.25rem);
+    transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
     pointer-events: none;
   }
-  .home-account-panel.is-visible {
+  .home-account-panel.is-active {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
     pointer-events: auto;
   }
-  .home-account-image-col {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    min-height: calc(100vh - var(--home-nav-offset));
-  }
-  .home-account-image-wrap {
-    width: 100%;
-    opacity: 1;
-    transform: none;
-  }
 }
 @media (max-width: 1023px) {
-  .home-account-sticky-frame { margin-bottom: 0; }
+  .home-account-pin-sticky { position: relative; top: auto; height: auto; overflow: visible; }
   .home-account-panel + .home-account-panel {
     border-top: 1px solid #f3f4f6;
     margin-top: 1rem;
@@ -138,34 +144,31 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 </section>
 <!-- END: HeroSection -->
 
-<!-- BEGIN: AccountSelectorSection (scroll tabs) -->
-<section class="home-account-section bg-white" id="home-account-section">
-<div class="home-account-scroll-runway">
-<div class="home-account-sticky-frame">
-<div class="mx-auto px-4 max-w-6xl h-full home-account-grid lg:grid lg:grid-cols-12 lg:gap-10">
+<!-- BEGIN: AccountSelectorSection (sticky-scroll) -->
+<section class="bg-white" id="home-account-section">
+<div class="home-account-pin-track" id="home-account-pin-track">
+<div class="home-account-pin-sticky" id="home-account-pin-sticky">
+<div class="home-account-pin-layout mx-auto px-4 max-w-6xl">
 
-<!-- Tab nav (desktop — vertically centered) -->
-<div class="home-account-tab-col lg:col-span-3 hidden lg:block">
-<nav class="home-account-tab-nav" aria-label="Account goals">
-<button type="button" class="home-account-tab is-active" data-account-tab="investing">Start investing</button>
-<button type="button" class="home-account-tab" data-account-tab="retirement">Save for retirement</button>
-<button type="button" class="home-account-tab" data-account-tab="healthcare">Save for health care</button>
-<button type="button" class="home-account-tab" data-account-tab="education">Invest for a child</button>
+<aside class="home-account-pin-aside hidden lg:block">
+<nav class="home-account-pin-nav" id="home-account-pin-nav" aria-label="Account goals">
+<button type="button" class="home-account-tab is-active" data-pin-tab="investing">Start investing</button>
+<button type="button" class="home-account-tab" data-pin-tab="retirement">Save for retirement</button>
+<button type="button" class="home-account-tab" data-pin-tab="healthcare">Save for health care</button>
+<button type="button" class="home-account-tab" data-pin-tab="education">Invest for a child</button>
 </nav>
-</div>
+</aside>
 
-<!-- Mobile tab nav -->
-<nav class="lg:hidden flex gap-2 overflow-x-auto pb-4 mb-2 border-b border-gray-100 -mx-1 px-1" aria-label="Account goals">
-<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-fidelityGreen text-white font-semibold" data-account-tab="investing">Start investing</button>
-<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-account-tab="retirement">Retirement</button>
-<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-account-tab="healthcare">Health care</button>
-<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-account-tab="education">For a child</button>
+<nav class="lg:hidden flex gap-2 overflow-x-auto pb-4 mb-2 border-b border-gray-100 -mx-1 px-1 col-span-full" aria-label="Account goals">
+<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-fidelityGreen text-white font-semibold" data-pin-tab-mobile="investing">Start investing</button>
+<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-pin-tab-mobile="retirement">Retirement</button>
+<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-pin-tab-mobile="healthcare">Health care</button>
+<button type="button" class="home-account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-pin-tab-mobile="education">For a child</button>
 </nav>
 
-<!-- Content panels (one visible at a time on desktop) -->
-<div class="lg:col-span-5 home-account-panels-stage" id="home-account-panels">
+<div class="home-account-pin-content lg:col-span-5" id="home-account-pin-content">
 
-<article class="home-account-panel is-visible" data-account-panel="investing" id="panel-investing">
+<article class="home-account-panel is-active" data-pin-panel="investing" id="panel-investing">
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Invest smart from the start with a brokerage account</h2>
 <div class="space-y-6 mb-10">
 <div>
@@ -190,7 +193,7 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 </div>
 </article>
 
-<article class="home-account-panel" data-account-panel="retirement" id="panel-retirement">
+<article class="home-account-panel" data-pin-panel="retirement" id="panel-retirement">
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Plan for the possibilities ahead with a Roth IRA</h2>
 <div class="space-y-6 mb-10">
 <div>
@@ -215,7 +218,7 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 </div>
 </article>
 
-<article class="home-account-panel" data-account-panel="healthcare" id="panel-healthcare">
+<article class="home-account-panel" data-pin-panel="healthcare" id="panel-healthcare">
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Save, earn, and invest for health care with an HSA</h2>
 <div class="space-y-6 mb-10">
 <div>
@@ -240,7 +243,7 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 </div>
 </article>
 
-<article class="home-account-panel" data-account-panel="education" id="panel-education">
+<article class="home-account-panel" data-pin-panel="education" id="panel-education">
 <h2 class="text-3xl lg:text-4xl mb-8 leading-tight">Save for the next generation's education with a 529 account</h2>
 <div class="space-y-6 mb-10">
 <div>
@@ -267,9 +270,8 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 
 </div>
 
-<!-- Image (desktop — single shared image, fades in with panel) -->
-<div class="home-account-image-col lg:col-span-4 hidden lg:flex">
-<div class="home-account-image-wrap w-full bg-fidelityLightGreen rounded-3xl p-6">
+<div class="home-account-pin-media hidden lg:flex">
+<div class="w-full bg-fidelityLightGreen rounded-3xl p-6">
 <img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
 </div>
 </div>
@@ -385,117 +387,107 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 
 <script>
 (function () {
-    var section = document.getElementById('home-account-section');
-    var runway = section ? section.querySelector('.home-account-scroll-runway') : null;
-    var stickyFrame = section ? section.querySelector('.home-account-sticky-frame') : null;
-    var tabs = document.querySelectorAll('.home-account-tab');
-    var mobileTabs = document.querySelectorAll('.home-account-tab-mobile');
-    var panels = document.querySelectorAll('.home-account-panel');
-    var panelIds = ['investing', 'retirement', 'healthcare', 'education'];
-    var stickyTop = 56;
-    var isDesktop = function () { return window.matchMedia('(min-width: 1024px)').matches; };
+    'use strict';
 
-    function viewportStep() {
-        return window.innerHeight - stickyTop;
+    var PANEL_IDS = ['investing', 'retirement', 'healthcare', 'education'];
+    var NAV_OFFSET = 56;
+    var PANEL_COUNT = PANEL_IDS.length;
+
+    var track = document.getElementById('home-account-pin-track');
+    var sticky = document.getElementById('home-account-pin-sticky');
+    if (!track || !sticky) return;
+
+    var tabs = track.querySelectorAll('[data-pin-tab]');
+    var mobileTabs = track.querySelectorAll('[data-pin-tab-mobile]');
+    var panels = track.querySelectorAll('[data-pin-panel]');
+    var activeIndex = -1;
+
+    function isDesktop() {
+        return window.matchMedia('(min-width: 1024px)').matches;
     }
 
-    function maxScrollDistance() {
-        if (!stickyFrame) return 0;
-        return viewportStep() * (panelIds.length - 1);
+    function getScrollRange() {
+        return track.offsetHeight - sticky.offsetHeight;
     }
 
-    function setActive(id) {
-        tabs.forEach(function (t) {
-            t.classList.toggle('is-active', t.getAttribute('data-account-tab') === id);
-        });
-        mobileTabs.forEach(function (t) {
-            var active = t.getAttribute('data-account-tab') === id;
-            t.classList.toggle('bg-fidelityGreen', active);
-            t.classList.toggle('text-white', active);
-            t.classList.toggle('font-semibold', active);
-            t.classList.toggle('bg-gray-100', !active);
-            t.classList.toggle('text-gray-600', !active);
-        });
-        panels.forEach(function (p) {
-            p.classList.toggle('is-visible', p.getAttribute('data-account-panel') === id);
-        });
+    function getPinStart() {
+        return track.offsetTop - NAV_OFFSET;
     }
 
-    function getScrollProgress() {
-        if (!runway || !stickyFrame) return 0;
-        var step = viewportStep();
-        var maxScroll = maxScrollDistance();
-        if (maxScroll <= 0) return 0;
-
-        var runwayTop = runway.getBoundingClientRect().top;
-        var runwayBottom = runway.getBoundingClientRect().bottom;
-        var pinStart = stickyTop;
-        var pinEnd = stickyTop + step;
-
-        if (runwayTop > pinStart || runwayBottom < pinEnd) {
-            return runwayTop > pinStart ? 0 : 1;
-        }
-
-        var scrolled = Math.max(0, Math.min(maxScroll, pinStart - runwayTop));
-        return scrolled / maxScroll;
+    function getProgress() {
+        if (!isDesktop()) return 0;
+        var range = getScrollRange();
+        if (range <= 0) return 0;
+        var y = window.scrollY;
+        var start = getPinStart();
+        if (y <= start) return 0;
+        if (y >= start + range) return 1;
+        return (y - start) / range;
     }
 
-    function getActiveIndexFromScroll() {
-        var progress = getScrollProgress();
-        var index = Math.floor(progress * panelIds.length);
-        if (index >= panelIds.length) index = panelIds.length - 1;
+    function getActiveIndex() {
+        var progress = getProgress();
+        var index = Math.floor(progress * PANEL_COUNT);
+        if (index >= PANEL_COUNT) index = PANEL_COUNT - 1;
         return index;
     }
 
-    function scrollOffsetForIndex(index) {
-        var maxScroll = maxScrollDistance();
-        if (maxScroll <= 0) return 0;
-        return Math.round(maxScroll * (index / (panelIds.length - 1)));
+    function setActiveIndex(index) {
+        var id = PANEL_IDS[index];
+        tabs.forEach(function (el) {
+            el.classList.toggle('is-active', el.getAttribute('data-pin-tab') === id);
+        });
+        mobileTabs.forEach(function (el) {
+            var on = el.getAttribute('data-pin-tab-mobile') === id;
+            el.classList.toggle('bg-fidelityGreen', on);
+            el.classList.toggle('text-white', on);
+            el.classList.toggle('font-semibold', on);
+            el.classList.toggle('bg-gray-100', !on);
+            el.classList.toggle('text-gray-600', !on);
+        });
+        panels.forEach(function (el) {
+            el.classList.toggle('is-active', el.getAttribute('data-pin-panel') === id);
+        });
     }
 
-    function scrollToPanel(id) {
-        if (!isDesktop() || !runway) {
-            var el = document.getElementById('panel-' + id);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    function scrollToIndex(index) {
+        if (index < 0 || index >= PANEL_COUNT) return;
+        if (!isDesktop()) {
+            var panel = document.getElementById('panel-' + PANEL_IDS[index]);
+            if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
             return;
         }
-        var index = panelIds.indexOf(id);
-        if (index < 0) return;
-        var top = runway.offsetTop - stickyTop + scrollOffsetForIndex(index);
-        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        var start = getPinStart();
+        var range = getScrollRange();
+        var zone = range / PANEL_COUNT;
+        window.scrollTo({ top: start + zone * index + 1, behavior: 'smooth' });
     }
 
     tabs.forEach(function (tab) {
         tab.addEventListener('click', function () {
-            var id = tab.getAttribute('data-account-tab');
-            setActive(id);
-            scrollToPanel(id);
+            scrollToIndex(PANEL_IDS.indexOf(tab.getAttribute('data-pin-tab')));
         });
     });
     mobileTabs.forEach(function (tab) {
         tab.addEventListener('click', function () {
-            var id = tab.getAttribute('data-account-tab');
-            setActive(id);
-            scrollToPanel(id);
+            scrollToIndex(PANEL_IDS.indexOf(tab.getAttribute('data-pin-tab-mobile')));
         });
     });
 
-    var ticking = false;
-    function onScroll() {
-        if (!isDesktop() || !runway) return;
-        if (ticking) return;
-        ticking = true;
-        window.requestAnimationFrame(function () {
-            setActive(panelIds[getActiveIndexFromScroll()]);
-            ticking = false;
-        });
+    function update() {
+        if (!isDesktop()) return;
+        var index = getActiveIndex();
+        if (index === activeIndex) return;
+        activeIndex = index;
+        setActiveIndex(index);
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    if (isDesktop()) {
-        setActive(panelIds[getActiveIndexFromScroll()]);
-    }
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', function () {
+        activeIndex = -1;
+        update();
+    });
+    update();
 })();
 </script>
 </body>
