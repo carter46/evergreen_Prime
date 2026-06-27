@@ -2,9 +2,9 @@
 /** Optional: $pageHeading, $pageSubtitle */
 if (empty($pageHeading)) return;
 ?>
-<div class="mb-6 md:mb-8">
-<h1 class="font-headline-lg text-headline-lg text-text-primary mb-1"><?php echo htmlspecialchars($pageHeading); ?></h1>
+<div class="mb-lg">
+<h2 class="font-hanken font-headline-lg text-headline-lg text-on-surface mb-xs"><?php echo htmlspecialchars($pageHeading); ?></h2>
 <?php if (!empty($pageSubtitle)): ?>
-<p class="text-text-secondary font-body-md"><?php echo htmlspecialchars($pageSubtitle); ?></p>
+<p class="font-body-md text-body-md text-on-surface-variant"><?php echo htmlspecialchars($pageSubtitle); ?></p>
 <?php endif; ?>
 </div>

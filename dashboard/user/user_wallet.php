@@ -65,143 +65,120 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
 <style>
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
 .wallet-page { width: 100%; max-width: 100%; min-width: 0; overflow-x: clip; }
 @media (min-width: 640px) {
     .wallet-drawer-content label { font-size: 0.9375rem; }
     #deposit-coin-quote, #withdraw-coin-quote { font-size: 1.125rem; font-weight: 700; }
 }
 </style>
-<div class="wallet-page w-full min-w-0 space-y-4 md:space-y-8">
-<!-- Row 1: USD Balance | Coming Soon -->
-<div class="grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-4 md:gap-6 min-w-0">
-<div class="balance-gradient-card relative overflow-hidden rounded-xl p-4 sm:p-6 md:p-8 text-white shadow-2xl min-w-0">
-<div class="absolute top-0 right-0 w-64 h-64 bg-primary-container/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-<div class="absolute top-0 right-0 p-4 opacity-10">
-<span class="material-symbols-outlined text-6xl">account_balance_wallet</span>
-</div>
-<div class="relative z-10">
+<div class="wallet-page w-full min-w-0 space-y-lg">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-md">
+<div class="md:col-span-2 bento-card p-md bg-gradient-to-br from-surface-container-lowest to-surface-container-low flex flex-col justify-between rounded">
 <div>
-<p class="text-on-surface-variant text-sm font-medium mb-1">Available Balance</p>
-<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight break-words">$<?php echo format_usd_amount($walletTotalUsd); ?> <span class="text-base sm:text-xl font-normal text-on-surface-variant ml-1 sm:ml-2">USD</span></h1>
-<div class="flex flex-wrap gap-2 sm:gap-3 mt-4">
-<button type="button" id="deposit-btn" class="bg-primary-container hover:bg-primary-container/90 text-on-primary px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all text-sm">
-<span class="material-symbols-outlined text-xs sm:text-sm">add</span> Deposit
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Available Balance</p>
+<div class="flex items-baseline gap-xs flex-wrap">
+<h3 class="font-display-lg text-display-lg font-hanken text-fidelity-green">$<?php echo format_usd_amount($walletTotalUsd); ?></h3>
+<span class="font-body-md text-body-md text-on-surface-variant">USD / <?php echo number_format($walletTotalUsd, 0); ?> USDT</span>
+</div>
+</div>
+<div class="flex gap-sm mt-lg flex-wrap">
+<button type="button" id="deposit-btn" class="flex-1 min-w-[120px] py-sm bg-fidelity-green text-on-primary font-bold rounded-lg text-sm hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">add_circle</span> Deposit
 </button>
-<button type="button" id="withdraw-btn" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all backdrop-blur-sm text-sm">
-<span class="material-symbols-outlined text-xs sm:text-sm">file_upload</span> Withdraw
+<button type="button" id="withdraw-btn" class="flex-1 min-w-[120px] py-sm border border-fidelity-green text-fidelity-green font-bold rounded-lg text-sm hover:bg-surface-container-low active:scale-95 transition-all flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">logout</span> Withdraw
 </button>
-<a href="/dashboard/user/transactions" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all backdrop-blur-sm text-sm">
-<span class="material-symbols-outlined text-xs sm:text-sm">history</span> History
+<a href="/dashboard/user/transactions" class="w-12 py-sm bg-surface-container-high text-on-surface-variant rounded-lg flex items-center justify-center hover:bg-surface-variant transition-colors shrink-0">
+<span class="material-symbols-outlined">history</span>
 </a>
 </div>
 </div>
-<div class="mt-8 sm:mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 border-t border-white/10 pt-6 sm:pt-8">
+<div class="bento-card p-md rounded">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Total Profit</p>
+<h3 class="font-headline-lg text-headline-lg font-hanken text-on-surface mb-sm">$<?php echo format_usd_amount($totalProfit); ?></h3>
+<div class="flex items-center gap-xs text-fidelity-green bg-primary-container/10 w-fit px-xs py-0.5 rounded">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">arrow_upward</span>
+<span class="text-xs font-bold font-label-md">All Time</span>
+</div>
+</div>
+<div class="bento-card p-md rounded">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Active Capital</p>
+<h3 class="font-headline-lg text-headline-lg font-hanken text-on-surface mb-sm">$<?php echo format_usd_amount($activeCapital); ?></h3>
+<p class="font-label-md text-label-md text-on-surface-variant italic"><?php echo $activeCapital > 0 ? 'Active plans running' : 'No active plans'; ?></p>
+</div>
+<div class="bento-card p-md rounded">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Daily Earning</p>
+<h3 class="font-headline-lg text-headline-lg font-hanken text-on-surface mb-sm">$<?php echo format_usd_amount($dailyEarning); ?></h3>
+<p class="font-label-md text-label-md text-on-surface-variant">Last 24h update</p>
+</div>
+<div class="md:col-span-2 bento-card p-md bg-institutional-blue/5 border-institutional-blue/20 flex items-center justify-between rounded">
 <div>
-<p class="text-on-surface-variant text-xs mb-1">Total Profit</p>
-<p class="font-bold text-success">$<?php echo format_usd_amount($totalProfit); ?></p>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Referral Bonus Earned</p>
+<h3 class="font-headline-lg text-headline-lg font-hanken text-institutional-blue">$<?php echo format_usd_amount($referralBonus); ?></h3>
 </div>
-<div>
-<p class="text-on-surface-variant text-xs mb-1">Active Capital</p>
-<p class="font-bold">$<?php echo format_usd_amount($activeCapital); ?></p>
-</div>
-<div>
-<p class="text-on-surface-variant text-xs mb-1">Daily Earning</p>
-<p class="font-bold text-primary-container">$<?php echo format_usd_amount($dailyEarning); ?></p>
-</div>
-<div>
-<p class="text-on-surface-variant text-xs mb-1">Referral Bonus (earned)</p>
-<p class="font-bold text-primary-container">$<?php echo format_usd_amount($referralBonus); ?></p>
-<?php if ($referralBonus > 0): ?><p class="text-[10px] text-on-surface-variant mt-0.5">Last 24h: $<?php echo format_usd_amount($referralBonusLast24h); ?></p><?php endif; ?>
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface-variant mb-xs">Last 24h</p>
+<span class="font-headline-md text-headline-md font-hanken text-on-surface-variant opacity-50">$<?php echo format_usd_amount($referralBonusLast24h); ?></span>
 </div>
 </div>
 </div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<div class="lg:col-span-2 space-y-lg">
+<div class="bento-card rounded overflow-hidden">
+<div class="p-md border-b border-surface-gray flex justify-between items-center gap-2">
+<h4 class="font-headline-md text-headline-md font-hanken">Your Assets</h4>
 </div>
-<!-- Coming Soon (35%) -->
-<div class="rounded-xl overflow-hidden relative group w-full">
-<div class="bg-slate-900 p-6 h-full">
-<h5 class="text-primary text-xs font-bold uppercase mb-1">Coming Soon</h5>
-<h4 class="text-white font-bold mb-4">Earn up to 12% APY with <?php echo htmlspecialchars($siteName); ?> Staking</h4>
-<img alt="Staking" class="w-full h-32 object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" src="/uploads/images/crypto-assets.jpg" onerror="this.src='/uploads/images/crypto-assets.png';this.onerror=null"/>
-<button class="w-full mt-4 py-2 border border-white/20 text-white text-xs font-bold rounded hover:bg-white/10 transition-colors">Join Waitlist</button>
-</div>
-</div>
-</div>
-
-<!-- Row 2: USD Wallet | Security Checklist -->
-<div class="grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-4 md:gap-6 min-w-0">
-<!-- Your Assets -->
-<div class="glass-panel rounded-xl overflow-hidden min-w-0">
-<div class="p-4 border-b border-low flex items-center justify-between gap-2">
-<h2 class="text-base font-bold text-on-surface">USD Wallet</h2>
-</div>
-<div class="overflow-hidden">
-<table class="w-full text-left table-fixed min-w-0">
-<thead>
-<tr class="text-slate-400 text-[9px] uppercase tracking-wider border-b border-slate-50 dark:border-slate-800">
-<th class="px-3 py-2 font-semibold w-1/4">Asset</th>
-<th class="px-3 py-2 font-semibold text-right w-1/4">Balance</th>
-<th class="px-3 py-2 font-semibold text-right w-1/4">Action</th>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-surface-gray">
+<tr>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase">Asset</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase">Balance</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase text-right">Action</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-slate-50 dark:divide-slate-800 wallet-assets-table">
+<tbody class="divide-y divide-surface-gray font-body-sm text-body-sm wallet-assets-table">
 <?php if ($walletTotalUsd > 0): ?>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-<td class="px-3 py-3">
-<div class="flex items-center gap-2 min-w-0">
-<div class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-slate-800"><img alt="USD" class="w-5 h-5 object-contain" src="https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png" loading="lazy"/></div>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="p-md">
+<div class="flex items-center gap-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-[#26A17B]/10 flex items-center justify-center text-[#26A17B] shrink-0">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+</div>
 <div class="min-w-0">
-<p class="font-bold text-xs truncate">US Dollar</p>
-<p class="text-[10px] text-slate-500">USD</p>
+<p class="font-bold">US Dollar</p>
+<p class="text-xs text-on-surface-variant">USD</p>
 </div>
 </div>
 </td>
-<td class="px-3 py-3 text-right font-medium text-xs truncate">$<?php echo format_usd_amount($walletTotalUsd); ?></td>
-<td class="px-3 py-3 text-right">
-<a href="/dashboard/user/investment-plans" class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">INVEST</a>
+<td class="p-md font-bold">$<?php echo format_usd_amount($walletTotalUsd); ?></td>
+<td class="p-md text-right">
+<a href="/dashboard/user/investment-plans" class="text-institutional-blue font-bold hover:underline">INVEST</a>
 </td>
 </tr>
 <?php else: ?>
-<tr><td class="px-3 py-6 text-center text-slate-500 text-xs" colspan="3">No balance yet. Deposit funds to get started.</td></tr>
+<tr><td class="p-md text-center text-on-surface-variant" colspan="3">No balance yet. Deposit funds to get started.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>
 </div>
 </div>
-<!-- Security Checklist (35%) -->
-<div class="glass-panel border border-primary-container/20 rounded-xl p-4 flex gap-4 self-stretch">
-<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex-shrink-0 flex items-center justify-center">
-<span class="material-symbols-outlined text-primary-container">gpp_maybe</span>
+<div class="bento-card rounded overflow-hidden">
+<div class="p-md border-b border-surface-gray flex justify-between items-center">
+<h4 class="font-headline-md text-headline-md font-hanken">Recent History</h4>
+<a href="/dashboard/user/transactions" class="text-institutional-blue text-xs font-bold hover:underline">View All</a>
 </div>
-<div>
-<h4 class="text-sm font-bold text-on-surface">Security Checklist</h4>
-<p class="text-xs text-text-secondary mt-1 leading-relaxed">
-                            Ensure 2FA is active before withdrawing. Double-check the recipient address; crypto transfers are irreversible.
-                        </p>
-</div>
-</div>
-</div>
-
-<!-- Row 3: Recent History -->
-<div class="min-w-0">
-<div class="glass-panel rounded-xl overflow-hidden min-w-0">
-<div class="p-4 sm:p-6 border-b border-low flex items-center justify-between gap-2">
-<h2 class="text-base sm:text-lg font-bold text-on-surface">Recent History</h2>
-<a href="/dashboard/user/transactions" class="text-primary-container text-xs font-bold hover:underline shrink-0">View All</a>
-</div>
-<div class="min-w-0">
-<table class="w-full text-left table-fixed min-w-0">
-<thead>
-<tr class="text-slate-400 text-[10px] uppercase tracking-wider border-b border-slate-50 dark:border-slate-800">
-<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[48%] sm:w-[38%]">Type / Date</th>
-<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[18%]">Asset</th>
-<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-right w-[34%] sm:w-[22%]">Amount</th>
-<th class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center w-[22%]">Status</th>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-surface-gray">
+<tr>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase">Type</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase">Amount</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase">Status</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase text-right">Date</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-slate-50 dark:divide-slate-800">
+<tbody class="divide-y divide-surface-gray font-body-sm text-body-sm">
 <?php
   $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus', 'profit_adjustment' => 'Profit adjustment', 'referral_bonus_adjustment' => 'Referral bonus adjustment'];
   foreach ($walletTransactions as $tx):
@@ -214,36 +191,78 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
   $displayAmt = in_array($tx['type'], ['profit_adjustment', 'referral_bonus_adjustment'], true) ? abs($txAmt) : $txAmt;
   $date = !empty($tx['created_at']) ? date('M j, Y H:i', strtotime($tx['created_at'])) : '';
   $typeLabel = $txTypeLabels[$tx['type']] ?? ucfirst(str_replace('_', ' ', $tx['type']));
-  $statusClass = 'bg-amber-100 text-amber-700';
-  if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700';
-  elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
-  elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
+  $statusClass = 'bg-tertiary-container/10 text-tertiary';
+  if ($tx['status'] === 'completed') $statusClass = 'bg-primary-container/10 text-fidelity-green';
+  elseif ($tx['status'] === 'rejected' || $tx['status'] === 'failed') $statusClass = 'bg-error-container text-error';
 ?>
-<tr>
-<td class="px-3 sm:px-6 py-3 sm:py-4 min-w-0">
-<div class="flex items-start gap-2 min-w-0">
-<span class="material-symbols-outlined <?php echo $isDeposit ? 'text-success' : 'text-critical'; ?> text-lg shrink-0 mt-0.5"><?php echo $isDeposit ? 'arrow_downward' : 'arrow_upward'; ?></span>
-<div class="min-w-0">
-<p class="text-sm font-bold truncate"><?php echo htmlspecialchars($typeLabel); ?></p>
-<p class="text-[10px] text-slate-400 truncate"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></p>
-<div class="mt-2 sm:hidden">
-<span class="inline-block px-2 py-1 <?php echo $statusClass; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
-</div>
-</div>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="p-md">
+<div class="flex flex-col min-w-0">
+<span class="font-bold text-on-surface"><?php echo htmlspecialchars($typeLabel); ?></span>
+<span class="text-xs text-on-surface-variant"><?php echo htmlspecialchars($tx['currency']); ?></span>
 </div>
 </td>
-<td class="px-3 sm:px-6 py-3 sm:py-4 text-sm font-medium"><?php echo htmlspecialchars($tx['currency']); ?></td>
-<td class="px-3 sm:px-6 py-3 sm:py-4 text-right text-sm font-bold whitespace-nowrap <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo format_usd_amount($displayAmt); ?></td>
-<td class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 text-center">
-<span class="px-2 py-1 <?php echo $statusClass; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
+<td class="p-md <?php echo $isDeposit ? 'text-fidelity-green' : 'text-error'; ?> font-bold whitespace-nowrap"><?php echo $isDeposit ? '+' : '-'; ?><?php echo format_usd_amount($displayAmt); ?> <?php echo htmlspecialchars($tx['currency']); ?></td>
+<td class="p-md">
+<span class="px-2 py-0.5 <?php echo $statusClass; ?> rounded text-xs font-bold capitalize"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>
+<td class="p-md text-right text-on-surface-variant whitespace-nowrap"><?php echo date('M j, H:i', strtotime($tx['created_at'])); ?></td>
 </tr>
 <?php endforeach; ?>
 <?php if (empty($walletTransactions)): ?>
-<tr><td class="px-3 sm:px-6 py-8 text-center text-slate-500" colspan="4">No transactions yet.</td></tr>
+<tr><td class="p-md text-center text-on-surface-variant" colspan="4">No transactions yet.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>
+</div>
+</div>
+</div>
+<div class="space-y-lg">
+<div class="bento-card overflow-hidden relative group rounded">
+<div class="relative p-md flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-institutional-blue/10 rounded-full flex items-center justify-center text-institutional-blue mb-sm">
+<span class="material-symbols-outlined text-3xl">savings</span>
+</div>
+<h5 class="font-headline-md text-headline-md font-hanken mb-xs">Staking Beta</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">Earn up to <span class="text-fidelity-green font-bold">12% APY</span> on your idle digital assets.</p>
+<div class="bg-surface-container-high px-md py-xs rounded-full text-xs font-bold uppercase tracking-widest text-on-surface mb-md">Coming Soon</div>
+<button type="button" class="w-full py-sm bg-on-surface text-on-primary font-bold rounded-lg text-sm hover:opacity-90 active:scale-95 transition-all">Join Waitlist</button>
+</div>
+</div>
+<div class="bento-card p-md border-l-4 border-l-tertiary-container rounded">
+<h5 class="font-headline-md text-headline-md font-hanken mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-tertiary">security</span>
+Security Checklist
+</h5>
+<ul class="space-y-md">
+<li class="flex gap-sm">
+<div class="mt-1 w-5 h-5 rounded-full border border-outline-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="font-body-sm text-body-sm">
+<p class="font-bold">Enable 2FA</p>
+<p class="text-on-surface-variant">Protect your account with Google Authenticator or SMS.</p>
+</div>
+</li>
+<li class="flex gap-sm">
+<div class="mt-1 w-5 h-5 rounded-full bg-fidelity-green text-on-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="font-body-sm text-body-sm">
+<p class="font-bold">Verify Address</p>
+<p class="text-on-surface-variant">Always double-check recipient wallet addresses before sending.</p>
+</div>
+</li>
+<li class="flex gap-sm">
+<div class="mt-1 w-5 h-5 rounded-full border border-outline-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="font-body-sm text-body-sm">
+<p class="font-bold">Withdrawal Whitelist</p>
+<p class="text-on-surface-variant">Enable whitelist to only send funds to known addresses.</p>
+</div>
+</li>
+</ul>
 </div>
 </div>
 </div>

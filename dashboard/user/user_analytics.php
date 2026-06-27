@@ -256,7 +256,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </style>
 <!-- Top Stats Grid -->
 <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-<div class="glass-panel p-5 rounded-xl">
+<div class="bento-card p-5 rounded-xl">
 <div class="flex justify-between items-start mb-4">
 <div class="p-2 bg-primary/10 rounded-lg">
 <span class="material-symbols-outlined text-primary">payments</span>
@@ -273,7 +273,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </div>
 </div>
 </div>
-<div class="glass-panel p-5 rounded-xl">
+<div class="bento-card p-5 rounded-xl">
 <div class="flex justify-between items-start mb-4">
 <div class="p-2 bg-primary/10 rounded-lg">
 <span class="material-symbols-outlined text-primary">trending_up</span>
@@ -290,7 +290,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </div>
 </div>
 </div>
-<div class="glass-panel p-5 rounded-xl">
+<div class="bento-card p-5 rounded-xl">
 <div class="flex justify-between items-start mb-4">
 <div class="p-2 bg-primary/10 rounded-lg">
 <span class="material-symbols-outlined text-primary">account_balance</span>
@@ -307,7 +307,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </div>
 </div>
 </div>
-<div class="glass-panel bg-primary-container/5 p-5 rounded-xl border-primary-container/20 border">
+<div class="bento-card bg-primary-container/5 p-5 rounded-xl border-primary-container/20 border">
 <div class="flex justify-between items-start mb-4">
 <div class="p-2 bg-primary/10 rounded-lg">
 <span class="material-symbols-outlined text-primary">auto_graph</span>
@@ -329,7 +329,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <div class="space-y-8 mb-8">
 <!-- Row 1: My Portfolio (full width) -->
 <div class="space-y-6 w-full">
-<div class="glass-panel p-6 rounded-xl min-h-0 w-full">
+<div class="bento-card p-6 rounded-xl min-h-0 w-full">
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
 <h2 class="text-lg font-bold flex items-center gap-2">
 <span class="material-symbols-outlined text-primary text-xl">savings</span>
@@ -386,7 +386,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </div>
 </div>
 <!-- Cumulative Performance (full width, below portfolio on desktop) -->
-<div class="glass-panel p-6 rounded-xl min-h-0 w-full">
+<div class="bento-card p-6 rounded-xl min-h-0 w-full">
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 <h2 class="text-lg font-bold flex items-center gap-2">
                         Cumulative Performance
@@ -445,7 +445,7 @@ if (!empty($chartData)) {
 </div>
 <!-- Row 2: Side Widgets -->
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-<div class="glass-panel p-6 rounded-xl flex items-center gap-6">
+<div class="bento-card p-6 rounded-xl flex items-center gap-6">
 <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center border-4 border-primary/20">
 <span class="material-symbols-outlined text-3xl text-primary">workspace_premium</span>
 </div>
@@ -458,7 +458,7 @@ Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$
 </p>
 </div>
 </div>
-<div class="glass-panel p-6 rounded-xl flex items-center gap-6">
+<div class="bento-card p-6 rounded-xl flex items-center gap-6">
 <div class="w-16 h-16 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
 <span class="material-symbols-outlined text-3xl text-slate-400">warning_amber</span>
 </div>
@@ -468,7 +468,7 @@ Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$
 <p class="text-xs text-slate-400 mt-1" title="Computed from the cumulative net flow curve shown above">Based on cumulative curve</p>
 </div>
 </div>
-<div class="glass-panel p-6 rounded-xl">
+<div class="bento-card p-6 rounded-xl">
 <h2 class="text-sm font-bold mb-4">Earnings by Currency</h2>
 <?php
   $breakdownRows = [];
@@ -498,7 +498,7 @@ Personal best: <?php echo (int)$personalBestStreakDays; ?> day<?php echo ((int)$
 </div>
 </div>
 <!-- History Table Section -->
-<div class="glass-panel rounded-xl overflow-hidden">
+<div class="bento-card rounded-xl overflow-hidden">
 <div class="p-6 border-b border-slate-100 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
 <h2 class="text-lg font-bold">Distribution History</h2>
 <div class="flex items-center gap-3">
@@ -638,7 +638,7 @@ foreach ($analyticsTx as $tx):
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Page load animations
-    var cards = document.querySelectorAll('.glass-panel');
+    var cards = document.querySelectorAll('.bento-card');
     cards.forEach(function(card, i) {
         card.style.opacity = '0';
         card.style.transform = 'translateY(20px)';

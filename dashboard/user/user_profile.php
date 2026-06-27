@@ -23,7 +23,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 ?>
 <div class="max-w-7xl mx-auto">
 <!-- Profile Header Section -->
-<div class="glass-panel rounded-xl p-6 mb-8">
+<div class="bento-card rounded-xl p-6 mb-8">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
 <div class="flex items-center gap-6">
 <div class="relative group">
@@ -46,7 +46,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 </div>
 </div>
 <div class="flex gap-3">
-<a href="/dashboard/user/kyc" class="bg-primary-container hover:bg-primary-container/90 text-on-primary font-bold py-2.5 px-6 rounded-lg shadow-sm transition-all flex items-center gap-2">
+<a href="/dashboard/user/kyc" class="bg-fidelity-green hover:opacity-90 text-white font-bold py-2.5 px-6 rounded-lg shadow-sm transition-all flex items-center gap-2">
 <span class="material-symbols-outlined text-sm">shield</span>
                         Verify Identity
                     </a>
@@ -57,7 +57,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 <!-- Left Column: Settings Forms -->
 <div class="lg:col-span-2 space-y-8">
 <!-- Profile Details -->
-<section class="glass-panel rounded-xl p-6">
+<section class="bento-card rounded-xl p-6">
 <h2 class="text-lg font-bold mb-6 flex items-center gap-2 text-on-surface">
                         Personal Information
                     </h2>
@@ -97,7 +97,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 <!-- Security Section -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <!-- 2FA Card -->
-<div class="glass-panel rounded-xl p-6">
+<div class="bento-card rounded-xl p-6">
 <div class="flex justify-between items-start mb-4">
 <div class="w-10 h-10 bg-primary-container/10 rounded-lg flex items-center justify-center text-primary-container">
 <span class="material-symbols-outlined">vibration</span>
@@ -114,7 +114,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
                         </button>
 </div>
 <!-- Password Card -->
-<div class="glass-panel rounded-xl p-6">
+<div class="bento-card rounded-xl p-6">
 <div class="flex justify-between items-start mb-4">
 <div class="w-10 h-10 bg-primary-container/10 rounded-lg flex items-center justify-center text-primary-container">
 <span class="material-symbols-outlined">key</span>
@@ -128,7 +128,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 </div>
 </div>
 <!-- Login Activity -->
-<section class="glass-panel rounded-xl overflow-hidden">
+<section class="bento-card rounded-xl overflow-hidden">
 <div class="p-6 border-b border-low flex justify-between items-center">
 <h2 class="text-lg font-bold text-on-surface">Recent Login Activity</h2>
 </div>
@@ -163,7 +163,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 <!-- Right Column: KYC Status -->
 <div class="space-y-8">
 <!-- KYC Progress Card -->
-<section class="glass-panel rounded-xl p-6">
+<section class="bento-card rounded-xl p-6">
 <h3 class="font-bold text-lg mb-4 flex items-center justify-between text-on-surface">
                         Identity Verification
                         <?php if ($profileKycStatus === 'verified'): ?>
@@ -207,7 +207,7 @@ else echo 'Complete verification to withdraw';
                     </a>
 </section>
 <!-- Security Tips Card -->
-<section class="glass-panel rounded-xl p-6 border border-low">
+<section class="bento-card rounded-xl p-6 border border-low">
 <h3 class="font-bold text-lg mb-3 text-on-surface">Security Tips</h3>
 <ul class="space-y-4 text-sm text-text-secondary">
 <li class="flex gap-3">

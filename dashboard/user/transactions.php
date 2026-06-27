@@ -29,18 +29,18 @@ $pageSubtitle = 'All your deposits, withdrawals, payouts, and investment payment
 require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
-<div class="glass-panel rounded-xl overflow-hidden min-w-0">
+<div class="bento-card rounded overflow-hidden min-w-0">
 <div class="min-w-0">
 <table class="w-full text-left table-fixed min-w-0">
 <thead>
-<tr class="text-on-surface-variant text-[10px] uppercase tracking-wider border-b border-low">
+<tr class="text-on-surface-variant text-[10px] uppercase tracking-wider border-b border-surface-gray">
 <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[48%] sm:w-[38%]">Type / Date</th>
 <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[18%]">Asset</th>
 <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-right w-[34%] sm:w-[22%]">Amount</th>
 <th class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center w-[22%]">Status</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-low">
+<tbody class="divide-y divide-surface-gray">
 <?php
   $txTypeLabels = ['referral_bonus' => 'Referral bonus', 'deposit_bonus' => 'Deposit bonus', 'profit_adjustment' => 'Profit adjustment', 'referral_bonus_adjustment' => 'Referral bonus adjustment'];
   foreach ($transactions as $tx):
@@ -52,11 +52,11 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
   }
   $displayAmt = in_array($tx['type'], ['profit_adjustment', 'referral_bonus_adjustment'], true) ? abs($txAmt) : $txAmt;
   $statusClass = 'bg-primary-container/15 text-primary-container';
-  if ($tx['status'] === 'completed') $statusClass = 'bg-success/15 text-success';
-  elseif (in_array($tx['status'], ['rejected', 'failed'], true)) $statusClass = 'bg-critical/15 text-critical';
+  if ($tx['status'] === 'completed') $statusClass = 'bg-primary-container/10 text-fidelity-green';
+  elseif (in_array($tx['status'], ['rejected', 'failed'], true)) $statusClass = 'bg-error-container text-error';
   $typeLabel = $txTypeLabels[$tx['type']] ?? ucfirst(str_replace('_', ' ', $tx['type']));
 ?>
-<tr class="hover:bg-white/[0.02] transition-colors">
+<tr class="hover:bg-surface-container-low transition-colors">
 <td class="px-3 sm:px-6 py-3 sm:py-4 min-w-0">
 <div class="flex items-start gap-2 min-w-0">
 <span class="material-symbols-outlined <?php echo $isIncoming ? 'text-success' : 'text-critical'; ?> text-lg shrink-0 mt-0.5"><?php echo $isIncoming ? 'arrow_downward' : 'arrow_upward'; ?></span>

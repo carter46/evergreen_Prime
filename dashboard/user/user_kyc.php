@@ -14,7 +14,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <div class="max-w-2xl mx-auto">
 
 <?php if ($kycStatus === 'verified'): ?>
-<div class="glass-panel rounded-xl p-8 text-center">
+<div class="bento-card rounded-xl p-8 text-center">
 <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-success/10 text-success flex items-center justify-center">
 <span class="material-symbols-outlined text-4xl">verified</span>
 </div>
@@ -22,7 +22,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <p class="text-text-secondary">Your identity has been verified. You can withdraw funds.</p>
 </div>
 <?php elseif ($kycStatus === 'pending'): ?>
-<div class="glass-panel rounded-xl p-8 text-center">
+<div class="bento-card rounded-xl p-8 text-center">
 <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-container/10 text-primary-container flex items-center justify-center">
 <span class="material-symbols-outlined text-4xl">schedule</span>
 </div>
@@ -30,7 +30,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <p class="text-text-secondary">Your documents are being reviewed. We will notify you when the verification is complete.</p>
 </div>
 <?php elseif ($kycStatus === 'rejected'): ?>
-<div id="kyc-rejected" class="glass-panel rounded-xl border border-critical/30 p-6 mb-8">
+<div id="kyc-rejected" class="bento-card rounded-xl border border-critical/30 p-6 mb-8">
 <div class="flex items-start gap-3">
 <span class="material-symbols-outlined text-critical text-2xl">error</span>
 <div>
@@ -42,7 +42,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <?php endif; ?>
 
 <?php if (in_array($kycStatus, ['none', 'rejected'], true)): ?>
-<form id="kyc-form" class="glass-panel rounded-xl p-6 sm:p-8 space-y-6">
+<form id="kyc-form" class="bento-card rounded-xl p-6 sm:p-8 space-y-6">
 <div>
 <label class="block text-sm font-bold text-on-surface-variant mb-2">Document type <span class="text-critical">*</span></label>
 <select name="document_type" required class="w-full bg-surface-container-high border border-low rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-container focus:border-primary-container text-on-surface">
@@ -75,7 +75,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <input type="file" name="document_back" accept="image/jpeg,image/png,image/jpg,application/pdf" class="w-full text-sm text-on-surface"/>
 </div>
 <div id="kyc-message" class="text-sm hidden"></div>
-<button type="submit" class="w-full bg-primary-container hover:bg-primary-container/90 text-on-primary font-bold py-3 rounded-lg flex items-center justify-center gap-2">
+<button type="submit" class="w-full bg-fidelity-green hover:opacity-90 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2">
 <span class="material-symbols-outlined">upload</span>
 Submit for verification
 </button>

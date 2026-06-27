@@ -72,7 +72,7 @@ require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
 <div class="max-w-4xl mx-auto space-y-6 md:space-y-8">
-<div class="glass-panel rounded-xl p-5 sm:p-6 space-y-5">
+<div class="bento-card rounded-xl p-5 sm:p-6 space-y-5">
 <h2 class="text-base sm:text-lg font-semibold flex items-center gap-2 text-on-surface"><span class="material-symbols-outlined text-primary-container text-xl">help</span> How it works</h2>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 <div class="rounded-lg border border-primary-container/20 bg-primary-container/10 p-4">
@@ -109,16 +109,16 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 
 <!-- 1. Stats first -->
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div class="glass-panel rounded-xl p-6">
+<div class="bento-card rounded-xl p-6">
 <p class="text-xs sm:text-sm text-text-secondary uppercase tracking-wider font-medium">Direct referrals</p>
 <p class="text-2xl sm:text-3xl font-bold text-primary-container mt-2"><?php echo (int) $referredCount; ?></p>
 </div>
-<div class="glass-panel rounded-xl p-6">
+<div class="bento-card rounded-xl p-6">
 <p class="text-xs sm:text-sm text-text-secondary uppercase tracking-wider font-medium">Network (level 2)</p>
 <p class="text-2xl sm:text-3xl font-bold text-primary-container mt-2"><?php echo (int) ($indirectCount ?? 0); ?></p>
 <p class="text-[10px] text-on-surface-variant mt-1">People referred by your referrals</p>
 </div>
-<div class="glass-panel rounded-xl p-6 sm:col-span-1">
+<div class="bento-card rounded-xl p-6 sm:col-span-1">
 <p class="text-xs sm:text-sm text-text-secondary uppercase tracking-wider font-medium">Total earned (Bonus)</p>
 <p class="text-2xl sm:text-3xl font-bold text-success mt-2">$<?php echo format_usd_amount($totalEarnedUsd); ?></p>
 <?php if ($totalEarnedUsd > 0): ?><p class="text-xs text-text-secondary mt-1">Last 24h: $<?php echo format_usd_amount($totalLast24h ?? 0); ?></p><?php endif; ?>
@@ -126,7 +126,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </div>
 
 <!-- 2. Referral earnings history -->
-<div class="glass-panel rounded-xl overflow-hidden">
+<div class="bento-card rounded-xl overflow-hidden">
 <h2 class="text-base sm:text-lg font-semibold px-5 sm:px-6 py-4 border-b border-slate-200/80 dark:border-slate-700/50 flex items-center gap-2"><span class="material-icons-round text-primary text-xl">payments</span> Referral earnings history</h2>
 <?php if (empty($referralEarningsHistory)): ?>
 <p class="p-6 text-slate-500 dark:text-zinc-400 text-center text-sm">No referral earnings yet. You earn when people in your network make their first deposit or receive daily payouts.</p>
@@ -170,7 +170,7 @@ foreach ($referralEarningsHistory as $e):
 </div>
 
 <!-- 3. People you referred -->
-<div class="glass-panel rounded-xl overflow-hidden">
+<div class="bento-card rounded-xl overflow-hidden">
 <h2 class="text-base sm:text-lg font-semibold px-5 sm:px-6 py-4 border-b border-slate-200/80 dark:border-slate-700/50 flex items-center gap-2"><span class="material-icons-round text-primary text-xl">people</span> People you referred</h2>
 <?php if (empty($referrals)): ?>
 <p class="p-6 text-slate-500 dark:text-zinc-400 text-center text-sm">No referrals yet. Share your link below to get started.</p>
@@ -199,7 +199,7 @@ foreach ($referralEarningsHistory as $e):
 </div>
 
 <!-- 4. Your referral code & share link last -->
-<div class="glass-panel rounded-xl p-6 sm:p-8">
+<div class="bento-card rounded-xl p-6 sm:p-8">
 <h2 class="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2"><span class="material-icons-round text-primary text-xl">link</span> Your referral code &amp; link</h2>
 <?php if ($myCode): ?>
 <div class="space-y-4">

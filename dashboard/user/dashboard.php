@@ -92,97 +92,85 @@ try {
 $profileUser = get_current_user_data() ?? [];
 $dashboardUserName = $profileUser['name'] ?? 'User';
 $pageTitle = $siteName . ' | Dashboard';
+$hour = (int) date('G');
+$greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
+$growthPct = $userBalance > 0 ? min(99.9, ($totalProfit / max(1, $userBalance)) * 100) : 0;
 require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 ?>
 <style>
-.dash-trade-tab.is-active { color: #ffc35c; border-bottom-color: #ffc35c; }
+.dash-trade-tab.is-active { color: #185e08; border-bottom-color: #185e08; font-weight: 700; }
 </style>
 <?php
-$chartBtnActive = 'px-4 py-1.5 rounded text-label-xs bg-surface-dim text-primary-container font-bold shadow-sm';
-$chartBtnIdle = 'px-4 py-1.5 rounded text-label-xs text-on-surface-variant hover:text-on-surface transition-colors';
+$chartBtnActive = 'px-3 py-1 font-label-md text-label-md bg-white shadow-sm rounded text-primary font-bold';
+$chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded transition-colors text-on-surface-variant';
 ?>
-<header class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8 md:mb-10">
+<section class="mb-xl">
+<h2 class="font-hanken font-bold text-headline-lg text-primary"><?php echo $greeting; ?>, <?php echo htmlspecialchars($dashboardUserName); ?>.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Welcome back to your institutional trading hub.</p>
+</section>
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
+<div class="bg-surface-container-lowest border border-surface-gray p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div>
-<h2 class="font-headline-lg text-xl md:text-headline-lg text-text-primary mb-1 leading-tight">Good morning, <?php echo htmlspecialchars($dashboardUserName); ?></h2>
-<p class="text-text-secondary font-body-md">Welcome back to your institutional trading hub.</p>
+<span class="font-label-md text-label-md text-on-surface-variant">Total USD Balance</span>
+<h3 class="font-hanken font-extrabold text-headline-md text-on-surface mt-base">$<?php echo number_format((float) $userBalance, 0, '.', ','); ?> <span class="text-label-md font-medium text-on-surface-variant opacity-60">USDT</span></h3>
 </div>
-<div class="flex items-center gap-3 bg-surface-container-high/50 border border-low px-4 py-2 rounded-full w-fit">
-<div class="w-2 h-2 bg-success rounded-full animate-pulse shadow-[0_0_8px_rgba(32,178,108,0.6)]"></div>
-<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest">AI Core Online</span>
-</div>
-</header>
-<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-gutter">
-<div class="balance-gradient-card p-6 md:p-8 rounded-xl relative overflow-hidden group text-white shadow-2xl">
-<div class="absolute top-0 right-0 w-48 h-48 bg-primary-container/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-<span class="material-symbols-outlined text-5xl md:text-6xl">account_balance_wallet</span>
-</div>
-<div class="relative z-10">
-<p class="font-label-xs text-label-xs text-slate-400 uppercase tracking-widest mb-2">Total USD Balance</p>
-<div class="flex flex-wrap items-baseline gap-2 md:gap-3 mb-4">
-<span class="font-display text-3xl md:text-4xl text-emerald-400 font-extrabold leading-none">$<?php echo number_format((float) $userBalance, 2, '.', ','); ?></span>
-</div>
-<div class="flex gap-3">
-<button type="button" id="deposit-btn-dash" class="flex-1 bg-primary-container text-on-primary font-bold py-3 rounded-lg hover:opacity-90 transition-all text-label-sm">Deposit</button>
-<a href="/dashboard/user/transactions" class="flex-1 border border-white/15 text-white font-bold py-3 rounded-lg hover:bg-white/5 transition-all text-label-sm text-center">Transactions</a>
+<div class="flex gap-xs mt-md">
+<button type="button" id="deposit-btn-dash" class="flex-1 bg-primary text-white text-[12px] font-bold py-2 rounded-lg transition-transform active:scale-95">Deposit</button>
+<a href="/dashboard/user/transactions" class="flex-1 border border-surface-gray text-on-surface text-[12px] font-bold py-2 rounded-lg hover:bg-surface-container transition-colors text-center">Transactions</a>
 </div>
 </div>
-</div>
-<div class="glass-panel p-6 md:p-8 rounded-xl flex flex-col justify-between">
-<div class="space-y-6">
-<div class="flex justify-between items-start">
+<div class="bg-surface-container-lowest border border-surface-gray p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div>
-<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest mb-1">Total Profit</p>
-<h3 class="font-display text-3xl md:text-4xl text-success font-extrabold leading-none">$<?php echo format_usd_amount($totalProfit); ?></h3>
+<span class="font-label-md text-label-md text-on-surface-variant">Total Profit</span>
+<h3 class="font-hanken font-extrabold text-headline-md text-fidelity-green mt-base">+$<?php echo format_usd_amount($totalProfit); ?></h3>
 </div>
-<div class="p-2 bg-success/10 rounded">
-<span class="material-symbols-outlined text-success" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+<?php if ($growthPct > 0): ?>
+<div class="flex items-center gap-xs mt-md text-fidelity-green bg-fidelity-green/5 p-2 rounded">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+<span class="font-label-md text-[11px] font-bold">+<?php echo number_format($growthPct, 1); ?>% Overall Growth</span>
 </div>
+<?php endif; ?>
 </div>
-<div class="grid grid-cols-2 gap-4 pt-4 border-t border-low">
+<div class="bg-surface-container-lowest border border-surface-gray p-md flex flex-col justify-between hover:active-glow transition-all rounded">
+<div class="space-y-md">
 <div>
-<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest mb-1">Active Capital</p>
-<h4 class="font-headline-md text-[20px] text-on-surface">$<?php echo format_usd_amount($activeCapital); ?></h4>
+<span class="font-label-md text-label-md text-on-surface-variant">Active Capital</span>
+<p class="font-hanken font-bold text-headline-md <?php echo $activeCapital > 0 ? 'text-on-surface' : 'opacity-40'; ?>">$<?php echo format_usd_amount($activeCapital); ?></p>
 </div>
+<div class="pt-2 border-t border-surface-gray">
+<span class="font-label-md text-label-md text-on-surface-variant">Daily Earning</span>
+<p class="font-hanken font-bold text-headline-md <?php echo $dailyEarning > 0 ? 'text-on-surface' : 'opacity-40'; ?>">$<?php echo format_usd_amount($dailyEarning); ?></p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-surface-gray p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div>
-<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest mb-1">Daily Earning</p>
-<h4 class="font-headline-md text-[20px] text-on-surface">$<?php echo format_usd_amount($dailyEarning); ?></h4>
+<span class="font-label-md text-label-md text-on-surface-variant">Referral Bonus</span>
+<h3 class="font-hanken font-extrabold text-headline-md text-on-surface mt-base">$<?php echo format_usd_amount($referralBonus); ?></h3>
+<p class="font-label-md text-[11px] text-on-surface-variant mt-1">Last 24h: <span class="text-fidelity-green">+$<?php echo format_usd_amount($referralBonusLast24h); ?></span></p>
 </div>
-</div>
-</div>
-</div>
-<div class="glass-panel p-6 md:p-8 rounded-xl flex flex-col justify-between relative overflow-hidden">
-<div class="absolute -bottom-6 -right-6 opacity-5 pointer-events-none">
-<span class="material-symbols-outlined text-[100px] md:text-[120px]">diversity_3</span>
-</div>
-<div class="relative z-10">
-<div class="flex justify-between items-start mb-4">
-<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest">Referral Bonus</p>
-<span class="material-symbols-outlined text-primary-container">info</span>
-</div>
-<h3 class="font-display text-3xl md:text-4xl text-on-surface font-extrabold leading-none mb-1">$<?php echo format_usd_amount($referralBonus); ?></h3>
-<p class="text-on-surface-variant font-label-sm">Last 24h: <span class="text-success">+$<?php echo format_usd_amount($referralBonusLast24h); ?></span></p>
-</div>
-<a class="mt-6 flex items-center gap-2 text-primary-container font-bold text-label-sm hover:underline relative z-10" href="/dashboard/user/referrals">
-View Network Details <span class="material-symbols-outlined text-sm">arrow_forward</span>
+<a class="inline-flex items-center gap-1 font-label-md text-institutional-blue font-bold mt-md hover:underline" href="/dashboard/user/referrals">
+View Network Details
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
 </a>
 </div>
 </section>
-<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter mb-gutter">
-<div class="lg:col-span-8 glass-panel p-6 md:p-8 rounded-xl">
-<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<div class="lg:col-span-2 space-y-md">
+<div class="bg-surface-container-lowest border border-surface-gray p-md relative overflow-hidden h-[450px] flex flex-col rounded">
+<div class="flex justify-between items-center mb-lg relative z-10 flex-wrap gap-3">
 <div>
-<h3 class="font-headline-md text-headline-md text-on-surface">Portfolio Growth</h3>
-<p class="text-on-surface-variant text-label-sm">AI Engine Yield Analysis</p>
+<h4 class="font-hanken font-bold text-headline-md text-on-surface">AI Engine Yield Analysis</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Growth visualization for institutional nodes</p>
 </div>
-<div class="flex gap-1 bg-surface-container-high p-1 rounded-lg w-fit">
+<div class="flex bg-surface-container rounded-lg p-1 gap-1">
 <button type="button" data-period="1D" class="chart-filter-btn <?php echo $period === '1D' ? $chartBtnActive : $chartBtnIdle; ?>">1D</button>
 <button type="button" data-period="1W" class="chart-filter-btn <?php echo $period === '1W' ? $chartBtnActive : $chartBtnIdle; ?>">1W</button>
 <button type="button" data-period="1M" class="chart-filter-btn <?php echo $period === '1M' ? $chartBtnActive : $chartBtnIdle; ?>">1M</button>
 <button type="button" data-period="1Y" class="chart-filter-btn <?php echo $period === '1Y' ? $chartBtnActive : $chartBtnIdle; ?>">1Y</button>
 </div>
 </div>
-<div class="h-48 md:h-64 relative flex flex-col" id="performance-chart-wrapper">
+<div class="flex-1 relative flex flex-col min-h-0" id="performance-chart-wrapper">
 <div class="flex-1 relative min-h-0" id="performance-chart">
 <?php
 $dates = [];
@@ -208,92 +196,103 @@ if (!empty($chartData)) {
 <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
 <defs>
 <linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" style="stop-color:#ffc35c;stop-opacity:0.2"></stop>
-<stop offset="100%" style="stop-color:#ffc35c;stop-opacity:0"></stop>
+<stop offset="0%" style="stop-color:#337722;stop-opacity:0.2"></stop>
+<stop offset="100%" style="stop-color:#337722;stop-opacity:0"></stop>
 </linearGradient>
 </defs>
 <path d="<?php echo htmlspecialchars($areaD); ?>" fill="url(#chartGradient)"></path>
-<path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#ffc35c" stroke-width="2"></path>
+<path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#337722" stroke-width="2"></path>
 </svg>
 <?php } else { ?>
 <div class="absolute inset-0 flex items-center justify-center text-on-surface-variant text-sm">No data available</div>
 <?php } ?>
 </div>
-<div class="flex justify-between mt-2 text-[10px] text-on-surface-variant font-bold uppercase tracking-widest" id="chart-dates">
+<div class="flex justify-between mt-2 text-[10px] text-on-surface-variant font-bold uppercase tracking-widest px-1" id="chart-dates">
 <?php if (!empty($chartData) && isset($dates)) { foreach ($dates as $d): ?><span><?php echo htmlspecialchars($d); ?></span><?php endforeach; } ?>
 </div>
 </div>
+<div class="absolute inset-0 opacity-5 pointer-events-none rounded" style="background-image: radial-gradient(#185e08 1px, transparent 1px); background-size: 20px 20px;"></div>
 </div>
-<div class="lg:col-span-4 glass-panel flex flex-col rounded-xl overflow-hidden min-h-[320px]">
-<div class="p-5 md:p-6 border-b border-low bg-surface-container-high/30">
-<div class="flex justify-between items-center gap-2 mb-3">
-<h3 class="font-headline-md text-[18px] text-on-surface">Live AI Trades</h3>
-<div class="flex items-center gap-2 px-2 py-1 bg-primary-container/10 rounded-full border border-primary-container/20 shrink-0">
-<span class="w-1.5 h-1.5 bg-primary-container rounded-full animate-ping"></span>
-<span class="text-[10px] font-bold text-primary-container tracking-tighter uppercase">Scanning...</span>
+<div class="grid grid-cols-2 gap-md">
+<div class="bg-surface-container-low border border-surface-gray p-sm rounded-lg flex items-center gap-md">
+<div class="w-12 h-12 bg-white rounded flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-fidelity-green">query_stats</span>
 </div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">Market Volatility Index</p>
+<p class="font-hanken font-bold text-body-lg text-on-surface">Low Risk Profile</p>
+</div>
+</div>
+<div class="bg-surface-container-low border border-surface-gray p-sm rounded-lg flex items-center gap-md">
+<div class="w-12 h-12 bg-white rounded flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-institutional-blue">security</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">Cold Wallet Status</p>
+<p class="font-hanken font-bold text-body-lg text-on-surface">99.8% Segregated</p>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-lg">
+<div class="bg-surface-container-lowest border border-surface-gray p-md rounded">
+<div class="flex justify-between items-center mb-md">
+<h4 class="font-hanken font-bold text-body-lg text-on-surface">Live AI Trades</h4>
+<span class="w-2 h-2 bg-error rounded-full animate-ping"></span>
 </div>
 <?php if (!empty($showTradeTabs)): ?>
-<nav class="flex gap-3 overflow-x-auto dash-trade-tabs" aria-label="Plan categories">
+<nav class="flex gap-3 overflow-x-auto dash-trade-tabs mb-sm" aria-label="Plan categories">
 <?php foreach ($activePlanTypesForTrades as $typeKey => $typeLabel): ?>
 <button type="button" class="dash-trade-tab shrink-0 pb-2 text-[11px] font-bold uppercase tracking-wide text-on-surface-variant border-b-2 border-transparent whitespace-nowrap<?php echo $typeKey === $defaultTradeTab ? ' is-active' : ''; ?>" data-trade-tab="<?php echo htmlspecialchars($typeKey); ?>"><?php echo htmlspecialchars($typeLabel); ?></button>
 <?php endforeach; ?>
 </nav>
 <?php endif; ?>
-</div>
-<div class="flex-1 overflow-y-auto dash-scrollbar" id="live-trades-panel">
+<div class="space-y-sm" id="live-trades-panel">
 <?php
 $initialTradePlans = $plansByTypeForTrades[$defaultTradeTab] ?? ['Basic', 'Standard', 'Premium'];
 $tradeSamples = array_slice($initialTradePlans, 0, 3);
 $tradeAmounts = ['+$245.00', '-$12.40', '+$89.15'];
 $tradeDirs = ['Long', 'Short', 'Long'];
 $tradeMins = [2, 8, 15];
+$tradeColors = ['orange', 'yellow', 'blue'];
+$tradeSymbols = ['BTC', 'BNB', 'ADA'];
 foreach ($tradeSamples as $ti => $planName):
     $isLong = ($tradeDirs[$ti] ?? 'Long') === 'Long';
+    $sym = $tradeSymbols[$ti] ?? 'AI';
+    $color = $tradeColors[$ti] ?? 'gray';
 ?>
-<div class="live-trade-card p-5 flex items-center justify-between border-b border-low/50 hover:bg-white/[0.02] transition-colors">
-<div class="flex items-center gap-4 min-w-0">
-<div class="trade-icon-container w-10 h-10 rounded-full <?php echo $isLong ? 'bg-success/10' : 'bg-critical/10'; ?> flex items-center justify-center shrink-0">
-<span class="trade-icon material-symbols-outlined <?php echo $isLong ? 'text-success' : 'text-critical'; ?>"><?php echo $isLong ? 'trending_up' : 'trending_down'; ?></span>
+<div class="live-trade-card flex items-center justify-between p-sm border-b border-surface-gray/50 hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-sm min-w-0">
+<div class="trade-icon-container w-8 h-8 rounded-full bg-<?php echo $color; ?>-500/10 flex items-center justify-center shrink-0">
+<span class="trade-icon material-symbols-outlined text-<?php echo $color; ?>-600 text-[14px]"><?php echo $isLong ? 'trending_up' : 'trending_down'; ?></span>
 </div>
 <div class="min-w-0">
-<h4 class="trade-pair font-bold text-on-surface text-label-sm truncate"><?php echo htmlspecialchars($planName); ?> <span class="<?php echo $isLong ? 'text-success' : 'text-critical'; ?> text-[10px] ml-1 uppercase"><?php echo $tradeDirs[$ti]; ?></span></h4>
-<p class="trade-time text-[10px] text-on-surface-variant"><?php echo (int) $tradeMins[$ti]; ?> mins ago</p>
+<p class="trade-pair font-label-md text-[12px] font-bold text-on-surface truncate"><?php echo htmlspecialchars($planName); ?></p>
+<span class="trade-time text-[10px] <?php echo $isLong ? 'text-fidelity-green' : 'text-error'; ?> font-medium uppercase tracking-tight"><?php echo $isLong ? 'Long Position' : 'Short Position'; ?> &middot; <?php echo (int) $tradeMins[$ti]; ?>m ago</span>
 </div>
 </div>
-<span class="live-trade-amount font-data-mono <?php echo $isLong ? 'text-success' : 'text-critical'; ?> font-bold shrink-0"><?php echo $tradeAmounts[$ti]; ?></span>
+<p class="live-trade-amount font-hanken font-bold <?php echo $isLong ? 'text-fidelity-green' : 'text-on-surface-variant'; ?> text-body-md shrink-0"><?php echo $tradeAmounts[$ti]; ?></p>
 </div>
 <?php endforeach; ?>
-<div class="p-6 flex flex-col items-center justify-center text-center opacity-40">
-<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden mb-4">
-<div class="scanning-animation h-full w-full"></div>
 </div>
-<p class="text-[10px] font-bold uppercase tracking-widest">Monitoring <?php echo htmlspecialchars($activePlanTypesForTrades[$defaultTradeTab] ?? 'Markets'); ?> Plans</p>
-</div>
-</div>
-</div>
-</section>
-<section class="glass-panel rounded-xl overflow-hidden">
-<div class="px-6 md:px-8 py-5 md:py-6 border-b border-low flex justify-between items-center gap-3">
-<h3 class="font-headline-md text-headline-md text-on-surface">My Active Plans</h3>
-<a class="text-primary-container text-label-sm font-bold hover:underline flex items-center gap-1 shrink-0" href="/dashboard/user/analytics">
-View All Plans <span class="material-symbols-outlined text-sm">open_in_new</span>
+<a href="/dashboard/user/transactions" class="block w-full mt-md text-center font-label-md text-on-surface-variant hover:text-primary transition-colors py-2 border border-dashed border-surface-gray rounded">
+View Historical Nodes
 </a>
 </div>
+<div class="bg-surface-container-lowest border border-surface-gray p-md min-h-[250px] flex flex-col rounded">
+<h4 class="font-hanken font-bold text-body-lg text-on-surface mb-md">My Active Plans</h4>
 <?php if (empty($activeInvestments)): ?>
-<div class="p-10 md:p-16 flex flex-col items-center justify-center text-center">
-<div class="w-20 h-20 md:w-24 md:h-24 mb-6 rounded-full bg-surface-container-high flex items-center justify-center">
-<span class="material-symbols-outlined text-4xl text-on-surface-variant">inventory_2</span>
+<div class="flex-1 flex flex-col items-center justify-center text-center p-md">
+<div class="w-16 h-16 bg-surface-container-high rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-on-surface-variant opacity-40 text-4xl">inventory_2</span>
 </div>
-<h4 class="font-headline-md text-headline-md text-on-surface mb-2">No active investments</h4>
-<p class="text-on-surface-variant font-body-md max-w-md mb-8">You currently don't have any running investment plans. Start earning passive yield with our proprietary AI trading algorithms.</p>
-<a href="/dashboard/user/investment-plans" class="bg-primary-container text-on-primary px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold text-label-sm shadow-xl shadow-primary-container/20 hover:scale-[1.02] transition-transform flex items-center gap-3">
-<span class="material-symbols-outlined">rocket_launch</span>
+<p class="font-body-md text-body-md text-on-surface-variant">No active investments found on AI Core.</p>
+</div>
+<a href="/dashboard/user/investment-plans" class="w-full mt-md bg-fidelity-green text-white font-bold py-sm rounded-lg shadow-md hover:translate-y-[-2px] transition-all duration-200 text-center block">
 Subscribe to New Investment Plan
 </a>
-</div>
 <?php else: ?>
-<div class="p-4 md:p-6 space-y-3">
+<div class="flex-1 space-y-3 overflow-y-auto dash-scrollbar">
 <?php foreach ($activeInvestments as $inv):
     $startDate = new DateTime($inv['start_date']);
     $now = new DateTime();
@@ -302,37 +301,22 @@ Subscribe to New Investment Plan
     $progress = min(100, ($daysElapsed / max(1, $durationDays)) * 100);
     $avgYield = (($inv['yield_min'] ?? 0) + ($inv['yield_max'] ?? 0)) / 2;
 ?>
-<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-xl border border-low hover:border-primary-container/30 transition-all">
-<div class="flex items-center gap-4 min-w-0">
-<div class="w-12 h-12 bg-primary-container/15 rounded-xl flex items-center justify-center shrink-0">
-<span class="material-symbols-outlined text-primary-container">monitoring</span>
-</div>
-<div class="min-w-0">
-<h4 class="font-bold text-on-surface truncate"><?php echo htmlspecialchars($inv['plan_name']); ?></h4>
-<p class="text-xs text-on-surface-variant">Start Date: <?php echo date('M j, Y', strtotime($inv['start_date'])); ?></p>
-</div>
-</div>
-<div class="lg:w-48 px-0 lg:px-4">
-<div class="flex justify-between text-[10px] font-bold mb-1 text-on-surface-variant">
-<span>PROGRESS</span>
-<span><?php echo number_format($progress, 0); ?>%</span>
-</div>
-<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
-<div class="bg-primary-container h-full rounded-full" style="width:<?php echo min(100, $progress); ?>%"></div>
-</div>
-</div>
-<div class="text-left lg:text-right">
-<p class="text-sm font-bold text-on-surface">$<?php echo format_usd_amount($inv['amount']); ?></p>
-<p class="text-xs text-success">+<?php echo number_format($avgYield, 1); ?>% ROI</p>
+<div class="p-sm rounded border border-surface-gray hover:border-fidelity-green/30 transition-all">
+<p class="font-bold text-on-surface text-sm truncate"><?php echo htmlspecialchars($inv['plan_name']); ?></p>
+<p class="text-xs text-on-surface-variant mb-2">$<?php echo format_usd_amount($inv['amount']); ?> &middot; +<?php echo number_format($avgYield, 1); ?>% ROI</p>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-fidelity-green h-full rounded-full" style="width:<?php echo min(100, $progress); ?>%"></div>
 </div>
 </div>
 <?php endforeach; ?>
-<a href="/dashboard/user/investment-plans" class="block w-full py-4 border border-dashed border-low rounded-xl text-on-surface-variant font-bold hover:border-primary-container hover:text-primary-container transition-all text-center text-label-sm">
-+ Subscribe to New Investment Plan
-</a>
 </div>
+<a href="/dashboard/user/investment-plans" class="w-full mt-md bg-fidelity-green text-white font-bold py-sm rounded-lg text-center block hover:opacity-90 transition-opacity text-sm">
+Subscribe to New Investment Plan
+</a>
 <?php endif; ?>
-</section>
+</div>
+</div>
+</div>
 <?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
 <?php require_once __DIR__ . '/../../includes/app-script.php'; ?>
 <script>window.BLOOMBIT_API_BASE = '';</script>
@@ -379,11 +363,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var absVal = Math.abs(newVal);
         
         var colorClass = '';
-        if (absVal < 50) colorClass = 'text-critical';
-        else if (absVal >= 100) colorClass = 'text-success';
-        else colorClass = isPositive ? 'text-success' : 'text-critical';
+        if (absVal < 50) colorClass = 'text-error';
+        else if (absVal >= 100) colorClass = 'text-fidelity-green';
+        else colorClass = isPositive ? 'text-fidelity-green' : 'text-error';
         
-        el.className = 'live-trade-amount font-data-mono font-bold shrink-0 ' + colorClass;
+        el.className = 'live-trade-amount font-hanken font-bold shrink-0 text-body-md ' + colorClass;
         el.textContent = (newVal >= 0 ? '+' : '-') + '$' + absVal.toFixed(2);
     }
     
@@ -402,16 +386,16 @@ document.addEventListener('DOMContentLoaded', function() {
         var isLong = direction === 'Long';
         var mins = Math.floor(Math.random() * 30) + 1;
         
-        pairEl.innerHTML = planName + ' <span class="' + (isLong ? 'text-success' : 'text-critical') + ' text-[10px] ml-1 uppercase">' + direction + '</span>';
+        pairEl.innerHTML = planName + ' <span class="' + (isLong ? 'text-fidelity-green' : 'text-error') + ' text-[10px] ml-1 uppercase">' + direction + ' Position</span>';
         timeEl.textContent = mins + ' min' + (mins > 1 ? 's' : '') + ' ago';
         
         if (isLong) {
-            iconContainer.className = 'trade-icon-container w-10 h-10 rounded-full bg-success/10 flex items-center justify-center shrink-0';
-            iconEl.className = 'trade-icon material-symbols-outlined text-success';
+            iconContainer.className = 'trade-icon-container w-8 h-8 rounded-full bg-fidelity-green/10 flex items-center justify-center shrink-0';
+            iconEl.className = 'trade-icon material-symbols-outlined text-fidelity-green text-[14px]';
             iconEl.textContent = 'trending_up';
         } else {
-            iconContainer.className = 'trade-icon-container w-10 h-10 rounded-full bg-critical/10 flex items-center justify-center shrink-0';
-            iconEl.className = 'trade-icon material-symbols-outlined text-critical';
+            iconContainer.className = 'trade-icon-container w-8 h-8 rounded-full bg-error/10 flex items-center justify-center shrink-0';
+            iconEl.className = 'trade-icon material-symbols-outlined text-error text-[14px]';
             iconEl.textContent = 'trending_down';
         }
         
@@ -466,18 +450,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         var pathD = 'M' + points.join(' L');
         var areaD = pathD + ' L' + (count > 1 ? 100 : 50) + ',100 L0,100 Z';
-        chartContainer.innerHTML = '<div class="absolute inset-0 trading-graph-bg rounded-lg"></div><svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100"><defs><linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" style="stop-color:#ffc35c;stop-opacity:0.2"></stop><stop offset="100%" style="stop-color:#ffc35c;stop-opacity:0"></stop></linearGradient></defs><path d="' + areaD + '" fill="url(#chartGradient)"></path><path d="' + pathD + '" fill="none" stroke="#ffc35c" stroke-width="2"></path></svg>';
+        chartContainer.innerHTML = '<div class="absolute inset-0 trading-graph-bg rounded-lg"></div><svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100"><defs><linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" style="stop-color:#337722;stop-opacity:0.2"></stop><stop offset="100%" style="stop-color:#337722;stop-opacity:0"></stop></linearGradient></defs><path d="' + areaD + '" fill="url(#chartGradient)"></path><path d="' + pathD + '" fill="none" stroke="#337722" stroke-width="2"></path></svg>';
         if (chartDates) chartDates.innerHTML = dates.map(function(d){ return '<span>' + d + '</span>'; }).join('');
     }
     
-    var chartActive = ['bg-surface-dim', 'text-primary-container', 'font-bold', 'shadow-sm'];
+    var chartActive = ['bg-white', 'text-primary', 'font-bold', 'shadow-sm'];
     var chartIdle = ['text-on-surface-variant'];
     function setChartBtnActive(btn) {
         document.querySelectorAll('.chart-filter-btn').forEach(function (b) {
-            b.classList.remove('bg-surface-dim', 'text-primary-container', 'font-bold', 'shadow-sm', 'text-on-surface-variant');
-            b.classList.add('text-on-surface-variant');
+            b.classList.remove('bg-white', 'text-primary', 'font-bold', 'shadow-sm', 'text-on-surface-variant', 'hover:bg-white/50');
+            b.classList.add('text-on-surface-variant', 'hover:bg-white/50');
         });
-        btn.classList.remove('text-on-surface-variant');
+        btn.classList.remove('text-on-surface-variant', 'hover:bg-white/50');
         chartActive.forEach(function (c) { btn.classList.add(c); });
     }
     
