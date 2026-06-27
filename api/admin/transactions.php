@@ -8,6 +8,7 @@ header('Content-Type: application/json');
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+require_once dirname(__DIR__, 2) . '/includes/usd-wallet.php';
 require_once dirname(__DIR__, 2) . '/includes/deposit-expiry.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
@@ -84,21 +85,22 @@ try {
         
         // For deposits, credit user wallet
         if ($tx['type'] === 'deposit') {
-            $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                ->execute([$tx['user_id'], $tx['currency'], $tx['amount']]);
-            require_once dirname(__DIR__, 2) . '/includes/helpers.php';
             $amountUsd = null;
-            if (isset($tx['amount_usd']) && $tx['amount_usd'] !== null && (float)$tx['amount_usd'] > 0) {
-                $amountUsd = (float)$tx['amount_usd'];
-                bump_user_last_balance_usd($pdo, (int)$tx['user_id'], $amountUsd);
+            if (isset($tx['amount_usd']) && $tx['amount_usd'] !== null && (float) $tx['amount_usd'] > 0) {
+                $amountUsd = (float) $tx['amount_usd'];
             } else {
                 $cur = strtoupper((string) $tx['currency']);
-                if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
-                    $amountUsd = (float)$tx['amount'];
-                    bump_user_last_balance_usd($pdo, (int)$tx['user_id'], $amountUsd);
+                if (in_array($cur, ['USD', 'USDT', 'USDC', 'BUSD', 'DAI'], true)) {
+                    $amountUsd = (float) $tx['amount'];
                 } else {
-                    refresh_user_last_balance_usd($pdo, (int)$tx['user_id']);
+                    $price = get_coin_usd_price($pdo, $cur);
+                    if ($price !== null && $price > 0) {
+                        $amountUsd = round((float) $tx['amount'] * (float) $price, 2);
+                    }
                 }
+            }
+            if ($amountUsd !== null && $amountUsd > 0) {
+                credit_user_usd($pdo, (int) $tx['user_id'], $amountUsd);
             }
 
             // Referral bonus on first approved deposit only (2-level: 15% direct, 10% upline)
@@ -120,10 +122,9 @@ try {
                     if ($depositBonusPct > 0) {
                         $bonusUsd = round($baseUsdDeposit * ($depositBonusPct / 100), 2);
                         if ($bonusUsd > 0) {
-                            $refCurrency = 'USDT';
                             $depositorId = (int) $tx['user_id'];
-                            $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                                ->execute([$depositorId, $refCurrency, $bonusUsd]);
+                            credit_user_usd($pdo, $depositorId, (float) $bonusUsd);
+                            $refCurrency = user_usd_wallet_currency();
                             $hasAmountUsdCol = false;
                             try {
                                 $colChk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
@@ -136,7 +137,6 @@ try {
                                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
                                     ->execute([$depositorId, 'deposit_bonus', $bonusUsd, $refCurrency, 'completed', 'dep_bonus_' . $transactionId]);
                             }
-                            bump_user_last_balance_usd($pdo, $depositorId, (float)$bonusUsd);
                         }
                     }
                 } catch (Throwable $e) {
@@ -184,18 +184,17 @@ try {
         
         // For withdrawals, credit back the user balance
         if ($tx['type'] === 'withdrawal') {
-            $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                ->execute([$tx['user_id'], $tx['currency'], $tx['amount']]);
-            require_once dirname(__DIR__, 2) . '/includes/helpers.php';
-            if (isset($tx['amount_usd']) && $tx['amount_usd'] !== null && (float)$tx['amount_usd'] > 0) {
-                bump_user_last_balance_usd($pdo, (int)$tx['user_id'], (float)$tx['amount_usd']);
+            $refundUsd = 0.0;
+            if (isset($tx['amount_usd']) && $tx['amount_usd'] !== null && (float) $tx['amount_usd'] > 0) {
+                $refundUsd = (float) $tx['amount_usd'];
             } else {
                 $cur = strtoupper((string) $tx['currency']);
-                if (in_array($cur, ['USD','USDT','USDC','BUSD','DAI'], true)) {
-                    bump_user_last_balance_usd($pdo, (int)$tx['user_id'], (float)$tx['amount']);
-                } else {
-                    refresh_user_last_balance_usd($pdo, (int)$tx['user_id']);
+                if (in_array($cur, ['USD', 'USDT', 'USDC', 'BUSD', 'DAI'], true)) {
+                    $refundUsd = (float) $tx['amount'];
                 }
+            }
+            if ($refundUsd > 0) {
+                credit_user_usd($pdo, (int) $tx['user_id'], $refundUsd);
             }
         }
         // For deposits, no balance change needed (user hasn't been credited yet)

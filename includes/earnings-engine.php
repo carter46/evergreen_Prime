@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/usd-wallet.php';
 
 /**
  * Run earnings distribution.
@@ -54,7 +55,7 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
     $investments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $now = new DateTime('now', new DateTimeZone('UTC'));
-    $currency = 'USDT';
+    $currency = user_usd_wallet_currency();
 
     foreach ($investments as $inv) {
         $invId = (int) $inv['id'];
@@ -138,8 +139,7 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
         
         $pdo->beginTransaction();
         try {
-            $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                ->execute([$userId, $currency, $toCreditStr]);
+            credit_user_usd($pdo, $userId, (float) $toCreditStr);
             $toCreditUsd = (float) $toCreditStr;
             if ($hasAmountUsd) {
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)')
@@ -147,12 +147,6 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
             } else {
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
                     ->execute([$userId, 'payout', $toCreditStr, $currency, 'completed', 'earnings_inv_' . $invId]);
-            }
-            // Keep cached USD balance stable without live pricing (USDT is 1:1)
-            if ($currency === 'USDT') {
-                bump_user_last_balance_usd($pdo, $userId, (float) $toCredit);
-            } else {
-                refresh_user_last_balance_usd($pdo, $userId);
             }
             if ($matured && $newLastAt >= $endDate) {
                 $pdo->prepare('UPDATE user_investments SET last_earnings_at = ?, status = ? WHERE id = ?')

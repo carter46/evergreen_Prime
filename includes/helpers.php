@@ -501,10 +501,10 @@ function credit_referral_bonus(
     if ($bonusUsd <= 0 || $referrerUserId <= 0 || $referrerUserId === $referredUserId) {
         return;
     }
-    $refCurrency = 'USDT';
+    require_once __DIR__ . '/usd-wallet.php';
+    credit_user_usd($pdo, $referrerUserId, $bonusUsd);
+    $refCurrency = user_usd_wallet_currency();
     $bonusStr = number_format($bonusUsd, 18, '.', '');
-    $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-        ->execute([$referrerUserId, $refCurrency, $bonusStr]);
     $hasAmountUsdCol = false;
     try {
         $colChk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
@@ -517,7 +517,6 @@ function credit_referral_bonus(
         $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
             ->execute([$referrerUserId, 'referral_bonus', $bonusStr, $refCurrency, 'completed', $txReference]);
     }
-    bump_user_last_balance_usd($pdo, $referrerUserId, (float) $bonusUsd);
     try {
         $tblChk = $pdo->query("SHOW TABLES LIKE 'referral_earnings'");
         if ($tblChk && $tblChk->rowCount() > 0) {

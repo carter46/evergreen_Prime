@@ -1,17 +1,13 @@
 <?php
 require_once __DIR__ . '/../../includes/auth-check.php';
 require_once __DIR__ . '/../../includes/helpers.php';
+require_once __DIR__ . '/../../includes/usd-wallet.php';
 $currentPage = 'wallet';
 $siteName = get_site_name();
 $walletBalances = [];
 $walletTotalUsd = 0;
 $walletTotalUsdUpdatedAt = null;
-$stableTotalUsd = 0.0;
 $walletTransactions = [];
-$btcAmount = 0;
-$highestCoin = 'BTC';
-$highestAmount = 0;
-$highestCoinLogo = 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
 $totalProfit = 0;
 $activeCapital = 0;
 $dailyEarning = 0;
@@ -24,59 +20,23 @@ try {
     // Best-effort cleanup: expire old pending deposits (idempotent)
     try { expire_pending_deposits($pdo); } catch (Throwable $e) {}
     $userId = $_SESSION['user_id'];
-
-    // Prefer cached USD balance from users table (stable, consistent display)
-    $hasCachedUsd = false;
+    $walletTotalUsd = get_user_usd_balance($pdo, (int) $userId);
     try {
-        $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
-        $hasCachedUsd = $bc && $bc->rowCount() > 0;
-    } catch (Throwable $e) {}
-    if ($hasCachedUsd) {
-        $s = $pdo->prepare('SELECT last_balance_usd, last_balance_usd_updated_at FROM users WHERE id = ?');
-        $s->execute([(int)$userId]);
-        $rr = $s->fetch(PDO::FETCH_ASSOC);
-        if ($rr) {
-            $walletTotalUsd = (float) ($rr['last_balance_usd'] ?? 0);
-            $walletTotalUsdUpdatedAt = $rr['last_balance_usd_updated_at'] ?? null;
+        $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd_updated_at'");
+        if ($bc && $bc->rowCount() > 0) {
+            $s = $pdo->prepare('SELECT last_balance_usd_updated_at FROM users WHERE id = ?');
+            $s->execute([(int) $userId]);
+            $walletTotalUsdUpdatedAt = $s->fetchColumn() ?: null;
         }
+    } catch (Throwable $e) {}
+    if ($walletTotalUsd > 0) {
+        $walletBalances[] = [
+            'currency' => 'USD',
+            'amount' => $walletTotalUsd,
+            'usd_value' => round($walletTotalUsd, 2),
+        ];
     }
 
-    $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
-    $stmt->execute([$userId]);
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $amt = (float) $row['amount'];
-        $currency = strtoupper($row['currency']);
-        // No placeholder pricing: only stable assets have deterministic USD value.
-        $usd = in_array($currency, ['USDT','USDC','BUSD','USD','DAI'], true) ? $amt : null;
-        $walletBalances[] = [
-            'currency' => $currency,
-            'amount' => $amt,
-            'usd_value' => $usd === null ? null : round($usd, 2),
-        ];
-        if ($usd !== null) {
-            $stableTotalUsd += $usd;
-        }
-    }
-    usort($walletBalances, function($a, $b) {
-        return ((float)($b['usd_value'] ?? 0) <=> (float)($a['usd_value'] ?? 0));
-    });
-    // Cached last_balance_usd can drift from wallet_balances (e.g. after investments). Re-sync for display.
-    if ($hasCachedUsd && abs($walletTotalUsd - $stableTotalUsd) > 0.02) {
-        try {
-            refresh_user_last_balance_usd($pdo, (int) $userId);
-            $s->execute([(int) $userId]);
-            $rr = $s->fetch(PDO::FETCH_ASSOC);
-            if ($rr) {
-                $walletTotalUsd = (float) ($rr['last_balance_usd'] ?? $stableTotalUsd);
-            }
-        } catch (Throwable $e) {
-            $walletTotalUsd = $stableTotalUsd;
-        }
-    } elseif (!$walletTotalUsd && $stableTotalUsd > 0) {
-        $walletTotalUsd = $stableTotalUsd;
-    }
-    $topCoins = array_slice(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; }), 0, 3);
-    $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; })) - 3);
     $totalProfit = get_user_total_profit($pdo, (int) $userId);
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
@@ -100,7 +60,7 @@ try {
 $coinNames = ['BTC'=>'Bitcoin','ETH'=>'Ethereum','USDT'=>'Tether','USDC'=>'USD Coin','BUSD'=>'Binance USD','USD'=>'US Dollar','XRP'=>'XRP','SOL'=>'Solana','BNB'=>'BNB','ADA'=>'Cardano','DOGE'=>'Dogecoin','TRX'=>'TRON'];
 $pageTitle = $siteName . ' | Wallet & Withdrawals';
 $pageHeading = 'Wallet';
-$pageSubtitle = 'Manage deposits, withdrawals, and asset balances.';
+$pageSubtitle = 'Manage deposits, withdrawals, and your USD balance.';
 require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
@@ -126,18 +86,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <div>
 <p class="text-on-surface-variant text-sm font-medium mb-1">Available Balance</p>
 <h1 class="text-5xl md:text-6xl font-bold tracking-tight">$<?php echo format_usd_amount($walletTotalUsd); ?> <span class="text-xl font-normal text-on-surface-variant ml-2">USD</span></h1>
-<p class="text-primary-container mt-2 flex items-center gap-1 flex-wrap">
-<?php
-$parts = [];
-foreach ($topCoins as $c) {
-    $logo = $coinLogosMap[$c['currency']] ?? 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
-    $amt = $c['amount'] > 0 ? round($c['amount']) : 0;
-    $parts[] = '<img class="w-5 h-5" src="' . htmlspecialchars($logo) . '" alt="' . htmlspecialchars($c['currency']) . '"/>' . $amt . ' ' . htmlspecialchars($c['currency']);
-}
-echo implode(' <span class="text-white/60 mx-1">|</span> ', $parts);
-if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$extraCoinCount.'</span>';
-?>
-</p>
+<p class="text-primary-container mt-2 text-sm">Centralized USD wallet — invest and withdraw from one balance.</p>
 <div class="flex flex-wrap gap-2 sm:gap-3 mt-4">
 <button type="button" id="deposit-btn" class="bg-primary-container hover:bg-primary-container/90 text-on-primary px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all text-sm">
 <span class="material-symbols-outlined text-xs sm:text-sm">add</span> Deposit
@@ -187,11 +136,7 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <!-- Your Assets -->
 <div class="glass-panel rounded-xl overflow-hidden min-w-0">
 <div class="p-4 border-b border-low flex items-center justify-between gap-2">
-<h2 class="text-base font-bold text-on-surface">Your Assets</h2>
-<div class="relative shrink-0">
-<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs">search</span>
-<input class="pl-7 pr-3 py-1 bg-surface-container-high border border-low rounded text-xs focus:ring-1 focus:ring-primary-container w-32 text-on-surface" placeholder="Search..." type="text"/>
-</div>
+<h2 class="text-base font-bold text-on-surface">USD Wallet</h2>
 </div>
 <div class="overflow-hidden">
 <table class="w-full text-left table-fixed min-w-0">
@@ -199,53 +144,28 @@ if ($extraCoinCount > 0) echo ' <span class="text-white/80 font-bold ml-1">+'.$e
 <tr class="text-slate-400 text-[9px] uppercase tracking-wider border-b border-slate-50 dark:border-slate-800">
 <th class="px-3 py-2 font-semibold w-1/4">Asset</th>
 <th class="px-3 py-2 font-semibold text-right w-1/4">Balance</th>
-<th class="px-3 py-2 font-semibold text-right w-1/4">Value</th>
 <th class="px-3 py-2 font-semibold text-right w-1/4">Action</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800 wallet-assets-table">
-<?php
-$coinIdMap = ['USDT'=>'tether','USDC'=>'usd-coin','BUSD'=>'binance-usd','USD'=>'usd-coin','BTC'=>'bitcoin','ETH'=>'ethereum','SOL'=>'solana','BNB'=>'binancecoin','XRP'=>'ripple','ADA'=>'cardano','DOGE'=>'dogecoin','TRX'=>'tron'];
-$fmtBalance = function($amt, $cur) {
-  $amt = (float)$amt;
-  if ($amt <= 0) return '0';
-  if (in_array($cur, ['USD','USDT','USDC','BUSD'], true)) return format_usd_amount($amt);
-  if ($amt >= 1000) return (string) round($amt, 0);
-  if ($amt >= 1) return format_usd_amount($amt);
-  if ($amt >= 0.01) return format_usd_amount($amt);
-  return rtrim(rtrim(number_format($amt, 6), '0'), '.');
-};
-foreach ($walletBalances as $b):
-  $cu = strtoupper($b['currency']);
-  $coinId = $coinIdMap[$cu] ?? strtolower($b['currency']);
-  $logo = $coinLogosMap[$cu] ?? null;
-  $name = $coinNames[$cu] ?? $b['currency'];
-?>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors" data-coin="<?php echo htmlspecialchars($coinId); ?>" data-balance="<?php echo $b['amount']; ?>">
+<?php if ($walletTotalUsd > 0): ?>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
 <td class="px-3 py-3">
 <div class="flex items-center gap-2 min-w-0">
-<?php if ($logo): ?><div class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-slate-800"><img alt="<?php echo htmlspecialchars($cu); ?>" class="w-5 h-5 object-contain" src="<?php echo htmlspecialchars($logo); ?>" loading="lazy"/></div><?php else: ?><div class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-500"><?php echo htmlspecialchars(substr($cu,0,1)); ?></div><?php endif; ?>
+<div class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-slate-800"><img alt="USD" class="w-5 h-5 object-contain" src="https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png" loading="lazy"/></div>
 <div class="min-w-0">
-<p class="font-bold text-xs truncate"><?php echo htmlspecialchars($name); ?></p>
-<p class="text-[10px] text-slate-500"><?php echo $cu; ?></p>
+<p class="font-bold text-xs truncate">US Dollar</p>
+<p class="text-[10px] text-slate-500">USD</p>
 </div>
 </div>
 </td>
-<td class="px-3 py-3 text-right font-medium text-xs truncate"><?php echo $fmtBalance($b['amount'], $cu); ?> <?php echo $cu; ?></td>
-<td class="px-3 py-3 text-right font-bold text-xs wallet-value truncate" data-coin="<?php echo $coinId; ?>">
-<?php if ($b['usd_value'] === null): ?>
-— 
-<?php else: ?>
-$<?php echo format_usd_amount($b['usd_value']); ?>
-<?php endif; ?>
-</td>
+<td class="px-3 py-3 text-right font-medium text-xs truncate">$<?php echo format_usd_amount($walletTotalUsd); ?></td>
 <td class="px-3 py-3 text-right">
-<button class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">TRADE</button>
+<a href="/dashboard/user/investment-plans" class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary hover:text-black transition-all">INVEST</a>
 </td>
 </tr>
-<?php endforeach; ?>
-<?php if (empty($walletBalances)): ?>
-<tr><td class="px-3 py-6 text-center text-slate-500 text-xs" colspan="4">No balances yet.</td></tr>
+<?php else: ?>
+<tr><td class="px-3 py-6 text-center text-slate-500 text-xs" colspan="3">No balance yet. Deposit funds to get started.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>
@@ -427,12 +347,17 @@ elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 </p>
 </div>
 <div>
-<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Select Currency</label>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Withdrawal Method</label>
+<select name="withdrawal_method" id="withdraw-method" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
+<option value="crypto" selected>Crypto</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">Payout Currency</label>
 <select name="currency" id="withdraw-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-4 py-3 text-base border border-slate-200 dark:border-zinc-700 font-medium">
 <option value="">Loading...</option>
 </select>
-<p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Available: <span id="withdraw-available" class="font-semibold">—</span> <span id="withdraw-available-usd" class="text-slate-400"></span></p>
-<p class="text-xs text-slate-400 dark:text-zinc-500 mt-1">Withdrawals use the selected coin only. Enter an amount up to that coin&rsquo;s available balance.</p>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Available USD: <span id="withdraw-available" class="font-semibold">$<?php echo format_usd_amount($walletTotalUsd); ?></span></p>
 <p class="mt-3 text-base sm:text-lg font-bold text-primary dark:text-primary min-h-[1.5em]" id="withdraw-coin-quote">—</p>
 </div>
 <div>
@@ -465,13 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var currentDepositTxId = null;
     var currentDepositExpiresAtMs = null;
     var depositCountdownIv = null;
-    var userBalances = <?php 
-        $balanceMap = [];
-        foreach ($walletBalances as $b) {
-            $balanceMap[$b['currency']] = $b;
-        }
-        echo json_encode($balanceMap);
-    ?>;
+    var userUsdBalance = <?php echo json_encode((float) $walletTotalUsd); ?>;
 
     function openDrawer(drawer) {
         if (!drawer || !backdrop) return;
@@ -508,21 +427,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return '<option value="' + a.symbol + '" data-address="' + (a.address || '') + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || a.symbol) + ' (' + a.symbol + ')</option>';
             }).join('');
             if (depositSelect) depositSelect.innerHTML = depositOptions;
-            // Withdraw: all coins user has balance for (not stable-only)
-            var withdrawAddresses = d.addresses.filter(function(a){
-                var sym = (a.symbol || '').toUpperCase();
-                var b = userBalances[sym] || userBalances[a.symbol];
-                return b && parseFloat(b.amount) > 0;
-            });
-            var withdrawOptions = withdrawAddresses.length > 0
-                ? withdrawAddresses.map(function(a){
-                    var sym = (a.symbol || '').toUpperCase();
-                    var b = userBalances[sym] || userBalances[a.symbol];
-                    return '<option value="' + sym + '" data-address="' + (a.address || '') + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || sym) + ' (' + sym + ') — ' + (b ? parseFloat(b.amount).toFixed(6) : '0') + '</option>';
-                }).join('')
-                : '<option value="">No funds available to withdraw</option>';
+            var withdrawOptions = d.addresses.map(function(a){
+                return '<option value="' + (a.symbol || '').toUpperCase() + '" data-coin-key="' + (a.coin_key || '') + '">' + (a.display_name || a.symbol) + ' (' + (a.symbol || '') + ')</option>';
+            }).join('');
             if (withdrawSelect) {
-                withdrawSelect.innerHTML = withdrawOptions;
+                withdrawSelect.innerHTML = withdrawOptions || '<option value="">No payout currencies configured</option>';
                 updateWithdrawBalance();
                 updateWithdrawCoinQuote();
             }
@@ -754,28 +663,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var stableWithdrawCoins = ['USDT', 'USDC', 'BUSD', 'USD', 'DAI'];
 
-    function getWithdrawCoinBalance(currency) {
-        if (!currency) return 0;
-        var sym = currency.toUpperCase();
-        var balance = userBalances[sym] || userBalances[currency];
-        return balance ? parseFloat(balance.amount) || 0 : 0;
-    }
-
     function updateWithdrawBalance() {
-        var sel = document.getElementById('withdraw-currency');
         var availEl = document.getElementById('withdraw-available');
-        var availUsdEl = document.getElementById('withdraw-available-usd');
-        if (!sel || !availEl) return;
-        var currency = sel.value || '';
-        var avail = getWithdrawCoinBalance(currency);
-        availEl.textContent = avail.toFixed(8) + ' ' + (currency || '');
-        if (availUsdEl) {
-            if (currency && stableWithdrawCoins.indexOf(currency.toUpperCase()) >= 0 && avail > 0) {
-                availUsdEl.textContent = '(max $' + avail.toFixed(2) + ' USD)';
-            } else {
-                availUsdEl.textContent = '';
-            }
-        }
+        if (availEl) availEl.textContent = '$' + userUsdBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
 
     function updateWithdrawCoinQuote() {
@@ -806,7 +696,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (price != null && price > 0) {
                     var coinAmt = amountUsd / price;
                     var disp = coinAmt >= 1 ? coinAmt.toFixed(4) : (coinAmt >= 0.01 ? coinAmt.toFixed(6) : coinAmt.toFixed(8));
-                    el.textContent = 'You will debit: ' + disp + ' ' + currency + (price !== 1 ? ' (Rate: $' + price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 4}) + '/' + currency + ')' : '');
+                    el.textContent = 'You will receive approx. ' + disp + ' ' + currency + (price !== 1 ? ' (Rate: $' + price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 4}) + '/' + currency + ')' : '');
                 } else {
                     el.textContent = 'Unable to fetch rate';
                 }
@@ -847,9 +737,8 @@ document.addEventListener('DOMContentLoaded', function() {
             msgEl.classList.remove('hidden');
             return;
         }
-        var coinAvail = getWithdrawCoinBalance(currency);
-        if (stableWithdrawCoins.indexOf((currency || '').toUpperCase()) >= 0 && amountUsd > coinAvail + 0.000001) {
-            msgEl.textContent = 'Insufficient ' + currency + ' balance. You have ' + coinAvail.toFixed(2) + ' ' + currency + ' available (max $' + coinAvail.toFixed(2) + ' USD). Most of your account value may be in active investments, not your wallet.';
+        if (amountUsd > userUsdBalance + 0.000001) {
+            msgEl.textContent = 'Insufficient USD balance. You have $' + userUsdBalance.toFixed(2) + ' available.';
             msgEl.className = 'text-sm text-red-500';
             msgEl.classList.remove('hidden');
             return;
@@ -857,7 +746,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/user/withdraw.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ currency: currency, amount_usd: amountUsd, address: address })
+            body: JSON.stringify({ withdrawal_method: 'crypto', currency: currency, amount_usd: amountUsd, address: address })
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
                 msgEl.textContent = res.data.message || 'Withdrawal request submitted';
@@ -875,27 +764,6 @@ document.addEventListener('DOMContentLoaded', function() {
             msgEl.classList.remove('hidden');
         });
     });
-
-    // Crypto prices update
-    if (window.BloombitCryptoPrices) {
-        var coinIds = ['bitcoin','ethereum','tether'];
-        function updateWalletValues(prices) {
-            if (!prices) return;
-            document.querySelectorAll('.wallet-assets-table tr[data-coin][data-balance]').forEach(function(row) {
-                var coinId = row.getAttribute('data-coin');
-                var balance = parseFloat(row.getAttribute('data-balance')) || 0;
-                var p = prices[coinId];
-                var valueEl = row.querySelector('.wallet-value');
-                if (valueEl && p && p.usd != null) {
-                    valueEl.textContent = '$' + (balance * p.usd).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                }
-            });
-        }
-        window.BloombitCryptoPrices.fetch(coinIds).then(updateWalletValues);
-        setInterval(function() {
-            window.BloombitCryptoPrices.fetch(coinIds).then(updateWalletValues);
-        }, 300000);
-    }
 });
 </script>
 </body></html>

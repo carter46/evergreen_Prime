@@ -7,6 +7,7 @@
 header('Content-Type: application/json');
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
+require_once dirname(__DIR__, 2) . '/includes/usd-wallet.php';
 $userId = $_SESSION['user_id'] ?? null;
 
 if (!$userId) {
@@ -24,36 +25,21 @@ try {
 }
 
 $balances = [];
-$totalUsd = 0.0;
+$totalUsd = get_user_usd_balance($pdo, (int) $userId);
 $totalUsdUpdatedAt = null;
-
-// Prefer cached USD balance from users table (stable, consistent display)
-$hasCachedUsd = false;
 try {
-    $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
-    $hasCachedUsd = $bc && $bc->rowCount() > 0;
-} catch (Throwable $e) {}
-if ($hasCachedUsd) {
-    $s = $pdo->prepare('SELECT last_balance_usd, last_balance_usd_updated_at FROM users WHERE id = ?');
-    $s->execute([(int)$userId]);
-    $r = $s->fetch(PDO::FETCH_ASSOC);
-    if ($r) {
-        $totalUsd = (float) ($r['last_balance_usd'] ?? 0);
-        $totalUsdUpdatedAt = $r['last_balance_usd_updated_at'] ?? null;
+    $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd_updated_at'");
+    if ($bc && $bc->rowCount() > 0) {
+        $s = $pdo->prepare('SELECT last_balance_usd_updated_at FROM users WHERE id = ?');
+        $s->execute([(int) $userId]);
+        $totalUsdUpdatedAt = $s->fetchColumn() ?: null;
     }
-}
-
-$stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
-$stmt->execute([$userId]);
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $amt = (float) $row['amount'];
-    $cur = strtoupper($row['currency']);
-    // No placeholder pricing. Only stable assets have a deterministic USD value.
-    $usd = in_array($cur, ['USDT', 'USDC', 'BUSD', 'USD', 'DAI'], true) ? $amt : null;
+} catch (Throwable $e) {}
+if ($totalUsd > 0) {
     $balances[] = [
-        'currency' => $row['currency'],
-        'amount' => (string) $row['amount'],
-        'usd_value' => $usd === null ? null : round($usd, 2),
+        'currency' => user_usd_wallet_currency(),
+        'amount' => number_format($totalUsd, 18, '.', ''),
+        'usd_value' => round($totalUsd, 2),
     ];
 }
 

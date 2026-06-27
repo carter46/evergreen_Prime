@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
 require_once dirname(__DIR__, 2) . '/includes/plan-types.php';
+require_once dirname(__DIR__, 2) . '/includes/usd-wallet.php';
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -24,17 +25,13 @@ if (!isset($_SESSION['user_id'])) {
 $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 $planId = (int) ($input['plan_id'] ?? 0);
 $amountUsd = (float) ($input['amount'] ?? 0);
-$currency = strtoupper(trim($input['currency'] ?? 'USD'));
 $durationDays = isset($input['duration_days']) ? (int) $input['duration_days'] : null;
 
-if ($planId <= 0 || $amountUsd <= 0 || empty($currency)) {
+if ($planId <= 0 || $amountUsd <= 0) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Invalid plan ID, amount, or currency']);
+    echo json_encode(['success' => false, 'error' => 'Invalid plan ID or amount']);
     exit;
 }
-
-$stablecoins = ['USDT','USDC','USD','BUSD','DAI'];
-$isStable = in_array($currency, $stablecoins, true);
 
 try {
     $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
@@ -44,7 +41,6 @@ try {
     exit;
 }
 
-// Validate plan exists and is enabled
 $stmt = $pdo->prepare('SELECT id, name, min_deposit, max_deposit, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, enabled FROM plans WHERE id = ?');
 $stmt->execute([$planId]);
 $plan = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -61,7 +57,6 @@ if (!$plan['enabled']) {
     exit;
 }
 
-// Validate amount is within range
 if ($amountUsd < $plan['min_deposit']) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Amount is below minimum deposit']);
@@ -74,7 +69,6 @@ if ($plan['max_deposit'] !== null && $amountUsd > $plan['max_deposit']) {
     exit;
 }
 
-// Resolve plan fixed duration (days)
 $planFixedDays = plan_duration_days($plan);
 if ($durationDays === null || $durationDays < 1) {
     $durationDays = $planFixedDays;
@@ -85,33 +79,14 @@ if ($durationDays !== $planFixedDays) {
     exit;
 }
 
-// For stablecoins: 1:1 with USD. For volatile coins: convert USD to coin amount.
-if ($isStable) {
-    $amountToDebit = $amountUsd;
-} else {
-    $quote = quote_coin_amount_from_usd($pdo, $currency, $amountUsd);
-    if (empty($quote)) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Unable to get price for ' . $currency . '. Try USDT, USDC, or DAI.']);
-        exit;
-    }
-    $amountToDebit = (float) $quote['coin_amount'];
-}
-
-// Check user balance in selected currency
 $userId = (int) $_SESSION['user_id'];
-$stmt = $pdo->prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ?');
-$stmt->execute([$userId, $currency]);
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-$balance = $row ? (float)$row['amount'] : 0;
-
-if ($balance < $amountToDebit) {
+$usdBalance = get_user_usd_balance($pdo, $userId);
+if ($usdBalance < $amountUsd) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Insufficient ' . $currency . ' balance. Need ' . number_format($amountToDebit, 8) . ' ' . $currency]);
+    echo json_encode(['success' => false, 'error' => 'Insufficient USD balance. Available: $' . format_usd_amount($usdBalance)]);
     exit;
 }
 
-// Prevent duplicate subscription to the same plan (active or paused)
 $dup = $pdo->prepare('SELECT id FROM user_investments WHERE user_id = ? AND plan_id = ? AND status IN (?, ?) LIMIT 1');
 $dup->execute([$userId, $planId, 'active', 'paused']);
 if ($dup->fetch()) {
@@ -120,7 +95,6 @@ if ($dup->fetch()) {
     exit;
 }
 
-// Check max active plans per user
 $maxPlans = (int) get_site_setting('max_active_plans_per_user', '3');
 $stmt = $pdo->prepare('SELECT COUNT(*) FROM user_investments WHERE user_id = ? AND status = ?');
 $stmt->execute([$userId, 'active']);
@@ -134,22 +108,29 @@ if ($activeCount >= $maxPlans) {
 
 $pdo->beginTransaction();
 try {
-    // Create investment record (amount stored in USD, duration_days from user choice)
+    if (!debit_user_usd($pdo, $userId, $amountUsd)) {
+        $pdo->rollBack();
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Insufficient USD balance']);
+        exit;
+    }
+
     $stmt = $pdo->prepare('INSERT INTO user_investments (user_id, plan_id, amount, duration_days, start_date, status) VALUES (?, ?, ?, ?, CURDATE(), ?)');
     $stmt->execute([$userId, $planId, $amountUsd, $durationDays, 'active']);
-    $investmentId = (int) $pdo->lastInsertId();
 
-    // Debit user balance (deduct from selected currency)
-    $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, -?) ON DUPLICATE KEY UPDATE amount = amount - ?')->execute([$userId, $currency, $amountToDebit, $amountToDebit]);
-
-    // Create transaction record (amount debited in selected currency)
-    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')->execute([$userId, 'investment', $amountToDebit, $currency, 'completed']);
-
-    // Update cached USD balance snapshot
-    if ($isStable) {
-        bump_user_last_balance_usd($pdo, $userId, -1 * (float)$amountToDebit);
+    $walletCurrency = user_usd_wallet_currency();
+    $amountStr = number_format($amountUsd, 18, '.', '');
+    $hasAmountUsdCol = false;
+    try {
+        $colChk = $pdo->query("SHOW COLUMNS FROM transactions LIKE 'amount_usd'");
+        $hasAmountUsdCol = $colChk && $colChk->rowCount() > 0;
+    } catch (Throwable $e) {}
+    if ($hasAmountUsdCol) {
+        $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status) VALUES (?, ?, ?, ?, ?, ?)')
+            ->execute([$userId, 'investment', $amountStr, round($amountUsd, 2), $walletCurrency, 'completed']);
     } else {
-        bump_user_last_balance_usd($pdo, $userId, -1 * (float)$amountUsd);
+        $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')
+            ->execute([$userId, 'investment', $amountStr, $walletCurrency, 'completed']);
     }
 
     $pdo->commit();

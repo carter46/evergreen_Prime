@@ -10,6 +10,7 @@ header('Content-Type: application/json');
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+require_once dirname(__DIR__, 2) . '/includes/usd-wallet.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -81,18 +82,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $user['kyc_status'] = 'none';
         }
 
-        // Wallet balances
-        $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
-        $stmt->execute([$id]);
-        $user['wallet_balances'] = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $user['wallet_balances'][] = [
-                'currency' => $row['currency'],
-                'amount' => (float) $row['amount'],
-            ];
-        }
-        // Use DB-cached last known balance for consistent admin display (no live CoinGecko here)
-        $user['total_balance_usd'] = $hasCachedUsd ? (float) ($user['last_balance_usd'] ?? 0) : 0.0;
+        // Centralized USD wallet
+        $usdBal = get_user_usd_balance($pdo, $id);
+        $user['wallet_balances'] = $usdBal > 0 ? [
+            ['currency' => user_usd_wallet_currency(), 'amount' => $usdBal],
+        ] : [];
+        $user['total_balance_usd'] = round($usdBal, 2);
         $user['total_balance_usd_updated_at'] = $hasCachedUsd ? ($user['last_balance_usd_updated_at'] ?? null) : null;
         $user['total_profit'] = get_user_total_profit($pdo, $id);
         $user['total_referral_bonus'] = get_user_total_referral_bonus($pdo, $id);
@@ -422,14 +417,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $pdo->beginTransaction();
             try {
+                require_once dirname(__DIR__, 2) . '/includes/usd-wallet.php';
+                $stableCurrencies = ['USD', 'USDT', 'USDC', 'BUSD', 'DAI'];
+                $isStableAdj = in_array($currency, $stableCurrencies, true);
                 if ($type === 'credit') {
-                    $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                        ->execute([$userId, $currency, $amountStr]);
+                    if ($isStableAdj) {
+                        credit_user_usd($pdo, $userId, (float) $amountStr);
+                    } else {
+                        $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
+                            ->execute([$userId, $currency, $amountStr]);
+                        require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+                        refresh_user_last_balance_usd($pdo, $userId);
+                    }
                     // Record transaction so it appears in user history
                     $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
-                        ->execute([$userId, 'deposit', $amountStr, $currency, 'completed', $ref]);
-                    require_once dirname(__DIR__, 2) . '/includes/helpers.php';
-                    refresh_user_last_balance_usd($pdo, $userId);
+                        ->execute([$userId, 'deposit', $amountStr, $isStableAdj ? user_usd_wallet_currency() : $currency, 'completed', $ref]);
+                    if (!$isStableAdj) {
+                        // refresh already called above for non-stable legacy path
+                    }
                     $pdo->commit();
                     
                     // Send email notification
@@ -460,6 +465,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     echo json_encode(['success' => true, 'data' => ['message' => 'Balance credited']]);
                 } else {
+                    if ($isStableAdj) {
+                        if (!debit_user_usd($pdo, $userId, (float) $amountStr)) {
+                            $pdo->rollBack();
+                            http_response_code(400);
+                            echo json_encode(['success' => false, 'error' => 'Insufficient USD balance']);
+                            exit;
+                        }
+                    } else {
                     // Lock row to prevent race conditions
                     $stmt = $pdo->prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ? FOR UPDATE');
                     $stmt->execute([$userId, $currency]);
@@ -473,11 +486,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $pdo->prepare('UPDATE wallet_balances SET amount = amount - ? WHERE user_id = ? AND currency = ?')
                         ->execute([$amountStr, $userId, $currency]);
-                    // Record transaction so it appears in user history
-                    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
-                        ->execute([$userId, 'withdrawal', $amountStr, $currency, 'completed', $ref]);
                     require_once dirname(__DIR__, 2) . '/includes/helpers.php';
                     refresh_user_last_balance_usd($pdo, $userId);
+                    }
+                    // Record transaction so it appears in user history
+                    $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
+                        ->execute([$userId, 'withdrawal', $amountStr, $isStableAdj ? user_usd_wallet_currency() : $currency, 'completed', $ref]);
                     $pdo->commit();
                     
                     // Send email notification
@@ -716,14 +730,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->beginTransaction();
             try {
                 $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['cancelled', $invId]);
-                $pdo->prepare('INSERT INTO wallet_balances (user_id, currency, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)')
-                    ->execute([$userId, 'USDT', $refundAmount]);
+                require_once dirname(__DIR__, 2) . '/includes/usd-wallet.php';
+                credit_user_usd($pdo, $userId, $refundAmount);
+                $walletCurrency = user_usd_wallet_currency();
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')
-                    ->execute([$userId, 'deposit', $refundAmount, 'USDT', 'completed']);
-                require_once dirname(__DIR__, 2) . '/includes/helpers.php';
-                bump_user_last_balance_usd($pdo, $userId, (float) $refundAmount);
+                    ->execute([$userId, 'deposit', $refundAmount, $walletCurrency, 'completed']);
                 $pdo->commit();
-                echo json_encode(['success' => true, 'data' => ['message' => 'Plan cancelled and amount refunded in USDT']]);
+                echo json_encode(['success' => true, 'data' => ['message' => 'Plan cancelled and amount refunded to USD wallet']]);
             } catch (Throwable $e) {
                 $pdo->rollBack();
                 http_response_code(500);

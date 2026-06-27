@@ -1,15 +1,12 @@
 <?php
 require_once __DIR__ . '/../../includes/auth-check.php';
 require_once __DIR__ . '/../../includes/helpers.php';
+require_once __DIR__ . '/../../includes/plan-types.php';
+require_once __DIR__ . '/../../includes/usd-wallet.php';
 $currentPage = 'dashboard';
 $siteName = get_site_name();
 $userBalance = 0;
 $userBalanceUpdatedAt = null;
-$btcAmount = 0;
-$walletBalances = [];
-$highestCoin = 'BTC';
-$highestAmount = 0;
-$highestCoinLogo = 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
 $totalProfit = 0;
 $activeCapital = 0;
 $dailyEarning = 0;
@@ -18,6 +15,11 @@ $referralBonusLast24h = 0;
 $activeInvestments = [];
 $chartData = [];
 $period = $_GET['period'] ?? '1M';
+$plansByTypeForTrades = [];
+$activePlanTypesForTrades = [];
+$defaultTradeTab = 'crypto';
+$showTradeTabs = false;
+$planTypes = get_plan_types();
 $days = match($period) {
     '1D' => 1,
     '1W' => 7,
@@ -28,55 +30,33 @@ $days = match($period) {
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
-
-    // Prefer cached USD balance from users table (stable, consistent display)
-    $hasCachedUsd = false;
+    $userBalance = get_user_usd_balance($pdo, (int) $userId);
     try {
-        $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
-        $hasCachedUsd = $bc && $bc->rowCount() > 0;
-    } catch (Throwable $e) {}
-    if ($hasCachedUsd) {
-        $s = $pdo->prepare('SELECT last_balance_usd, last_balance_usd_updated_at FROM users WHERE id = ?');
-        $s->execute([(int)$userId]);
-        $rr = $s->fetch(PDO::FETCH_ASSOC);
-        if ($rr) {
-            $userBalance = (float) ($rr['last_balance_usd'] ?? 0);
-            $userBalanceUpdatedAt = $rr['last_balance_usd_updated_at'] ?? null;
-        }
-    }
-    $coinLogos = ['BTC'=>'https://assets.coingecko.com/coins/images/1/large/bitcoin.png','ETH'=>'https://assets.coingecko.com/coins/images/279/large/ethereum.png','USDT'=>'https://assets.coingecko.com/coins/images/325/large/Tether.png','USDC'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png','BUSD'=>'https://assets.coingecko.com/coins/images/9576/large/BUSD.png','XRP'=>'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png','SOL'=>'https://assets.coingecko.com/coins/images/4128/large/solana.png','BNB'=>'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png','USD'=>'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png'];
-    $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
-    $stmt->execute([$userId]);
-    $stableTotalUsd = 0.0;
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $amt = (float)$row['amount'];
-        $currency = strtoupper($row['currency']);
-        // No placeholder pricing: only stable assets have deterministic USD value.
-        $usdVal = in_array($currency, ['USDT','USDC','USD','BUSD','DAI'], true) ? $amt : null;
-        if ($usdVal !== null) {
-            $stableTotalUsd += $usdVal;
-        }
-        $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => $usdVal];
-    }
-    usort($walletBalances, function($a, $b) {
-        return ((float)($b['usd_value'] ?? 0) <=> (float)($a['usd_value'] ?? 0));
-    });
-    if ($hasCachedUsd && abs($userBalance - $stableTotalUsd) > 0.02) {
-        try {
-            refresh_user_last_balance_usd($pdo, (int) $userId);
+        $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd_updated_at'");
+        if ($bc && $bc->rowCount() > 0) {
+            $s = $pdo->prepare('SELECT last_balance_usd_updated_at FROM users WHERE id = ?');
             $s->execute([(int) $userId]);
-            $rr = $s->fetch(PDO::FETCH_ASSOC);
-            if ($rr) {
-                $userBalance = (float) ($rr['last_balance_usd'] ?? $stableTotalUsd);
-            }
-        } catch (Throwable $e) {
-            $userBalance = $stableTotalUsd;
+            $userBalanceUpdatedAt = $s->fetchColumn() ?: null;
         }
-    } elseif (!$userBalance && $stableTotalUsd > 0) {
-        $userBalance = $stableTotalUsd;
+    } catch (Throwable $e) {}
+
+    ensure_plan_schema($pdo);
+    $stmtPlans = $pdo->query('SELECT name, plan_type FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
+    while ($row = $stmtPlans->fetch(PDO::FETCH_ASSOC)) {
+        $typeKey = normalize_plan_type($row['plan_type'] ?? 'crypto');
+        if (!isset($plansByTypeForTrades[$typeKey])) {
+            $plansByTypeForTrades[$typeKey] = [];
+        }
+        $plansByTypeForTrades[$typeKey][] = $row['name'];
     }
-    $topCoins = array_slice(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; }), 0, 3);
-    $extraCoinCount = max(0, count(array_filter($walletBalances, function($b) { return ((float)($b['usd_value'] ?? 0)) > 0; })) - 3);
+    foreach ($planTypes as $typeKey => $typeLabel) {
+        if (!empty($plansByTypeForTrades[$typeKey])) {
+            $activePlanTypesForTrades[$typeKey] = $typeLabel;
+        }
+    }
+    $defaultTradeTab = array_key_first($activePlanTypesForTrades) ?: 'crypto';
+    $showTradeTabs = count($activePlanTypesForTrades) > 1;
+
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
     $totalProfit = get_user_total_profit($pdo, (int) $userId);
@@ -112,24 +92,12 @@ try {
 $profileUser = get_current_user_data() ?? [];
 $dashboardUserName = $profileUser['name'] ?? 'User';
 $pageTitle = $siteName . ' | Dashboard';
-$fmtCoinAmt = function ($amt) {
-    if ($amt <= 0) return '0';
-    if ($amt >= 1000) return (string) round($amt, 0);
-    if ($amt >= 1) return format_usd_amount($amt);
-    if ($amt >= 0.01) return format_usd_amount($amt);
-    return rtrim(rtrim(number_format($amt, 6), '0'), '.');
-};
 require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 ?>
+<style>
+.dash-trade-tab.is-active { color: #ffc35c; border-bottom-color: #ffc35c; }
+</style>
 <?php
-$parts = [];
-foreach ($topCoins as $c) {
-    $logo = $coinLogos[$c['currency']] ?? 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png';
-    $amt = $c['amount'] > 0 ? $fmtCoinAmt($c['amount']) : '0';
-    $parts[] = '<img class="w-4 h-4 inline" src="' . htmlspecialchars($logo) . '" alt=""/>' . $amt . ' ' . htmlspecialchars($c['currency']);
-}
-$coinLine = implode(' <span class="text-white/50 mx-1">|</span> ', $parts);
-if ($extraCoinCount > 0) $coinLine .= ' <span class="text-white/70 font-bold">+' . $extraCoinCount . '</span>';
 $chartBtnActive = 'px-4 py-1.5 rounded text-label-xs bg-surface-dim text-primary-container font-bold shadow-sm';
 $chartBtnIdle = 'px-4 py-1.5 rounded text-label-xs text-on-surface-variant hover:text-on-surface transition-colors';
 ?>
@@ -153,7 +121,6 @@ $chartBtnIdle = 'px-4 py-1.5 rounded text-label-xs text-on-surface-variant hover
 <p class="font-label-xs text-label-xs text-slate-400 uppercase tracking-widest mb-3">Total USD Balance</p>
 <div class="flex flex-wrap items-baseline gap-2 md:gap-3 mb-4">
 <span class="font-display text-4xl md:text-[48px] text-primary-container font-extrabold leading-none">$<?php echo format_usd_amount($userBalance); ?></span>
-<?php if ($coinLine): ?><span class="font-label-sm text-label-sm text-slate-400"><?php echo $coinLine; ?></span><?php endif; ?>
 </div>
 <div class="flex gap-3">
 <button type="button" id="deposit-btn-dash" class="flex-1 bg-primary-container text-on-primary font-bold py-3 rounded-lg hover:opacity-90 transition-all text-label-sm">Deposit</button>
@@ -258,55 +225,50 @@ if (!empty($chartData)) {
 </div>
 </div>
 <div class="lg:col-span-4 glass-panel flex flex-col rounded-xl overflow-hidden min-h-[320px]">
-<div class="p-5 md:p-6 border-b border-low bg-surface-container-high/30 flex justify-between items-center">
+<div class="p-5 md:p-6 border-b border-low bg-surface-container-high/30">
+<div class="flex justify-between items-center gap-2 mb-3">
 <h3 class="font-headline-md text-[18px] text-on-surface">Live AI Trades</h3>
-<div class="flex items-center gap-2 px-2 py-1 bg-primary-container/10 rounded-full border border-primary-container/20">
+<div class="flex items-center gap-2 px-2 py-1 bg-primary-container/10 rounded-full border border-primary-container/20 shrink-0">
 <span class="w-1.5 h-1.5 bg-primary-container rounded-full animate-ping"></span>
 <span class="text-[10px] font-bold text-primary-container tracking-tighter uppercase">Scanning...</span>
 </div>
 </div>
-<div class="flex-1 overflow-y-auto dash-scrollbar">
+<?php if (!empty($showTradeTabs)): ?>
+<nav class="flex gap-3 overflow-x-auto dash-trade-tabs" aria-label="Plan categories">
+<?php foreach ($activePlanTypesForTrades as $typeKey => $typeLabel): ?>
+<button type="button" class="dash-trade-tab shrink-0 pb-2 text-[11px] font-bold uppercase tracking-wide text-on-surface-variant border-b-2 border-transparent whitespace-nowrap<?php echo $typeKey === $defaultTradeTab ? ' is-active' : ''; ?>" data-trade-tab="<?php echo htmlspecialchars($typeKey); ?>"><?php echo htmlspecialchars($typeLabel); ?></button>
+<?php endforeach; ?>
+</nav>
+<?php endif; ?>
+</div>
+<div class="flex-1 overflow-y-auto dash-scrollbar" id="live-trades-panel">
+<?php
+$initialTradePlans = $plansByTypeForTrades[$defaultTradeTab] ?? ['Basic', 'Standard', 'Premium'];
+$tradeSamples = array_slice($initialTradePlans, 0, 3);
+$tradeAmounts = ['+$245.00', '-$12.40', '+$89.15'];
+$tradeDirs = ['Long', 'Short', 'Long'];
+$tradeMins = [2, 8, 15];
+foreach ($tradeSamples as $ti => $planName):
+    $isLong = ($tradeDirs[$ti] ?? 'Long') === 'Long';
+?>
 <div class="live-trade-card p-5 flex items-center justify-between border-b border-low/50 hover:bg-white/[0.02] transition-colors">
 <div class="flex items-center gap-4 min-w-0">
-<div class="trade-icon-container w-10 h-10 rounded-full bg-success/10 flex items-center justify-center shrink-0">
-<span class="trade-icon material-symbols-outlined text-success">trending_up</span>
+<div class="trade-icon-container w-10 h-10 rounded-full <?php echo $isLong ? 'bg-success/10' : 'bg-critical/10'; ?> flex items-center justify-center shrink-0">
+<span class="trade-icon material-symbols-outlined <?php echo $isLong ? 'text-success' : 'text-critical'; ?>"><?php echo $isLong ? 'trending_up' : 'trending_down'; ?></span>
 </div>
 <div class="min-w-0">
-<h4 class="trade-pair font-bold text-on-surface text-label-sm truncate">BTC/USDT <span class="text-success text-[10px] ml-1 uppercase">Long</span></h4>
-<p class="trade-time text-[10px] text-on-surface-variant">2 mins ago</p>
+<h4 class="trade-pair font-bold text-on-surface text-label-sm truncate"><?php echo htmlspecialchars($planName); ?> <span class="<?php echo $isLong ? 'text-success' : 'text-critical'; ?> text-[10px] ml-1 uppercase"><?php echo $tradeDirs[$ti]; ?></span></h4>
+<p class="trade-time text-[10px] text-on-surface-variant"><?php echo (int) $tradeMins[$ti]; ?> mins ago</p>
 </div>
 </div>
-<span class="live-trade-amount font-data-mono text-success font-bold shrink-0">+$245.00</span>
+<span class="live-trade-amount font-data-mono <?php echo $isLong ? 'text-success' : 'text-critical'; ?> font-bold shrink-0"><?php echo $tradeAmounts[$ti]; ?></span>
 </div>
-<div class="live-trade-card p-5 flex items-center justify-between border-b border-low/50 hover:bg-white/[0.02] transition-colors">
-<div class="flex items-center gap-4 min-w-0">
-<div class="trade-icon-container w-10 h-10 rounded-full bg-critical/10 flex items-center justify-center shrink-0">
-<span class="trade-icon material-symbols-outlined text-critical">trending_down</span>
-</div>
-<div class="min-w-0">
-<h4 class="trade-pair font-bold text-on-surface text-label-sm truncate">ETH/USDT <span class="text-critical text-[10px] ml-1 uppercase">Short</span></h4>
-<p class="trade-time text-[10px] text-on-surface-variant">8 mins ago</p>
-</div>
-</div>
-<span class="live-trade-amount font-data-mono text-critical font-bold shrink-0">-$12.40</span>
-</div>
-<div class="live-trade-card p-5 flex items-center justify-between border-b border-low/50 hover:bg-white/[0.02] transition-colors">
-<div class="flex items-center gap-4 min-w-0">
-<div class="trade-icon-container w-10 h-10 rounded-full bg-success/10 flex items-center justify-center shrink-0">
-<span class="trade-icon material-symbols-outlined text-success">trending_up</span>
-</div>
-<div class="min-w-0">
-<h4 class="trade-pair font-bold text-on-surface text-label-sm truncate">SOL/USDT <span class="text-success text-[10px] ml-1 uppercase">Long</span></h4>
-<p class="trade-time text-[10px] text-on-surface-variant">15 mins ago</p>
-</div>
-</div>
-<span class="live-trade-amount font-data-mono text-success font-bold shrink-0">+$89.15</span>
-</div>
+<?php endforeach; ?>
 <div class="p-6 flex flex-col items-center justify-center text-center opacity-40">
 <div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden mb-4">
 <div class="scanning-animation h-full w-full"></div>
 </div>
-<p class="text-[10px] font-bold uppercase tracking-widest">Awaiting Volatility Trigger</p>
+<p class="text-[10px] font-bold uppercase tracking-widest">Monitoring <?php echo htmlspecialchars($activePlanTypesForTrades[$defaultTradeTab] ?? 'Markets'); ?> Plans</p>
 </div>
 </div>
 </div>
@@ -384,9 +346,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Live AI Trades Animation
+    // Live AI Trades — plan names by category
+    var tradePlansByType = <?php echo json_encode($plansByTypeForTrades, JSON_UNESCAPED_UNICODE); ?>;
+    var tradeTypeLabels = <?php echo json_encode($activePlanTypesForTrades, JSON_UNESCAPED_UNICODE); ?>;
+    var activeTradeTab = <?php echo json_encode($defaultTradeTab); ?>;
+
+    function getTradePlanNames() {
+        var names = tradePlansByType[activeTradeTab] || [];
+        if (!names.length) {
+            names = ['Basic Plan', 'Growth Plan', 'Premium Plan'];
+        }
+        return names;
+    }
+
+    document.querySelectorAll('.dash-trade-tab').forEach(function(tab) {
+        tab.addEventListener('click', function () {
+            activeTradeTab = tab.getAttribute('data-trade-tab');
+            document.querySelectorAll('.dash-trade-tab').forEach(function (t) { t.classList.remove('is-active'); });
+            tab.classList.add('is-active');
+            document.querySelectorAll('.live-trade-card').forEach(function (card) { updateTrade(card); });
+        });
+    });
+
     var tradeElements = document.querySelectorAll('.live-trade-amount');
-    var pairs = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'ADA/USDT', 'DOT/USDT'];
     var directions = ['Long', 'Short'];
     
     function animateTradeAmount(el) {
@@ -414,12 +396,13 @@ document.addEventListener('DOMContentLoaded', function() {
         var iconContainer = el.querySelector('.trade-icon-container');
         if (!pairEl || !timeEl || !iconEl || !iconContainer) return;
         
-        var pair = pairs[Math.floor(Math.random() * pairs.length)];
+        var planNames = getTradePlanNames();
+        var planName = planNames[Math.floor(Math.random() * planNames.length)];
         var direction = directions[Math.floor(Math.random() * directions.length)];
         var isLong = direction === 'Long';
         var mins = Math.floor(Math.random() * 30) + 1;
         
-        pairEl.textContent = pair + ' ' + direction;
+        pairEl.innerHTML = planName + ' <span class="' + (isLong ? 'text-success' : 'text-critical') + ' text-[10px] ml-1 uppercase">' + direction + '</span>';
         timeEl.textContent = mins + ' min' + (mins > 1 ? 's' : '') + ' ago';
         
         if (isLong) {

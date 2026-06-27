@@ -2,44 +2,18 @@
 require_once __DIR__ . '/../../includes/auth-check.php';
 require_once __DIR__ . '/../../includes/helpers.php';
 require_once __DIR__ . '/../../includes/plan-types.php';
+require_once __DIR__ . '/../../includes/usd-wallet.php';
 $currentPage = 'investment-plans';
 $siteName = get_site_name();
 $planTypes = get_plan_types();
 
 $plans = [];
 $userBalance = 0;
-$walletBalances = [];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     ensure_plan_schema($pdo);
     $userId = $_SESSION['user_id'];
-
-    // Prefer cached USD balance from users table (stable, consistent display)
-    try {
-        $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd'");
-        $hasCachedUsd = $bc && $bc->rowCount() > 0;
-        if ($hasCachedUsd) {
-            $s = $pdo->prepare('SELECT last_balance_usd FROM users WHERE id = ?');
-            $s->execute([(int)$userId]);
-            $userBalance = (float) ($s->fetchColumn() ?? 0);
-        }
-    } catch (Throwable $e) {}
-    
-    // Fetch user wallet balances (per currency) - include ALL coins with positive balance
-    $stmt = $pdo->prepare('SELECT currency, amount FROM wallet_balances WHERE user_id = ?');
-    $stmt->execute([$userId]);
-    $stablecoins = ['USDT','USDC','USD','BUSD','DAI'];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $amt = (float)$row['amount'];
-        if ($amt <= 0) continue;
-        $currency = strtoupper(trim($row['currency'] ?? ''));
-        if (empty($currency)) continue;
-        $usdVal = in_array($currency, $stablecoins, true) ? $amt : null;
-        $walletBalances[] = ['currency' => $currency, 'amount' => $amt, 'usd_value' => $usdVal];
-    }
-    usort($walletBalances, function($a, $b) {
-        return ((float)($b['usd_value'] ?? 0) <=> (float)($a['usd_value'] ?? 0));
-    });
+    $userBalance = get_user_usd_balance($pdo, (int) $userId);
     
     // Fetch enabled plans
     $stmt = $pdo->query('SELECT id, name, slug, plan_type, description, logo_url, investment_risk, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
@@ -218,26 +192,16 @@ Select a plan below to invest from your wallet balance.
 <input type="hidden" id="subscribe-duration" name="duration_days"/>
 </div>
 <div class="mb-4">
-<label class="block text-xs font-bold text-slate-400 uppercase mb-2">Pay With</label>
-<select id="subscribe-currency" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" <?php echo empty($walletBalances) ? 'disabled' : 'required'; ?>>
-<option value="">Select currency</option>
-<?php foreach ($walletBalances as $b): ?>
-<option value="<?php echo htmlspecialchars($b['currency']); ?>" data-amount="<?php echo $b['amount']; ?>" data-usd="<?php echo $b['usd_value'] === null ? '' : $b['usd_value']; ?>"><?php echo htmlspecialchars($b['currency']); ?> — <?php echo number_format($b['amount'], 8); ?> <?php echo $b['usd_value'] === null ? '(≈ USD value at checkout)' : '(≈ $' . format_usd_amount($b['usd_value']) . ')'; ?></option>
-<?php endforeach; ?>
-</select>
-<?php if (empty($walletBalances)): ?><p class="text-xs text-amber-600 mt-1">Deposit funds to your wallet first.</p><?php endif; ?>
-<p class="text-xs text-slate-500 mt-1">Available: <span id="selected-coin-balance">—</span></p>
-</div>
-<div class="mb-4">
 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Investment Amount (USD)</label>
 <input type="number" id="subscribe-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" required/>
-<p class="text-xs text-slate-500 mt-1">USD Balance: $<span id="available-balance"><?php echo format_usd_amount($userBalance); ?></span></p>
+<p class="text-xs text-slate-500 mt-1">Available USD Balance: $<span id="available-balance"><?php echo format_usd_amount($userBalance); ?></span></p>
 <p class="text-xs text-slate-500 mt-1">Range: $<span id="plan-min"></span> - <span id="plan-max"></span></p>
+<?php if ($userBalance <= 0): ?><p class="text-xs text-amber-600 mt-1">Deposit funds to your wallet first.</p><?php endif; ?>
 </div>
 <div id="subscribe-error" class="text-sm text-red-500 hidden mb-4"></div>
 <div class="flex gap-3">
 <button type="button" id="subscribe-cancel-btn" class="flex-1 px-4 py-2 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg">Cancel</button>
-<button type="submit" id="subscribe-submit-btn" class="flex-1 px-4 py-2 bg-primary text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" <?php echo empty($walletBalances) ? 'disabled' : ''; ?>>Subscribe</button>
+<button type="submit" id="subscribe-submit-btn" class="flex-1 px-4 py-2 bg-primary text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" <?php echo $userBalance <= 0 ? 'disabled' : ''; ?>>Subscribe</button>
 </div>
 </form>
 </div>
@@ -292,11 +256,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var availableBalance = parseFloat(document.getElementById('available-balance').textContent.replace(/,/g, '')) || 0;
     var currentPlanMin = 0;
     var currentPlanMax = 0;
-    
-    var currencySelect = document.getElementById('subscribe-currency');
     var durationInput = document.getElementById('subscribe-duration');
     var durationDisplay = document.getElementById('subscribe-duration-display');
-    var selectedBalanceEl = document.getElementById('selected-coin-balance');
     var currentPlanDays = 7;
 
     function openModal(planId, planName, planMin, planMax, planDays) {
@@ -312,22 +273,9 @@ document.addEventListener('DOMContentLoaded', function() {
         amountEl.value = '';
         amountEl.min = planMin;
         amountEl.max = planMax > 0 ? planMax : '';
-        if (currencySelect) { currencySelect.value = ''; updateSelectedBalance(); }
         errorEl.classList.add('hidden');
         modal.classList.remove('hidden');
     }
-
-    function updateSelectedBalance() {
-        if (!currencySelect || !selectedBalanceEl) return;
-        var opt = currencySelect.options[currencySelect.selectedIndex];
-        if (!opt || !opt.value) { selectedBalanceEl.textContent = '—'; return; }
-        var amt = parseFloat(opt.getAttribute('data-amount')) || 0;
-        var curr = opt.value;
-        var usdAttr = opt.getAttribute('data-usd');
-        var usdNum = usdAttr !== null && usdAttr !== '' ? (parseFloat(usdAttr) || 0) : null;
-        selectedBalanceEl.textContent = amt.toFixed(8) + ' ' + curr + ' (≈ ' + (usdNum === null ? '—' : ('$' + usdNum.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}))) + ')';
-    }
-    if (currencySelect) currencySelect.addEventListener('change', updateSelectedBalance);
     
     function closeModal() {
         modal.classList.add('hidden');
@@ -352,15 +300,8 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         var planId = parseInt(planIdEl.value, 10);
         var amount = parseFloat(amountEl.value) || 0;
-        var currency = (currencySelect && currencySelect.value) || 'USD';
         
         errorEl.classList.add('hidden');
-        
-        if (!currency && !currencySelect.disabled) {
-            errorEl.textContent = 'Please select a currency to pay with';
-            errorEl.classList.remove('hidden');
-            return;
-        }
         
         if (amount < currentPlanMin) {
             errorEl.textContent = 'Amount must be at least $' + currentPlanMin.toLocaleString();
@@ -381,13 +322,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Don't block the user with client-side FX assumptions (backend validates precisely).
-        // If stable USD-equivalent is available, we can still provide a gentle guardrail.
-        var selOpt = currencySelect && currencySelect.options[currencySelect.selectedIndex];
-        var usdAttr = selOpt ? selOpt.getAttribute('data-usd') : '';
-        var coinUsdValue = (usdAttr !== null && usdAttr !== '') ? (parseFloat(usdAttr) || 0) : null;
-        if (coinUsdValue !== null && coinUsdValue > 0 && amount > coinUsdValue) {
-            errorEl.textContent = 'Insufficient balance in selected currency.';
+        if (amount > availableBalance) {
+            errorEl.textContent = 'Insufficient USD balance. Available: $' + availableBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             errorEl.classList.remove('hidden');
             return;
         }
@@ -395,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/user/subscribe-plan.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plan_id: planId, amount: amount, currency: currency, duration_days: duration })
+            body: JSON.stringify({ plan_id: planId, amount: amount, duration_days: duration })
         }).then(function(r){ return r.json(); }).then(function(res){
             if (res.success) {
                 modal.classList.add('hidden');
