@@ -1,357 +1,244 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
-require_once __DIR__ . '/includes/market-instruments.php';
-$siteName = get_site_name();
-$pageTitle = $siteName . ' | Professional Trading & Institutional Asset Management';
-$heroBadge = get_site_setting('hero_badge', 'Institutional Grade Security');
-$statsVolume = get_site_setting('stats_assets', '$42B+');
-$statsInvestors = get_site_setting('stats_bots', '1.2M+');
-$statsUptime = get_site_setting('stats_uptime', '100%');
-$statsSupport = get_site_setting('stats_roi', '24/7');
-
-$heroImg = '/uploads/images/evergren_cardphone.png';
-$heroBgImg = '/uploads/images/nasa-Q1p7bh3SHj8-unsplash.jpg';
-$tradingImg = '/uploads/images/evergren_cmarket.png';
-$investImg = '/uploads/images/wallet_image3.png';
-$mobileImg = '/uploads/images/evergren_mockup.png';
-$eduBeginner = 'https://lh3.googleusercontent.com/aida-public/AB6AXuClXum0n5B3Fys7n6VOV6KZhwxyShVM0LCSKgB8SowoEgxrXjNTakjFaTonTQVYfKAxjWY0GZbcHevK4tuOw6eXiW_-7bKuWD4lewm9wxl51RDLOHQa7vH3fDiQA6sUQeFVJvw9D8-CjyPJELlqVFFfRcZyL7MnmMiA9HA_An3Ae4jBpRn2BWE7G1Pk7VM_vdjw8YHZh7bO0EzfAj0XZ7tDSkBPaK_CKJXq6P_pa9rM1ALr5vlx69f4';
-$eduIntermediate = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBAU594TAbyPKlG5KWutbMwCqXGdyxGubJNUFDO6FzVvF575dnmQkeOqmtDdTTaubPeTzJY1hR1B5vTbDoUaHWJJUe3iugxmlKGiko7VeZN03x2xTcUKkQdP1tEgbYiEt8BEVj3N4PCFw0s-sPyfeWTY3gbnQOYVLq7vV1mDxbmVgJhk_70tfiPXVKHzSxNrcWHBMC_9KjaBGAsAaAwJwMdyThozujO_EMfI6WHBxpaHgkN-_8YNJrX';
-$eduAdvanced = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0RFiVG3wXTjeBaz-FYpuIcbtXW_-rbo6AcxjJgKfVR2jecI-nQ1lrSn8fWdmLi-t99OUPHZgN_NO7hSRwNbbteLmUbrMvWLAk42D9OO3H2H9QVmQ0JcGGuWnHZ99UJlAYT8_hUbJakBBvwWMCn7Ztlamrd-ccxL-ZB96l17wF8YLv9DLZsAiMDsyzLwfeAWPDNLwrkCdBcboSejRk3gMPOLOeI_1F0zlphMTW8IWVYb6VYvr-a3o2';
+$pageTitle = 'Fidelity Investments - Retirement Plans, Investing, Brokerage';
 ?>
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
 <?php require_once __DIR__ . '/includes/marketing-head.php'; ?>
 </head>
-<body class="marketing-page font-body-md text-body-md overflow-x-hidden">
+<body class="fidelity-homepage bg-white text-fidelityDark overflow-x-hidden">
 <?php $currentPage = 'home'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 
-<!-- Hero -->
-<section class="relative pt-36 pb-24 md:pb-32 lg:pb-40 min-h-[88vh] lg:min-h-[92vh] flex items-center overflow-hidden hero-section">
-<div class="absolute inset-0 hero-bg" style="background-image: url('<?php echo htmlspecialchars($heroBgImg); ?>');"></div>
-<div class="absolute inset-0 hero-bg-overlay"></div>
-<div class="relative z-10 max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full">
-<div class="order-2 lg:order-1 text-center lg:text-left">
-<div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full mb-6 border border-border-low">
-<span class="material-symbols-outlined text-primary text-[14px]">verified</span>
-<span class="font-label-xs text-label-xs text-on-surface-variant uppercase"><?php echo htmlspecialchars($heroBadge); ?></span>
+<!-- BEGIN: HeroSection -->
+<section class="relative h-[500px] bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDbM31HCVx6ysE9wVDhMXr1U63qboojZDtUXf73Qvgv530A03SthuSjWuxijfKcKoQLMLrQKIytflMVkUxiGjhEh2rONrIlnCYEWddGjF2SXM5dps7rCX8a9zSec4ezTgmFsP1-7Rl-CA27NiGz8e1AkuzxXTvbJ0Zga_gEmDMtUEQWmnIuhb198t9W9D9BdjnPS6ofngxbaa3lsH-MIUMTVYHVQ-PXGzy7ZqCUktyhdgrwOp63ifjpUw');">
+<div class="absolute inset-0 bg-black/10"></div>
+<div class="mx-auto px-4 h-full flex items-center relative z-10 max-w-6xl">
+<div class="bg-white/95 p-10 max-w-lg shadow-xl">
+<h1 class="text-4xl mb-4 leading-tight">Invest today and plan for tomorrow</h1>
+<p class="text-gray-600 mb-8">We can help you get started.</p>
+<div class="flex space-x-4">
+<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover transition-colors" href="/register">Open an account</a>
+<a class="border-2 border-fidelityDark text-fidelityDark px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors" href="/planning">I need guidance</a>
 </div>
-<h1 class="font-display text-4xl sm:text-5xl lg:text-display mb-6 leading-tight text-glow">Trade Smarter.<br/><span class="text-primary-container">Invest Better.</span></h1>
-<p class="font-body-lg text-body-lg text-on-secondary-container max-w-xl mb-10">
-The ultra-fast execution engine for professional traders and institutional investors. Access global markets with zero-latency liquidity.
+</div>
+</div>
+<!-- Man in yellow jacket visual position indicator -->
+<div class="absolute right-1/4 bottom-10">
+<div class="w-20 h-40 bg-yellow-400/20 rounded-full blur-xl"></div>
+</div>
+</section>
+<!-- END: HeroSection -->
+
+<!-- BEGIN: AccountSelectorSection -->
+<section class="py-20 mx-auto px-4 max-w-6xl">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Left sidebar nav -->
+<div class="lg:col-span-3 space-y-4 border-l-2 border-gray-100">
+<button class="block w-full text-left pl-4 py-2 border-l-4 border-fidelityGreen font-bold text-sm">Start investing</button>
+<button class="block w-full text-left pl-4 py-2 text-gray-500 hover:text-fidelityGreen text-sm">Save for retirement</button>
+<button class="block w-full text-left pl-4 py-2 text-gray-500 hover:text-fidelityGreen text-sm">Save for health care</button>
+<button class="block w-full text-left pl-4 py-2 text-gray-500 hover:text-fidelityGreen text-sm">Invest for a child</button>
+</div>
+<!-- Main Content Area -->
+<div class="lg:col-span-6">
+<h2 class="text-4xl mb-8 leading-tight">Invest smart from the start with a brokerage account</h2>
+<div class="space-y-6 mb-10">
+<div>
+<h3 class="font-bold text-lg mb-1">$0 account fees¹</h3>
+<p class="text-gray-600 text-sm">Keep your money working toward your goals.</p>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">$0 commissions</h3>
+<p class="text-gray-600 text-sm">Trade US stocks and ETFs commission-free online.²</p>
+</div>
+<div>
+<h3 class="font-bold text-lg mb-1">Trade any amount</h3>
+<p class="text-gray-600 text-sm">Buy US stocks and ETFs for as little as $1 with fractional shares.³</p>
+</div>
+</div>
+<div class="flex items-center space-x-6">
+<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open a brokerage account</a>
+<a class="text-fidelityGreen font-bold hover:underline" href="/investing">Explore ways to invest</a>
+</div>
+</div>
+<!-- Phone App Mockup Visual -->
+<div class="lg:col-span-3">
+<div class="bg-fidelityLightGreen rounded-3xl p-6 relative">
+<img alt="Fidelity App" class="rounded-2xl shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA">
+<div class="absolute -right-4 top-20 bg-white p-3 rounded shadow-lg border border-gray-100">
+<div class="text-fidelityGreen font-bold text-xs">+18.04</div>
+<div class="text-xl font-bold">0.51%</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: AccountSelectorSection -->
+
+<!-- BEGIN: AlternatingSections -->
+<!-- Roth IRA -->
+<section class="py-20 bg-gray-50">
+<div class="mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center max-w-6xl">
+<div class="order-2 lg:order-1">
+<h2 class="text-4xl mb-8">Plan for the possibilities ahead with a Roth IRA</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+<div>
+<h4 class="font-bold mb-2">Tax savings</h4>
+<p class="text-sm text-gray-600">Any earnings growth in a Roth is tax-free, with tax-free withdrawals in retirement.⁴</p>
+</div>
+<div>
+<h4 class="font-bold mb-2">Access to your contributions</h4>
+<p class="text-sm text-gray-600">Any amount you add to your Roth can be withdrawn without taxes or penalties, anytime, for any reason.</p>
+</div>
+<div>
+<h4 class="font-bold mb-2">Numerous ways to invest</h4>
+<p class="text-sm text-gray-600">Whether you invest on your own or have us do it, you can choose from stocks to ETFs to crypto and more.</p>
+</div>
+</div>
+<div class="flex items-center space-x-6">
+<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold" href="/register">Open a Roth IRA</a>
+<a class="text-fidelityGreen font-bold hover:underline" href="/planning">Explore retirement planning</a>
+</div>
+</div>
+<div class="order-1 lg:order-2">
+<img alt="Roth IRA visual" class="rounded-lg shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDY3iqufo2KD57yEPGm4rXJ227VAhC0aUplFZJy6Qbx-yvsd74PYZjLppio9NDPIeZCPSAXK2muoBGBO_bL4xMdO6u6UcVtlgMymzRFgQnGW7Sg_YVkSaagnuCNhn-BD25bJTRON00EpHPfAUVYIkDeSo1salecSpJpIc9K9Bdm0RKblapyV6YCtuJTsfJM5k_oHskXUeHHtQceBKP4gmhWEcYSm09rXv3PDJhAMI5zvP5vt_JnYH0z6g">
+</div>
+</div>
+</section>
+
+<!-- HSA Section -->
+<section class="py-20 bg-white">
+<div class="mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center max-w-6xl">
+<div>
+<img alt="HSA visual" class="rounded-lg shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8ciWYMIH8LaIoT1_SlnTnSh0Qhuu0cN0dyKiNhwqoQ-9o-9vP8PBC25hkwOiJDqs9Hsn9DFAU3MchWg-JRyE5MIbpoh6ILqo1snva0YjAJDBBPNug0HP2HFLIJpRCbkg4skiwwWVTGbWyCPiswRrULzaAydUQByEk4UMFIlhJh3S_930yfsiFD3gLi6aQjSwKeNYnvpHz_tn2wu6sM_pdtrhw0wILDoFcviV-BSp5FkFwrOql_k8Arw">
+</div>
+<div>
+<h2 class="text-4xl mb-8">Save, earn, and invest for health care with an HSA</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+<div>
+<h4 class="font-bold mb-2">Triple-tax advantage</h4>
+<p class="text-sm text-gray-600">Get tax-deductible contributions, no immediate tax on earnings, and tax-free withdrawals for qualified medical expenses.⁵</p>
+</div>
+<div>
+<h4 class="font-bold mb-2">No account fees</h4>
+<p class="text-sm text-gray-600">Fidelity's HSA has no account fees or minimums, and $0 commissions for US stock &amp; ETF trades.⁶</p>
+</div>
+<div class="col-span-full">
+<h4 class="font-bold mb-2">Not "use-it-or-lose-it"</h4>
+<p class="text-sm text-gray-600">The money's always yours. You can earn interest on cash, grow your account by investing, or do both.</p>
+</div>
+</div>
+<div class="flex items-center space-x-6">
+<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold" href="/register">Open an HSA</a>
+<a class="text-fidelityGreen font-bold hover:underline" href="#">Explore health savings at Fidelity</a>
+</div>
+</div>
+</div>
+</section>
+<!-- END: AlternatingSections -->
+
+<!-- BEGIN: PartnerSection -->
+<section class="py-0">
+<div class="mx-auto flex flex-col lg:flex-row bg-white max-w-6xl">
+<div class="lg:w-2/3">
+<img alt="Fidelity Advisors" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGNI9MvKH4eR-H4wbkZQtqLrkuQFRt-B8yuqIg2po_PHYBT5n95rGn79ffTEhyPEciibrnTd8JfWRcVzdo6cMkXqWMtyVUI-JFkYGPNejK833re5GWabG4e7JtAyjGy2pJsjzC1Y20KaQDx7wYgjya6SmunmGwHgUee647bJH3C7N0ved2CeN5MqfQtNwqsBezHpyIeM6j0IyhxnfG-oVvTwrxAj9oJYrBFUlef2P4ASP4xjeS0drytQ">
+</div>
+<div class="lg:w-1/3 bg-gray-50 p-12 flex flex-col justify-center">
+<h2 class="text-3xl mb-6">A partner to help bring your plans to life</h2>
+<p class="text-gray-600 mb-8 text-lg">Collaborate with a dedicated Fidelity advisor to build a comprehensive wealth management strategy designed to help you meet your goals and evolving needs.</p>
+<a class="bg-fidelityGreen text-white px-8 py-3 rounded-full font-bold inline-block text-center hover:bg-fidelityGreenHover transition-colors w-max" href="#">Find an advisor</a>
+</div>
+</div>
+<div class="bg-gray-100 py-4 text-center">
+<p class="text-xs text-fidelityGray">
+        Review Fidelity Brokerage Services with <a class="text-blue-600 underline" href="#">FINRA's BrokerCheck</a> |
+        <a class="text-blue-600 underline" href="#">Regulatory summary of Fidelity services (PDF)</a>
 </p>
-<div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-<a href="/register" class="bg-primary-container text-on-primary font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-2 hover:scale-105 transition-all text-label-sm">
-Open Institutional Account <span class="material-symbols-outlined">arrow_forward</span>
-</a>
-<a href="/login" class="border border-outline px-8 py-4 rounded-xl text-on-surface font-bold hover:bg-surface-container-high transition-all text-label-sm text-center">
-View Live Terminal
-</a>
-</div>
-</div>
-<div class="order-1 lg:order-2 relative flex justify-center items-center w-full mx-auto px-4 sm:px-10 lg:px-14 xl:px-20 lg:justify-end">
-<img class="hero-image-animate w-full max-w-[340px] sm:max-w-[400px] md:max-w-[460px] lg:max-w-[540px] xl:max-w-[600px] h-auto mx-auto lg:mx-0" alt="<?php echo htmlspecialchars($siteName); ?> mobile trading" src="<?php echo htmlspecialchars($heroImg); ?>"/>
-</div>
 </div>
 </section>
+<!-- END: PartnerSection -->
 
-<!-- Live Market Performance -->
-<section id="markets" class="bg-[#F7F8FA] py-16 overflow-hidden border-y border-gray-200">
-<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
-<div class="mb-8">
-<h2 class="font-headline-md text-headline-md text-surface-container-lowest">Live Market Performance</h2>
-</div>
-<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter market-cards">
-<?php foreach (get_markets_by_category('crypto') as $instrument): ?>
-<?php require __DIR__ . '/includes/market-home-card.php'; ?>
-<?php endforeach; ?>
-</div>
-
-<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter market-stocks mt-gutter">
-<?php foreach (get_markets_by_category('stock') as $instrument): ?>
-<?php require __DIR__ . '/includes/market-home-card.php'; ?>
-<?php endforeach; ?>
-</div>
-
-<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter market-forex mt-gutter">
-<?php foreach (get_markets_by_category('forex') as $instrument): ?>
-<?php require __DIR__ . '/includes/market-home-card.php'; ?>
-<?php endforeach; ?>
-</div>
-<div class="flex justify-center mt-8 md:mt-10">
-<a class="text-primary-container bg-surface-container-lowest px-6 py-3 rounded-lg font-label-xs text-label-xs inline-block hover:opacity-90 transition-opacity" href="/trading_signals">VIEW ALL MARKETS</a>
-</div>
-</div>
-</section>
-
-<!-- Trading Experience -->
-<section class="bg-surface-container-lowest py-16 md:py-section-padding">
-<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-<div class="lg:col-span-5 order-2 lg:order-1">
-<span class="font-label-xs text-label-xs text-primary tracking-widest uppercase mb-4 block">Execution Performance</span>
-<h2 class="font-headline-lg text-headline-lg mb-6">Professional Tools for Every Trader</h2>
-<div class="space-y-8">
-<div class="flex gap-4">
-<div class="flex-shrink-0 w-12 h-12 bg-primary-container/10 border border-primary/20 rounded-lg flex items-center justify-center">
-<span class="material-symbols-outlined text-primary">speed</span>
-</div>
-<div>
-<h3 class="font-bold text-lg mb-1">Ultra-Low Latency</h3>
-<p class="text-on-secondary-container">Execute orders in under 1ms with our institutional-grade matching engine, engineered for high-frequency trading.</p>
-</div>
-</div>
-<div class="flex gap-4">
-<div class="flex-shrink-0 w-12 h-12 bg-primary-container/10 border border-primary/20 rounded-lg flex items-center justify-center">
-<span class="material-symbols-outlined text-primary">data_exploration</span>
-</div>
-<div>
-<h3 class="font-bold text-lg mb-1">Advanced Analytics</h3>
-<p class="text-on-secondary-container">Dozens of indicators and chart types integrated directly from TradingView, enhanced with our proprietary liquidity heatmaps.</p>
-</div>
-</div>
-<div class="flex gap-4">
-<div class="flex-shrink-0 w-12 h-12 bg-primary-container/10 border border-primary/20 rounded-lg flex items-center justify-center">
-<span class="material-symbols-outlined text-primary">shield</span>
-</div>
-<div>
-<h3 class="font-bold text-lg mb-1">Segregated Accounts</h3>
-<p class="text-on-secondary-container">Your funds are protected. We maintain 1:1 reserves and utilize multi-sig cold storage for all digital assets.</p>
+<!-- BEGIN: ExpertiseGrid -->
+<section class="py-20 bg-gray-50">
+<div class="mx-auto px-4 max-w-6xl">
+<h2 class="text-3xl mb-12 text-center">Expertise you can act on</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Card 1 -->
+<div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+<img alt="HSA article" class="w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrfGZE4uyLrBVgx5oZTwVxHCbMt5nr97V2zsUPcuteaMdoda-ihuMI1ECqORMqH3NbbG3bMvSEZtrmSmHTujTL6S27XWYysorCxu0MnY6gJgMYiIc4qVE1vU1XsqOfob6CwwmcrM0Qd3jC-8gotRhfYNW1W100bOJwdQiNpS_O71M3WaaaqjvcrQkEbu6H8m8_c-w5OF72XAem1rWMrxwq4mGZSJwpviPva8vV7wridhq9PlolA5trxA">
+<div class="p-6">
+<h3 class="text-xl font-bold mb-3">3 ways to use your health savings account</h3>
+<p class="text-sm text-gray-600 mb-6">Know the type of HSA user you are, then see how to make your money work harder.</p>
+<div class="flex items-center text-xs text-gray-400 space-x-4">
+<span class="">Article</span>
+<span class="">6 min</span>
 </div>
 </div>
 </div>
+<!-- Card 2 -->
+<div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+<img alt="Market insights" class="w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAul3dAMH8fEQUmzimbws6bujHtXZlAyFDts4sq1xD25JH53pw61zHQapYNh4m8x-PPRoSOkVweyIPE-7H78qBRljnpl7K1stlm_-kVxIMa2KF2mcaS_tQWK6yd9Tb5m9Rit4BtgOjtZhmHuxPi77AmX3fBDBBRtSOfCnvCDF0DiQYPos30dTide-jtaXpsyacr1LtUtiPDfjQ7MuCBuMIwZZquJ8BWTz39MEO7BKK6cvpa1qAllIa74w">
+<div class="p-6">
+<h3 class="text-xl font-bold mb-3">Market Sense: Weekly insights</h3>
+<p class="text-sm text-gray-600 mb-6">Our experts discuss the latest headlines, current market conditions, and what it all means for you.</p>
+<div class="flex items-center text-xs text-gray-400 space-x-4">
+<span class="">Webinar</span>
+<span class="">24 min</span>
 </div>
-<div class="lg:col-span-7 order-1 lg:order-2">
-<div class="relative rounded-2xl overflow-hidden">
-<img class="w-full h-full object-cover min-h-[280px] rounded-2xl" alt="Professional trading terminal" src="<?php echo htmlspecialchars($tradingImg); ?>"/>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+<img alt="Investing start" class="w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7IRge5NrdHMcf_HA0DzqaNg0H4gqWcQW_bksH5pYuUULN0JfIxvPhoGMG6rCY0tRkcKCMFvh8XerOpoM366ESWEM6E3_C8WOC6jhEVWq1_NPCgqXsSQ-K7_8zrVatBBfH3NsK9DPpso3sQvcIl00GY2LCtvXElvqLO5w514V9IRi4jAOMwns7_B5iJElF4h1txk5xX27YGmHrfCKeSHvSF6DtCh4faLwlieSVRFpMeAqw2hRNu12idA">
+<div class="p-6">
+<h3 class="text-xl font-bold mb-3">How to start investing</h3>
+<p class="text-sm text-gray-600 mb-6">It doesn't have to be overly complicated. Here's how to start.</p>
+<div class="flex items-center text-xs text-gray-400 space-x-4">
+<span class="">Article</span>
+<span class="">8 min</span>
+</div>
+</div>
 </div>
 </div>
 </div>
 </section>
+<!-- END: ExpertiseGrid -->
 
-<!-- Investment Management -->
-<section class="bg-[#F1F3F5] py-16 md:py-section-padding text-surface-container-lowest">
-<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-<div class="relative rounded-2xl overflow-hidden shadow-xl wealth-image-wrap">
-<div class="wealth-image-bg">
-<img class="relative w-full h-auto rounded-xl" alt="Investment portfolio dashboard" src="<?php echo htmlspecialchars($investImg); ?>"/>
-</div>
-</div>
+<!-- BEGIN: WhyChooseSection -->
+<section class="py-20 bg-white">
+<div class="mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center max-w-6xl">
 <div>
-<span class="font-label-xs text-label-xs text-primary-container px-3 py-1 bg-surface-container-lowest rounded-md mb-4 inline-block">Bespoke Wealth Management</span>
-<h2 class="font-headline-lg text-headline-lg mb-8 leading-tight">Institutional Asset Management</h2>
-<p class="font-body-lg text-body-lg text-gray-600 mb-10">
-<?php echo htmlspecialchars($siteName); ?> provides curated investment strategies for high-net-worth individuals and corporate entities. Our algorithms manage risk dynamically while maximizing alpha across global markets.
-</p>
-<ul class="space-y-4 mb-10">
-<li class="flex items-center gap-3 text-gray-700 font-medium">
-<span class="material-symbols-outlined text-success">check_circle</span>
-Personalized Portfolio Construction
+<h2 class="text-4xl mb-8">Why choose Fidelity?</h2>
+<p class="text-lg text-gray-600 mb-8">Our objective insights and disciplined approach have helped generations of customers through all kinds of markets.</p>
+<ul class="space-y-4">
+<li class="flex items-start">
+<div class="h-2 w-2 rounded-full bg-fidelityGreen mt-2 mr-3"></div>
+<p class="text-gray-700 font-bold">A clear, straightforward experience</p>
 </li>
-<li class="flex items-center gap-3 text-gray-700 font-medium">
-<span class="material-symbols-outlined text-success">check_circle</span>
-Tax-Efficient Rebalancing
+<li class="flex items-start">
+<div class="h-2 w-2 rounded-full bg-fidelityGreen mt-2 mr-3"></div>
+<p class="text-gray-700 font-bold">Guidance as life changes</p>
 </li>
-<li class="flex items-center gap-3 text-gray-700 font-medium">
-<span class="material-symbols-outlined text-success">check_circle</span>
-Dedicated Wealth Consultant
+<li class="flex items-start">
+<div class="h-2 w-2 rounded-full bg-fidelityGreen mt-2 mr-3"></div>
+<p class="text-gray-700 font-bold">A wider range of integrated tools and products</p>
+</li>
+<li class="flex items-start">
+<div class="h-2 w-2 rounded-full bg-fidelityGreen mt-2 mr-3"></div>
+<p class="text-gray-700 font-bold">Value and transparency at every step</p>
 </li>
 </ul>
-<a href="/about_us" class="inline-block bg-surface-container-lowest text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-800 transition-colors text-label-sm">
-Inquire About Institutional Services
-</a>
+</div>
+<div class="relative rounded-2xl overflow-hidden">
+<img alt="Fidelity Customers" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCamvPpRWXXo06xfhs2MhOWcBVF1JncodJZxIDVpxGDf217WzcamtCt4x3ft5_GliedbgSuGCg3RhIxRzW_1aWBORQUWq8u5W0ev0qzvfSkzESeswVEfjsfm6skJ_e5QHzhjz1ffFf0yKnrfeZl_H82SqxOPLDNgACMl5GYDl1o2H7NED4Pdnp6azY8b_OJVbHa65QZJx9-7HJVaWMhSc_qtrgr1p0imf0NU-EtKhBbc1DM6UkD5iXK_w">
 </div>
 </div>
 </section>
-
-<!-- Mobile Experience -->
-<section class="bg-[#F7F8FA] py-16 md:py-section-padding text-surface-container-lowest text-center">
-<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
-<h2 class="font-headline-lg text-headline-lg mb-4">Your Portfolio, Anywhere</h2>
-<p class="text-gray-500 font-body-lg mb-16 max-w-2xl mx-auto">Take the power of <?php echo htmlspecialchars($siteName); ?> on the go with our award-winning mobile application. Full terminal features in the palm of your hand.</p>
-<div class="relative max-w-3xl mx-auto">
-<img class="mx-auto drop-shadow-2xl w-full max-w-[88%] h-auto rounded-2xl md:rounded-3xl" alt="Mobile trading app" src="<?php echo htmlspecialchars($mobileImg); ?>"/>
-<div class="flex flex-col sm:flex-row justify-center gap-4 mt-12">
-<button type="button" data-pwa-install="mobile" class="bg-black text-white px-8 py-3 rounded-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform disabled:opacity-70 disabled:hover:scale-100">
-<span class="material-symbols-outlined text-3xl">smartphone</span>
-<div class="text-left">
-<div class="text-[10px] uppercase opacity-70" data-pwa-sub>Install directly to your device</div>
-<div class="text-lg font-bold leading-none" data-pwa-label>Download for Mobile</div>
-</div>
-</button>
-<button type="button" data-pwa-install="desktop" class="bg-black text-white px-8 py-3 rounded-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform disabled:opacity-70 disabled:hover:scale-100">
-<span class="material-symbols-outlined text-3xl">computer</span>
-<div class="text-left">
-<div class="text-[10px] uppercase opacity-70" data-pwa-sub>Install directly to your device</div>
-<div class="text-lg font-bold leading-none" data-pwa-label>Download for Desktop</div>
-</div>
-</button>
-</div>
-</div>
-</div>
-</section>
-
-<!-- Neural Engine Intelligence -->
-<section class="bg-surface-container-lowest py-16 md:py-section-padding relative overflow-hidden">
-<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop relative z-10">
-<div class="text-center mb-12 md:mb-20">
-<span class="font-label-xs text-label-xs text-primary mb-4 block">Next-Generation Intelligence</span>
-<h2 class="font-headline-lg text-headline-lg mb-4">Neural Engine Intelligence</h2>
-<p class="text-on-secondary-container max-w-2xl mx-auto">Our AI-driven analytics suite processes millions of data points per second to identify sentiment shifts and market anomalies before they happen.</p>
-</div>
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-<div class="lg:col-span-8 glass-panel rounded-2xl overflow-hidden group">
-<div class="tradingview-widget-container h-[320px] sm:h-[380px] md:h-[420px]">
-<div class="tradingview-widget-container__widget"></div>
-<div class="tradingview-widget-copyright text-xs text-on-secondary-container px-4 py-2"><a href="https://www.tradingview.com/heatmap/etf/" rel="noopener nofollow" target="_blank"><span class="text-primary-container">ETF Heatmap</span></a><span class="trademark"> by TradingView</span></div>
-<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-etf-heatmap.js" async>
-{
-"dataSource": "AllUSEtf",
-"blockSize": "volume",
-"blockColor": "change",
-"grouping": "asset_class",
-"locale": "en",
-"symbolUrl": "",
-"colorTheme": "light",
-"hasTopBar": false,
-"isDataSetEnabled": false,
-"isZoomEnabled": true,
-"hasSymbolTooltip": true,
-"isMonoSize": false,
-"width": "100%",
-"height": "100%"
-}
-</script>
-</div>
-<div class="p-8">
-<h3 class="text-xl font-bold mb-2">Market Sentiment Heatmaps</h3>
-<p class="text-on-secondary-container">Visualize global capital flow across thousands of assets simultaneously with our real-time sector rotation terminal.</p>
-</div>
-</div>
-<div class="lg:col-span-4 flex flex-col gap-gutter">
-<div class="glass-panel rounded-2xl p-8 flex-1 group hover:border-primary/40 transition-colors">
-<div class="w-12 h-12 bg-primary-container/10 border border-primary/20 rounded-lg flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-primary">psychology</span>
-</div>
-<h3 class="text-xl font-bold mb-2">Predictive AI</h3>
-<p class="text-on-secondary-container">Machine learning models trained on decades of market data to assist your decision-making process.</p>
-</div>
-<div class="glass-panel rounded-2xl p-8 flex-1 group hover:border-primary/40 transition-colors">
-<div class="w-12 h-12 bg-primary-container/10 border border-primary/20 rounded-lg flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-primary">hub</span>
-</div>
-<h3 class="text-xl font-bold mb-2">Smart Order Routing</h3>
-<p class="text-on-secondary-container">Our SOR engine automatically finds the best price across multiple liquidity venues in real-time.</p>
-</div>
-</div>
-</div>
-</div>
-</section>
-
-<!-- Trust & Security -->
-<section class="bg-white py-16 md:py-section-padding text-surface-container-lowest">
-<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 text-center">
-<div>
-<div class="text-3xl md:text-4xl font-extrabold mb-2 font-display text-primary-container"><?php echo htmlspecialchars($statsVolume); ?></div>
-<div class="font-label-xs text-label-xs text-gray-400 uppercase tracking-widest">Quarterly Trading Volume</div>
-</div>
-<div>
-<div class="text-3xl md:text-4xl font-extrabold mb-2 font-display text-primary-container"><?php echo htmlspecialchars($statsInvestors); ?></div>
-<div class="font-label-xs text-label-xs text-gray-400 uppercase tracking-widest">Verified Investors</div>
-</div>
-<div>
-<div class="text-3xl md:text-4xl font-extrabold mb-2 font-display text-primary-container"><?php echo htmlspecialchars($statsUptime); ?></div>
-<div class="font-label-xs text-label-xs text-gray-400 uppercase tracking-widest">Reserve Transparency</div>
-</div>
-<div>
-<div class="text-3xl md:text-4xl font-extrabold mb-2 font-display text-primary-container"><?php echo htmlspecialchars($statsSupport); ?></div>
-<div class="font-label-xs text-label-xs text-gray-400 uppercase tracking-widest">Concierge Support</div>
-</div>
-</div>
-<div class="mt-16 md:mt-24 pt-12 md:pt-16 border-t border-gray-100 flex flex-wrap justify-center items-center gap-8 md:gap-16 grayscale opacity-50">
-<div class="h-8 flex items-center font-display font-black text-lg md:text-2xl tracking-tighter">FINRA REGULATED</div>
-<div class="h-8 flex items-center font-display font-black text-lg md:text-2xl tracking-tighter">ISO 27001</div>
-<div class="h-8 flex items-center font-display font-black text-lg md:text-2xl tracking-tighter">SEC COMPLIANT</div>
-<div class="h-8 flex items-center font-display font-black text-lg md:text-2xl tracking-tighter">MULTI-SIG PROTECTED</div>
-</div>
-</div>
-</section>
-
-<!-- Learn and Earn -->
-<section class="bg-[#F1F3F5] py-16 md:py-section-padding text-surface-container-lowest">
-<div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-12">
-<div>
-<span class="font-label-xs text-label-xs text-gray-400 mb-2 block">Knowledge is Wealth</span>
-<h2 class="font-headline-lg text-headline-lg">Learn and Earn</h2>
-</div>
-<a href="/help_centre" class="text-primary-container font-bold border-b-2 border-primary-container pb-1 text-label-sm">Browse Academy</a>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-<a href="/help_centre" class="bg-white rounded-xl overflow-hidden shadow-sm group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 block">
-<div class="h-48 overflow-hidden">
-<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Foundations of trading" src="<?php echo htmlspecialchars($eduBeginner); ?>"/>
-</div>
-<div class="p-6">
-<span class="text-xs font-bold text-primary-container uppercase mb-2 block">Beginner</span>
-<h3 class="text-xl font-bold mb-3">Foundations of Trading</h3>
-<p class="text-gray-500 text-sm mb-4">Master the basics of technical analysis, order types, and risk management.</p>
-<div class="flex items-center text-primary-container font-bold text-sm">
-Read Module <span class="material-symbols-outlined ml-1 text-sm">chevron_right</span>
-</div>
-</div>
-</a>
-<a href="/help_centre" class="bg-white rounded-xl overflow-hidden shadow-sm group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 block">
-<div class="h-48 overflow-hidden">
-<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Understanding liquidity" src="<?php echo htmlspecialchars($eduIntermediate); ?>"/>
-</div>
-<div class="p-6">
-<span class="text-xs font-bold text-primary-container uppercase mb-2 block">Intermediate</span>
-<h3 class="text-xl font-bold mb-3">Understanding Liquidity</h3>
-<p class="text-gray-500 text-sm mb-4">Deep dive into how liquidity pools and market makers shape price action.</p>
-<div class="flex items-center text-primary-container font-bold text-sm">
-Read Module <span class="material-symbols-outlined ml-1 text-sm">chevron_right</span>
-</div>
-</div>
-</a>
-<a href="/help_centre" class="bg-white rounded-xl overflow-hidden shadow-sm group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 block">
-<div class="h-48 overflow-hidden">
-<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Algorithmic strategies" src="<?php echo htmlspecialchars($eduAdvanced); ?>"/>
-</div>
-<div class="p-6">
-<span class="text-xs font-bold text-primary-container uppercase mb-2 block">Advanced</span>
-<h3 class="text-xl font-bold mb-3">Algorithmic Strategies</h3>
-<p class="text-gray-500 text-sm mb-4">Building and backtesting quantitative models for institutional portfolios.</p>
-<div class="flex items-center text-primary-container font-bold text-sm">
-Read Module <span class="material-symbols-outlined ml-1 text-sm">chevron_right</span>
-</div>
-</div>
-</a>
-</div>
-</div>
-</section>
+<!-- END: WhyChooseSection -->
 
 <?php require_once __DIR__ . '/includes/marketing-footer.php'; ?>
-
-<script src="/js/crypto-config.js"></script>
-<script src="/js/crypto-prices.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  if (window.BloombitCryptoPrices) {
-    window.BloombitCryptoPrices.init(['bitcoin','ethereum','binancecoin','solana'], {
-      marketCardsSelector: '.market-cards',
-      refreshInterval: 120000
-    });
-  }
-
-  document.querySelectorAll('a, button').forEach(function(btn) {
-    btn.addEventListener('mousedown', function() { btn.classList.add('scale-95'); });
-    btn.addEventListener('mouseup', function() { btn.classList.remove('scale-95'); });
-    btn.addEventListener('mouseleave', function() { btn.classList.remove('scale-95'); });
-  });
-});
-</script>
 </body>
 </html>

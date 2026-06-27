@@ -6,7 +6,7 @@ $heroBg = 'https://lh3.googleusercontent.com/aida/AP1WRLuaqlZwMUTllIVowJvsPs71Ur
 $infraBg = 'https://lh3.googleusercontent.com/aida/AP1WRLsKriSbY6BJi-Xp2Gkc7D7CVwxW2aLMAeU3vslR5SSitI_47iRoKte8OAQPNNm9SVIVAJP-rxuMAgVJSJdgU79P5g1FgzlR3L1T3iKisxILmQwUVbRBpe9jP9AcBhmn5dOT2lGX6TkC3LxSMhG_7zFbayukNlnb63bYjV8lzW6sJhcDohhWpwHwt7jiN5I_ApLCsQeZ4HaS-BEOnuPIsgpW6dVCbSLy14ewi2QOegd2_aontl0Sqgbjst8';
 ?>
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -27,7 +27,7 @@ $infraBg = 'https://lh3.googleusercontent.com/aida/AP1WRLsKriSbY6BJi-Xp2Gkc7D7CV
 <body class="marketing-page font-body-md bg-background text-on-surface selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
 <?php $currentPage = 'about_us'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 
-<main class="pt-20">
+<main>
 <!-- Hero -->
 <section class="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
 <div class="absolute inset-0 z-0 about-hero-bg opacity-40"></div>

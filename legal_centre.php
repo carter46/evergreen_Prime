@@ -1,6 +1,6 @@
 <?php require_once __DIR__ . '/includes/helpers.php'; $siteName = get_site_name(); $contactEmail = get_site_setting('contact_email', 'legal@example.com'); ?>
 <!DOCTYPE html>
-<html class="dark scroll-smooth" lang="en">
+<html class="scroll-smooth" lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -34,7 +34,7 @@ require_once __DIR__ . '/includes/marketing-head.php';
   border-radius: 1rem;
 }
 @media print {
-  aside, #marketing-nav, footer, .legal-back-top { display: none !important; }
+  aside, #utility-header, #main-navigation, footer, .legal-back-top { display: none !important; }
   main { max-width: 100% !important; padding: 0 !important; }
   article { border: none !important; box-shadow: none !important; padding: 0 !important; }
 }
@@ -43,7 +43,7 @@ require_once __DIR__ . '/includes/marketing-head.php';
 <body class="marketing-page font-body-md text-body-md overflow-x-hidden">
 <?php $currentPage = 'legal_centre'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 
-<header class="legal-hero-mesh pt-28 pb-12 text-center border-b border-white/5">
+<header class="legal-hero-mesh pb-12 text-center border-b border-gray-200">
 <div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
 <span class="px-4 py-1.5 bg-primary-container/10 text-primary-container text-sm font-bold rounded-full uppercase tracking-wider">Compliance</span>
 <h1 class="mt-6 font-headline-lg text-headline-lg md:text-5xl font-bold text-on-surface">Legal Center</h1>

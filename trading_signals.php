@@ -6,7 +6,7 @@ $pageTitle = $siteName . ' | AI Trading Signals & Live Markets';
 $cryptoIds = array_values(array_filter(array_map(fn($m) => $m['coingecko_id'] ?? null, get_markets_by_category('crypto'))));
 ?>
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -16,7 +16,7 @@ $cryptoIds = array_values(array_filter(array_map(fn($m) => $m['coingecko_id'] ??
 <body class="marketing-page font-body-md text-body-md overflow-x-hidden">
 <?php $currentPage = 'trading_signals'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 
-<section class="pt-28 pb-8 bg-surface-container-lowest border-b border-border-low">
+<section class="pb-8 bg-surface-container-lowest border-b border-border-low">
 <div class="max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
 <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
 <div>

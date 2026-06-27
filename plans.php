@@ -17,7 +17,7 @@ require_once __DIR__ . '/includes/helpers.php';
 $siteName = get_site_name();
 ?>
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -36,7 +36,7 @@ require_once __DIR__ . '/includes/marketing-head.php';
 <body class="marketing-page font-body-md text-body-md overflow-x-hidden">
 <?php $currentPage = 'plans'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 <!-- Hero Header -->
-<header class="pt-28 py-12 sm:py-16 md:py-20 px-4 sm:px-6">
+<header class="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
 <div class="max-w-4xl mx-auto text-center">
 <span class="inline-block px-4 py-1.5 mb-6 text-xs font-bold tracking-widest uppercase bg-primary/10 text-primary border border-primary/20 rounded-full">Maximize Your Capital</span>
 <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">Flexible Investment Plans</h1>

@@ -11,7 +11,7 @@ if (!$instrument) {
     $pageTitle = 'Market Not Found | ' . $siteName;
     ?>
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -48,7 +48,7 @@ $isCrypto = $instrument['category'] === 'crypto';
 $coingeckoId = $instrument['coingecko_id'] ?? '';
 ?>
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -62,7 +62,7 @@ output_market_seo_tags($instrument);
 <?php $currentPage = 'markets'; require_once __DIR__ . '/includes/marketing-header.php'; ?>
 
 <!-- Hero -->
-<section class="market-hero relative pt-32 pb-16 md:pb-24 bg-surface-container-lowest overflow-hidden">
+<section class="market-hero relative pb-16 md:pb-24 bg-surface-container-lowest overflow-hidden">
 <div class="absolute inset-0 market-hero-glow opacity-40"></div>
 <div class="relative z-10 max-w-[1440px] mx-auto px-4 md:px-margin-desktop">
 <div class="max-w-3xl">
