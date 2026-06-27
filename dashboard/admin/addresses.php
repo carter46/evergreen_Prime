@@ -16,21 +16,41 @@ require_once __DIR__ . '/../../includes/dashboard/admin-layout-start.php';
 .pm-type-btn { transition: all 0.15s ease; }
 .pm-type-btn:hover { border-color: rgb(var(--primary) / 0.5); background: rgb(var(--primary) / 0.05); }
 .pm-type-btn.selected { border-color: rgb(var(--primary)); background: rgb(var(--primary) / 0.1); }
+.pm-tab { transition: all 0.15s ease; }
+.pm-tab.active { background: white; color: #18181b; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.dark .pm-tab.active { background: #27272a; color: #fafafa; }
 </style>
 <?php
 $pageHeading = 'Payment Methods';
 $pageSubtitle = 'Configure crypto, bank transfer, and card options for user deposits and withdrawals.';
 include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 ?>
-<div class="flex justify-end mb-8">
-<button type="button" id="add-method-btn" class="w-fit shrink-0 bg-primary text-zinc-900 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:shadow-lg transition-all">
+<div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+<div id="pm-tabs" class="inline-flex gap-1 p-1 bg-slate-100 dark:bg-zinc-800 rounded-lg w-full sm:w-auto overflow-x-auto">
+<button type="button" class="pm-tab active flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold text-slate-600 dark:text-zinc-300 whitespace-nowrap" data-tab="crypto">
+<span class="material-symbols-outlined text-base">currency_bitcoin</span> Crypto <span id="pm-count-crypto" class="text-xs font-bold px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-zinc-700">0</span>
+</button>
+<button type="button" class="pm-tab flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold text-slate-600 dark:text-zinc-300 whitespace-nowrap" data-tab="bank">
+<span class="material-symbols-outlined text-base">account_balance</span> Bank Transfer <span id="pm-count-bank" class="text-xs font-bold px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-zinc-700">0</span>
+</button>
+<button type="button" class="pm-tab flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold text-slate-600 dark:text-zinc-300 whitespace-nowrap" data-tab="card">
+<span class="material-symbols-outlined text-base">credit_card</span> Card <span id="pm-count-card" class="text-xs font-bold px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-zinc-700">0</span>
+</button>
+</div>
+<button type="button" id="add-method-btn" class="w-full sm:w-fit shrink-0 bg-primary text-zinc-900 px-6 py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all">
 <span class="material-symbols-outlined text-lg">add</span> Add Method
 </button>
 </div>
 <div id="messageContainer" class="mb-4"></div>
 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
-<div id="methodsContainer" class="p-4 sm:p-6">
-<div class="text-center py-8 sm:py-10 text-slate-500">Loading payment methods...</div>
+<div id="methods-container-crypto" class="pm-tab-panel p-4 sm:p-6">
+<div class="text-center py-8 sm:py-10 text-slate-500">Loading crypto methods...</div>
+</div>
+<div id="methods-container-bank" class="pm-tab-panel hidden p-4 sm:p-6">
+<div class="text-center py-8 sm:py-10 text-slate-500">Loading bank methods...</div>
+</div>
+<div id="methods-container-card" class="pm-tab-panel hidden p-4 sm:p-6">
+<div class="text-center py-8 sm:py-10 text-slate-500">Loading card methods...</div>
 </div>
 </div>
 
@@ -182,6 +202,7 @@ include __DIR__ . '/../../includes/dashboard/admin-page-title.php';
 (function(){
 var allMethods = [];
 var allCoins = [];
+var activeTab = 'crypto';
 var modal = document.getElementById('method-modal');
 var stepType = document.getElementById('method-step-type');
 var methodForm = document.getElementById('method-form');
@@ -228,16 +249,45 @@ function loadCoins() {
   });
 }
 
+function switchTab(tab) {
+  if (!['crypto', 'bank', 'card'].includes(tab)) return;
+  activeTab = tab;
+  document.querySelectorAll('.pm-tab').forEach(function(btn){
+    btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+  });
+  document.querySelectorAll('.pm-tab-panel').forEach(function(panel){
+    panel.classList.toggle('hidden', panel.id !== 'methods-container-' + tab);
+  });
+}
+
+function updateTabCounts() {
+  var counts = { crypto: 0, bank: 0, card: 0 };
+  allMethods.forEach(function(m){
+    if (counts[m.method_type] != null) counts[m.method_type]++;
+  });
+  ['crypto', 'bank', 'card'].forEach(function(t){
+    var el = document.getElementById('pm-count-' + t);
+    if (el) el.textContent = String(counts[t]);
+  });
+}
+
 function loadMethods() {
   return fetch('/api/admin/addresses.php').then(function(r){ return r.json(); }).then(function(d){
     if (d.success && (d.methods || d.addresses)) {
       allMethods = d.methods || d.addresses;
-      renderMethods(allMethods);
+      updateTabCounts();
+      renderMethods();
     } else {
-      document.getElementById('methodsContainer').innerHTML = '<div class="text-center py-10 text-red-500">Failed to load payment methods</div>';
+      ['crypto', 'bank', 'card'].forEach(function(t){
+        var c = document.getElementById('methods-container-' + t);
+        if (c) c.innerHTML = '<div class="text-center py-10 text-red-500">Failed to load payment methods</div>';
+      });
     }
   }).catch(function(){
-    document.getElementById('methodsContainer').innerHTML = '<div class="text-center py-10 text-red-500">Error loading payment methods</div>';
+    ['crypto', 'bank', 'card'].forEach(function(t){
+      var c = document.getElementById('methods-container-' + t);
+      if (c) c.innerHTML = '<div class="text-center py-10 text-red-500">Error loading payment methods</div>';
+    });
   });
 }
 
@@ -245,33 +295,92 @@ function closeAllDropdowns() {
   document.querySelectorAll('.pm-actions-dropdown').forEach(function(d){ d.classList.add('hidden'); });
 }
 
-function renderMethods(methods) {
-  var c = document.getElementById('methodsContainer');
-  if (!methods || methods.length === 0) {
-    c.innerHTML = '<div class="text-center py-8 sm:py-10 text-slate-500">No payment methods yet. Add one to get started.</div>';
+function bindTableActions(container) {
+  if (!container) return;
+  container.querySelectorAll('.pm-actions-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){ e.stopPropagation(); closeAllDropdowns(); btn.nextElementSibling.classList.toggle('hidden'); });
+  });
+  container.querySelectorAll('.pm-action-edit').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); openEdit(parseInt(b.getAttribute('data-id'), 10)); closeAllDropdowns(); }); });
+  container.querySelectorAll('.pm-action-delete').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); confirmDelete(parseInt(b.getAttribute('data-id'), 10)); closeAllDropdowns(); }); });
+}
+
+function actionsCell(id) {
+  return '<div class="relative inline-block"><button type="button" class="pm-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" data-id="' + id + '"><span class="material-symbols-outlined text-lg">more_vert</span></button><div class="pm-actions-dropdown hidden absolute right-0 top-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 min-w-[100px]"><button type="button" class="pm-action-edit block w-full text-left px-3 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + id + '">Edit</button><button type="button" class="pm-action-delete block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + id + '">Delete</button></div></div>';
+}
+
+function renderCryptoTable(methods) {
+  var c = document.getElementById('methods-container-crypto');
+  if (!c) return;
+  if (!methods.length) {
+    c.innerHTML = '<div class="text-center py-8 sm:py-10 text-slate-500">No crypto methods yet. Add a wallet address for each coin.</div>';
     return;
   }
   function safeLogo(url) { return (url && /^https?:\/\//i.test(url)) ? '<img src="' + url.replace(/"/g,'&quot;') + '" alt="" class="w-8 h-8 rounded-full object-cover shrink-0"/>' : ''; }
   var rows = methods.map(function(m){
-    var logo = m.method_type === 'crypto' ? safeLogo(m.logo) : '';
-    var icon = !logo ? '<span class="material-symbols-outlined text-slate-400 text-xl">' + (m.method_type === 'bank' ? 'account_balance' : (m.method_type === 'card' ? 'credit_card' : 'currency_bitcoin')) + '</span>' : logo;
-    var name = m.method_type === 'crypto' ? ((m.display_name || m.symbol || '') + ' (' + (m.symbol || '') + ')') : (m.label || m.display_name || typeLabel(m.method_type));
-    var actionsHtml = '<div class="relative inline-block"><button type="button" class="pm-actions-btn p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-500" data-id="' + m.id + '"><span class="material-symbols-outlined text-lg">more_vert</span></button><div class="pm-actions-dropdown hidden absolute right-0 top-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-lg z-10 min-w-[100px]"><button type="button" class="pm-action-edit block w-full text-left px-3 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + m.id + '">Edit</button><button type="button" class="pm-action-delete block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-slate-50 dark:hover:bg-zinc-700" data-id="' + m.id + '">Delete</button></div></div>';
+    var logo = safeLogo(m.logo);
+    var icon = logo || '<span class="material-symbols-outlined text-slate-400 text-xl">currency_bitcoin</span>';
+    var name = (m.display_name || m.symbol || '') + ' (' + (m.symbol || '') + ')';
     return '<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/50">' +
       '<td class="px-4 sm:px-6 py-3 text-sm">' + m.id + '</td>' +
-      '<td class="px-4 sm:px-6 py-3 text-sm"><span class="text-xs font-bold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800">' + escapeHtml(typeLabel(m.method_type)) + '</span></td>' +
       '<td class="px-4 sm:px-6 py-3 text-sm"><div class="flex items-center gap-3">' + icon + '<span class="font-semibold">' + escapeHtml(name) + '</span></div></td>' +
-      '<td class="px-4 sm:px-6 py-3 text-sm max-w-md">' + methodSummary(m) + '</td>' +
-      '<td class="px-4 sm:px-6 py-3 text-right">' + actionsHtml + '</td>' +
+      '<td class="px-4 sm:px-6 py-3 text-sm max-w-md"><span class="font-mono text-xs break-all">' + escapeHtml(m.wallet_address || m.address || '') + '</span></td>' +
+      '<td class="px-4 sm:px-6 py-3 text-right">' + actionsCell(m.id) + '</td>' +
     '</tr>';
   }).join('');
-  c.innerHTML = '<div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Type</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Name</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Details</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
-  c.querySelectorAll('.pm-actions-btn').forEach(function(btn){
-    btn.addEventListener('click', function(e){ e.stopPropagation(); closeAllDropdowns(); btn.nextElementSibling.classList.toggle('hidden'); });
-  });
-  document.addEventListener('click', function(){ closeAllDropdowns(); });
-  c.querySelectorAll('.pm-action-edit').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); openEdit(parseInt(b.getAttribute('data-id'), 10)); closeAllDropdowns(); }); });
-  c.querySelectorAll('.pm-action-delete').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); confirmDelete(parseInt(b.getAttribute('data-id'), 10)); closeAllDropdowns(); }); });
+  c.innerHTML = '<div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Coin</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Wallet Address</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
+  bindTableActions(c);
+}
+
+function renderBankTable(methods) {
+  var c = document.getElementById('methods-container-bank');
+  if (!c) return;
+  if (!methods.length) {
+    c.innerHTML = '<div class="text-center py-8 sm:py-10 text-slate-500">No bank transfer methods yet. Add bank account details for deposits and withdrawals.</div>';
+    return;
+  }
+  var rows = methods.map(function(m){
+    var name = m.label || m.bank_name || 'Bank Transfer';
+    var summary = methodSummary(m);
+    return '<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/50">' +
+      '<td class="px-4 sm:px-6 py-3 text-sm">' + m.id + '</td>' +
+      '<td class="px-4 sm:px-6 py-3 text-sm font-semibold">' + escapeHtml(name) + '</td>' +
+      '<td class="px-4 sm:px-6 py-3 text-sm max-w-md">' + summary + '</td>' +
+      '<td class="px-4 sm:px-6 py-3 text-right">' + actionsCell(m.id) + '</td>' +
+    '</tr>';
+  }).join('');
+  c.innerHTML = '<div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Label</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Bank Details</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
+  bindTableActions(c);
+}
+
+function renderCardTable(methods) {
+  var c = document.getElementById('methods-container-card');
+  if (!c) return;
+  if (!methods.length) {
+    c.innerHTML = '<div class="text-center py-8 sm:py-10 text-slate-500">No card methods yet. Add Visa, Mastercard, or Amex details.</div>';
+    return;
+  }
+  var rows = methods.map(function(m){
+    var name = m.label || ((m.card_brand || 'card').toUpperCase() + ' Card');
+    var summary = methodSummary(m);
+    return '<tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/50">' +
+      '<td class="px-4 sm:px-6 py-3 text-sm">' + m.id + '</td>' +
+      '<td class="px-4 sm:px-6 py-3 text-sm font-semibold">' + escapeHtml(name) + '</td>' +
+      '<td class="px-4 sm:px-6 py-3 text-sm max-w-md">' + summary + '</td>' +
+      '<td class="px-4 sm:px-6 py-3 text-right">' + actionsCell(m.id) + '</td>' +
+    '</tr>';
+  }).join('');
+  c.innerHTML = '<div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 dark:bg-zinc-800"><tr><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">ID</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Label</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500">Card Details</th><th class="px-4 sm:px-6 py-3 text-xs font-bold uppercase text-slate-500 text-right">Actions</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-zinc-800">' + rows + '</tbody></table></div>';
+  bindTableActions(c);
+}
+
+function renderMethods() {
+  var crypto = allMethods.filter(function(m){ return m.method_type === 'crypto'; });
+  var bank = allMethods.filter(function(m){ return m.method_type === 'bank'; });
+  var card = allMethods.filter(function(m){ return m.method_type === 'card'; });
+  renderCryptoTable(crypto);
+  renderBankTable(bank);
+  renderCardTable(card);
+  switchTab(activeTab);
 }
 
 function getCoinsAlreadyUsed() {
@@ -372,14 +481,33 @@ function closeModal() {
   selectedType = null;
 }
 
+function openAddForType(type) {
+  if (type === 'crypto') {
+    var used = getCoinsAlreadyUsed();
+    if (allCoins.length > 0 && used.length >= allCoins.length) {
+      showMessage('All coins already have crypto methods. Delete one first to add another.', 'error');
+      return;
+    }
+    populateCryptoCoins(null);
+  }
+  editingId = null;
+  document.getElementById('method-modal-title').textContent = 'Add ' + typeLabel(type) + ' Method';
+  clearFormFields();
+  showFormStep(type);
+  modal.classList.remove('hidden');
+}
+
 function openAdd() {
   if (allCoins.length === 0) { loadCoins().then(openAdd); return; }
-  openModal('Add Payment Method');
+  openAddForType(activeTab);
 }
 
 function openEdit(id) {
   if (allCoins.length === 0) { loadCoins().then(function(){ openEdit(id); }); return; }
-  openModal('Edit Payment Method', id);
+  var m = allMethods.find(function(x){ return x.id === id; });
+  if (!m) return;
+  switchTab(m.method_type);
+  openModal('Edit ' + typeLabel(m.method_type) + ' Method', id);
 }
 
 function buildPayload() {
@@ -443,6 +571,10 @@ function confirmDelete(id) {
 }
 
 document.getElementById('add-method-btn').addEventListener('click', openAdd);
+document.querySelectorAll('.pm-tab').forEach(function(btn){
+  btn.addEventListener('click', function(){ switchTab(btn.getAttribute('data-tab')); });
+});
+document.addEventListener('click', function(){ closeAllDropdowns(); });
 document.getElementById('method-modal-backdrop').addEventListener('click', closeModal);
 document.getElementById('method-modal-overlay').addEventListener('click', function(ev){ if (ev.target.id === 'method-modal-overlay') closeModal(); });
 document.getElementById('method-modal-cancel').addEventListener('click', closeModal);

@@ -51,6 +51,13 @@ $pendingNotifCount = isset($adminPendingNotifCount) ? (int) $adminPendingNotifCo
 <div class="gtranslate_wrapper"></div>
 <?php require_once __DIR__ . '/../translation-widget.php'; ?>
 <style>
+/* Admin: keep translation widget in DOM but hidden (user-facing pages unchanged) */
+body.admin-dashboard .gtranslate_wrapper {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
 .gtranslate_wrapper { left: auto !important; right: 20px !important; bottom: 20px !important; top: auto !important; }
 @media (max-width: 768px) { .gtranslate_wrapper { right: 12px !important; bottom: 12px !important; } }
 </style>

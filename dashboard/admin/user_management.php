@@ -312,7 +312,7 @@ $baseUrl = '/dashboard/admin/users' . ($q ? '?' . $q . '&' : '?');
   <div id="drawer-total-profit" class="text-xl font-bold text-emerald-500 mb-2">$0.00</div>
   <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 mt-4">Referral Bonus (earned)</h4>
   <div id="drawer-total-referral-bonus" class="text-xl font-bold text-amber-500 mb-4">$0.00</div>
-  <button type="button" id="drawer-adjust-balance-btn" class="text-sm text-black font-medium hover:underline">Adjust balance / profit / referral</button>
+  <button type="button" id="drawer-adjust-balance-btn" class="w-full mt-1 text-sm font-semibold text-slate-800 dark:text-zinc-100 bg-white dark:bg-zinc-800 shadow-md hover:shadow-lg border border-slate-200/80 dark:border-zinc-700 rounded-lg px-4 py-2.5 transition-shadow">Adjust balance / profit / referral</button>
   <div id="drawer-adjust-panel" class="hidden mt-3 p-4 bg-slate-50 dark:bg-zinc-800 rounded-lg space-y-3">
     <div>
       <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Place</label>
