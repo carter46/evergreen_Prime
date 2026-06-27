@@ -7,6 +7,7 @@
 
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/usd-wallet.php';
+require_once __DIR__ . '/investment-lifecycle.php';
 
 /**
  * Run earnings distribution.
@@ -16,6 +17,8 @@ require_once __DIR__ . '/usd-wallet.php';
  */
 function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
     $result = ['credits' => 0, 'total_amount' => 0.0, 'errors' => []];
+
+    process_all_due_maturities($pdo);
 
     $earningsPaused = get_site_setting('earnings_paused', '0');
     if ($earningsPaused === '1' && !$manual) {
@@ -95,10 +98,6 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
         $matured = $now >= $endDate;
         $capNow = $matured ? $endDate : $now;
         if ($refDateTime >= $endDate) {
-            if ($matured) {
-                // Mark completed so it no longer counts as an active plan.
-                try { $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['completed', $invId]); } catch (Throwable $e) {}
-            }
             continue;
         }
 
@@ -148,13 +147,8 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
                     ->execute([$userId, 'payout', $toCreditStr, $currency, 'completed', 'earnings_inv_' . $invId]);
             }
-            if ($matured && $newLastAt >= $endDate) {
-                $pdo->prepare('UPDATE user_investments SET last_earnings_at = ?, status = ? WHERE id = ?')
-                    ->execute([$newLastAt->format('Y-m-d H:i:s'), 'completed', $invId]);
-            } else {
-                $pdo->prepare('UPDATE user_investments SET last_earnings_at = ? WHERE id = ?')
-                    ->execute([$newLastAt->format('Y-m-d H:i:s'), $invId]);
-            }
+            $pdo->prepare('UPDATE user_investments SET last_earnings_at = ? WHERE id = ?')
+                ->execute([$newLastAt->format('Y-m-d H:i:s'), $invId]);
             // Referral bonus: 2-level chain on referee daily payout (15% direct, 10% upline)
             if ($toCreditUsd > 0) {
                 try {

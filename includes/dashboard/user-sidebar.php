@@ -38,7 +38,7 @@ Switch back to Admin
 </a>
 <a class="<?php echo $navActive('analytics'); ?>" href="/dashboard/user/analytics">
 <span class="material-symbols-outlined"<?php echo $iconFill('analytics'); ?>>monitoring</span>
-<span class="font-label-sm text-label-sm">My Investments</span>
+<span class="font-label-sm text-label-sm">My Portfolio</span>
 </a>
 <a class="<?php echo $navActive('investment-plans'); ?>" href="/dashboard/user/investment-plans">
 <span class="material-symbols-outlined"<?php echo $iconFill('investment-plans'); ?>>account_tree</span>

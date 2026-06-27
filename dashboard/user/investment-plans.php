@@ -16,7 +16,7 @@ try {
     $userBalance = get_user_usd_balance($pdo, (int) $userId);
     
     // Fetch enabled plans
-    $stmt = $pdo->query('SELECT id, name, slug, plan_type, description, logo_url, investment_risk, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
+    $stmt = $pdo->query('SELECT id, name, slug, plan_type, description, logo_url, investment_risk, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, liquidation_cost, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $plans[] = [
             'id' => (int)$row['id'],
@@ -34,6 +34,7 @@ try {
             'min_duration_days' => isset($row['min_duration_days']) && $row['min_duration_days'] !== null ? (int)$row['min_duration_days'] : (isset($row['min_duration_months']) && $row['min_duration_months'] !== null ? (int)$row['min_duration_months'] * 30 : (int)$row['duration_days']),
             'max_duration_days' => isset($row['max_duration_days']) && $row['max_duration_days'] !== null ? (int)$row['max_duration_days'] : (isset($row['max_duration_months']) && $row['max_duration_months'] !== null ? (int)$row['max_duration_months'] * 30 : (int)$row['duration_days']),
             'withdrawal_days' => (int)$row['withdrawal_days'],
+            'liquidation_cost' => isset($row['liquidation_cost']) ? (float)$row['liquidation_cost'] : 0.0,
             'features' => $row['features_json'] ? json_decode($row['features_json'], true) : [],
         ];
     }
@@ -163,8 +164,14 @@ Select a plan below to invest from your wallet balance.
 <span class="text-text-secondary">Duration</span>
 <span class="text-text-primary font-semibold"><?php echo (int) $planDays; ?> Days</span>
 </div>
+<?php if (!empty($plan['liquidation_cost']) && (float)$plan['liquidation_cost'] > 0): ?>
+<div class="flex justify-between items-center text-sm">
+<span class="text-text-secondary">Early Exit Fee</span>
+<span class="text-amber-600 dark:text-amber-400 font-semibold">USD <?php echo format_usd_amount($plan['liquidation_cost']); ?></span>
 </div>
-<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-days="<?php echo (int) $planDays; ?>" class="subscribe-plan-btn w-full bg-primary-container hover:bg-primary-container/90 text-on-primary font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+<?php endif; ?>
+</div>
+<button type="button" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-min="<?php echo $plan['min_deposit']; ?>" data-plan-max="<?php echo $plan['max_deposit'] ?? 0; ?>" data-plan-days="<?php echo (int) $planDays; ?>" data-plan-liquidation-fee="<?php echo htmlspecialchars(number_format((float)($plan['liquidation_cost'] ?? 0), 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>" class="subscribe-plan-btn w-full bg-primary-container hover:bg-primary-container/90 text-on-primary font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
 <span>Invest Now</span>
 <span class="material-symbols-outlined text-sm">trending_up</span>
 </button>
@@ -196,6 +203,7 @@ Select a plan below to invest from your wallet balance.
 <input type="number" id="subscribe-amount" step="0.01" min="0" class="w-full bg-slate-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700" required/>
 <p class="text-xs text-slate-500 mt-1">Available USD Balance: $<span id="available-balance"><?php echo format_usd_amount($userBalance); ?></span></p>
 <p class="text-xs text-slate-500 mt-1">Range: $<span id="plan-min"></span> - <span id="plan-max"></span></p>
+<p id="subscribe-liquidation-note" class="text-xs text-amber-600 dark:text-amber-400 mt-1 hidden">Early liquidation fee: $<span id="plan-liquidation-fee">0.00</span> (deducted from your USD balance).</p>
 <?php if ($userBalance <= 0): ?><p class="text-xs text-amber-600 mt-1">Deposit funds to your wallet first.</p><?php endif; ?>
 </div>
 <div id="subscribe-error" class="text-sm text-red-500 hidden mb-4"></div>
@@ -259,8 +267,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var durationInput = document.getElementById('subscribe-duration');
     var durationDisplay = document.getElementById('subscribe-duration-display');
     var currentPlanDays = 7;
+    var liqNoteEl = document.getElementById('subscribe-liquidation-note');
+    var liqFeeEl = document.getElementById('plan-liquidation-fee');
 
-    function openModal(planId, planName, planMin, planMax, planDays) {
+    function openModal(planId, planName, planMin, planMax, planDays, liquidationFee) {
         planIdEl.value = planId;
         planNameEl.textContent = planName;
         currentPlanMin = planMin;
@@ -270,6 +280,11 @@ document.addEventListener('DOMContentLoaded', function() {
         planMaxEl.textContent = planMax > 0 ? '$' + planMax.toLocaleString() : 'Unlimited';
         if (durationDisplay) durationDisplay.textContent = currentPlanDays + ' Days';
         if (durationInput) durationInput.value = currentPlanDays;
+        if (liqFeeEl) liqFeeEl.textContent = (liquidationFee || 0).toFixed(2);
+        if (liqNoteEl) {
+            if (liquidationFee > 0) liqNoteEl.classList.remove('hidden');
+            else liqNoteEl.classList.add('hidden');
+        }
         amountEl.value = '';
         amountEl.min = planMin;
         amountEl.max = planMax > 0 ? planMax : '';
@@ -288,7 +303,8 @@ document.addEventListener('DOMContentLoaded', function() {
             var planMin = parseFloat(this.getAttribute('data-plan-min'));
             var planMax = parseFloat(this.getAttribute('data-plan-max')) || 0;
             var planDays = parseInt(this.getAttribute('data-plan-days'), 10) || 7;
-            openModal(planId, planName, planMin, planMax, planDays);
+            var liquidationFee = parseFloat(this.getAttribute('data-plan-liquidation-fee')) || 0;
+            openModal(planId, planName, planMin, planMax, planDays, liquidationFee);
         });
     });
     

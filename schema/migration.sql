@@ -761,3 +761,44 @@ SET @sql = IF(@col_exists = 0,
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- Plan early-liquidation fee (flat USD amount per plan)
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'plans' AND COLUMN_NAME = 'liquidation_cost');
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE plans ADD COLUMN liquidation_cost DECIMAL(18,2) NOT NULL DEFAULT 0.00 AFTER withdrawal_days',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- user_investments: liquidated status for early user exit
+SET @col = (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_investments' AND COLUMN_NAME = 'status');
+SET @has_liquidated = IF(@col LIKE '%liquidated%', 1, 0);
+SET @sql = IF(@has_liquidated = 0,
+    "ALTER TABLE user_investments MODIFY COLUMN status ENUM('active', 'paused', 'completed', 'cancelled', 'liquidated') NOT NULL DEFAULT 'active'",
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Deduplicate transaction.reference (keep lowest id per reference) before unique index
+UPDATE transactions t
+INNER JOIN (
+    SELECT reference, MIN(id) AS keep_id
+    FROM transactions
+    WHERE reference IS NOT NULL AND TRIM(reference) <> ''
+    GROUP BY reference
+    HAVING COUNT(*) > 1
+) d ON d.reference = t.reference AND t.id <> d.keep_id
+SET t.reference = CONCAT(SUBSTRING(t.reference, 1, 240), '_dup_', t.id);
+
+-- Idempotent settlement / liquidation transaction references
+SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transactions' AND INDEX_NAME = 'uniq_transactions_reference');
+SET @sql = IF(@idx_exists = 0,
+    'ALTER TABLE transactions ADD UNIQUE KEY uniq_transactions_reference (reference)',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

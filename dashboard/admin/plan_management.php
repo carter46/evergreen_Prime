@@ -262,8 +262,9 @@ foreach ($adminPlans as $idx => $p):
 <input name="min_duration_days" id="plan-form-min-days" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" min="1" required placeholder="e.g. 7"/>
 </div>
 <div>
-<label class="block text-sm font-medium mb-1.5">Referral Comm. (%)</label>
-<input class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" value="5"/>
+<label class="block text-sm font-medium mb-1.5">Liquidation Fee (USD)</label>
+<input name="liquidation_cost" id="plan-form-liquidation-cost" class="w-full bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-lg" type="number" step="0.01" min="0" value="0" placeholder="Early exit operation fee"/>
+<p class="text-xs text-slate-500 mt-1">Charged from the user's USD wallet when they liquidate this plan early.</p>
 </div>
 </div>
 </div>
@@ -371,6 +372,8 @@ function resetPlanForm() {
   document.getElementById('plan-form-max').value = '';
   document.getElementById('plan-form-yield').value = '1';
   document.getElementById('plan-form-min-days').value = '7';
+  var liqEl = document.getElementById('plan-form-liquidation-cost');
+  if (liqEl) liqEl.value = '0';
   document.getElementById('plan-form-features').value = '';
   document.querySelectorAll('.plan-form-risk').forEach(function (r) { r.checked = r.value === 'mid'; });
   document.getElementById('plan-drawer-title').textContent = 'Add New Plan';
@@ -409,6 +412,8 @@ if (drawer) {
             document.getElementById('plan-form-max').value = p.max_deposit || '';
             document.getElementById('plan-form-yield').value = (p.yield_min !== null && p.yield_min !== undefined) ? p.yield_min : (p.yield || '');
             document.getElementById('plan-form-min-days').value = (p.min_duration_days !== null && p.min_duration_days !== undefined) ? p.min_duration_days : (p.min_duration_months ? (p.min_duration_months * 30) : '7');
+            var liqInput = document.getElementById('plan-form-liquidation-cost');
+            if (liqInput) liqInput.value = (p.liquidation_cost !== null && p.liquidation_cost !== undefined) ? p.liquidation_cost : '0';
             document.querySelectorAll('.plan-form-risk').forEach(function (r) { r.checked = r.value === (p.investment_risk || 'mid'); });
             document.getElementById('plan-form-features').value = (p.features || []).join('\n');
             document.getElementById('plan-drawer-title').textContent = 'Edit Plan: ' + p.name;
@@ -463,7 +468,8 @@ if (drawer) {
     var features = featuresText.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
     var minDays = parseInt(document.getElementById('plan-form-min-days').value, 10);
     var riskEl = document.querySelector('.plan-form-risk:checked');
-    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, plan_type: document.getElementById('plan-form-type').value, description: document.getElementById('plan-form-description').value.trim(), logo_url: document.getElementById('plan-form-logo-url').value.trim(), investment_risk: riskEl ? riskEl.value : 'mid', min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_days: isNaN(minDays) ? null : minDays, features: features, features_text: featuresText };
+    var liqCost = parseFloat((document.getElementById('plan-form-liquidation-cost') || {}).value) || 0;
+    var data = { id: id ? parseInt(id) : 0, name: document.getElementById('plan-form-name').value, plan_type: document.getElementById('plan-form-type').value, description: document.getElementById('plan-form-description').value.trim(), logo_url: document.getElementById('plan-form-logo-url').value.trim(), investment_risk: riskEl ? riskEl.value : 'mid', min_deposit: parseFloat(document.getElementById('plan-form-min').value) || 0, max_deposit: document.getElementById('plan-form-max').value ? parseFloat(document.getElementById('plan-form-max').value) : null, yield: parseFloat(document.getElementById('plan-form-yield').value) || 0, min_duration_days: isNaN(minDays) ? null : minDays, liquidation_cost: liqCost, features: features, features_text: featuresText };
     fetch('/api/admin/plans.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(data) })
       .then(function(r){ return r.json(); }).then(function(res){ if (res.success) { drawer.classList.add('hidden'); window.location.reload(); } else alert(res.error || 'Failed'); }).catch(function(){ alert('Error'); });
   });

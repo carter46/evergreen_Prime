@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../../includes/auth-check.php';
 require_once __DIR__ . '/../../includes/helpers.php';
+require_once __DIR__ . '/../../includes/usd-wallet.php';
+require_once __DIR__ . '/../../includes/investment-lifecycle.php';
 $currentPage = 'analytics';
 $siteName = get_site_name();
 $totalProfit = 0;
@@ -14,6 +16,10 @@ $personalBestStreakDays = 0;
 $maxDrawdownPct = null;
 $payoutByCurrency = [];
 $payoutTotalForBreakdown = 0.0;
+$activePlans = [];
+$maturedPlans = [];
+$liquidatedPlans = [];
+$userUsdBalance = 0.0;
 $period = $_GET['period'] ?? '1M';
 $days = match($period) {
     '1D' => 1,
@@ -26,29 +32,32 @@ $days = match($period) {
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
+    ensure_investment_lifecycle_schema($pdo);
+    process_user_due_maturities($pdo, (int) $userId);
+    $userUsdBalance = get_user_usd_balance($pdo, (int) $userId);
     
     // Filter transactions based on period
     if ($period === 'ALL') {
         $totalProfit = get_user_total_profit($pdo, (int) $userId);
-        
-        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment') GROUP BY DATE(created_at), type ORDER BY date ASC");
+        $chartExclude = portfolio_chart_reference_exclude_sql();
+        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment'){$chartExclude} GROUP BY DATE(created_at), type ORDER BY date ASC");
         $chartStmt->execute([$userId]);
     } else {
         $totalProfit = get_user_total_profit($pdo, (int) $userId, $days);
-        
-        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) GROUP BY DATE(created_at), type ORDER BY date ASC");
+        $chartExclude = portfolio_chart_reference_exclude_sql();
+        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY){$chartExclude} GROUP BY DATE(created_at), type ORDER BY date ASC");
         $chartStmt->execute([$userId, $days]);
     }
     
     // Active capital (sum of active investments) - not filtered by period
-    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
+    $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status IN ('active', 'paused')");
     $r->execute([$userId]);
     $activeCapital = (float)$r->fetchColumn();
     
     // Expected daily from per-plan yields (same formula as dashboard): sum of amount * (avgYield/100) per active investment
     $expectedDaily = 0.0;
-    $expStmt = $pdo->prepare('SELECT ui.amount, p.yield_min, p.yield_max FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ?');
-    $expStmt->execute([$userId, 'active']);
+    $expStmt = $pdo->prepare('SELECT ui.amount, p.yield_min, p.yield_max FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status IN (?, ?)');
+    $expStmt->execute([$userId, 'active', 'paused']);
     while ($row = $expStmt->fetch(PDO::FETCH_ASSOC)) {
         $yieldMin = (float)($row['yield_min'] ?? 0);
         $yieldMax = (float)($row['yield_max'] ?? 0);
@@ -76,11 +85,9 @@ try {
         $chartData[] = ['date' => $date, 'value' => $cumulative];
     }
     
-    // Fetch active plans (user's subscribed plans with details)
-    $activePlansStmt = $pdo->prepare('SELECT ui.id, ui.amount, ui.start_date, ui.created_at, ui.duration_days as investment_duration_days, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days as plan_duration_days, p.min_deposit, p.max_deposit FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC');
-    $activePlansStmt->execute([$userId, 'active']);
-    $activePlans = [];
-    while ($row = $activePlansStmt->fetch(PDO::FETCH_ASSOC)) $activePlans[] = $row;
+    $activePlans = fetch_portfolio_active_investments($pdo, (int) $userId);
+    $maturedPlans = fetch_portfolio_investments($pdo, (int) $userId, 'completed');
+    $liquidatedPlans = fetch_portfolio_investments($pdo, (int) $userId, 'liquidated');
 
     // Fetch all transactions for table (limit 50)
     $txStmt = $pdo->prepare('SELECT type, amount, currency, status, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50');
@@ -178,9 +185,64 @@ try {
         $payoutTotalForBreakdown += $tot;
     }
 } catch (Throwable $e) { }
-$pageTitle = $siteName . ' | Earnings Analytics & History';
-$pageHeading = 'Earnings Analytics';
-$pageSubtitle = 'Detailed performance tracking and profit distribution history.';
+
+function portfolio_plan_card(array $ap, string $tab, float $userUsdBalance): void {
+    $startDate = $ap['start_date'] ?? $ap['created_at'] ?? null;
+    $durationDays = (int) ($ap['investment_duration_days'] ?? $ap['plan_duration_days'] ?? 0);
+    $endTs = $startDate ? strtotime($startDate . ' + ' . $durationDays . ' days') : null;
+    $daysLeft = $endTs ? max(0, (int) ceil(($endTs - time()) / 86400)) : 0;
+    $yieldMin = (float) ($ap['yield_min'] ?? 0);
+    $yieldMax = (float) ($ap['yield_max'] ?? 0);
+    $amount = (float) ($ap['amount'] ?? 0);
+    $liqFee = (float) ($ap['liquidation_cost'] ?? 0);
+    $invId = (int) ($ap['id'] ?? 0);
+    $canAfford = $userUsdBalance >= $liqFee;
+    $invStatus = strtolower($ap['status'] ?? 'active');
+    $isPaused = $invStatus === 'paused';
+    ?>
+    <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-700">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <span class="font-bold text-base truncate"><?= htmlspecialchars($ap['plan_name'] ?? 'Plan') ?></span>
+        <?php if ($tab === 'active'): ?>
+            <?php if ($isPaused): ?>
+            <span class="px-2 py-1 bg-slate-500/20 text-slate-500 text-xs font-bold rounded-full shrink-0">Paused</span>
+            <?php else: ?>
+            <span class="px-2 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full shrink-0">Active</span>
+            <?php endif; ?>
+        <?php elseif ($tab === 'matured'): ?>
+            <span class="px-2 py-1 bg-blue-500/20 text-blue-500 text-xs font-bold rounded-full shrink-0">Matured</span>
+        <?php else: ?>
+            <span class="px-2 py-1 bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold rounded-full shrink-0">Liquidated</span>
+        <?php endif; ?>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm mb-3">
+            <div><span class="text-slate-400 block text-xs">Amount</span><span class="font-bold">$<?= format_usd_amount($amount) ?></span></div>
+            <div><span class="text-slate-400 block text-xs">Yield</span><span class="font-bold text-emerald-500"><?= number_format($yieldMin, 1) ?>–<?= number_format($yieldMax, 1) ?>%</span></div>
+            <div><span class="text-slate-400 block text-xs"><?= $tab === 'active' ? 'Days left' : 'Duration' ?></span><span class="font-bold"><?= $tab === 'active' ? (int) $daysLeft : $durationDays . ' days' ?></span></div>
+        </div>
+        <?php if ($tab === 'active'): ?>
+        <button type="button"
+            class="liquidate-plan-btn w-full py-2 rounded-lg border border-amber-500/50 text-amber-600 dark:text-amber-400 text-sm font-semibold hover:bg-amber-500/10 transition-colors"
+            data-investment-id="<?= $invId ?>"
+            data-plan-name="<?= htmlspecialchars($ap['plan_name'] ?? 'Plan', ENT_QUOTES, 'UTF-8') ?>"
+            data-amount="<?= htmlspecialchars(number_format($amount, 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>"
+            data-fee="<?= htmlspecialchars(number_format($liqFee, 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>"
+            data-balance="<?= htmlspecialchars(number_format($userUsdBalance, 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>"
+            data-can-afford="<?= $canAfford ? '1' : '0' ?>">
+            Liquidate Plan
+        </button>
+        <?php elseif ($tab === 'matured'): ?>
+        <p class="text-xs text-slate-500">Principal returned to your USD wallet at maturity.</p>
+        <?php else: ?>
+        <p class="text-xs text-slate-500">Early exit — operation fee deducted from your balance.</p>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+$pageTitle = $siteName . ' | My Portfolio';
+$pageHeading = 'My Portfolio';
+$pageSubtitle = 'Track active, matured, and liquidated investments alongside cumulative performance.';
 require_once __DIR__ . '/../../includes/dashboard/user-layout-start.php';
 include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
@@ -267,48 +329,66 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 </section>
 <!-- Main Analytics Section -->
 <div class="space-y-8 mb-8">
-<!-- Row 1: Active Plans (50%) | Cumulative Performance (50%) - full width, two columns -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-<!-- Active Plans (50% - left) -->
-<div class="glass-panel p-6 rounded-xl min-h-0">
-<h2 class="text-lg font-bold flex items-center gap-2 mb-4">
+<!-- Row 1: Investment Plans (wider) | Cumulative Performance -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
+<!-- Investment Plans with tabs (2/3 width) -->
+<div class="glass-panel p-6 rounded-xl min-h-0 lg:col-span-2">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+<h2 class="text-lg font-bold flex items-center gap-2">
 <span class="material-symbols-outlined text-primary text-xl">savings</span>
-                        Active Plans
+                        My Portfolio
 </h2>
+<a href="/dashboard/user/investment-plans" class="text-sm text-primary font-semibold hover:underline">Browse plans →</a>
+</div>
+<div class="flex gap-1 mb-4 border-b border-slate-200 dark:border-zinc-700 overflow-x-auto">
+<button type="button" class="portfolio-tab px-4 py-2 text-sm font-semibold border-b-2 border-primary text-primary whitespace-nowrap" data-tab="active">Active <span class="text-slate-400 font-normal">(<?= count($activePlans) ?>)</span></button>
+<button type="button" class="portfolio-tab px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white whitespace-nowrap" data-tab="matured">Matured <span class="text-slate-400 font-normal">(<?= count($maturedPlans) ?>)</span></button>
+<button type="button" class="portfolio-tab px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white whitespace-nowrap" data-tab="liquidated">Liquidated <span class="text-slate-400 font-normal">(<?= count($liquidatedPlans) ?>)</span></button>
+</div>
+<div id="portfolio-panel-active" class="portfolio-panel">
 <?php if (!empty($activePlans)): ?>
-<div class="space-y-4 overflow-y-auto custom-scrollbar max-h-[280px]">
-<?php foreach ($activePlans as $ap):
-    $apDuration = (int)($ap['investment_duration_days'] ?? $ap['plan_duration_days'] ?? 30);
-    $endDate = date('Y-m-d', strtotime($ap['start_date'] . ' + ' . $apDuration . ' days'));
-    $daysLeft = max(0, (strtotime($endDate) - time()) / 86400);
-?>
-<div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-700">
-<div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-<span class="font-bold text-base"><?php echo htmlspecialchars($ap['plan_name']); ?></span>
-<span class="px-2 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full">Active</span>
-</div>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-<div><span class="text-slate-400 block text-xs">Amount</span><span class="font-bold">$<?php echo format_usd_amount($ap['amount']); ?></span></div>
-<div><span class="text-slate-400 block text-xs">Duration</span><span class="font-bold"><?php echo $apDuration; ?> days</span></div>
-<div><span class="text-slate-400 block text-xs">Yield</span><span class="font-bold text-emerald-500"><?php echo number_format((float)$ap['yield_min'], 1); ?>–<?php echo number_format((float)$ap['yield_max'], 1); ?>%</span></div>
-<div><span class="text-slate-400 block text-xs">Ends</span><span class="font-medium"><?php echo date('M j, Y', strtotime($endDate)); ?></span></div>
-</div>
-<p class="text-xs text-slate-500 mt-2">Started <?php echo date('M j, Y', strtotime($ap['start_date'])); ?> · ~<?php echo (int)$daysLeft; ?> days remaining</p>
-</div>
-<?php endforeach; ?>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[360px] pr-1">
+<?php foreach ($activePlans as $ap) portfolio_plan_card($ap, 'active', $userUsdBalance); ?>
 </div>
 <?php else: ?>
 <div class="flex flex-col items-center justify-center py-12 text-slate-400">
 <span class="material-symbols-outlined text-4xl mb-2 opacity-50">inventory_2</span>
 <p class="text-sm font-medium">No active plans</p>
-<p class="text-xs mt-1">Subscribe to a plan from the dashboard to start earning</p>
+<p class="text-xs mt-1">Subscribe to a plan to start earning</p>
 <a href="/dashboard/user/investment-plans" class="mt-4 px-6 py-2.5 bg-primary hover:bg-primary/90 text-black font-bold rounded-lg text-sm flex items-center gap-2 transition-all">
 <span class="material-symbols-outlined text-lg" style="font-size:1.125rem">rocket_launch</span> Get Started
 </a>
 </div>
 <?php endif; ?>
 </div>
-<!-- Cumulative Performance (50% - right) -->
+<div id="portfolio-panel-matured" class="portfolio-panel hidden">
+<?php if (!empty($maturedPlans)): ?>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[360px] pr-1">
+<?php foreach ($maturedPlans as $ap) portfolio_plan_card($ap, 'matured', $userUsdBalance); ?>
+</div>
+<?php else: ?>
+<div class="flex flex-col items-center justify-center py-12 text-slate-400 text-center px-4">
+<span class="material-symbols-outlined text-4xl mb-2 opacity-50">event_available</span>
+<p class="text-sm font-medium">No matured plans yet</p>
+<p class="text-xs mt-1">When a plan reaches its duration, principal is credited to your USD wallet automatically.</p>
+</div>
+<?php endif; ?>
+</div>
+<div id="portfolio-panel-liquidated" class="portfolio-panel hidden">
+<?php if (!empty($liquidatedPlans)): ?>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[360px] pr-1">
+<?php foreach ($liquidatedPlans as $ap) portfolio_plan_card($ap, 'liquidated', $userUsdBalance); ?>
+</div>
+<?php else: ?>
+<div class="flex flex-col items-center justify-center py-12 text-slate-400 text-center px-4">
+<span class="material-symbols-outlined text-4xl mb-2 opacity-50">cancel</span>
+<p class="text-sm font-medium">No liquidated plans</p>
+<p class="text-xs mt-1">Plans you exit early will appear here.</p>
+</div>
+<?php endif; ?>
+</div>
+</div>
+<!-- Cumulative Performance (1/3 width) -->
 <div class="glass-panel p-6 rounded-xl min-h-0">
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 <h2 class="text-lg font-bold flex items-center gap-2">
@@ -514,6 +594,44 @@ foreach ($analyticsTx as $tx):
 <span class="text-xs text-slate-400 font-medium">Showing <?php echo min(count($analyticsTx), 50); ?> entries</span>
 </div>
 </div>
+<!-- Liquidate Plan Modal -->
+<div id="liquidate-modal" class="fixed inset-0 z-50 hidden">
+<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="liquidate-modal-backdrop"></div>
+<div class="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto">
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-zinc-800">
+<div class="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+<h2 class="text-xl font-bold">Liquidate Plan</h2>
+<button type="button" id="liquidate-modal-close" class="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+</div>
+<div class="p-6">
+<div class="mb-4 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50">
+<p class="text-sm text-amber-800 dark:text-amber-200 font-semibold flex items-start gap-2">
+<span class="material-symbols-outlined text-lg shrink-0">warning</span>
+<span>Early liquidation attracts an operation fee, which will be deducted from your USD balance.</span>
+</p>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-400 mb-4">You are about to liquidate <strong id="liquidate-plan-name" class="text-slate-900 dark:text-white"></strong> (<span id="liquidate-plan-amount"></span> principal).</p>
+<div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+<div class="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800">
+<p class="text-xs text-slate-400 uppercase font-bold mb-1">Operation Fee</p>
+<p class="font-bold text-amber-600 dark:text-amber-400" id="liquidate-fee-display">$0.00</p>
+</div>
+<div class="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800">
+<p class="text-xs text-slate-400 uppercase font-bold mb-1">Your USD Balance</p>
+<p class="font-bold" id="liquidate-balance-display">$0.00</p>
+</div>
+</div>
+<p id="liquidate-balance-note" class="text-sm mb-4 hidden"></p>
+<div id="liquidate-error" class="text-sm text-red-500 hidden mb-4"></div>
+<input type="hidden" id="liquidate-investment-id" value=""/>
+<div class="flex gap-3">
+<button type="button" id="liquidate-cancel-btn" class="flex-1 px-4 py-2 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg">Cancel</button>
+<button type="button" id="liquidate-confirm-btn" class="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">Confirm Liquidation</button>
+</div>
+</div>
+</div>
+</div>
+</div>
 <?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
 <!-- Floating Help Button -->
 <button class="fixed bottom-6 right-6 w-14 h-14 bg-surface-container-highest text-on-surface rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-50">
@@ -593,6 +711,110 @@ document.addEventListener('DOMContentLoaded', function() {
             }).catch(function(){ if (chartWrapper) chartWrapper.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">Failed to load chart</div>'; });
         });
     });
+
+    // Portfolio tabs
+    document.querySelectorAll('.portfolio-tab').forEach(function(tabBtn) {
+        tabBtn.addEventListener('click', function() {
+            var tab = this.getAttribute('data-tab');
+            document.querySelectorAll('.portfolio-tab').forEach(function(b) {
+                b.classList.remove('border-primary', 'text-primary');
+                b.classList.add('border-transparent', 'text-slate-500');
+            });
+            this.classList.add('border-primary', 'text-primary');
+            this.classList.remove('border-transparent', 'text-slate-500');
+            document.querySelectorAll('.portfolio-panel').forEach(function(panel) {
+                panel.classList.add('hidden');
+            });
+            var panel = document.getElementById('portfolio-panel-' + tab);
+            if (panel) panel.classList.remove('hidden');
+        });
+    });
+
+    // Liquidate plan modal
+    var liqModal = document.getElementById('liquidate-modal');
+    var liqBackdrop = document.getElementById('liquidate-modal-backdrop');
+    var liqClose = document.getElementById('liquidate-modal-close');
+    var liqCancel = document.getElementById('liquidate-cancel-btn');
+    var liqConfirm = document.getElementById('liquidate-confirm-btn');
+    var liqError = document.getElementById('liquidate-error');
+    var liqBalanceNote = document.getElementById('liquidate-balance-note');
+    var liqBalanceDisplay = document.getElementById('liquidate-balance-display');
+    var liqInvId = document.getElementById('liquidate-investment-id');
+
+    function closeLiquidateModal() {
+        if (liqModal) liqModal.classList.add('hidden');
+        if (liqError) { liqError.classList.add('hidden'); liqError.textContent = ''; }
+    }
+
+    function openLiquidateModal(btn) {
+        if (!liqModal || !btn) return;
+        var fee = parseFloat(btn.getAttribute('data-fee') || '0');
+        var balance = parseFloat(btn.getAttribute('data-balance') || '0');
+        var canAfford = btn.getAttribute('data-can-afford') === '1' || balance >= fee;
+        document.getElementById('liquidate-plan-name').textContent = btn.getAttribute('data-plan-name') || 'Plan';
+        document.getElementById('liquidate-plan-amount').textContent = '$' + parseFloat(btn.getAttribute('data-amount') || '0').toFixed(2);
+        document.getElementById('liquidate-fee-display').textContent = '$' + fee.toFixed(2);
+        liqBalanceDisplay.textContent = '$' + balance.toFixed(2);
+        liqBalanceDisplay.classList.remove('text-emerald-500', 'text-red-500');
+        liqBalanceNote.classList.add('hidden');
+        liqBalanceNote.classList.remove('text-emerald-600', 'text-red-500');
+        if (canAfford) {
+            liqBalanceDisplay.classList.add('text-emerald-500');
+            liqBalanceNote.textContent = 'Your balance is enough to implement the liquidation.';
+            liqBalanceNote.classList.add('text-emerald-600');
+            liqBalanceNote.classList.remove('hidden');
+            if (liqConfirm) liqConfirm.disabled = false;
+        } else {
+            liqBalanceDisplay.classList.add('text-red-500');
+            liqBalanceNote.textContent = 'Insufficient balance for the operation fee. Deposit funds to continue.';
+            liqBalanceNote.classList.add('text-red-500');
+            liqBalanceNote.classList.remove('hidden');
+            if (liqConfirm) liqConfirm.disabled = true;
+        }
+        if (liqInvId) liqInvId.value = btn.getAttribute('data-investment-id') || '';
+        liqModal.classList.remove('hidden');
+    }
+
+    document.querySelectorAll('.liquidate-plan-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() { openLiquidateModal(this); });
+    });
+    [liqBackdrop, liqClose, liqCancel].forEach(function(el) {
+        if (el) el.addEventListener('click', closeLiquidateModal);
+    });
+
+    if (liqConfirm) {
+        liqConfirm.addEventListener('click', function() {
+            var invId = liqInvId ? parseInt(liqInvId.value, 10) : 0;
+            if (!invId) return;
+            liqConfirm.disabled = true;
+            liqConfirm.textContent = 'Processing…';
+            if (liqError) { liqError.classList.add('hidden'); liqError.textContent = ''; }
+            fetch('/api/user/liquidate-plan.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ investment_id: invId })
+            }).then(function(r) { return r.json(); }).then(function(res) {
+                if (res.success) {
+                    window.location.reload();
+                    return;
+                }
+                if (liqError) {
+                    liqError.textContent = res.error || 'Liquidation failed';
+                    liqError.classList.remove('hidden');
+                }
+                liqConfirm.disabled = false;
+                liqConfirm.textContent = 'Confirm Liquidation';
+            }).catch(function() {
+                if (liqError) {
+                    liqError.textContent = 'Request failed. Please try again.';
+                    liqError.classList.remove('hidden');
+                }
+                liqConfirm.disabled = false;
+                liqConfirm.textContent = 'Confirm Liquidation';
+            });
+        });
+    }
 });
 </script>
 </body></html>

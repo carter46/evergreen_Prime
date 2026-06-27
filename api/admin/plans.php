@@ -54,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'features' => $r['features_json'] ? json_decode($r['features_json'], true) : [],
             'enabled' => (bool) $r['enabled'],
             'sort_order' => (int) $r['sort_order'],
+            'liquidation_cost' => isset($r['liquidation_cost']) ? (float) $r['liquidation_cost'] : 0.0,
         ];
     }
     echo json_encode(['success' => true, 'data' => $plans]);
@@ -104,6 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $yieldMin = $yield;
     $yieldMax = $yield;
     $withdrawalDays = (int) ($input['withdrawal_days'] ?? 7);
+    $liquidationCost = isset($input['liquidation_cost']) && $input['liquidation_cost'] !== '' ? max(0, (float) $input['liquidation_cost']) : 0.0;
 
     // Features can come from JS as `features` (array) or from a textarea as `features_text` (string).
     // Only update features_json when the request explicitly provides features, to avoid accidental wiping.
@@ -250,16 +252,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($id > 0) {
             if ($featuresJson !== null) {
-                $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, plan_type=?, description=?, icon=?, logo_url=?, investment_risk=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, min_duration_days=?, max_duration_days=?, features_json=?, enabled=?, sort_order=? WHERE id=?');
-                $stmt->execute([$name, $slug, $planType, $description, $icon, $logoUrl, $investmentRisk, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder, $id]);
+                $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, plan_type=?, description=?, icon=?, logo_url=?, investment_risk=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, liquidation_cost=?, min_duration_days=?, max_duration_days=?, features_json=?, enabled=?, sort_order=? WHERE id=?');
+                $stmt->execute([$name, $slug, $planType, $description, $icon, $logoUrl, $investmentRisk, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $liquidationCost, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder, $id]);
             } else {
-                $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, plan_type=?, description=?, icon=?, logo_url=?, investment_risk=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, min_duration_days=?, max_duration_days=?, enabled=?, sort_order=? WHERE id=?');
-                $stmt->execute([$name, $slug, $planType, $description, $icon, $logoUrl, $investmentRisk, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationDays, $maxDurationDays, $enabled ? 1 : 0, $sortOrder, $id]);
+                $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, plan_type=?, description=?, icon=?, logo_url=?, investment_risk=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, liquidation_cost=?, min_duration_days=?, max_duration_days=?, enabled=?, sort_order=? WHERE id=?');
+                $stmt->execute([$name, $slug, $planType, $description, $icon, $logoUrl, $investmentRisk, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $liquidationCost, $minDurationDays, $maxDurationDays, $enabled ? 1 : 0, $sortOrder, $id]);
             }
         } else {
             if ($featuresJson === null) $featuresJson = '[]';
-            $stmt = $pdo->prepare('INSERT INTO plans (name, slug, plan_type, description, icon, logo_url, investment_risk, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, min_duration_days, max_duration_days, features_json, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$name, $slug, $planType, $description, $icon, $logoUrl, $investmentRisk, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder]);
+            $stmt = $pdo->prepare('INSERT INTO plans (name, slug, plan_type, description, icon, logo_url, investment_risk, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, liquidation_cost, min_duration_days, max_duration_days, features_json, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$name, $slug, $planType, $description, $icon, $logoUrl, $investmentRisk, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $liquidationCost, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder]);
         }
         echo json_encode(['success' => true, 'data' => ['message' => 'Plan saved successfully']]);
         exit;
