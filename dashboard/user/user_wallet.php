@@ -86,7 +86,6 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <div>
 <p class="text-on-surface-variant text-sm font-medium mb-1">Available Balance</p>
 <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight break-words">$<?php echo format_usd_amount($walletTotalUsd); ?> <span class="text-base sm:text-xl font-normal text-on-surface-variant ml-1 sm:ml-2">USD</span></h1>
-<p class="text-primary-container mt-2 text-sm">Centralized USD wallet — invest and withdraw from one balance.</p>
 <div class="flex flex-wrap gap-2 sm:gap-3 mt-4">
 <button type="button" id="deposit-btn" class="bg-primary-container hover:bg-primary-container/90 text-on-primary px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-bold flex items-center gap-1.5 sm:gap-2 transition-all text-sm">
 <span class="material-symbols-outlined text-xs sm:text-sm">add</span> Deposit
@@ -196,10 +195,10 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <table class="w-full text-left table-fixed min-w-0">
 <thead>
 <tr class="text-slate-400 text-[10px] uppercase tracking-wider border-b border-slate-50 dark:border-slate-800">
-<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[38%]">Type / Date</th>
+<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[48%] sm:w-[38%]">Type / Date</th>
 <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[18%]">Asset</th>
-<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-right w-[22%]">Amount</th>
-<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center w-[22%]">Status</th>
+<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-right w-[34%] sm:w-[22%]">Amount</th>
+<th class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center w-[22%]">Status</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
@@ -215,26 +214,27 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
   $displayAmt = in_array($tx['type'], ['profit_adjustment', 'referral_bonus_adjustment'], true) ? abs($txAmt) : $txAmt;
   $date = !empty($tx['created_at']) ? date('M j, Y H:i', strtotime($tx['created_at'])) : '';
   $typeLabel = $txTypeLabels[$tx['type']] ?? ucfirst(str_replace('_', ' ', $tx['type']));
+  $statusClass = 'bg-amber-100 text-amber-700';
+  if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700';
+  elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
+  elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
 ?>
 <tr>
 <td class="px-3 sm:px-6 py-3 sm:py-4 min-w-0">
-<div class="flex items-center gap-2 min-w-0">
-<span class="material-symbols-outlined <?php echo $isDeposit ? 'text-success' : 'text-critical'; ?> text-lg shrink-0"><?php echo $isDeposit ? 'arrow_downward' : 'arrow_upward'; ?></span>
+<div class="flex items-start gap-2 min-w-0">
+<span class="material-symbols-outlined <?php echo $isDeposit ? 'text-success' : 'text-critical'; ?> text-lg shrink-0 mt-0.5"><?php echo $isDeposit ? 'arrow_downward' : 'arrow_upward'; ?></span>
 <div class="min-w-0">
 <p class="text-sm font-bold truncate"><?php echo htmlspecialchars($typeLabel); ?></p>
 <p class="text-[10px] text-slate-400 truncate"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></p>
+<div class="mt-2 sm:hidden">
+<span class="inline-block px-2 py-1 <?php echo $statusClass; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
+</div>
 </div>
 </div>
 </td>
 <td class="px-3 sm:px-6 py-3 sm:py-4 text-sm font-medium"><?php echo htmlspecialchars($tx['currency']); ?></td>
 <td class="px-3 sm:px-6 py-3 sm:py-4 text-right text-sm font-bold whitespace-nowrap <?php echo $isDeposit ? 'text-emerald-500' : 'text-red-500'; ?>"><?php echo $isDeposit ? '+' : '-'; ?><?php echo format_usd_amount($displayAmt); ?></td>
-<td class="px-3 sm:px-6 py-3 sm:py-4 text-center">
-<?php
-$statusClass = 'bg-amber-100 text-amber-700';
-if ($tx['status'] === 'completed') $statusClass = 'bg-emerald-100 text-emerald-700';
-elseif ($tx['status'] === 'rejected') $statusClass = 'bg-red-100 text-red-700';
-elseif ($tx['status'] === 'failed') $statusClass = 'bg-red-100 text-red-700';
-?>
+<td class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 text-center">
 <span class="px-2 py-1 <?php echo $statusClass; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>
 </tr>

@@ -34,10 +34,10 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <table class="w-full text-left table-fixed min-w-0">
 <thead>
 <tr class="text-on-surface-variant text-[10px] uppercase tracking-wider border-b border-low">
-<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[38%]">Type / Date</th>
+<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[48%] sm:w-[38%]">Type / Date</th>
 <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold w-[18%]">Asset</th>
-<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-right w-[22%]">Amount</th>
-<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center w-[22%]">Status</th>
+<th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-right w-[34%] sm:w-[22%]">Amount</th>
+<th class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center w-[22%]">Status</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-low">
@@ -58,17 +58,20 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 ?>
 <tr class="hover:bg-white/[0.02] transition-colors">
 <td class="px-3 sm:px-6 py-3 sm:py-4 min-w-0">
-<div class="flex items-center gap-2 min-w-0">
-<span class="material-symbols-outlined <?php echo $isIncoming ? 'text-success' : 'text-critical'; ?> text-lg shrink-0"><?php echo $isIncoming ? 'arrow_downward' : 'arrow_upward'; ?></span>
+<div class="flex items-start gap-2 min-w-0">
+<span class="material-symbols-outlined <?php echo $isIncoming ? 'text-success' : 'text-critical'; ?> text-lg shrink-0 mt-0.5"><?php echo $isIncoming ? 'arrow_downward' : 'arrow_upward'; ?></span>
 <div class="min-w-0">
 <p class="text-sm font-bold text-on-surface truncate"><?php echo htmlspecialchars($typeLabel); ?></p>
 <p class="text-[10px] text-on-surface-variant truncate"><?php echo date('M j, Y H:i', strtotime($tx['created_at'])); ?></p>
+<div class="mt-2 sm:hidden">
+<span class="inline-block px-2 py-1 <?php echo $statusClass; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
+</div>
 </div>
 </div>
 </td>
 <td class="px-3 sm:px-6 py-3 sm:py-4 text-sm font-medium"><?php echo htmlspecialchars($tx['currency']); ?></td>
 <td class="px-3 sm:px-6 py-3 sm:py-4 text-right text-sm font-bold whitespace-nowrap <?php echo $isIncoming ? 'text-success' : 'text-critical'; ?>"><?php echo $isIncoming ? '+' : '-'; ?><?php echo format_usd_amount($displayAmt); ?></td>
-<td class="px-3 sm:px-6 py-3 sm:py-4 text-center">
+<td class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 text-center">
 <span class="px-2 py-1 <?php echo $statusClass; ?> text-[10px] font-bold rounded-full uppercase"><?php echo htmlspecialchars($tx['status']); ?></span>
 </td>
 </tr>
