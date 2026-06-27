@@ -1,9 +1,12 @@
 <?php 
 require_once __DIR__ . '/../../includes/admin-check.php';
+require_once __DIR__ . '/../../includes/helpers.php';
+require_once __DIR__ . '/../../includes/plan-types.php';
 $currentPage = 'plans';
 
 $adminPlans = [];
 $planStats = ['total_users' => 0, 'total_capital' => 0, 'avg_payout' => 0];
+$planStatsById = [];
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     ensure_plan_schema($pdo);
@@ -25,8 +28,6 @@ try {
 } catch (Throwable $e) {
     $planStatsById = [];
 }
-require_once __DIR__ . '/../../includes/helpers.php';
-require_once __DIR__ . '/../../includes/plan-types.php';
 $siteName = get_site_name();
 $siteSettings = [
     'max_active_plans_per_user' => get_site_setting('max_active_plans_per_user', '3'),
