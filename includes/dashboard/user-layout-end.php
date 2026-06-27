@@ -11,16 +11,14 @@ document.addEventListener('DOMContentLoaded', function () {
   var dataEl = document.getElementById('user-social-proof-data');
   var toast = document.getElementById('user-social-proof-toast');
   var textEl = document.getElementById('user-social-proof-text');
-  if (!dataEl || !toast || !textEl) return;
-
+  if (dataEl && toast && textEl) {
   var messages = [];
   try {
     messages = JSON.parse(dataEl.textContent || '[]');
   } catch (e) {
-    return;
+    messages = [];
   }
-  if (!messages.length) return;
-
+  if (messages.length) {
   var idx = 0;
   function highlightAmounts(msg) {
     return String(msg).replace(/\$[\d,]+(?:\.\d+)?/g, function (amount) {
@@ -37,5 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   showNext();
   setInterval(showNext, 5000);
+  }
+  }
 });
 </script>

@@ -126,7 +126,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <p class="font-label-md text-label-md dash-card-label uppercase tracking-wider mb-xs">Available Balance</p>
 <div class="flex items-baseline gap-xs flex-wrap">
 <h3 class="font-display-lg text-display-lg font-hanken dash-card-value">$<?php echo format_usd_amount($walletTotalUsd); ?></h3>
-<span class="font-body-md text-body-md dash-card-muted">USD / <?php echo number_format($walletTotalUsd, 0); ?> USDT</span>
+<span class="font-body-md text-body-md dash-card-muted">USD</span>
 </div>
 </div>
 <div class="flex gap-sm mt-lg flex-wrap">

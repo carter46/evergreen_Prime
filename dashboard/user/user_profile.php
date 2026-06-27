@@ -28,27 +28,27 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <!-- Profile Header Section -->
 <div class="bento-card rounded-xl p-6 mb-8">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-<div class="flex items-center gap-6">
-<div class="relative group">
-<?php if ($profileAvatar): ?><img alt="Profile" class="w-24 h-24 rounded-full object-cover border-4 border-primary/10" src="<?php echo htmlspecialchars($profileAvatar); ?>"/><?php else: ?><div class="w-24 h-24 rounded-full bg-primary/20 border-4 border-primary/10 flex items-center justify-center text-primary text-3xl font-bold"><?php echo htmlspecialchars($profileInitials); ?></div><?php endif; ?>
+<div class="flex flex-col sm:flex-row items-center sm:items-center gap-5 sm:gap-6 text-center sm:text-left w-full md:w-auto">
+<div class="relative group shrink-0">
+<?php if ($profileAvatar): ?><img alt="Profile" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-primary/10" src="<?php echo htmlspecialchars($profileAvatar); ?>"/><?php else: ?><div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/20 border-4 border-primary/10 flex items-center justify-center text-primary text-2xl sm:text-3xl font-bold"><?php echo htmlspecialchars($profileInitials); ?></div><?php endif; ?>
 <button class="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full shadow-lg hover:scale-105 transition-transform">
 <span class="material-symbols-outlined text-sm">edit</span>
 </button>
 </div>
-<div>
-<div class="flex items-center gap-3">
-<h1 class="text-2xl font-bold" data-profile-name><?php echo htmlspecialchars($profileName); ?></h1>
+<div class="min-w-0">
+<div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 justify-center sm:justify-start">
+<h1 class="text-xl sm:text-2xl font-bold" data-profile-name><?php echo htmlspecialchars($profileName); ?></h1>
 <?php if ($profileVerified): ?>
-<span class="bg-fidelity-green/10 text-fidelity-green text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
+<span class="bg-fidelity-green/10 text-fidelity-green text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 justify-center sm:justify-start w-fit mx-auto sm:mx-0">
 <span class="material-symbols-outlined text-[14px]">verified</span> Verified
 </span>
 <?php endif; ?>
 </div>
-<p class="text-text-secondary" data-profile-email><?php echo htmlspecialchars($profileEmail); ?></p>
+<p class="text-text-secondary text-sm sm:text-base break-all" data-profile-email><?php echo htmlspecialchars($profileEmail); ?></p>
 <p class="text-xs text-on-surface-variant mt-1 uppercase tracking-wider font-semibold">User ID: <span data-user-id><?php echo htmlspecialchars($profileUserId); ?></span></p>
 </div>
 </div>
-<div class="flex gap-3">
+<div class="flex gap-3 justify-center md:justify-end w-full md:w-auto">
 <a href="/dashboard/user/kyc" class="bg-fidelity-green hover:opacity-90 text-white font-bold py-2.5 px-6 rounded-lg shadow-sm transition-all flex items-center gap-2">
 <span class="material-symbols-outlined text-sm">shield</span>
                         Verify Identity

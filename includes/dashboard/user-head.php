@@ -197,8 +197,21 @@ body.user-dashboard {
 .dash-card-referral-dark .dash-card-link { color: rgba(255, 255, 255, 0.9) !important; }
 .dash-card-referral-dark .dash-card-accent { color: #7dd87a !important; }
 .dash-card-light-green {
-  background: linear-gradient(165deg, #dcecd6 0%, #e4f0df 38%, #d6e8cf 100%);
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.78);
   border-color: rgba(51, 119, 34, 0.22);
+}
+.dash-card-light-green::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg, rgba(51, 119, 34, 0.07) 0%, transparent 55%, rgba(51, 119, 34, 0.04) 100%);
+  pointer-events: none;
+}
+.dash-card-light-green > * {
+  position: relative;
+  z-index: 1;
 }
 .dash-insight-tile {
   display: flex;

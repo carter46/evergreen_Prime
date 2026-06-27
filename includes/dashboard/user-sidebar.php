@@ -7,19 +7,19 @@ $siteName = $siteName ?? get_site_name();
 $impersonating = isset($_SESSION['impersonate_admin_id']);
 $navActive = function ($page) use ($current) {
     if ($current === $page) {
-        return 'flex items-center gap-sm px-md py-1.5 rounded text-primary font-bold border-r-4 border-primary bg-surface-container-low transition-all duration-150';
+        return 'flex items-center gap-sm px-md py-2 rounded text-primary font-bold border-r-4 border-primary bg-surface-container-low transition-all duration-150';
     }
-    return 'flex items-center gap-sm px-md py-1.5 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200';
+    return 'flex items-center gap-sm px-md py-2 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200';
 };
 $iconFill = function ($page) use ($current) {
     return $current === $page ? " style=\"font-variation-settings: 'FILL' 1;\"" : '';
 };
 ?>
 <div id="user-sidebar-overlay" class="fixed inset-0 bg-black/40 z-[55] lg:hidden hidden" aria-hidden="true"></div>
-<aside id="user-sidebar" class="h-screen w-64 fixed left-0 top-0 bg-surface-container-lowest border-r border-surface-gray flex flex-col py-sm z-[60] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
-<div class="px-md mb-md shrink-0">
-<h1 class="text-lg font-bold text-fidelity-green leading-tight font-hanken"><?php echo htmlspecialchars($siteName); ?></h1>
-<p class="font-label-md text-[11px] text-on-surface-variant opacity-70 mt-0.5">AI Core Online</p>
+<aside id="user-sidebar" class="h-screen w-64 fixed left-0 top-0 bg-surface-container-lowest border-r border-surface-gray flex flex-col py-md z-[60] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
+<div class="px-md mb-lg shrink-0">
+<h1 class="text-xl font-bold text-fidelity-green leading-tight font-hanken"><?php echo htmlspecialchars($siteName); ?></h1>
+<p class="font-label-md text-label-md text-on-surface-variant opacity-70 mt-0.5">AI Core Online</p>
 </div>
 <?php if ($impersonating): ?>
 <a href="/api/admin/stop-impersonate.php" class="mx-sm mb-sm flex items-center gap-sm px-md py-sm bg-fidelity-green/10 text-fidelity-green rounded hover:bg-fidelity-green/15 transition-colors text-sm font-semibold shrink-0">
@@ -27,50 +27,50 @@ $iconFill = function ($page) use ($current) {
 Switch back to Admin
 </a>
 <?php endif; ?>
-<nav class="flex-1 min-h-0 px-sm space-y-0.5 overflow-y-auto hide-scrollbar overscroll-contain">
+<nav class="flex-1 min-h-0 px-sm space-y-1 overflow-y-auto hide-scrollbar overscroll-contain">
 <a class="<?php echo $navActive('dashboard'); ?>" href="/dashboard/user/dashboard">
-<span class="material-symbols-outlined text-[20px]"<?php echo $iconFill('dashboard'); ?>>dashboard</span>
-<span class="font-body-sm text-body-sm">Dashboard</span>
+<span class="material-symbols-outlined text-[22px]"<?php echo $iconFill('dashboard'); ?>>dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
 </a>
 <a class="<?php echo $navActive('wallet'); ?>" href="/dashboard/user/wallet">
-<span class="material-symbols-outlined text-[20px]"<?php echo $iconFill('wallet'); ?>>account_balance_wallet</span>
-<span class="font-body-sm text-body-sm">Wallet</span>
+<span class="material-symbols-outlined text-[22px]"<?php echo $iconFill('wallet'); ?>>account_balance_wallet</span>
+<span class="font-body-md text-body-md">Wallet</span>
 </a>
 <a class="<?php echo $navActive('analytics'); ?>" href="/dashboard/user/analytics">
-<span class="material-symbols-outlined text-[20px]"<?php echo $iconFill('analytics'); ?>>account_balance</span>
-<span class="font-body-sm text-body-sm">My Investments</span>
+<span class="material-symbols-outlined text-[22px]"<?php echo $iconFill('analytics'); ?>>account_balance</span>
+<span class="font-body-md text-body-md">My Investments</span>
 </a>
 <a class="<?php echo $navActive('investment-plans'); ?>" href="/dashboard/user/investment-plans">
-<span class="material-symbols-outlined text-[20px]"<?php echo $iconFill('investment-plans'); ?>>assignment</span>
-<span class="font-body-sm text-body-sm">Investment Plans</span>
+<span class="material-symbols-outlined text-[22px]"<?php echo $iconFill('investment-plans'); ?>>assignment</span>
+<span class="font-body-md text-body-md">Investment Plans</span>
 </a>
 <a class="<?php echo $navActive('referrals'); ?>" href="/dashboard/user/referrals">
-<span class="material-symbols-outlined text-[20px]"<?php echo $iconFill('referrals'); ?>>group</span>
-<span class="font-body-sm text-body-sm">Referrals</span>
+<span class="material-symbols-outlined text-[22px]"<?php echo $iconFill('referrals'); ?>>group</span>
+<span class="font-body-md text-body-md">Referrals</span>
 </a>
 <a class="<?php echo $navActive('history'); ?>" href="/dashboard/user/transactions">
-<span class="material-symbols-outlined text-[20px]"<?php echo $iconFill('history'); ?>>history</span>
-<span class="font-body-sm text-body-sm">Trade History</span>
+<span class="material-symbols-outlined text-[22px]"<?php echo $iconFill('history'); ?>>history</span>
+<span class="font-body-md text-body-md">Trade History</span>
 </a>
-<div class="pt-md pb-0.5 px-md opacity-50 font-label-md text-[10px] uppercase tracking-widest">System</div>
+<div class="pt-lg pb-1 px-md opacity-50 font-label-md text-label-md uppercase tracking-widest">System</div>
 <a class="<?php echo $navActive('profile'); ?>" href="/dashboard/user/profile">
-<span class="material-symbols-outlined text-[20px]"<?php echo $iconFill('profile'); ?>>settings</span>
-<span class="font-body-sm text-body-sm">System Settings</span>
+<span class="material-symbols-outlined text-[22px]"<?php echo $iconFill('profile'); ?>>settings</span>
+<span class="font-body-md text-body-md">System Settings</span>
 </a>
 <a class="<?php echo $navActive('kyc'); ?>" href="/dashboard/user/kyc">
-<span class="material-symbols-outlined text-[20px]"<?php echo $iconFill('kyc'); ?>>verified_user</span>
-<span class="font-body-sm text-body-sm">KYC</span>
+<span class="material-symbols-outlined text-[22px]"<?php echo $iconFill('kyc'); ?>>verified_user</span>
+<span class="font-body-md text-body-md">KYC</span>
 </a>
 <a class="<?php echo $navActive('support'); ?>" href="/live_chat">
-<span class="material-symbols-outlined text-[20px]"<?php echo $iconFill('support'); ?>>contact_support</span>
-<span class="font-body-sm text-body-sm">Support</span>
+<span class="material-symbols-outlined text-[22px]"<?php echo $iconFill('support'); ?>>contact_support</span>
+<span class="font-body-md text-body-md">Support</span>
 </a>
 </nav>
-<div class="px-md mt-auto pt-sm space-y-1.5 shrink-0" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
-<a href="/dashboard/user/wallet?action=deposit" class="block w-full bg-fidelity-green text-white font-bold py-2 rounded shadow-sm hover:opacity-90 transition-all active:scale-95 text-center text-sm">
+<div class="px-md mt-auto pt-md space-y-sm shrink-0" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+<a href="/dashboard/user/wallet?action=deposit" class="block w-full bg-fidelity-green text-white font-bold py-2.5 rounded shadow-sm hover:opacity-90 transition-all active:scale-95 text-center text-sm">
 Deposit Funds
 </a>
-<button type="button" data-logout class="w-full flex items-center justify-center gap-xs text-error hover:text-error/80 transition-colors py-1 text-sm font-semibold">
+<button type="button" data-logout class="w-full flex items-center justify-center gap-xs text-error hover:text-error/80 transition-colors py-1.5 text-sm font-semibold">
 <span class="material-symbols-outlined text-sm">logout</span>
 <span class="font-label-md text-label-md">Sign Out</span>
 </button>

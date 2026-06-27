@@ -107,13 +107,13 @@ $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded
 ?>
 <section class="mb-xl">
 <h2 class="font-hanken font-bold dash-greeting text-primary"><?php echo $greeting; ?>, <?php echo htmlspecialchars($dashboardUserName); ?>.</h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Welcome back to your institutional trading hub.</p>
+<p class="text-sm leading-snug sm:font-body-lg sm:text-body-lg sm:leading-normal text-on-surface-variant mt-1">Welcome back to your institutional trading hub.</p>
 </section>
 <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
 <div class="dash-card-balance-green bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div>
 <span class="font-label-md text-label-md dash-card-label uppercase tracking-wider">Total USD Balance</span>
-<h3 class="font-hanken font-extrabold text-headline-md dash-card-value mt-base">$<?php echo number_format((float) $userBalance, 0, '.', ','); ?> <span class="text-label-md font-medium dash-card-muted opacity-80">USDT</span></h3>
+<h3 class="font-hanken font-extrabold text-headline-md dash-card-value mt-base">$<?php echo number_format((float) $userBalance, 0, '.', ','); ?></h3>
 </div>
 <div class="flex gap-xs mt-md">
 <button type="button" id="deposit-btn-dash" class="flex-1 dash-btn-solid text-[12px] font-bold py-2 rounded-lg transition-transform active:scale-95">Deposit</button>

@@ -421,7 +421,7 @@ if (!empty($chartData)) {
 </defs>
 <path d="<?php echo htmlspecialchars($areaD); ?>" fill="url(#analyticsChartGradient)"></path>
 <path d="<?php echo htmlspecialchars($pathD); ?>" fill="none" stroke="#337722" stroke-width="3"></path>
-<?php foreach ($points as $i => $p): if ($i % floor($count / 5) === 0 || $i === $count - 1): list($px, $py) = explode(',', $p); ?>
+<?php foreach ($points as $i => $p): $step = max(1, (int) floor($count / 5)); if ($i % $step === 0 || $i === $count - 1): list($px, $py) = explode(',', $p); ?>
 <circle cx="<?php echo $px; ?>" cy="<?php echo $py; ?>" fill="#337722" r="4"></circle>
 <?php endif; endforeach; ?>
 </svg>
@@ -582,6 +582,7 @@ foreach ($analyticsTx as $tx):
 <span class="text-xs text-on-surface-variant font-medium">Showing <?php echo min(count($analyticsTx), 50); ?> entries</span>
 </div>
 </div>
+</div>
 <?php require_once __DIR__ . '/../../includes/dashboard/user-layout-end.php'; ?>
 <!-- Liquidate Plan Modal (outside main so it always overlays correctly) -->
 <div id="liquidate-modal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true" aria-labelledby="liquidate-modal-title">
@@ -645,13 +646,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function animateChart(chartEl) {
         if (!chartEl) return;
-        var paths = chartEl.querySelectorAll('path');
+        var paths = chartEl.querySelectorAll('path[stroke]');
         paths.forEach(function(path) {
-            var length = path.getTotalLength();
-            path.style.strokeDasharray = length;
-            path.style.strokeDashoffset = length;
-            path.style.transition = 'stroke-dashoffset 2s ease';
-            setTimeout(function() { path.style.strokeDashoffset = 0; }, 500);
+            try {
+                var length = path.getTotalLength();
+                if (!length) return;
+                path.style.strokeDasharray = length;
+                path.style.strokeDashoffset = length;
+                path.style.transition = 'stroke-dashoffset 2s ease';
+                setTimeout(function() { path.style.strokeDashoffset = 0; }, 500);
+            } catch (err) { /* ignore invalid paths */ }
         });
     }
     if (chartWrapper) animateChart(chartWrapper);
