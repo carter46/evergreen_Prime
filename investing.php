@@ -95,7 +95,7 @@ $marketingRiskBadge = function (?string $risk): array {
                     Get trading platforms with advanced tools and in-depth market research and start making smarter trades on a wide range of investment choices, including commission-free online trades for stocks, ETFs, and options.
                 </p>
 <div class="flex flex-wrap gap-md">
-<a href="/register" class="bg-fidelity-green text-on-primary font-headline-md text-headline-md px-lg py-md rounded-lg shadow-sm hover:opacity-90 transition-all">
+<a href="/register" class="bg-fidelity-green text-on-primary text-sm md:text-headline-md font-bold px-md py-sm md:px-lg md:py-md rounded-lg shadow-sm hover:opacity-90 transition-all">
                         Open a brokerage account
                     </a>
 </div>
@@ -248,7 +248,7 @@ $marketingRiskBadge = function (?string $risk): array {
 </div>
 <h2 class="font-display-lg text-display-lg mb-sm relative z-10">Get started with <?php echo htmlspecialchars($siteName); ?></h2>
 <p class="text-body-lg text-on-surface-variant mb-lg relative z-10">Make your first investment today—open a <?php echo htmlspecialchars($siteName); ?> brokerage account in just minutes.</p>
-<a href="/register" class="inline-block bg-fidelity-green text-on-primary font-headline-md text-headline-md px-xl py-md rounded-lg shadow-md hover:opacity-90 transition-all relative z-10">
+<a href="/register" class="inline-block bg-fidelity-green text-on-primary text-sm md:text-headline-md font-bold px-md py-sm md:px-xl md:py-md rounded-lg shadow-md hover:opacity-90 transition-all relative z-10">
                     Open a brokerage account
                 </a>
 </div>

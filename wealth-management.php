@@ -1,7 +1,19 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/blog-posts.php';
 $siteName = get_site_name();
 $pageTitle = 'Wealth Management Offerings | ' . $siteName;
+$helpCentreUrl = '/help_centre';
+$wealthBlogSlugs = [
+    'what-is-financial-planning',
+    'three-strategies-building-wealth',
+    'power-of-planning-together',
+    'diversify-across-asset-classes',
+    'estate-planning-basics',
+    'managing-market-volatility',
+];
+$wealthBlogPosts = get_blog_posts_by_slugs($wealthBlogSlugs);
+$wealthFeaturedPosts = array_slice($wealthBlogPosts, 0, 3);
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en">
@@ -25,8 +37,8 @@ $pageTitle = 'Wealth Management Offerings | ' . $siteName;
 <h1 class="font-display-lg text-display-lg mb-sm">A Wealth Management partner that can help turn your dreams into reality</h1>
 <p class="font-body-lg text-body-lg text-white/90 mb-lg">With our personalized planning and investment management capabilities, we can help you reach your goals, no matter where you are in life.</p>
 <div class="flex flex-wrap gap-sm">
-<button class="bg-fidelity-green text-white px-xl py-md rounded font-label-md text-[16px] hover:opacity-90 transition-all shadow-lg active:scale-95">Find an advisor</button>
-<button class="bg-white/10 backdrop-blur-md border border-white/30 text-white px-xl py-md rounded font-label-md text-[16px] hover:bg-white/20 transition-all active:scale-95">Connect with your advisor</button>
+<a href="<?php echo htmlspecialchars($helpCentreUrl); ?>" class="inline-block bg-fidelity-green text-white px-xl py-md rounded font-label-md text-[16px] hover:opacity-90 transition-all shadow-lg active:scale-95">Find an advisor</a>
+<a href="<?php echo htmlspecialchars($helpCentreUrl); ?>" class="inline-block bg-white/10 backdrop-blur-md border border-white/30 text-white px-xl py-md rounded font-label-md text-[16px] hover:bg-white/20 transition-all active:scale-95">Connect with your advisor</a>
 </div>
 </div>
 </div>
@@ -66,7 +78,7 @@ $pageTitle = 'Wealth Management Offerings | ' . $siteName;
 <span class="text-label-md text-on-surface-variant">General Eligibility</span>
 <span class="font-bold text-on-surface">$50,000</span>
 </div>
-<button class="w-full border border-institutional-blue text-institutional-blue py-sm rounded font-label-md hover:bg-institutional-blue/5 transition-all">Talk to a team member</button>
+<a href="<?php echo htmlspecialchars($helpCentreUrl); ?>" class="block w-full text-center border border-institutional-blue text-institutional-blue py-sm rounded font-label-md hover:bg-institutional-blue/5 transition-all">Talk to a team member</a>
 </div>
 </div>
 <!-- Wealth Management -->
@@ -81,7 +93,7 @@ $pageTitle = 'Wealth Management Offerings | ' . $siteName;
 <span class="text-label-md text-on-surface-variant">General Eligibility</span>
 <span class="font-bold text-on-surface">$500,000</span>
 </div>
-<button class="w-full bg-fidelity-green text-white py-sm rounded font-label-md hover:opacity-90 transition-all">Find an advisor</button>
+<a href="<?php echo htmlspecialchars($helpCentreUrl); ?>" class="block w-full text-center bg-fidelity-green text-white py-sm rounded font-label-md hover:opacity-90 transition-all">Find an advisor</a>
 </div>
 </div>
 <!-- Private Wealth -->
@@ -112,30 +124,21 @@ $pageTitle = 'Wealth Management Offerings | ' . $siteName;
 <span class="material-symbols-outlined text-institutional-blue text-4xl" style="font-variation-settings: 'FILL' 1;">person</span>
 </div>
 <h4 class="font-headline-md text-headline-md mb-xs">A dedicated advisor</h4>
-<p class="text-on-surface-variant text-body-md mb-sm">Your advisor will get to know what's important to you and create a customized wealth plan that evolves as your life does.</p>
-<a class="text-institutional-blue font-label-md hover:underline inline-flex items-center gap-xs" href="#">
-                            Learn how an advisor can help <span class="material-symbols-outlined text-[16px]">chevron_right</span>
-</a>
+<p class="text-on-surface-variant text-body-md">Your advisor will get to know what's important to you and create a customized wealth plan that evolves as your life does.</p>
 </div>
 <div class="text-center group">
 <div class="w-20 h-20 mx-auto bg-surface-container rounded-full flex items-center justify-center mb-md group-hover:bg-fidelity-green/10 transition-colors">
 <span class="material-symbols-outlined text-fidelity-green text-4xl" style="font-variation-settings: 'FILL' 1;">analytics</span>
 </div>
 <h4 class="font-headline-md text-headline-md mb-xs">Comprehensive planning</h4>
-<p class="text-on-surface-variant text-body-md mb-sm">Prepare for what's next with an approach to planning built around what matters to you, from retirement to estate management.</p>
-<a class="text-fidelity-green font-label-md hover:underline inline-flex items-center gap-xs" href="/planning">
-                            Explore our planning approach <span class="material-symbols-outlined text-[16px]">chevron_right</span>
-</a>
+<p class="text-on-surface-variant text-body-md">Prepare for what's next with an approach to planning built around what matters to you, from retirement to estate management.</p>
 </div>
 <div class="text-center group">
 <div class="w-20 h-20 mx-auto bg-surface-container rounded-full flex items-center justify-center mb-md group-hover:bg-institutional-blue/10 transition-colors">
 <span class="material-symbols-outlined text-institutional-blue text-4xl" style="font-variation-settings: 'FILL' 1;">query_stats</span>
 </div>
 <h4 class="font-headline-md text-headline-md mb-xs">Personalized strategy</h4>
-<p class="text-on-surface-variant text-body-md mb-sm">We'll create an investment strategy tailored around your overall preferences and full household financial picture.</p>
-<a class="text-institutional-blue font-label-md hover:underline inline-flex items-center gap-xs" href="/investing">
-                            Explore our investing capabilities <span class="material-symbols-outlined text-[16px]">chevron_right</span>
-</a>
+<p class="text-on-surface-variant text-body-md">We'll create an investment strategy tailored around your overall preferences and full household financial picture.</p>
 </div>
 </div>
 </div>
@@ -152,56 +155,43 @@ $pageTitle = 'Wealth Management Offerings | ' . $siteName;
 </div>
 </div>
 </section>
-<!-- Insights/Articles Grid -->
 <section class="py-xl bg-surface-container-low">
 <div class="max-w-[1152px] mx-auto px-margin-desktop">
-<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xl">Insights and strategies from <?php echo htmlspecialchars($siteName); ?> Wealth Management</h2>
+<div class="flex flex-col md:flex-row justify-between items-end gap-md mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Insights and strategies from <?php echo htmlspecialchars($siteName); ?> Wealth Management</h2>
+<a class="text-institutional-blue font-label-md hover:underline shrink-0" href="/blog">View all articles</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-lg">
+<?php foreach ($wealthFeaturedPosts as $post):
+    $blogUrl = '/blog/' . rawurlencode($post['slug']);
+?>
+<div class="bg-white rounded-lg overflow-hidden bento-card border border-surface-gray flex flex-col">
+<div class="h-48 relative">
+<a href="<?php echo htmlspecialchars($blogUrl); ?>"><img class="w-full h-full object-cover" alt="<?php echo htmlspecialchars($post['title']); ?>" src="<?php echo htmlspecialchars($post['image']); ?>"></a>
+</div>
+<div class="p-md flex-grow flex flex-col">
+<div class="flex items-center gap-sm mb-xs">
+<span class="text-label-md text-on-surface-variant bg-surface-container px-xs py-base rounded"><?php echo htmlspecialchars($post['category']); ?></span>
+<span class="text-label-md text-on-surface-variant"><?php echo htmlspecialchars($post['read_time']); ?></span>
+</div>
+<h4 class="font-headline-md text-headline-md mb-sm"><a class="hover:text-institutional-blue transition-colors" href="<?php echo htmlspecialchars($blogUrl); ?>"><?php echo htmlspecialchars($post['title']); ?></a></h4>
+<p class="text-on-surface-variant text-body-sm mb-md flex-grow"><?php echo htmlspecialchars($post['excerpt']); ?></p>
+<a class="mt-auto text-institutional-blue font-label-md font-bold uppercase tracking-wider hover:opacity-70 transition-opacity" href="<?php echo htmlspecialchars($blogUrl); ?>">Read more</a>
+</div>
+</div>
+<?php endforeach; ?>
+</div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-<!-- Article 1 -->
-<div class="bg-white rounded-lg overflow-hidden bento-card border border-surface-gray flex flex-col">
-<div class="h-48 relative">
-<img class="w-full h-full object-cover" alt="Financial planning" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBL6aZIZdLW1QHvXAEess1G5kIjBKCka0-BpFRm4r0BrHSAV5bB0dEPPULUmGILVmJUl_dHIgGjv78_qszucLvEQiSmm72RPYEMbuiyS7Qo4XB9GgrOg3XtwpSp6UXvXH4ObbrzMKE4SePJPCS1H-PiFLW4tPssaM7r97gAl4LaNPWvGy3hAWh5A0lyX4RSMRpdXUGjHN1OfbbeqS75D1wapQZP1khv38oSpYiqiODZ2LppySrwFrIdiw"/>
+<?php foreach (array_slice($wealthBlogPosts, 3) as $post):
+    $blogUrl = '/blog/' . rawurlencode($post['slug']);
+?>
+<div class="bg-white rounded-lg p-md border border-surface-gray flex flex-col">
+<span class="text-label-md text-on-surface-variant mb-xs"><?php echo htmlspecialchars($post['category']); ?> · <?php echo htmlspecialchars($post['read_time']); ?></span>
+<h4 class="font-headline-md text-[18px] mb-sm"><a class="hover:text-institutional-blue transition-colors" href="<?php echo htmlspecialchars($blogUrl); ?>"><?php echo htmlspecialchars($post['title']); ?></a></h4>
+<p class="text-on-surface-variant text-body-sm mb-md flex-grow"><?php echo htmlspecialchars($post['excerpt']); ?></p>
+<a class="text-institutional-blue font-label-md hover:underline" href="<?php echo htmlspecialchars($blogUrl); ?>">Read more</a>
 </div>
-<div class="p-md flex-grow flex flex-col">
-<div class="flex items-center gap-sm mb-xs">
-<span class="text-label-md text-on-surface-variant bg-surface-container px-xs py-base rounded">Article</span>
-<span class="text-label-md text-on-surface-variant">6 min read</span>
-</div>
-<h4 class="font-headline-md text-headline-md mb-sm">What is financial planning?</h4>
-<p class="text-on-surface-variant text-body-sm mb-md">Learn how a financial plan could help you reach your goals through strategic capital allocation.</p>
-<a class="mt-auto text-institutional-blue font-label-md font-bold uppercase tracking-wider hover:opacity-70 transition-opacity" href="#">Read more</a>
-</div>
-</div>
-<!-- Article 2 -->
-<div class="bg-white rounded-lg overflow-hidden bento-card border border-surface-gray flex flex-col">
-<div class="h-48 relative">
-<img class="w-full h-full object-cover" alt="Building wealth" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBAww1P81qYKAvHS6oMvf0EK4bz-awnZAy0wLKhv2278WkzczeCQeigIV1IcUmdlLX7s7mq28Ga1W6fvExAG9UtrRxScJwGT8c0HNsk1m2_sisEXpOWm_RwxbB9CDnaEgPUE6Zh-rTi5QxOv8tQ9-TvkAeXt4ecYmS8sxEzVnlADqwKpq3Z3ZQEvqCqJfOYDCGoy2neHvtg7Mo-8_PPRdKyXxKwsAmvS094tlFP635xCHuoHB9Q-m5iw"/>
-</div>
-<div class="p-md flex-grow flex flex-col">
-<div class="flex items-center gap-sm mb-xs">
-<span class="text-label-md text-on-surface-variant bg-surface-container px-xs py-base rounded">Article</span>
-<span class="text-label-md text-on-surface-variant">5 min read</span>
-</div>
-<h4 class="font-headline-md text-headline-md mb-sm">3 effective strategies for building wealth</h4>
-<p class="text-on-surface-variant text-body-sm mb-md">Discover core principles that drive long-term asset accumulation and risk management.</p>
-<a class="mt-auto text-institutional-blue font-label-md font-bold uppercase tracking-wider hover:opacity-70 transition-opacity" href="#">Read more</a>
-</div>
-</div>
-<!-- Article 3 -->
-<div class="bg-white rounded-lg overflow-hidden bento-card border border-surface-gray flex flex-col">
-<div class="h-48 relative">
-<img class="w-full h-full object-cover" alt="Planning together" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfo2hnQ4UvfDZ-hQFhIWf0ewrjlcAElJLPrmtJc8f2eBBy42qnYLsldttedGlayn6qJ5ZGqbK_3x6-VpDHpSy8Xe-h1BhPepKOy7fVvJd2wTq-hr5wBNhnA6YKfneXMj2RCFk10tXsGZke_ylSdmmUcYUVGT7Y9XTS9cKN2DKbRvLvOsIv9SvF7Na1ut9AaTIhYbZJJ6zwXfr78O589Gam6637sacT2tkyMzikDUE-kkST7Ibu8jiEuw"/>
-</div>
-<div class="p-md flex-grow flex flex-col">
-<div class="flex items-center gap-sm mb-xs">
-<span class="text-label-md text-on-surface-variant bg-surface-container px-xs py-base rounded">Article</span>
-<span class="text-label-md text-on-surface-variant">6 min read</span>
-</div>
-<h4 class="font-headline-md text-headline-md mb-sm">The power of planning together</h4>
-<p class="text-on-surface-variant text-body-sm mb-md">Why transparent financial communication within households is critical for generational wealth.</p>
-<a class="mt-auto text-institutional-blue font-label-md font-bold uppercase tracking-wider hover:opacity-70 transition-opacity" href="#">Read more</a>
-</div>
-</div>
+<?php endforeach; ?>
 </div>
 </div>
 </section>
@@ -216,7 +206,7 @@ $pageTitle = 'Wealth Management Offerings | ' . $siteName;
 <h2 class="font-display-lg text-display-lg mb-sm">Let's talk about your goals</h2>
 <p class="font-body-lg text-body-lg text-white/90 mb-lg max-w-2xl mx-auto">A conversation with an advisor is the first step to helping you find the right approach to reach your life's ambitions.</p>
 <div class="flex flex-wrap justify-center gap-md">
-<button class="bg-white text-fidelity-green px-xl py-md rounded font-label-md text-[16px] font-bold hover:bg-surface-gray transition-all shadow-xl active:scale-95">Find an advisor</button>
+<a href="<?php echo htmlspecialchars($helpCentreUrl); ?>" class="inline-block bg-white text-fidelity-green px-xl py-md rounded font-label-md text-[16px] font-bold hover:bg-surface-gray transition-all shadow-xl active:scale-95">Find an advisor</a>
 <button class="border-2 border-white text-white px-xl py-md rounded font-label-md text-[16px] font-bold hover:bg-white/10 transition-all active:scale-95">Call 800-343-3548</button>
 </div>
 </div>

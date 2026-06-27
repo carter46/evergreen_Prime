@@ -1,7 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/blog-posts.php';
 $siteName = get_site_name();
 $pageTitle = 'Retirement Planning | ' . $siteName;
+$portfolioUrl = '/dashboard/user/analytics';
+$planningBlogSlugs = ['three-as-of-saving', 'what-is-an-ira', 'five-keys-retirement-income'];
+$planningBlogPosts = get_blog_posts_by_slugs($planningBlogSlugs);
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en">
@@ -24,7 +28,7 @@ $pageTitle = 'Retirement Planning | ' . $siteName;
 </nav>
 <!-- Hero Section -->
 <section class="max-w-[1152px] mx-auto px-margin-desktop py-xl flex flex-col md:flex-row items-center gap-xl">
-<div class="md:w-1/2">
+<div class="md:w-1/2 order-2 md:order-1">
 <h1 class="font-display-lg text-display-lg text-on-surface leading-tight mb-md">
                     Retirement planning to match your stage of life
                 </h1>
@@ -36,7 +40,7 @@ $pageTitle = 'Retirement Planning | ' . $siteName;
 <a href="/register" class="border border-institutional-blue text-institutional-blue font-label-md text-label-md py-sm px-lg rounded-lg hover:bg-surface-container-low transition-all">Explore IRAs</a>
 </div>
 </div>
-<div class="md:w-1/2 relative">
+<div class="md:w-1/2 relative order-1 md:order-2 mb-lg md:mb-0">
 <div class="aspect-[4/3] rounded-xl overflow-hidden shadow-lg border border-surface-gray">
 <img class="w-full h-full object-cover" data-alt="A professional, high-quality photograph of two women of different generations, perhaps a mother and daughter, smiling while sitting together on a comfortable modern sofa. They are looking at a sleek silver laptop together in a bright, airy living room with large windows showing lush greenery outside. The lighting is soft and natural, creating a warm, trustworthy atmosphere consistent with a premium financial institution's branding." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFZ6IgNIGjVyf4zoO6M1BJvh9BZsxKdjH277DJq9mKH5SX2-VWDPhnCMHRGrY-CPpcP5Xl02h8ii5-_95Y6uRah9kdoKkhmLc8b-VMHu2Pd42d4-3qjijK2wZmy53whrWSdoVspcZWBYg3M5cQZaOzoUq2vNTuw548O9rPmLvotQwsX2ntz3KgAk-zdHIw-QAy2wIwuKFje29-ovdzAwpOgV3FA1CgeGvimNXdh13HmwAeuOG7EOg_sA"/>
 </div>
@@ -122,7 +126,7 @@ $pageTitle = 'Retirement Planning | ' . $siteName;
 <li class="flex items-center gap-xs font-body-sm text-body-sm"><span class="material-symbols-outlined text-fidelity-green text-[18px]">check_circle</span> Guidance on next steps</li>
 </ul>
 </div>
-<button class="bg-fidelity-green text-white font-label-md text-label-md py-sm px-lg rounded-lg self-start">Create your plan</button>
+<a href="<?php echo htmlspecialchars($portfolioUrl); ?>" class="inline-block bg-fidelity-green text-white font-label-md text-label-md py-sm px-lg rounded-lg self-start hover:opacity-90 transition-all">Create your plan</a>
 </div>
 <!-- Tool 2: IRA Calculator -->
 <div class="bg-white p-lg rounded-xl border border-surface-gray flex flex-col hover:shadow-md transition-shadow">
@@ -131,7 +135,7 @@ $pageTitle = 'Retirement Planning | ' . $siteName;
 </div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-sm">IRA Calculator</h3>
 <p class="font-body-sm text-body-sm text-on-surface-variant mb-lg">See which IRA you're eligible for and how much you could add to your account this year.</p>
-<a class="mt-auto text-institutional-blue font-label-md text-label-md flex items-center gap-1 group" href="#">Calculate contribution <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">chevron_right</span></a>
+<a class="mt-auto text-institutional-blue font-label-md text-label-md flex items-center gap-1 group" href="<?php echo htmlspecialchars($portfolioUrl); ?>">Calculate contribution <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">chevron_right</span></a>
 </div>
 <!-- Tool 3: Income Calculator -->
 <div class="bg-white p-lg rounded-xl border border-surface-gray flex flex-col hover:shadow-md transition-shadow">
@@ -140,7 +144,7 @@ $pageTitle = 'Retirement Planning | ' . $siteName;
 </div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-sm">Income Calculator</h3>
 <p class="font-body-sm text-body-sm text-on-surface-variant mb-lg">Find out how much money you'll have each month in retirement based on your current trajectory.</p>
-<a class="mt-auto text-institutional-blue font-label-md text-label-md flex items-center gap-1 group" href="#">View monthly estimate <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">chevron_right</span></a>
+<a class="mt-auto text-institutional-blue font-label-md text-label-md flex items-center gap-1 group" href="<?php echo htmlspecialchars($portfolioUrl); ?>">View monthly estimate <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">chevron_right</span></a>
 </div>
 </div>
 </div>
@@ -150,45 +154,27 @@ $pageTitle = 'Retirement Planning | ' . $siteName;
 <div class="max-w-[1152px] mx-auto px-margin-desktop">
 <h2 class="font-headline-lg text-headline-lg text-on-surface mb-lg">Learn about saving and planning</h2>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
-<!-- Article 1 -->
-<article class="group cursor-pointer">
+<?php foreach ($planningBlogPosts as $post):
+    $blogUrl = '/blog/' . rawurlencode($post['slug']);
+?>
+<article class="group">
+<a href="<?php echo htmlspecialchars($blogUrl); ?>" class="block">
 <div class="aspect-video rounded-lg overflow-hidden mb-sm border border-surface-gray">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A clean, minimalist graphic representing financial growth. An upward-trending line chart made of soft green glow against a deep, institutional blue background. The style is modern, data-driven, and sophisticated, perfectly fitting the visual identity of a leading financial management firm." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdU0VhcUZSt2EswSpcFyunQ-4QcFa5WqvO4lFUQC6-A1AISBDPK7pFwbcg50qMzSEVazevgbPq6ht_WYoWeclP6RJpPLK79lNJAj0iDLbePwarp7lCk4HvB7MakzlXtTQXQXNUjLRVWDOX_Fq8FppQNpBP0psh4M7x5o1WsO9t7TjlA2nHejkHZ9N2GirFuIz6czhLRjivRhHoKFl1HPiIIjvQNjdbuLHmOA8_3EeczKe-7Q797N122g"/>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="<?php echo htmlspecialchars($post['title']); ?>" src="<?php echo htmlspecialchars($post['image']); ?>">
 </div>
 <div class="flex items-center gap-xs text-on-surface-variant font-label-md text-label-md mb-xs">
 <span class="uppercase tracking-widest text-[10px]">Article</span>
 <span class="w-1 h-1 bg-outline rounded-full"></span>
-<span>7 min</span>
+<span><?php echo htmlspecialchars($post['read_time']); ?></span>
 </div>
-<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-institutional-blue transition-colors mb-xs">The 3 A's of successful saving</h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant">Remember the 3 A's for retirement saving: amount, account, and asset mix.</p>
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-institutional-blue transition-colors mb-xs"><?php echo htmlspecialchars($post['title']); ?></h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant"><?php echo htmlspecialchars($post['excerpt']); ?></p>
+</a>
 </article>
-<!-- Article 2 -->
-<article class="group cursor-pointer">
-<div class="aspect-video rounded-lg overflow-hidden mb-sm border border-surface-gray">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="An abstract architectural photograph of a modern library or a center for excellence. Sharp diagonal lines, pristine white walls, and bright natural light create a sense of intelligence and clarity. The mood is academic yet accessible, representing the pursuit of financial education and knowledge." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG7tznRMdI1buRD2cjZIXp6GB1KmOcd8OUgyeofQ7ozMRoLtvn2NJBy9xEr2ps3yYVgiY_A6SRvs8WYcRWbrGK7aPhTtl_uWkvdyy2OIfdcdtdZL9wKs3yyXfYLEDRE2yd04LyDt8rIiSzWhALKbc-UgYyEAsJuNTk2xXZPDXKuBKSQdWaZdWSx7aMke6Qng3wbCPN_uTJN_gGuNT5z5TUfaLYqNznfIGSPk0R_Qq0msP3FlqBMtN9pQ"/>
+<?php endforeach; ?>
 </div>
-<div class="flex items-center gap-xs text-on-surface-variant font-label-md text-label-md mb-xs">
-<span class="uppercase tracking-widest text-[10px]">Article</span>
-<span class="w-1 h-1 bg-outline rounded-full"></span>
-<span>2 min</span>
-</div>
-<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-institutional-blue transition-colors mb-xs">What is an IRA?</h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant">An individual retirement account (IRA) allows you to save money for retirement in a tax-advantaged way.</p>
-</article>
-<!-- Article 3 -->
-<article class="group cursor-pointer">
-<div class="aspect-video rounded-lg overflow-hidden mb-sm border border-surface-gray">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A close-up of a high-end fountain pen resting on top of a well-organized financial document. The focus is razor-sharp on the pen's tip, with a soft blur on the document's text. This high-contrast, black and white image conveys commitment, finality, and meticulous planning for one's future income." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVmucBsWBy_GnwrPjBviQGdiLGncmVcmqr37ZzwYwYoQIZkMu2JVB7MfSIUSW2CoTBN7yTBLvP5Xwcr-zH2xOJE9o5uqdg9O_J0cjLpoC_yHyIPwFmwYZDuwjtuGBriO_b7IH1-YArgmMBw53WrjzZHZE7_eT9g797_UTLExAe7mj7HVOdd4sCKXJdgPA3WuXgmiEtpupHmu2I8TaXjWDfm571xO6tsv3Pd06kJN2qoUPr5pfk00AZ7A"/>
-</div>
-<div class="flex items-center gap-xs text-on-surface-variant font-label-md text-label-md mb-xs">
-<span class="uppercase tracking-widest text-[10px]">Article</span>
-<span class="w-1 h-1 bg-outline rounded-full"></span>
-<span>9 min</span>
-</div>
-<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-institutional-blue transition-colors mb-xs">5 keys to a retirement income plan</h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant">Understand the risks and know your needs for long-term security.</p>
-</article>
+<div class="mt-lg text-center">
+<a class="inline-flex items-center gap-1 text-institutional-blue font-label-md hover:underline" href="/blog">View all articles <span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>
 </div>
 </div>
 </section>

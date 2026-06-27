@@ -36,11 +36,9 @@ $mobileNavClass = function ($page) use ($current) {
 <a class="hidden lg:inline hover:underline" href="/help_centre">Customer Service</a>
 <a class="hidden lg:inline hover:underline" href="/live_chat"><?php echo htmlspecialchars($siteName); ?> Assistant</a>
 <?php if ($isLoggedIn): ?>
-<a class="hidden lg:inline hover:underline" href="/dashboard">Profile</a>
 <a class="bg-fidelityGreen text-white px-4 py-1 rounded-full font-bold hover:bg-fidelityGreenHover" href="/dashboard">Dashboard</a>
 <a class="hidden lg:inline border border-fidelityGreen text-fidelityGreen px-4 py-1 rounded-full font-bold hover:bg-gray-50" href="/logout">Log out</a>
 <?php else: ?>
-<a class="hidden lg:inline hover:underline" href="/login">Profile</a>
 <a class="bg-fidelityGreen text-white px-4 py-1 rounded-full font-bold hover:bg-fidelityGreenHover" href="/register">Open an account</a>
 <a class="hidden lg:inline border border-fidelityGreen text-fidelityGreen px-4 py-1 rounded-full font-bold hover:bg-gray-50" href="/login">Log in</a>
 <?php endif; ?>
@@ -59,6 +57,7 @@ $mobileNavClass = function ($page) use ($current) {
 <a class="<?php echo $navClass('investing'); ?>" href="/investing">Investing</a>
 <a class="<?php echo $navClass('planning'); ?>" href="/planning">Retirement</a>
 <a class="<?php echo $navClass('wealth'); ?>" href="/wealth-management">Wealth Management</a>
+<a class="<?php echo $navClass('blog'); ?>" href="/blog">Blog</a>
 </nav>
 <div class="hidden lg:block relative w-full max-w-xs shrink-0 ml-auto">
 <input class="w-full border border-gray-300 rounded-full py-1.5 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-fidelityGreen bg-white/95" placeholder="How can we help?" type="text">
@@ -100,13 +99,14 @@ $mobileNavClass = function ($page) use ($current) {
 <li><a class="block py-2.5 text-base <?php echo $mobileNavClass('investing'); ?>" href="/investing">Investing</a></li>
 <li><a class="block py-2.5 text-base <?php echo $mobileNavClass('planning'); ?>" href="/planning">Retirement</a></li>
 <li><a class="block py-2.5 text-base <?php echo $mobileNavClass('wealth'); ?>" href="/wealth-management">Wealth Management</a></li>
+<li><a class="block py-2.5 text-base <?php echo $mobileNavClass('blog'); ?>" href="/blog">Blog</a></li>
 </ul>
 <p class="text-xs font-bold uppercase tracking-wide text-fidelityGray mb-3">Account</p>
 <ul class="space-y-1">
 <li><a class="block py-2.5 text-base text-fidelityDark hover:text-fidelityGreen" href="/help_centre">Customer Service</a></li>
 <li><a class="block py-2.5 text-base text-fidelityDark hover:text-fidelityGreen" href="/live_chat"><?php echo htmlspecialchars($siteName); ?> Assistant</a></li>
 <?php if ($isLoggedIn): ?>
-<li><a class="block py-2.5 text-base text-fidelityDark hover:text-fidelityGreen" href="/dashboard">Profile</a></li>
+<li><a class="block py-2.5 text-base text-fidelityDark hover:text-fidelityGreen" href="/dashboard/user/profile">Profile</a></li>
 <?php endif; ?>
 </ul>
 </nav>
