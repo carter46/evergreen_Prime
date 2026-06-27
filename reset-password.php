@@ -57,14 +57,14 @@ $authHeaderLink = ['href' => '/login', 'label' => 'Log In'];
 </button>
 </div>
 </div>
-<div id="reset-password-message" class="text-sm text-white hidden"></div>
+<div id="reset-password-message" class="auth-form-message hidden"></div>
 <button class="w-full auth-btn-primary active:scale-[0.98] transition-all flex items-center justify-center gap-2" type="submit">
 <span>Update Password</span>
 <span class="material-symbols-outlined text-[18px]">check_circle</span>
 </button>
 </form>
 <div class="mt-3 pt-3 border-t auth-divider text-center">
-<a class="auth-link-light text-sm font-semibold" href="/login">Back to Login</a>
+<a class="auth-link-accent text-sm font-semibold" href="/login">Back to Login</a>
 </div>
 </div>
 </div>

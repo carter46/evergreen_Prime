@@ -57,7 +57,7 @@ $authHeaderLink = ['prefix' => 'New to ' . $siteName . '?', 'href' => '/register
 <div class="auth-form-stack-tight">
 <div class="flex justify-between items-center">
 <label class="auth-field-label" for="login-password">Password</label>
-<a class="auth-link-light text-xs font-semibold" href="/forgot-password">Forgot Password?</a>
+<a class="auth-link-accent text-xs font-semibold" href="/forgot-password">Forgot Password?</a>
 </div>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" style="font-size: 18px;">lock</span>
@@ -72,9 +72,9 @@ $authHeaderLink = ['prefix' => 'New to ' . $siteName . '?', 'href' => '/register
 <label class="auth-terms-label" for="remember">Remember my username</label>
 </div>
 <?php if (!empty($_GET['timeout'])): ?>
-<div class="text-sm text-white bg-white/15 border border-white/25 px-3 py-2 rounded-lg">You were logged out due to inactivity. Please sign in again.</div>
+<div class="auth-timeout-note">You were logged out due to inactivity. Please sign in again.</div>
 <?php endif; ?>
-<div id="login-form-message" class="text-sm text-white hidden"></div>
+<div id="login-form-message" class="auth-form-message hidden"></div>
 <button class="w-full auth-btn-primary active:scale-[0.98] transition-all" type="submit">Log In</button>
 </form>
 
@@ -84,11 +84,11 @@ $authHeaderLink = ['prefix' => 'New to ' . $siteName . '?', 'href' => '/register
 <p class="auth-otp-text">Enter the 6-digit code we sent to your email.</p>
 <div class="flex gap-2 justify-center my-2" id="login-otp-inputs">
 <?php for ($i = 1; $i <= 6; $i++): ?>
-<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="<?php echo $i === 1 ? 'one-time-code' : 'off'; ?>" class="w-10 h-10 text-center text-base font-bold rounded-lg border border-white/30 bg-white text-on-surface focus:border-white focus:ring-1 focus:ring-white" data-otp-digit aria-label="Digit <?php echo $i; ?>"/>
+<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="<?php echo $i === 1 ? 'one-time-code' : 'off'; ?>" class="w-10 h-10 text-center text-base font-bold rounded-lg border border-gray-300 bg-white text-on-surface focus:border-fidelity-green focus:ring-1 focus:ring-fidelity-green" data-otp-digit aria-label="Digit <?php echo $i; ?>"/>
 <?php endfor; ?>
 </div>
-<div id="login-otp-message" class="text-sm text-white hidden"></div>
-<button type="button" id="login-otp-resend" class="auth-link-light text-sm font-medium disabled:opacity-50" disabled>Resend code (60s)</button>
+<div id="login-otp-message" class="auth-form-message hidden"></div>
+<button type="button" id="login-otp-resend" class="auth-link-accent text-sm font-medium disabled:opacity-50" disabled>Resend code (60s)</button>
 <button type="button" id="login-otp-submit" class="w-full auth-btn-primary flex items-center justify-center gap-2">Verify &amp; Sign In</button>
 </div>
 

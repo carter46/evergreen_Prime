@@ -74,7 +74,7 @@ Join investors who trust <?php echo htmlspecialchars($siteName); ?> with their w
 <p class="auth-form-step-label uppercase tracking-wider" id="register-step-label">Step 1 of 2 — Your details</p>
 
 <div id="register-step-1" class="auth-form-stack">
-<label class="flex items-center gap-2 border border-dashed rounded-lg auth-upload-box hover:border-white transition-colors cursor-pointer" for="avatar">
+<label class="flex items-center gap-2 border border-dashed rounded-lg auth-upload-box hover:border-fidelity-green transition-colors cursor-pointer" for="avatar">
 <div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 overflow-hidden" id="avatar-preview">
 <span class="material-symbols-outlined text-on-surface-variant text-xl">cloud_upload</span>
 </div>
@@ -96,7 +96,7 @@ Join investors who trust <?php echo htmlspecialchars($siteName); ?> with their w
 <label class="auth-field-label" for="phone">Phone Number <span class="normal-case font-normal">(Optional)</span></label>
 <input class="auth-form-input fidelity-input-focus" id="phone" name="phone" placeholder="+1 (555) 000-0000" type="tel" autocomplete="tel"/>
 </div>
-<div id="register-step1-message" class="text-sm text-white hidden"></div>
+<div id="register-step1-message" class="auth-form-message hidden"></div>
 <button type="button" id="register-step1-next" class="w-full auth-btn-primary active:scale-[0.98] transition-all flex items-center justify-center gap-xs">
 <span>Continue</span>
 <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -137,7 +137,7 @@ I agree to the <a href="/legal_centre#terms">Customer Agreement</a>,
 <a href="/legal_centre#privacy">Privacy Policy</a>.
 </label>
 </div>
-<div id="register-form-message" class="text-sm text-white hidden"></div>
+<div id="register-form-message" class="auth-form-message hidden"></div>
 <div class="flex gap-2">
 <button type="button" id="register-step2-back" class="flex-1 auth-btn-outline transition-colors">Back</button>
 <button type="submit" class="flex-[2] auth-btn-primary active:scale-[0.98] transition-all flex items-center justify-center gap-xs">
@@ -154,19 +154,19 @@ I agree to the <a href="/legal_centre#terms">Customer Agreement</a>,
 <p class="auth-otp-text">Enter the 6-digit code we sent to your email.</p>
 <div class="flex gap-2 justify-center my-2" id="register-otp-inputs">
 <?php for ($i = 1; $i <= 6; $i++): ?>
-<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="<?php echo $i === 1 ? 'one-time-code' : 'off'; ?>" class="w-10 h-10 text-center text-base font-bold rounded-lg border border-white/30 bg-white text-on-surface focus:border-white focus:ring-1 focus:ring-white" data-otp-digit aria-label="Digit <?php echo $i; ?>"/>
+<input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="<?php echo $i === 1 ? 'one-time-code' : 'off'; ?>" class="w-10 h-10 text-center text-base font-bold rounded-lg border border-gray-300 bg-white text-on-surface focus:border-fidelity-green focus:ring-1 focus:ring-fidelity-green" data-otp-digit aria-label="Digit <?php echo $i; ?>"/>
 <?php endfor; ?>
 </div>
-<div id="register-otp-message" class="text-sm text-white hidden"></div>
-<button type="button" id="register-otp-resend" class="auth-link-light text-sm font-medium disabled:opacity-50" disabled>Resend code (60s)</button>
+<div id="register-otp-message" class="auth-form-message hidden"></div>
+<button type="button" id="register-otp-resend" class="auth-link-accent text-sm font-medium disabled:opacity-50" disabled>Resend code (60s)</button>
 <button type="button" id="register-otp-submit" class="w-full auth-btn-primary flex items-center justify-center gap-2">
 Verify &amp; Continue
 </button>
 </div>
 
 <div id="register-thank-you" class="hidden text-center py-4">
-<div class="w-14 h-14 rounded-full bg-white/15 flex items-center justify-center mx-auto mb-3">
-<span class="material-symbols-outlined text-white text-3xl">check_circle</span>
+<div class="w-14 h-14 rounded-full bg-fidelity-green/10 flex items-center justify-center mx-auto mb-3">
+<span class="material-symbols-outlined text-fidelity-green text-3xl">check_circle</span>
 </div>
 <h2 class="auth-otp-title mb-2">Thank you!</h2>
 <p class="auth-otp-text">Your account has been verified. Redirecting to your dashboard...</p>
@@ -174,7 +174,7 @@ Verify &amp; Continue
 
 <div id="register-form-footer" class="mt-3 pt-3 border-t auth-divider">
 <div class="flex items-center gap-2 auth-footer-note">
-<span class="material-symbols-outlined text-white text-[18px]" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span class="material-symbols-outlined text-fidelity-green text-[18px]" style="font-variation-settings: 'FILL' 1;">shield</span>
 <span>Encrypted with 256-bit AES protection.</span>
 </div>
 </div>
@@ -224,11 +224,13 @@ Already have an account?
     var email = form.querySelector('[name="email"]')?.value?.trim();
     if (!name) {
       step1Msg.textContent = 'Full name is required.';
+      step1Msg.className = 'auth-form-message is-error';
       step1Msg.classList.remove('hidden');
       return;
     }
     if (!email) {
       step1Msg.textContent = 'Email address is required.';
+      step1Msg.className = 'auth-form-message is-error';
       step1Msg.classList.remove('hidden');
       return;
     }

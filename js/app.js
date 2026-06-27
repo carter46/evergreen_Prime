@@ -227,9 +227,23 @@
         el.textContent = text;
         const inAuthCard = el.closest('.auth-form-card');
         if (inAuthCard) {
-            el.className = 'text-sm ' + (isError ? 'text-red-100' : 'text-white');
+            el.className = 'auth-form-message ' + (isError ? 'is-error' : 'is-success');
         } else {
             el.className = 'text-sm mt-2 ' + (isError ? 'text-red-500' : 'text-green-600');
+        }
+        el.classList.remove('hidden');
+        el.style.display = 'block';
+    }
+
+    function setInlineMessage(el, text, type) {
+        if (!el) return;
+        el.textContent = text;
+        const inAuthCard = el.closest('.auth-form-card');
+        if (inAuthCard) {
+            const tone = type === 'error' ? ' is-error' : type === 'success' ? ' is-success' : '';
+            el.className = 'auth-form-message' + tone;
+        } else {
+            el.className = 'text-sm ' + (type === 'error' ? 'text-red-500' : type === 'success' ? 'text-green-600' : 'text-slate-500');
         }
         el.classList.remove('hidden');
         el.style.display = 'block';
@@ -398,11 +412,7 @@
                 body: JSON.stringify({ email: loginEmail, purpose: 'login' })
             }).then(r => r.json()).then(function (res) {
                 if (res.success) {
-                    if (otpMessage) {
-                        otpMessage.textContent = 'Code sent. Check your email.';
-                        otpMessage.className = 'text-sm text-green-600';
-                        otpMessage.classList.remove('hidden');
-                    }
+                    if (otpMessage) setInlineMessage(otpMessage, 'Code sent. Check your email.', 'success');
                     let s = 60;
                     otpResend.textContent = 'Resend code (' + s + 's)';
                     const iv = setInterval(function () {
@@ -415,19 +425,11 @@
                         }
                     }, 1000);
                 } else {
-                    if (otpMessage) {
-                        otpMessage.textContent = res.error || 'Failed to resend';
-                        otpMessage.className = 'text-sm text-red-500';
-                        otpMessage.classList.remove('hidden');
-                    }
+                    if (otpMessage) setInlineMessage(otpMessage, res.error || 'Failed to resend', 'error');
                     otpResend.disabled = false;
                 }
             }).catch(function () {
-                if (otpMessage) {
-                    otpMessage.textContent = 'Failed to resend. Try again.';
-                    otpMessage.className = 'text-sm text-red-500';
-                    otpMessage.classList.remove('hidden');
-                }
+                if (otpMessage) setInlineMessage(otpMessage, 'Failed to resend. Try again.', 'error');
                 otpResend.disabled = false;
             });
         });
@@ -436,19 +438,11 @@
             if (otpSubmit.dataset.loading === '1') return;
             const otp = getLoginOtpValue().replace(/\D/g, '');
             if (otp.length !== 6) {
-                if (otpMessage) {
-                    otpMessage.textContent = 'Please enter all 6 digits.';
-                    otpMessage.className = 'text-sm text-red-500';
-                    otpMessage.classList.remove('hidden');
-                }
+                if (otpMessage) setInlineMessage(otpMessage, 'Please enter all 6 digits.', 'error');
                 return;
             }
             setButtonLoading(otpSubmit, true, 'Verifying...');
-            if (otpMessage) {
-                otpMessage.textContent = 'Verifying code...';
-                otpMessage.className = 'text-sm text-slate-500';
-                otpMessage.classList.remove('hidden');
-            }
+            if (otpMessage) setInlineMessage(otpMessage, 'Verifying code...', 'info');
             fetch(API_BASE + '/auth/verify-login-otp.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -458,19 +452,11 @@
                 if (res.success) {
                     window.location.href = res.data?.redirect || loginRedirect;
                 } else {
-                    if (otpMessage) {
-                        otpMessage.textContent = res.error || 'Invalid code. Try again.';
-                        otpMessage.className = 'text-sm text-red-500';
-                        otpMessage.classList.remove('hidden');
-                    }
+                    if (otpMessage) setInlineMessage(otpMessage, res.error || 'Invalid code. Try again.', 'error');
                     setButtonLoading(otpSubmit, false);
                 }
             }).catch(function () {
-                if (otpMessage) {
-                    otpMessage.textContent = 'Verification failed. Try again.';
-                    otpMessage.className = 'text-sm text-red-500';
-                    otpMessage.classList.remove('hidden');
-                }
+                if (otpMessage) setInlineMessage(otpMessage, 'Verification failed. Try again.', 'error');
                 setButtonLoading(otpSubmit, false);
             });
         });
@@ -660,20 +646,14 @@
                 body: JSON.stringify({ email: registerEmail, purpose: 'register' })
             }).then(r => r.json()).then(function (res) {
                 if (res.success) {
-                    otpMessage.textContent = 'Code sent. Check your email.';
-                    otpMessage.className = 'text-sm text-green-600';
-                    otpMessage.classList.remove('hidden');
+                    setInlineMessage(otpMessage, 'Code sent. Check your email.', 'success');
                     startResendCooldown();
                 } else {
-                    otpMessage.textContent = res.error || 'Failed to resend';
-                    otpMessage.className = 'text-sm text-red-500';
-                    otpMessage.classList.remove('hidden');
+                    setInlineMessage(otpMessage, res.error || 'Failed to resend', 'error');
                     otpResend.disabled = false;
                 }
             }).catch(function () {
-                otpMessage.textContent = 'Failed to resend. Try again.';
-                otpMessage.className = 'text-sm text-red-500';
-                otpMessage.classList.remove('hidden');
+                setInlineMessage(otpMessage, 'Failed to resend. Try again.', 'error');
                 otpResend.disabled = false;
             });
         });
@@ -682,15 +662,11 @@
             if (otpSubmit.dataset.loading === '1') return;
             const otp = getOtpValue().replace(/\D/g, '');
             if (otp.length !== 6) {
-                otpMessage.textContent = 'Please enter all 6 digits.';
-                otpMessage.className = 'text-sm text-red-500';
-                otpMessage.classList.remove('hidden');
+                setInlineMessage(otpMessage, 'Please enter all 6 digits.', 'error');
                 return;
             }
             setButtonLoading(otpSubmit, true, 'Verifying...');
-            otpMessage.textContent = 'Verifying code...';
-            otpMessage.className = 'text-sm text-slate-500';
-            otpMessage.classList.remove('hidden');
+            setInlineMessage(otpMessage, 'Verifying code...', 'info');
             fetch(API_BASE + '/auth/verify-registration-otp.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -704,15 +680,11 @@
                         window.location.href = res.data?.redirect || '/dashboard';
                     }, 1500);
                 } else {
-                    otpMessage.textContent = res.error || 'Invalid code. Try again.';
-                    otpMessage.className = 'text-sm text-red-500';
-                    otpMessage.classList.remove('hidden');
+                    setInlineMessage(otpMessage, res.error || 'Invalid code. Try again.', 'error');
                     setButtonLoading(otpSubmit, false);
                 }
             }).catch(function () {
-                otpMessage.textContent = 'Verification failed. Try again.';
-                otpMessage.className = 'text-sm text-red-500';
-                otpMessage.classList.remove('hidden');
+                setInlineMessage(otpMessage, 'Verification failed. Try again.', 'error');
                 setButtonLoading(otpSubmit, false);
             });
         });
