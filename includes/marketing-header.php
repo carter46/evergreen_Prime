@@ -4,6 +4,7 @@
  */
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/session-bootstrap.php';
+require_once __DIR__ . '/marketing-search.php';
 $siteName = get_site_name();
 $siteLogo = get_site_setting('site_logo', '');
 $currentUser = get_current_user_data();
@@ -22,8 +23,36 @@ $mobileNavClass = function ($page) use ($current) {
     return 'text-fidelityDark hover:text-fidelityGreen';
 };
 ?>
-<!-- BEGIN: SiteHeader -->
-<div id="marketing-site-header">
+<style>
+#utility-header {
+  position: relative;
+  z-index: 40;
+}
+#main-navigation {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+#main-navigation .marketing-search-wrap {
+  position: relative;
+}
+.marketing-search-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 60;
+  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+}
+</style>
+<script type="application/json" id="marketing-search-index"><?php echo json_encode(get_marketing_search_index(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?></script>
 <!-- BEGIN: UtilityHeader -->
 <div id="utility-header" class="bg-white border-b border-gray-200">
 <div class="mx-auto px-4 flex justify-between items-center h-12 max-w-6xl">
@@ -62,15 +91,27 @@ $mobileNavClass = function ($page) use ($current) {
 <a class="<?php echo $navClass('blog'); ?>" href="/blog">Blog</a>
 <a class="<?php echo $navClass('legal_centre'); ?>" href="/legal_centre">Legal</a>
 </nav>
-<div class="hidden lg:block relative w-full max-w-xs shrink-0 ml-auto">
-<input class="w-full border border-gray-300 rounded-full py-1.5 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-fidelityGreen bg-white/95" placeholder="How can we help?" type="text">
-<svg class="w-4 h-4 absolute right-3 top-2.5 text-fidelityGreen" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<div class="marketing-search-wrap lg:hidden relative flex-1 min-w-0 max-w-[200px] sm:max-w-[240px] ml-auto">
+<form class="marketing-search-form" role="search" action="/blog" method="get">
+<label class="sr-only" for="marketing-mobile-search">Search site</label>
+<input id="marketing-mobile-search" class="marketing-search-input w-full rounded-full py-1.5 pl-3 pr-8 text-xs bg-white/95 text-on-surface placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white/80 border-0" type="search" placeholder="Search" autocomplete="off"/>
+<button type="submit" class="sr-only">Search</button>
+<svg class="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-fidelityGreen pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</form>
+<div class="marketing-search-suggestions hidden" role="listbox" aria-label="Search suggestions"></div>
+</div>
+<div class="marketing-search-wrap hidden lg:block relative w-full max-w-xs shrink-0 ml-auto">
+<form class="marketing-search-form" role="search" action="/blog" method="get">
+<label class="sr-only" for="marketing-desktop-search">Search site</label>
+<input id="marketing-desktop-search" class="marketing-search-input w-full border border-gray-300 rounded-full py-1.5 px-4 pr-9 text-sm focus:outline-none focus:ring-1 focus:ring-fidelityGreen bg-white/95" type="search" placeholder="How can we help?" autocomplete="off"/>
+<button type="submit" class="sr-only">Search</button>
+<svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-fidelityGreen pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</form>
+<div class="marketing-search-suggestions hidden" role="listbox" aria-label="Search suggestions"></div>
 </div>
 </div>
 </header>
 <!-- END: MainNavigation -->
-</div>
-<!-- END: SiteHeader -->
 
 <!-- BEGIN: MarketingMobileSidebar -->
 <div id="marketing-sidebar-overlay" class="fixed inset-0 bg-black/50 z-[60] lg:hidden hidden" aria-hidden="true"></div>
@@ -90,13 +131,6 @@ $mobileNavClass = function ($page) use ($current) {
 <a class="block w-full text-center border border-fidelityGreen text-fidelityGreen px-6 py-2.5 rounded-full font-bold hover:bg-gray-50 transition-colors" href="/logout">Log out</a>
 </div>
 <?php endif; ?>
-<div class="p-4 border-b border-gray-100">
-<label class="sr-only" for="marketing-sidebar-search">Search</label>
-<div class="relative">
-<input id="marketing-sidebar-search" class="w-full border border-gray-300 rounded-full py-2 px-4 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-fidelityGreen" placeholder="How can we help?" type="search">
-<svg class="w-4 h-4 absolute right-3 top-2.5 text-fidelityGreen pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</div>
-</div>
 <nav class="flex-1 overflow-y-auto p-4" aria-label="Main navigation">
 <p class="text-xs font-bold uppercase tracking-wide text-fidelityGray mb-3">Menu</p>
 <ul class="space-y-1 mb-6">

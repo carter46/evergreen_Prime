@@ -59,7 +59,7 @@ Join investors who trust <?php echo htmlspecialchars($siteName); ?> with their w
 </div>
 </div>
 <button type="button" id="register-get-started" class="register-get-started-btn auth-btn-primary mt-lg w-full sm:w-auto px-8 active:scale-[0.98] transition-all flex items-center justify-center gap-xs">
-<span>Get Started</span>
+<span>Register now</span>
 <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
 </button>
 </div>

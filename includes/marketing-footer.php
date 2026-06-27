@@ -80,5 +80,7 @@ $homepageModalImage = get_site_setting('homepage_modal_image', '');
 
 <div class="gtranslate_wrapper"></div>
 <?php require_once __DIR__ . '/app-script.php'; ?>
+<?php $marketingSearchVer = (int) @filemtime(dirname(__DIR__) . '/js/marketing-search.js'); ?>
+<script src="/js/marketing-search.js?v=<?php echo $marketingSearchVer; ?>" defer></script>
 <?php require_once __DIR__ . '/translation-widget.php'; ?>
 <?php require_once __DIR__ . '/live-chat-widget.php'; ?>
