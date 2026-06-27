@@ -13,7 +13,7 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 <style>
 :root { --home-nav-offset: 3.5rem; }
 
-/* Account selector — simplified sticky-scroll */
+/* Account selector — Stay Eazi-style: sticky side columns + tall scroll column */
 .account-tab {
   display: block;
   width: 100%;
@@ -36,55 +36,49 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 .account-panel { padding: 2rem 0; }
 
 @media (min-width: 1024px) {
-  .account-selector__track {
+  .account-selector {
+    padding: 4rem 0;
     position: relative;
-    height: 400vh;
-    background: #fff;
   }
-  .account-selector__sticky {
-    position: sticky;
-    top: var(--home-nav-offset);
-    height: calc(100vh - var(--home-nav-offset));
-    overflow: hidden;
-  }
-  .account-selector__shell {
-    height: 100%;
-  }
-  .account-selector__layout {
+  .account-selector__grid {
     display: grid;
     grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(280px, 360px);
     gap: clamp(2rem, 4vw, 4rem);
-    align-items: center;
-    height: 100%;
+    align-items: start;
   }
-  .account-selector__nav-col {
+  .account-selector__nav-col,
+  .account-selector__media {
+    position: sticky;
+    top: var(--home-nav-offset);
+    align-self: start;
+    min-height: calc(100vh - var(--home-nav-offset));
     display: flex;
     align-items: center;
-    height: 100%;
-    padding-left: 0.25rem;
   }
   .account-selector__nav {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    height: 100%;
     gap: 2rem;
     border-left: 2px solid #f3f4f6;
+    width: 100%;
     margin: 0;
     padding: 0;
-    width: 100%;
+  }
+  .account-selector__scroll {
+    position: relative;
+    min-height: 400vh;
+  }
+  .account-selector__panels-inner {
+    position: sticky;
+    top: var(--home-nav-offset);
+    min-height: calc(100vh - var(--home-nav-offset));
+    display: flex;
+    align-items: center;
   }
   .account-selector__panels {
     position: relative;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-  }
-  .account-selector__media {
-    display: flex;
-    align-items: center;
-    height: 100%;
+    width: 100%;
+    min-height: calc(100vh - var(--home-nav-offset) - 4rem);
   }
   .account-panel {
     position: absolute;
@@ -105,26 +99,8 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
     transform: translateY(0);
     pointer-events: auto;
   }
-  .account-selector__steps {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    visibility: hidden;
-  }
-  .account-selector__step {
-    position: absolute;
-    left: 0;
-    width: 1px;
-    height: 1px;
-    scroll-margin-top: var(--home-nav-offset);
-  }
-  .account-selector__step[data-step="0"] { top: 0; }
-  .account-selector__step[data-step="1"] { top: 100vh; }
-  .account-selector__step[data-step="2"] { top: 200vh; }
-  .account-selector__step[data-step="3"] { top: 300vh; }
 }
 @media (max-width: 1023px) {
-  .account-selector__sticky { position: relative; top: auto; height: auto; }
   .account-panel + .account-panel {
     border-top: 1px solid #f3f4f6;
     margin-top: 1rem;
@@ -158,18 +134,9 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 
 <!-- BEGIN: AccountSelectorSection -->
 <section class="account-selector bg-white" id="account-selector">
-<div class="account-selector__track" id="account-selector-track">
-<div class="account-selector__steps" aria-hidden="true">
-<span class="account-selector__step" id="account-step-0" data-step="0"></span>
-<span class="account-selector__step" id="account-step-1" data-step="1"></span>
-<span class="account-selector__step" id="account-step-2" data-step="2"></span>
-<span class="account-selector__step" id="account-step-3" data-step="3"></span>
-</div>
-<div class="account-selector__sticky" id="account-selector-sticky">
-<div class="account-selector__shell mx-auto px-4 max-w-6xl">
-<div class="account-selector__layout">
+<div class="mx-auto px-4 max-w-6xl account-selector__grid">
 
-<aside class="account-selector__nav-col hidden lg:block">
+<aside class="account-selector__nav-col hidden lg:flex">
 <nav class="account-selector__nav" aria-label="Account goals">
 <button type="button" class="account-tab is-active" data-tab="investing">Start investing</button>
 <button type="button" class="account-tab" data-tab="retirement">Save for retirement</button>
@@ -178,13 +145,15 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 </nav>
 </aside>
 
-<nav class="lg:hidden flex gap-2 overflow-x-auto pb-4 mb-2 border-b border-gray-100 -mx-1 px-1" aria-label="Account goals">
+<nav class="lg:hidden col-span-full flex gap-2 overflow-x-auto pb-4 mb-2 border-b border-gray-100 -mx-1 px-1" aria-label="Account goals">
 <button type="button" class="account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-fidelityGreen text-white font-semibold" data-tab-mobile="investing">Start investing</button>
 <button type="button" class="account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-tab-mobile="retirement">Retirement</button>
 <button type="button" class="account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-tab-mobile="healthcare">Health care</button>
 <button type="button" class="account-tab-mobile shrink-0 px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-600" data-tab-mobile="education">For a child</button>
 </nav>
 
+<div class="account-selector__scroll" id="account-selector-scroll">
+<div class="account-selector__panels-inner">
 <div class="account-selector__panels">
 
 <article class="account-panel is-active" data-panel="investing" id="panel-investing">
@@ -288,6 +257,8 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 </article>
 
 </div>
+</div>
+</div>
 
 <div class="account-selector__media hidden lg:flex">
 <div class="w-full bg-fidelityLightGreen rounded-3xl p-6">
@@ -295,8 +266,6 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
 </div>
 </div>
 
-</div>
-</div>
 </div>
 </section>
 <!-- END: AccountSelectorSection -->
@@ -412,39 +381,36 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
     var PANEL_COUNT = PANELS.length;
     var DESKTOP_QUERY = window.matchMedia('(min-width: 1024px)');
 
-    var track = document.getElementById('account-selector-track');
-    var sticky = document.getElementById('account-selector-sticky');
-    if (!track || !sticky) return;
+    var section = document.getElementById('account-selector');
+    var scrollCol = document.getElementById('account-selector-scroll');
+    if (!section || !scrollCol) return;
 
-    var tabs = track.querySelectorAll('[data-tab]');
-    var mobileTabs = track.querySelectorAll('[data-tab-mobile]');
-    var panelEls = track.querySelectorAll('[data-panel]');
+    var tabs = section.querySelectorAll('[data-tab]');
+    var mobileTabs = section.querySelectorAll('[data-tab-mobile]');
+    var panelEls = section.querySelectorAll('[data-panel]');
     var activeIndex = -1;
-    var ticking = false;
 
     function isDesktop() {
         return DESKTOP_QUERY.matches;
     }
 
+    function getStickyTop() {
+        var navCol = section.querySelector('.account-selector__nav-col');
+        if (!navCol) return 56;
+        return parseFloat(window.getComputedStyle(navCol).top) || 56;
+    }
+
     function readProgress() {
-        var trackRect = track.getBoundingClientRect();
-        var stickyTop = parseFloat(window.getComputedStyle(sticky).top) || 0;
-        var total = track.offsetHeight - window.innerHeight + stickyTop;
+        var rect = scrollCol.getBoundingClientRect();
+        var stickyTop = getStickyTop();
+        var total = scrollCol.offsetHeight - window.innerHeight;
         var progress;
 
         if (!isDesktop() || total <= 0) {
             return 0;
         }
-        progress = (stickyTop - trackRect.top) / total;
+        progress = (stickyTop - rect.top) / total;
         return Math.max(0, Math.min(1, progress));
-    }
-
-    function indexFromProgress(progress) {
-        var index = Math.floor(progress * PANEL_COUNT);
-        if (index >= PANEL_COUNT) {
-            index = PANEL_COUNT - 1;
-        }
-        return Math.max(0, index);
     }
 
     function setActiveIndex(index) {
@@ -466,7 +432,10 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
     }
 
     function goToIndex(index) {
-        var step;
+        var rect;
+        var total;
+        var stickyTop;
+        var target;
 
         if (index < 0 || index >= PANEL_COUNT) {
             return;
@@ -478,37 +447,27 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
             }
             return;
         }
-        step = document.getElementById('account-step-' + index);
-        if (step) {
-            step.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        rect = scrollCol.getBoundingClientRect();
+        total = scrollCol.offsetHeight - window.innerHeight;
+        stickyTop = getStickyTop();
+        target = window.scrollY + rect.top - stickyTop + (total * index / PANEL_COUNT);
+        window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
     }
 
-    function onFrame() {
+    function onScroll() {
         var index;
-
-        ticking = false;
         if (!isDesktop()) {
             return;
         }
-        index = indexFromProgress(readProgress());
+        index = Math.floor(readProgress() * PANEL_COUNT);
+        if (index >= PANEL_COUNT) {
+            index = PANEL_COUNT - 1;
+        }
         if (index === activeIndex) {
             return;
         }
         activeIndex = index;
         setActiveIndex(index);
-    }
-
-    function onScroll() {
-        if (!ticking) {
-            ticking = true;
-            requestAnimationFrame(onFrame);
-        }
-    }
-
-    function handleResize() {
-        activeIndex = -1;
-        onFrame();
     }
 
     tabs.forEach(function (tab) {
@@ -523,13 +482,11 @@ $accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYM
     });
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', handleResize);
-    if (DESKTOP_QUERY.addEventListener) {
-        DESKTOP_QUERY.addEventListener('change', handleResize);
-    } else if (DESKTOP_QUERY.addListener) {
-        DESKTOP_QUERY.addListener(handleResize);
-    }
-    onFrame();
+    window.addEventListener('resize', function () {
+        activeIndex = -1;
+        onScroll();
+    });
+    onScroll();
 })();
 </script>
 </body>
