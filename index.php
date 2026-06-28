@@ -2,14 +2,36 @@
 require_once __DIR__ . '/includes/helpers.php';
 $siteName = get_site_name();
 $pageTitle = $siteName . ' - Retirement Plans, Investing, Brokerage';
-$accountSectionImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlYMQLYWxL_RRl-5SOmShdC6hhlnZmPa96FDPtMPcRvaR9sO9ERXdbuD7YuyAISXe53Qo5sxtONpYyXNUzLhT57merNvjxXl0swczCCf9kCmrTa1EmTSnxWy6TfSzPZzDm-1mmblmnPJkSGFqI7Ze5sT-CJJSmhV06QrimoudsRiRYC7iCNiDn_P8pnZ11wWmDU8nKK3lfNQxAkl9Pew8i5VGSX-xHj9qHGStweeoY8sqp1vUCRWEksA';
+
+$homeImage = static function (string $filename, ?string $fallback = null): string {
+    $dir = __DIR__ . '/uploads/images/';
+    if (is_file($dir . $filename)) {
+        return '/uploads/images/' . $filename;
+    }
+    if ($fallback !== null && is_file($dir . $fallback)) {
+        return '/uploads/images/' . $fallback;
+    }
+    return '/uploads/images/' . $filename;
+};
+
 $heroSlides = [
-    '/uploads/images/nasa-Q1p7bh3SHj8-unsplash.jpg',
-    '/uploads/images/bloombit.jpg',
-    '/uploads/images/evergren_cmarket.png',
-    '/uploads/images/wallet_image3.png',
-    '/uploads/images/evergren_mockup.png',
+    $homeImage('hero_slide1.jpg', 'hero_slide2.jpg'),
+    $homeImage('hero_slide2.jpg'),
+    $homeImage('hero_slide3.jpg'),
 ];
+$accountTimelineImages = [
+    'brokerage' => $homeImage('smart_2.jpg'),
+    'retirement' => $homeImage('happy-couple-with-two-children.jpg'),
+    'health' => $homeImage('health1.jpg'),
+    'education' => $homeImage('edication1.jpg'),
+];
+$partnerSectionImage = $homeImage('find_partner1.jpg');
+$expertiseImages = [
+    $homeImage('save_healthw.jpg'),
+    $homeImage('invest_3.jpg'),
+    $homeImage('crypto-assets.jpg', 'bull_trade.jpg'),
+];
+$whyChooseImage = $homeImage('abou_us.jpg');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -151,7 +173,7 @@ $heroSlides = [
 </div>
 <div class="account-timeline__media order-1 lg:order-2 mb-8 lg:mb-0 lg:pl-10">
 <div class="bg-fidelityLightGreen rounded-3xl p-6">
-<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
+<img alt="Invest smart with a brokerage account" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountTimelineImages['brokerage']); ?>">
 </div>
 </div>
 </div>
@@ -163,7 +185,7 @@ $heroSlides = [
 <div class="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-center">
 <div class="account-timeline__media order-1 lg:order-1 mb-8 lg:mb-0 lg:pr-10">
 <div class="bg-fidelityLightGreen rounded-3xl p-6">
-<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
+<img alt="Plan for retirement with a Roth IRA" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountTimelineImages['retirement']); ?>">
 </div>
 </div>
 <div class="account-timeline__content order-2 lg:order-2 lg:pl-10">
@@ -223,7 +245,7 @@ $heroSlides = [
 </div>
 <div class="account-timeline__media order-1 lg:order-2 mb-8 lg:mb-0 lg:pl-10">
 <div class="bg-fidelityLightGreen rounded-3xl p-6">
-<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
+<img alt="Save for health care with an HSA" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountTimelineImages['health']); ?>">
 </div>
 </div>
 </div>
@@ -235,7 +257,7 @@ $heroSlides = [
 <div class="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-center">
 <div class="account-timeline__media order-1 lg:order-1 mb-8 lg:mb-0 lg:pr-10">
 <div class="bg-fidelityLightGreen rounded-3xl p-6">
-<img alt="<?php echo htmlspecialchars($siteName); ?>" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountSectionImage); ?>">
+<img alt="Save for education with a 529 account" class="rounded-2xl shadow-2xl w-full h-auto object-cover" src="<?php echo htmlspecialchars($accountTimelineImages['education']); ?>">
 </div>
 </div>
 <div class="account-timeline__content order-2 lg:order-2 lg:pl-10">
@@ -274,7 +296,7 @@ $heroSlides = [
 <section class="py-0">
 <div class="mx-auto flex flex-col lg:flex-row bg-white max-w-6xl">
 <div class="lg:w-2/3">
-<img alt="<?php echo htmlspecialchars($siteName); ?> Advisors" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGNI9MvKH4eR-H4wbkZQtqLrkuQFRt-B8yuqIg2po_PHYBT5n95rGn79ffTEhyPEciibrnTd8JfWRcVzdo6cMkXqWMtyVUI-JFkYGPNejK833re5GWabG4e7JtAyjGy2pJsjzC1Y20KaQDx7wYgjya6SmunmGwHgUee647bJH3C7N0ved2CeN5MqfQtNwqsBezHpyIeM6j0IyhxnfG-oVvTwrxAj9oJYrBFUlef2P4ASP4xjeS0drytQ">
+<img alt="Find a financial advisor" class="w-full h-full object-cover" src="<?php echo htmlspecialchars($partnerSectionImage); ?>">
 </div>
 <div class="lg:w-1/3 bg-gray-50 p-12 flex flex-col justify-center">
 <h2 class="text-3xl mb-6">A partner to help bring your plans to life</h2>
@@ -298,7 +320,7 @@ $heroSlides = [
 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 <!-- Card 1 -->
 <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-<img alt="HSA article" class="w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrfGZE4uyLrBVgx5oZTwVxHCbMt5nr97V2zsUPcuteaMdoda-ihuMI1ECqORMqH3NbbG3bMvSEZtrmSmHTujTL6S27XWYysorCxu0MnY6gJgMYiIc4qVE1vU1XsqOfob6CwwmcrM0Qd3jC-8gotRhfYNW1W100bOJwdQiNpS_O71M3WaaaqjvcrQkEbu6H8m8_c-w5OF72XAem1rWMrxwq4mGZSJwpviPva8vV7wridhq9PlolA5trxA">
+<img alt="HSA article" class="w-full h-48 object-cover" src="<?php echo htmlspecialchars($expertiseImages[0]); ?>">
 <div class="p-6">
 <h3 class="text-xl font-bold mb-3">3 ways to use your health savings account</h3>
 <p class="text-sm text-gray-600 mb-6">Know the type of HSA user you are, then see how to make your money work harder.</p>
@@ -310,7 +332,7 @@ $heroSlides = [
 </div>
 <!-- Card 2 -->
 <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-<img alt="Market insights" class="w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAul3dAMH8fEQUmzimbws6bujHtXZlAyFDts4sq1xD25JH53pw61zHQapYNh4m8x-PPRoSOkVweyIPE-7H78qBRljnpl7K1stlm_-kVxIMa2KF2mcaS_tQWK6yd9Tb5m9Rit4BtgOjtZhmHuxPi77AmX3fBDBBRtSOfCnvCDF0DiQYPos30dTide-jtaXpsyacr1LtUtiPDfjQ7MuCBuMIwZZquJ8BWTz39MEO7BKK6cvpa1qAllIa74w">
+<img alt="Market insights" class="w-full h-48 object-cover" src="<?php echo htmlspecialchars($expertiseImages[1]); ?>">
 <div class="p-6">
 <h3 class="text-xl font-bold mb-3">Market Sense: Weekly insights</h3>
 <p class="text-sm text-gray-600 mb-6">Our experts discuss the latest headlines, current market conditions, and what it all means for you.</p>
@@ -322,7 +344,7 @@ $heroSlides = [
 </div>
 <!-- Card 3 -->
 <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-<img alt="Investing start" class="w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7IRge5NrdHMcf_HA0DzqaNg0H4gqWcQW_bksH5pYuUULN0JfIxvPhoGMG6rCY0tRkcKCMFvh8XerOpoM366ESWEM6E3_C8WOC6jhEVWq1_NPCgqXsSQ-K7_8zrVatBBfH3NsK9DPpso3sQvcIl00GY2LCtvXElvqLO5w514V9IRi4jAOMwns7_B5iJElF4h1txk5xX27YGmHrfCKeSHvSF6DtCh4faLwlieSVRFpMeAqw2hRNu12idA">
+<img alt="How to start investing" class="w-full h-48 object-cover" src="<?php echo htmlspecialchars($expertiseImages[2]); ?>">
 <div class="p-6">
 <h3 class="text-xl font-bold mb-3">How to start investing</h3>
 <p class="text-sm text-gray-600 mb-6">It doesn't have to be overly complicated. Here's how to start.</p>
@@ -363,7 +385,7 @@ $heroSlides = [
 </ul>
 </div>
 <div class="relative rounded-2xl overflow-hidden">
-<img alt="<?php echo htmlspecialchars($siteName); ?> Customers" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCamvPpRWXXo06xfhs2MhOWcBVF1JncodJZxIDVpxGDf217WzcamtCt4x3ft5_GliedbgSuGCg3RhIxRzW_1aWBORQUWq8u5W0ev0qzvfSkzESeswVEfjsfm6skJ_e5QHzhjz1ffFf0yKnrfeZl_H82SqxOPLDNgACMl5GYDl1o2H7NED4Pdnp6azY8b_OJVbHa65QZJx9-7HJVaWMhSc_qtrgr1p0imf0NU-EtKhBbc1DM6UkD5iXK_w">
+<img alt="Why choose <?php echo htmlspecialchars($siteName); ?>" class="w-full h-full object-cover" src="<?php echo htmlspecialchars($whyChooseImage); ?>">
 </div>
 </div>
 </section>
