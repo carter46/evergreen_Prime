@@ -2,14 +2,10 @@
 </main>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('.glass-panel').forEach(function (card) {
-    card.addEventListener('mouseenter', function () {
-      card.style.transform = 'translateY(-2px)';
-      card.style.transition = 'transform 0.2s ease-out';
-    });
-    card.addEventListener('mouseleave', function () {
-      card.style.transform = 'translateY(0)';
-    });
+  document.querySelectorAll('.glass-panel, .bento-card').forEach(function (card) {
+    card.addEventListener('mousedown', function () { card.style.transform = 'scale(0.99)'; });
+    card.addEventListener('mouseup', function () { card.style.transform = ''; });
+    card.addEventListener('mouseleave', function () { card.style.transform = ''; });
   });
 });
 </script>

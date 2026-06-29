@@ -1,9 +1,9 @@
 <?php
 if (empty($pageHeading)) return;
 ?>
-<header class="mb-8 md:mb-10">
-<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight"><?php echo htmlspecialchars($pageHeading); ?></h2>
+<div class="mb-lg">
+<h2 class="font-hanken font-headline-lg text-headline-lg text-on-surface mb-xs"><?php echo htmlspecialchars($pageHeading); ?></h2>
 <?php if (!empty($pageSubtitle)): ?>
-<p class="text-text-secondary mt-1"><?php echo htmlspecialchars($pageSubtitle); ?></p>
+<p class="font-body-md text-body-md text-on-surface-variant"><?php echo htmlspecialchars($pageSubtitle); ?></p>
 <?php endif; ?>
-</header>
+</div>

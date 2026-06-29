@@ -44,6 +44,7 @@ Options -Indexes
     RewriteRule ^dashboard/admin/kyc$ dashboard/admin/kyc_management.php [L]
     RewriteRule ^dashboard/admin/ai-config$ dashboard/admin/ai_bot_config.php [L]
     RewriteRule ^dashboard/admin/settings$ dashboard/admin/settings.php [L]
+    RewriteRule ^dashboard/admin/transactions$ dashboard/admin/transactions.php [L]
 
     # Market detail pages
     RewriteRule ^markets/([a-z0-9-]+)/?$ market.php?slug=$1 [L,QSA]
