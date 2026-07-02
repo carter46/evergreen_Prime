@@ -110,27 +110,26 @@ $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded
 <p class="text-sm leading-snug sm:font-body-lg sm:text-body-lg sm:leading-normal text-on-surface-variant mt-1">Welcome back to your institutional trading hub.</p>
 </section>
 <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
-<div class="dash-card-balance-green bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
+<div class="md:col-span-2 lg:col-span-2 dash-card-balance-hero bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div>
 <span class="font-label-md text-label-md dash-card-label uppercase tracking-wider">Total USD Balance</span>
 <h3 class="font-hanken font-extrabold text-headline-md dash-card-value mt-base">$<?php echo number_format((float) $userBalance, 0, '.', ','); ?></h3>
+</div>
+<hr class="dash-card-divider border-t my-md">
+<div>
+<span class="font-label-md text-label-md dash-card-label uppercase tracking-wider">Total Profit</span>
+<h3 class="font-hanken font-extrabold text-headline-md dash-card-profit-value mt-base">+$<?php echo format_usd_amount($totalProfit); ?></h3>
+<?php if ($growthPct > 0): ?>
+<div class="flex items-center gap-xs mt-sm text-[#9ee08a] bg-white/10 p-2 rounded w-fit">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+<span class="font-label-md text-[11px] font-bold">+<?php echo number_format($growthPct, 1); ?>% Overall Growth</span>
+</div>
+<?php endif; ?>
 </div>
 <div class="flex gap-xs mt-md">
 <button type="button" id="deposit-btn-dash" class="flex-1 dash-btn-solid text-[12px] font-bold py-2 rounded-lg transition-transform active:scale-95">Deposit</button>
 <a href="/dashboard/user/transactions" class="flex-1 dash-btn-outline border text-[12px] font-bold py-2 rounded-lg transition-colors text-center">Transactions</a>
 </div>
-</div>
-<div class="dash-card-light-green bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
-<div>
-<span class="font-label-md text-label-md text-on-surface-variant">Total Profit</span>
-<h3 class="font-hanken font-extrabold text-headline-md text-fidelity-green mt-base">+$<?php echo format_usd_amount($totalProfit); ?></h3>
-</div>
-<?php if ($growthPct > 0): ?>
-<div class="flex items-center gap-xs mt-md text-fidelity-green bg-fidelity-green/5 p-2 rounded">
-<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">trending_up</span>
-<span class="font-label-md text-[11px] font-bold">+<?php echo number_format($growthPct, 1); ?>% Overall Growth</span>
-</div>
-<?php endif; ?>
 </div>
 <div class="dash-card-light-green bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div class="space-y-md">
@@ -144,13 +143,13 @@ $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded
 </div>
 </div>
 </div>
-<div class="dash-card-referral-dark bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
+<div class="dash-card-light-green bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div>
-<span class="font-label-md text-label-md dash-card-label uppercase tracking-wider">Referral Bonus</span>
-<h3 class="font-hanken font-extrabold text-headline-md dash-card-value mt-base">$<?php echo format_usd_amount($referralBonus); ?></h3>
-<p class="font-label-md text-[11px] dash-card-muted mt-1">Last 24h: <span class="dash-card-accent">+$<?php echo format_usd_amount($referralBonusLast24h); ?></span></p>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Referral Bonus</span>
+<h3 class="font-hanken font-extrabold text-headline-md text-on-surface mt-base">$<?php echo format_usd_amount($referralBonus); ?></h3>
+<p class="font-label-md text-[11px] text-on-surface-variant mt-1">Last 24h: <span class="text-fidelity-green font-bold">+$<?php echo format_usd_amount($referralBonusLast24h); ?></span></p>
 </div>
-<a class="inline-flex items-center gap-1 font-label-md dash-card-link font-bold mt-md hover:underline" href="/dashboard/user/referrals">
+<a class="inline-flex items-center gap-1 font-label-md text-fidelity-green font-bold mt-md hover:underline" href="/dashboard/user/referrals">
 View Network Details
 <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
 </a>

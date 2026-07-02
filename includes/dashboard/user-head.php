@@ -169,6 +169,29 @@ body.user-dashboard {
   padding-top: calc(4rem + env(safe-area-inset-top, 0px)) !important;
   box-sizing: border-box;
 }
+.dash-card-balance-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(10, 10, 10, 0.9) 0%, rgba(26, 26, 26, 0.86) 48%, rgba(45, 45, 45, 0.88) 100%),
+    url('/uploads/images/pngwing.com.png') center right / cover no-repeat;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.dash-card-balance-hero .dash-card-label,
+.dash-card-balance-hero .dash-card-muted { color: rgba(255, 255, 255, 0.72) !important; }
+.dash-card-balance-hero .dash-card-value { color: #fff !important; }
+.dash-card-balance-hero .dash-card-profit-value { color: #9ee08a !important; }
+.dash-card-balance-hero .dash-card-divider { border-color: rgba(255, 255, 255, 0.18); }
+.dash-card-balance-hero .dash-btn-outline {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #fff;
+}
+.dash-card-balance-hero .dash-btn-outline:hover { background: rgba(255, 255, 255, 0.12); }
+.dash-card-balance-hero .dash-btn-solid {
+  background: rgba(255, 255, 255, 0.95);
+  color: #185e08;
+}
 .dash-card-balance-green {
   background: linear-gradient(135deg, #185e08 0%, #337722 50%, #4a9e2a 100%);
   border-color: rgba(255, 255, 255, 0.12);
@@ -199,14 +222,14 @@ body.user-dashboard {
 .dash-card-light-green {
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.78);
-  border-color: rgba(51, 119, 34, 0.22);
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(51, 119, 34, 0.28);
 }
 .dash-card-light-green::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(145deg, rgba(51, 119, 34, 0.07) 0%, transparent 55%, rgba(51, 119, 34, 0.04) 100%);
+  background: linear-gradient(145deg, rgba(51, 119, 34, 0.16) 0%, rgba(214, 232, 207, 0.45) 38%, rgba(51, 119, 34, 0.12) 100%);
   pointer-events: none;
 }
 .dash-card-light-green > * {
