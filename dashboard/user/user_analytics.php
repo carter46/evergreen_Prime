@@ -90,10 +90,34 @@ try {
     $liquidatedPlans = fetch_portfolio_investments($pdo, (int) $userId, 'liquidated');
 
     // Fetch all transactions for table (limit 50)
-    $txStmt = $pdo->prepare('SELECT type, amount, currency, status, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50');
+    $txStmt = $pdo->prepare('SELECT type, amount, currency, status, created_at, reference FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50');
     $txStmt->execute([$userId]);
     $analyticsTx = [];
     while ($row = $txStmt->fetch(PDO::FETCH_ASSOC)) $analyticsTx[] = $row;
+
+    $payoutInvPlan = [];
+    $payoutInvRoi = [];
+    $invMetaStmt = $pdo->prepare(
+        'SELECT ui.id, p.name, p.yield_min, p.yield_max
+         FROM user_investments ui
+         JOIN plans p ON p.id = ui.plan_id
+         WHERE ui.user_id = ?'
+    );
+    $invMetaStmt->execute([$userId]);
+    while ($invRow = $invMetaStmt->fetch(PDO::FETCH_ASSOC)) {
+        $invId = (int) ($invRow['id'] ?? 0);
+        if ($invId <= 0) {
+            continue;
+        }
+        $yieldMin = (float) ($invRow['yield_min'] ?? 0);
+        $yieldMax = (float) ($invRow['yield_max'] ?? 0);
+        $avgYield = ($yieldMin + $yieldMax) / 2;
+        if ($avgYield <= 0) {
+            $avgYield = $yieldMin;
+        }
+        $payoutInvPlan[$invId] = (string) ($invRow['name'] ?? 'Investment Plan');
+        $payoutInvRoi[$invId] = $avgYield;
+    }
 
     // Winning streak & personal best: based on days with payout credits (completed)
     $payoutDaysStmt = $pdo->prepare("
@@ -538,6 +562,17 @@ foreach ($analyticsTx as $tx):
     $logo = $coinLogosAnalytics[strtoupper($tx['currency'])] ?? null;
     $statusClass = $tx['status'] === 'completed' ? 'text-fidelity-green' : ($tx['status'] === 'rejected' ? 'text-red-500' : 'text-amber-500');
     $statusIcon = $tx['status'] === 'completed' ? 'check_circle' : ($tx['status'] === 'rejected' ? 'cancel' : 'schedule');
+    $planLabel = $typeLabel;
+    $roiPct = null;
+    if ($txType === 'payout' && !empty($tx['reference']) && preg_match('/^earnings_inv_(\d+)/', (string) $tx['reference'], $refMatch)) {
+        $payoutInvId = (int) $refMatch[1];
+        if (isset($payoutInvPlan[$payoutInvId])) {
+            $planLabel = $payoutInvPlan[$payoutInvId];
+        }
+        if (isset($payoutInvRoi[$payoutInvId]) && $payoutInvRoi[$payoutInvId] > 0) {
+            $roiPct = (float) $payoutInvRoi[$payoutInvId];
+        }
+    }
 ?>
 <tr class="hover:bg-surface-container-low transition-colors animate-fade-in">
 <td class="px-6 py-4">
@@ -547,7 +582,7 @@ foreach ($analyticsTx as $tx):
 <td class="px-6 py-4">
 <div class="flex items-center gap-2">
 <div class="w-2 h-2 rounded-full bg-primary"></div>
-<span class="font-medium"><?php echo htmlspecialchars($typeLabel); ?></span>
+<span class="font-medium"><?php echo htmlspecialchars($planLabel); ?></span>
 </div>
 </td>
 <td class="px-6 py-4">
@@ -558,8 +593,8 @@ foreach ($analyticsTx as $tx):
 </td>
 <td class="px-6 py-4 font-bold <?php echo $isProfitLike ? ($isProfitCredit ? 'text-fidelity-green' : 'text-red-500') : 'text-on-surface'; ?>"><?php echo $isProfitLike ? ($isProfitCredit ? '+' : '-') : ''; ?>$<?php echo format_usd_amount($displayAmt); ?></td>
 <td class="px-6 py-4">
-<?php if ($isProfitLike && $isProfitCredit && $txType === 'payout'): ?>
-<span class="px-2 py-1 bg-fidelity-green/10 text-fidelity-green rounded font-bold text-xs"><?php echo number_format((($tx['amount'] / ($activeCapital ?: 1)) * 100), 1); ?>%</span>
+<?php if ($isProfitLike && $isProfitCredit && $txType === 'payout' && $roiPct !== null): ?>
+<span class="px-2 py-1 bg-fidelity-green/10 text-fidelity-green rounded font-bold text-xs" title="Plan daily ROI"><?php echo number_format($roiPct, 1); ?>%</span>
 <?php else: ?>
 <span class="px-2 py-1 bg-surface-container text-on-surface-variant rounded font-bold text-xs">—</span>
 <?php endif; ?>
