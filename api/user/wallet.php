@@ -25,7 +25,7 @@ try {
 }
 
 $balances = [];
-$totalUsd = get_user_usd_balance($pdo, (int) $userId);
+$totalUsd = get_user_spendable_usd_balance($pdo, (int) $userId);
 $totalUsdUpdatedAt = null;
 try {
     $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd_updated_at'");

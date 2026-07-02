@@ -30,7 +30,7 @@ $days = match($period) {
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
-    $userBalance = get_user_usd_balance($pdo, (int) $userId);
+    $userBalance = get_user_spendable_usd_balance($pdo, (int) $userId);
     try {
         $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd_updated_at'");
         if ($bc && $bc->rowCount() > 0) {
@@ -59,7 +59,7 @@ try {
 
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
-    $totalProfit = get_user_total_profit($pdo, (int) $userId);
+    $totalProfit = get_user_realized_profit($pdo, (int) $userId);
     $stmt = $pdo->prepare('SELECT ui.id, ui.plan_id, ui.amount, ui.start_date, ui.status, ui.duration_days as investment_duration_days, p.name as plan_name, p.yield_min, p.yield_max, p.duration_days as plan_duration_days FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ? ORDER BY ui.created_at DESC LIMIT 5');
     $stmt->execute([$userId, 'active']);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -119,10 +119,11 @@ $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded
 <div>
 <span class="font-label-md text-label-md dash-card-label uppercase tracking-wider">Total Profit</span>
 <h3 class="font-hanken font-extrabold text-headline-md dash-card-profit-value mt-base">+$<?php echo format_usd_amount($totalProfit); ?></h3>
+<p class="font-label-md text-[11px] dash-card-label opacity-80 mt-1">Settled plans only</p>
 <?php if ($growthPct > 0): ?>
 <div class="flex items-center gap-xs mt-sm text-[#9ee08a] bg-white/10 p-2 rounded w-fit">
 <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">trending_up</span>
-<span class="font-label-md text-[11px] font-bold">+<?php echo number_format($growthPct, 1); ?>% Overall Growth</span>
+<span class="font-label-md text-[11px] font-bold">+<?php echo number_format($growthPct, 1); ?>% Realized Growth</span>
 </div>
 <?php endif; ?>
 </div>

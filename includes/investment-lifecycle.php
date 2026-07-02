@@ -249,6 +249,29 @@ function fetch_user_investment(PDO $pdo, int $invId, int $userId): ?array
     return $row ?: null;
 }
 
+/**
+ * Move accrued (not yet wallet-credited) earnings into the spendable USD balance.
+ */
+function release_investment_accrued_earnings_to_wallet(PDO $pdo, int $userId, int $invId): float
+{
+    $releaseRef = 'earnings_release_inv_' . $invId;
+    if (investment_has_transaction_reference($pdo, $releaseRef)) {
+        return 0.0;
+    }
+
+    $amount = get_investment_accrued_payout_not_in_wallet($pdo, $invId);
+    if ($amount <= 0) {
+        return 0.0;
+    }
+
+    $currency = user_usd_wallet_currency();
+    $amountStr = number_format($amount, 18, '.', '');
+    credit_user_usd($pdo, $userId, $amount);
+    investment_lifecycle_insert_transaction($pdo, $userId, 'deposit', $amountStr, $amount, $currency, $releaseRef);
+
+    return $amount;
+}
+
 function lock_user_investment_row(PDO $pdo, int $invId): ?array
 {
     $stmt = $pdo->prepare(
@@ -302,6 +325,7 @@ function settle_matured_investment(PDO $pdo, int $invId, bool $manageTransaction
 
         $ref = 'maturity_inv_' . $invId;
         if (investment_principal_returned($pdo, $invId) || investment_has_transaction_reference($pdo, $ref)) {
+            release_investment_accrued_earnings_to_wallet($pdo, (int) $inv['user_id'], $invId);
             $pdo->prepare("UPDATE user_investments SET status = 'completed' WHERE id = ? AND status IN ('active', 'paused')")
                 ->execute([$invId]);
             if ($started && $pdo->inTransaction()) {
@@ -338,6 +362,8 @@ function settle_matured_investment(PDO $pdo, int $invId, bool $manageTransaction
             }
             return ['success' => false, 'error' => 'Investment status changed during settlement'];
         }
+
+        release_investment_accrued_earnings_to_wallet($pdo, $userId, $invId);
 
         if ($started && $pdo->inTransaction()) {
             $pdo->commit();
@@ -389,10 +415,11 @@ function liquidate_user_investment(PDO $pdo, int $userId, int $invId): array
         $returnRef = 'liquidation_return_inv_' . $invId;
         $feeRef = 'liquidation_fee_inv_' . $invId;
         if (investment_has_transaction_reference($pdo, $returnRef)) {
+            release_investment_accrued_earnings_to_wallet($pdo, $userId, $invId);
             $pdo->prepare("UPDATE user_investments SET status = 'liquidated' WHERE id = ? AND status IN ('active', 'paused')")
                 ->execute([$invId]);
             $pdo->commit();
-            return ['success' => true, 'already_liquidated' => true, 'balance_usd' => get_user_usd_balance($pdo, $userId)];
+            return ['success' => true, 'already_liquidated' => true, 'balance_usd' => get_user_spendable_usd_balance($pdo, $userId)];
         }
         if (investment_principal_returned($pdo, $invId)) {
             $pdo->rollBack();
@@ -414,7 +441,7 @@ function liquidate_user_investment(PDO $pdo, int $userId, int $invId): array
                 return [
                     'success' => false,
                     'error' => 'Insufficient USD balance for the liquidation operation fee',
-                    'balance_usd' => get_user_usd_balance($pdo, $userId),
+                    'balance_usd' => get_user_spendable_usd_balance($pdo, $userId),
                     'liquidation_fee' => $fee,
                     'sufficient' => false,
                 ];
@@ -438,13 +465,15 @@ function liquidate_user_investment(PDO $pdo, int $userId, int $invId): array
             return ['success' => false, 'error' => 'Investment status changed during liquidation'];
         }
 
+        release_investment_accrued_earnings_to_wallet($pdo, $userId, $invId);
+
         $pdo->commit();
         return [
             'success' => true,
             'message' => 'Plan liquidated successfully',
             'principal_returned' => $principal,
             'liquidation_fee' => $fee,
-            'balance_usd' => get_user_usd_balance($pdo, $userId),
+            'balance_usd' => get_user_spendable_usd_balance($pdo, $userId),
         ];
     } catch (Throwable $e) {
         if ($pdo->inTransaction()) {

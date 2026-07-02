@@ -35,7 +35,7 @@ try {
     $userId = $_SESSION['user_id'];
     ensure_investment_lifecycle_schema($pdo);
     process_user_due_maturities($pdo, (int) $userId);
-    $userUsdBalance = get_user_usd_balance($pdo, (int) $userId);
+    $userUsdBalance = get_user_spendable_usd_balance($pdo, (int) $userId);
     
     // Cumulative performance chart (hourly for 1D/1W, daily for longer ranges)
     $chartExclude = portfolio_chart_reference_exclude_sql();

@@ -80,7 +80,7 @@ if ($durationDays !== $planFixedDays) {
 }
 
 $userId = (int) $_SESSION['user_id'];
-$usdBalance = get_user_usd_balance($pdo, $userId);
+$usdBalance = get_user_spendable_usd_balance($pdo, $userId);
 if ($usdBalance < $amountUsd) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Insufficient USD balance. Available: $' . format_usd_amount($usdBalance)]);

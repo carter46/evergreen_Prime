@@ -705,7 +705,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['cancelled', $invId]);
                 require_once dirname(__DIR__, 2) . '/includes/usd-wallet.php';
+                require_once dirname(__DIR__, 2) . '/includes/investment-lifecycle.php';
                 credit_user_usd($pdo, $userId, $refundAmount);
+                release_investment_accrued_earnings_to_wallet($pdo, $userId, $invId);
                 $walletCurrency = user_usd_wallet_currency();
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')
                     ->execute([$userId, 'deposit', $refundAmount, $walletCurrency, 'completed']);

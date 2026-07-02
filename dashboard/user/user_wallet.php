@@ -20,7 +20,7 @@ try {
     // Best-effort cleanup: expire old pending deposits (idempotent)
     try { expire_pending_deposits($pdo); } catch (Throwable $e) {}
     $userId = $_SESSION['user_id'];
-    $walletTotalUsd = get_user_usd_balance($pdo, (int) $userId);
+    $walletTotalUsd = get_user_spendable_usd_balance($pdo, (int) $userId);
     try {
         $bc = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_balance_usd_updated_at'");
         if ($bc && $bc->rowCount() > 0) {
@@ -37,7 +37,7 @@ try {
         ];
     }
 
-    $totalProfit = get_user_total_profit($pdo, (int) $userId);
+    $totalProfit = get_user_realized_profit($pdo, (int) $userId);
     $r = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM user_investments WHERE user_id = ? AND status = 'active'");
     $r->execute([$userId]); $activeCapital = (float)$r->fetchColumn();
     $stmtDaily = $pdo->prepare('SELECT ui.amount, p.yield_min, p.yield_max FROM user_investments ui JOIN plans p ON p.id = ui.plan_id WHERE ui.user_id = ? AND ui.status = ?');
@@ -144,10 +144,7 @@ include __DIR__ . '/../../includes/dashboard/user-page-title.php';
 <div class="dash-card-light-green bento-card p-md rounded">
 <p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Total Profit</p>
 <h3 class="font-headline-lg text-headline-lg font-hanken text-on-surface mb-sm">$<?php echo format_usd_amount($totalProfit); ?></h3>
-<div class="flex items-center gap-xs text-fidelity-green bg-primary-container/10 w-fit px-xs py-0.5 rounded">
-<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">arrow_upward</span>
-<span class="text-xs font-bold font-label-md">All Time</span>
-</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Settled plans only</p>
 </div>
 <div class="dash-card-light-green bento-card p-md rounded">
 <p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Active Capital</p>

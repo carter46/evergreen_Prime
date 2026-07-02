@@ -139,7 +139,6 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
         $pdo->beginTransaction();
         try {
             $payoutRef = 'earnings_inv_' . $invId . '_' . $newLastAt->format('YmdHis');
-            credit_user_usd($pdo, $userId, (float) $toCreditStr);
             $toCreditUsd = (float) $toCreditStr;
             if ($hasAmountUsd) {
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)')
@@ -167,7 +166,7 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
                     $mail = require __DIR__ . '/mailer.php';
                     $mail->clearAddresses();
                     $mail->addAddress($userEmail);
-                    $mail->Subject = 'Earning Payout Credited - ' . get_site_name();
+                    $mail->Subject = 'Earning Accrued - ' . get_site_name();
                     $mail->Body = renderEmailTemplate('earning-payout.php', [
                         'name' => $userName,
                         'amount' => $toCreditStr,
@@ -175,7 +174,7 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
                         'amountUsd' => $toCreditUsd,
                         'planName' => $planName,
                     ]);
-                    $mail->AltBody = "Your investment earnings have been credited. Amount: $currency " . number_format((float)$toCreditStr, 8, '.', ',') . ".";
+                    $mail->AltBody = "Your investment earnings have been accrued. Amount: $currency " . number_format((float)$toCreditStr, 8, '.', ',') . ". Funds are released when your plan matures or is liquidated.";
                     $mail->isHTML(true);
                     $mail->send();
                 } catch (Throwable $e) {

@@ -13,7 +13,7 @@ try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     ensure_plan_schema($pdo);
     $userId = $_SESSION['user_id'];
-    $userBalance = get_user_usd_balance($pdo, (int) $userId);
+    $userBalance = get_user_spendable_usd_balance($pdo, (int) $userId);
     
     // Fetch enabled plans
     $stmt = $pdo->query('SELECT id, name, slug, plan_type, description, logo_url, investment_risk, min_deposit, max_deposit, yield_min, yield_max, duration_days, min_duration_days, max_duration_days, min_duration_months, max_duration_months, withdrawal_days, liquidation_cost, features_json FROM plans WHERE enabled = 1 ORDER BY sort_order, id');

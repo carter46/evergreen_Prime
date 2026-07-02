@@ -167,12 +167,22 @@ if ($method === 'crypto') {
 
 $userId = (int) $_SESSION['user_id'];
 
+$spendableUsd = get_user_spendable_usd_balance($pdo, $userId);
+if ($amountUsdVal > $spendableUsd + 0.001) {
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Insufficient USD balance. You have $' . format_usd_amount($spendableUsd) . ' available.',
+    ]);
+    exit;
+}
+
 $pdo->beginTransaction();
 try {
     if (!debit_user_usd($pdo, $userId, $amountUsdVal)) {
         $pdo->rollBack();
         http_response_code(400);
-        $avail = get_user_usd_balance($pdo, $userId);
+        $avail = get_user_spendable_usd_balance($pdo, $userId);
         echo json_encode([
             'success' => false,
             'error' => 'Insufficient USD balance. You have $' . format_usd_amount($avail) . ' available.',
