@@ -530,7 +530,7 @@ function credit_referral_bonus(
  * Pay 2-level referral chain: direct referrer (referral_percentage) + upline (referral_level2_percentage).
  * $source: first_deposit | referred_payout (first deposit runs once per referred user).
  */
-function pay_referral_chain(PDO $pdo, int $earnerUserId, float $baseUsd, string $source, int $referenceId, string $refPrefix): bool {
+function pay_referral_chain(PDO $pdo, int $earnerUserId, float $baseUsd, string $source, int $referenceId, string $refPrefix, ?string $refSuffix = null): bool {
     if (get_site_setting('referral_enabled', '0') !== '1') {
         return false;
     }
@@ -570,8 +570,9 @@ function pay_referral_chain(PDO $pdo, int $earnerUserId, float $baseUsd, string 
     $pct1 = (float) (get_site_setting('referral_percentage', '15') ?: '15');
     $pct1 = max(0, min(100, $pct1));
     $bonus1 = round($baseUsd * ($pct1 / 100), 2);
+    $refTail = ($refSuffix !== null && $refSuffix !== '') ? ('_' . $refSuffix) : '';
     if ($bonus1 > 0) {
-        credit_referral_bonus($pdo, $level1Id, $earnerUserId, $bonus1, $source, $pct1, $referenceId, $refPrefix . $referenceId);
+        credit_referral_bonus($pdo, $level1Id, $earnerUserId, $bonus1, $source, $pct1, $referenceId, $refPrefix . $referenceId . $refTail);
     }
 
     $stmt->execute([$level1Id]);
@@ -586,7 +587,7 @@ function pay_referral_chain(PDO $pdo, int $earnerUserId, float $baseUsd, string 
     $pct2 = max(0, min(100, $pct2));
     $bonus2 = round($baseUsd * ($pct2 / 100), 2);
     if ($bonus2 > 0) {
-        $l2Ref = $source === 'first_deposit' ? ('ref_deposit_l2_' . $referenceId) : ('ref_payout_l2_inv_' . $referenceId);
+        $l2Ref = $source === 'first_deposit' ? ('ref_deposit_l2_' . $referenceId) : ('ref_payout_l2_inv_' . $referenceId . $refTail);
         credit_referral_bonus($pdo, $level2Id, $earnerUserId, $bonus2, $level2Source, $pct2, $referenceId, $l2Ref);
     }
 

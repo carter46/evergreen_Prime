@@ -138,21 +138,22 @@ function run_earnings_distribution(PDO $pdo, bool $manual = false): array {
         
         $pdo->beginTransaction();
         try {
+            $payoutRef = 'earnings_inv_' . $invId . '_' . $newLastAt->format('YmdHis');
             credit_user_usd($pdo, $userId, (float) $toCreditStr);
             $toCreditUsd = (float) $toCreditStr;
             if ($hasAmountUsd) {
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, amount_usd, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)')
-                    ->execute([$userId, 'payout', $toCreditStr, round($toCreditUsd, 2), $currency, 'completed', 'earnings_inv_' . $invId]);
+                    ->execute([$userId, 'payout', $toCreditStr, round($toCreditUsd, 2), $currency, 'completed', $payoutRef]);
             } else {
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status, reference) VALUES (?, ?, ?, ?, ?, ?)')
-                    ->execute([$userId, 'payout', $toCreditStr, $currency, 'completed', 'earnings_inv_' . $invId]);
+                    ->execute([$userId, 'payout', $toCreditStr, $currency, 'completed', $payoutRef]);
             }
             $pdo->prepare('UPDATE user_investments SET last_earnings_at = ? WHERE id = ?')
                 ->execute([$newLastAt->format('Y-m-d H:i:s'), $invId]);
             // Referral bonus: 2-level chain on referee daily payout (15% direct, 10% upline)
             if ($toCreditUsd > 0) {
                 try {
-                    pay_referral_chain($pdo, $userId, (float) $toCreditUsd, 'referred_payout', $invId, 'ref_payout_inv_');
+                    pay_referral_chain($pdo, $userId, (float) $toCreditUsd, 'referred_payout', $invId, 'ref_payout_inv_', $newLastAt->format('YmdHis'));
                 } catch (Throwable $e) {
                     // Do not fail main payout if referral credit fails
                 }
