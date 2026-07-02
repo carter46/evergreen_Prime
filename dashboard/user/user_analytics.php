@@ -20,15 +20,16 @@ $activePlans = [];
 $maturedPlans = [];
 $liquidatedPlans = [];
 $userUsdBalance = 0.0;
-$period = $_GET['period'] ?? '1M';
+$period = $_GET['period'] ?? '1D';
 $days = match($period) {
     '1D' => 1,
     '1W' => 7,
     '1M' => 30,
     '1Y' => 365,
     'ALL' => 9999,
-    default => 30
+    default => 1
 };
+$chartAxisMode = 'day';
 try {
     $pdo = require __DIR__ . '/../../includes/db.php';
     $userId = $_SESSION['user_id'];
@@ -36,17 +37,107 @@ try {
     process_user_due_maturities($pdo, (int) $userId);
     $userUsdBalance = get_user_usd_balance($pdo, (int) $userId);
     
-    // Filter transactions based on period
-    if ($period === 'ALL') {
-        $totalProfit = get_user_total_profit($pdo, (int) $userId);
-        $chartExclude = portfolio_chart_reference_exclude_sql();
-        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment'){$chartExclude} GROUP BY DATE(created_at), type ORDER BY date ASC");
-        $chartStmt->execute([$userId]);
+    // Cumulative performance chart (hourly for 1D/1W, daily for longer ranges)
+    $chartExclude = portfolio_chart_reference_exclude_sql();
+    $chartData = [];
+    if (in_array($period, ['1D', '1W'], true)) {
+        $chartAxisMode = 'hour';
+        $hoursBack = $period === '1D' ? 24 : 168;
+        $hourStmt = $pdo->prepare(
+            "SELECT DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00') AS bucket, type, SUM(COALESCE(amount_usd, amount)) AS total
+             FROM transactions
+             WHERE user_id = ? AND status = 'completed'
+             AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment')
+             AND created_at >= DATE_SUB(NOW(), INTERVAL ? HOUR)
+             {$chartExclude}
+             GROUP BY bucket, type
+             ORDER BY bucket ASC"
+        );
+        $hourStmt->execute([$userId, $hoursBack]);
+        $hourlyTotals = [];
+        while ($row = $hourStmt->fetch(PDO::FETCH_ASSOC)) {
+            $bucket = $row['bucket'];
+            if (!isset($hourlyTotals[$bucket])) {
+                $hourlyTotals[$bucket] = ['deposit' => 0.0, 'withdrawal' => 0.0, 'payout' => 0.0];
+            }
+            $txType = $row['type'] === 'profit_adjustment' ? 'payout' : $row['type'];
+            if (isset($hourlyTotals[$bucket][$txType])) {
+                $hourlyTotals[$bucket][$txType] += (float) $row['total'];
+            }
+        }
+        $cumulative = 0.0;
+        $nowUtc = new DateTime('now', new DateTimeZone('UTC'));
+        for ($h = $hoursBack - 1; $h >= 0; $h--) {
+            $dt = clone $nowUtc;
+            $dt->modify('-' . $h . ' hours');
+            $dt->setTime((int) $dt->format('G'), 0, 0);
+            $bucketKey = $dt->format('Y-m-d H:00:00');
+            if (isset($hourlyTotals[$bucketKey])) {
+                $amounts = $hourlyTotals[$bucketKey];
+                $cumulative += $amounts['deposit'] - $amounts['withdrawal'] + $amounts['payout'];
+            }
+            $chartData[] = [
+                'date' => $bucketKey,
+                'label' => $period === '1D' ? $dt->format('H:00') : $dt->format('D H:00'),
+                'value' => $cumulative,
+            ];
+        }
     } else {
-        $totalProfit = get_user_total_profit($pdo, (int) $userId, $days);
-        $chartExclude = portfolio_chart_reference_exclude_sql();
-        $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY){$chartExclude} GROUP BY DATE(created_at), type ORDER BY date ASC");
-        $chartStmt->execute([$userId, $days]);
+        if ($period === 'ALL') {
+            $totalProfit = get_user_total_profit($pdo, (int) $userId);
+            $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment'){$chartExclude} GROUP BY DATE(created_at), type ORDER BY date ASC");
+            $chartStmt->execute([$userId]);
+            $daysBack = null;
+        } else {
+            $totalProfit = get_user_total_profit($pdo, (int) $userId, $days);
+            $chartStmt = $pdo->prepare("SELECT DATE(created_at) as date, type, SUM(COALESCE(amount_usd, amount)) as total FROM transactions WHERE user_id = ? AND status = 'completed' AND type IN ('deposit', 'withdrawal', 'payout', 'profit_adjustment') AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY){$chartExclude} GROUP BY DATE(created_at), type ORDER BY date ASC");
+            $chartStmt->execute([$userId, $days]);
+            $daysBack = $days;
+        }
+        $dailyTotals = [];
+        while ($row = $chartStmt->fetch(PDO::FETCH_ASSOC)) {
+            $date = $row['date'];
+            if (!isset($dailyTotals[$date])) {
+                $dailyTotals[$date] = ['deposit' => 0.0, 'withdrawal' => 0.0, 'payout' => 0.0];
+            }
+            $txType = $row['type'] === 'profit_adjustment' ? 'payout' : $row['type'];
+            if (isset($dailyTotals[$date][$txType])) {
+                $dailyTotals[$date][$txType] += (float) $row['total'];
+            }
+        }
+        $cumulative = 0.0;
+        if ($daysBack !== null) {
+            $nowUtc = new DateTime('now', new DateTimeZone('UTC'));
+            for ($d = $daysBack - 1; $d >= 0; $d--) {
+                $dt = clone $nowUtc;
+                $dt->modify('-' . $d . ' days');
+                $dateKey = $dt->format('Y-m-d');
+                if (isset($dailyTotals[$dateKey])) {
+                    $amounts = $dailyTotals[$dateKey];
+                    $cumulative += $amounts['deposit'] - $amounts['withdrawal'] + $amounts['payout'];
+                }
+                $chartData[] = [
+                    'date' => $dateKey,
+                    'label' => $dt->format('M j'),
+                    'value' => $cumulative,
+                ];
+            }
+        } else {
+            foreach ($dailyTotals as $date => $amounts) {
+                $cumulative += $amounts['deposit'] - $amounts['withdrawal'] + $amounts['payout'];
+                $chartData[] = [
+                    'date' => $date,
+                    'label' => date('M j', strtotime($date)),
+                    'value' => $cumulative,
+                ];
+            }
+        }
+    }
+
+    if ($period === '1D' || $period === '1W') {
+        $totalProfit = get_user_total_profit($pdo, (int) $userId, $period === '1D' ? 1 : 7);
+    } elseif ($period !== 'ALL') {
+        // $totalProfit already set for 1M/1Y in branch above
     }
     
     // Active capital (sum of active investments) - not filtered by period
@@ -68,22 +159,6 @@ try {
     $dailyAvgReturn = $expectedDaily;
     $estDailyEarnings = $expectedDaily;
     $estMonthlyEarnings = $expectedDaily * 30;
-    
-    // Chart data
-    $dailyData = [];
-    while ($row = $chartStmt->fetch(PDO::FETCH_ASSOC)) {
-        $date = $row['date'];
-        if (!isset($dailyData[$date])) $dailyData[$date] = ['deposit' => 0, 'withdrawal' => 0, 'payout' => 0];
-        $txType = $row['type'] === 'profit_adjustment' ? 'payout' : $row['type'];
-        if (isset($dailyData[$date][$txType])) {
-            $dailyData[$date][$txType] += (float)$row['total'];
-        }
-    }
-    $cumulative = 0;
-    foreach ($dailyData as $date => $amounts) {
-        $cumulative += $amounts['deposit'] - $amounts['withdrawal'] + $amounts['payout'];
-        $chartData[] = ['date' => $date, 'value' => $cumulative];
-    }
     
     $activePlans = fetch_portfolio_active_investments($pdo, (int) $userId);
     $maturedPlans = fetch_portfolio_investments($pdo, (int) $userId, 'completed');
@@ -421,7 +496,12 @@ if (!empty($chartData)) {
     $maxVal = max(array_column($chartData, 'value'));
     $minVal = min(array_column($chartData, 'value'));
     $range = $maxVal - $minVal;
-    if ($range == 0) $range = 1;
+    if ($range == 0 && $maxVal > 0) {
+        $minVal = 0.0;
+        $range = $maxVal;
+    } elseif ($range == 0) {
+        $range = 1;
+    }
     $points = [];
     $dates = [];
     $count = count($chartData);
@@ -430,7 +510,7 @@ if (!empty($chartData)) {
         $y = 300 - (($point['value'] - $minVal) / $range) * 250;
         $points[] = $x . ',' . $y;
         if ($i === 0 || $i === floor($count / 4) || $i === floor($count / 2) || $i === floor($count * 3 / 4) || $i === $count - 1) {
-            $dates[] = date('M j', strtotime($point['date']));
+            $dates[] = $point['label'] ?? date(($chartAxisMode ?? 'day') === 'hour' ? 'H:i' : 'M j', strtotime($point['date']));
         }
     }
     $pathD = 'M' . implode(' L', $points);

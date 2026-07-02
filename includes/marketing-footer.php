@@ -83,4 +83,3 @@ $homepageModalImage = get_site_setting('homepage_modal_image', '');
 <?php $marketingSearchVer = (int) @filemtime(dirname(__DIR__) . '/js/marketing-search.js'); ?>
 <script src="/js/marketing-search.js?v=<?php echo $marketingSearchVer; ?>" defer></script>
 <?php require_once __DIR__ . '/translation-widget.php'; ?>
-<?php require_once __DIR__ . '/live-chat-widget.php'; ?>
