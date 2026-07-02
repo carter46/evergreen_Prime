@@ -172,11 +172,21 @@ body.user-dashboard {
 .dash-card-balance-hero {
   position: relative;
   overflow: hidden;
-  background:
-    linear-gradient(135deg, rgba(10, 10, 10, 0.9) 0%, rgba(26, 26, 26, 0.86) 48%, rgba(45, 45, 45, 0.88) 100%),
-    url('/uploads/images/pngwing.com.png') center right / cover no-repeat;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 48%, #2d2d2d 100%);
   border-color: rgba(255, 255, 255, 0.08);
   color: #fff;
+}
+.dash-card-balance-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/uploads/images/pngwing.com.png') center right / cover no-repeat;
+  opacity: 0.14;
+  pointer-events: none;
+}
+.dash-card-balance-hero > * {
+  position: relative;
+  z-index: 1;
 }
 .dash-card-balance-hero .dash-card-label,
 .dash-card-balance-hero .dash-card-muted { color: rgba(255, 255, 255, 0.72) !important; }

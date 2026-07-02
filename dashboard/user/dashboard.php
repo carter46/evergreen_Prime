@@ -109,8 +109,8 @@ $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded
 <h2 class="font-hanken font-bold dash-greeting text-primary"><?php echo $greeting; ?>, <?php echo htmlspecialchars($dashboardUserName); ?>.</h2>
 <p class="text-sm leading-snug sm:font-body-lg sm:text-body-lg sm:leading-normal text-on-surface-variant mt-1">Welcome back to your institutional trading hub.</p>
 </section>
-<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
-<div class="md:col-span-2 lg:col-span-2 dash-card-balance-hero bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-md">
+<div class="dash-card-balance-hero bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
 <div>
 <span class="font-label-md text-label-md dash-card-label uppercase tracking-wider">Total USD Balance</span>
 <h3 class="font-hanken font-extrabold text-headline-md dash-card-value mt-base">$<?php echo number_format((float) $userBalance, 0, '.', ','); ?></h3>
@@ -132,7 +132,8 @@ $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded
 </div>
 </div>
 <div class="dash-card-light-green bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
-<div class="space-y-md">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-md h-full">
+<div class="space-y-md sm:pr-md">
 <div>
 <span class="font-label-md text-label-md text-on-surface-variant">Active Capital</span>
 <p class="font-hanken font-bold text-headline-md <?php echo $activeCapital > 0 ? 'text-on-surface' : 'opacity-40'; ?>">$<?php echo format_usd_amount($activeCapital); ?></p>
@@ -142,8 +143,7 @@ $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded
 <p class="font-hanken font-bold text-headline-md <?php echo $dailyEarning > 0 ? 'text-on-surface' : 'opacity-40'; ?>">$<?php echo format_usd_amount($dailyEarning); ?></p>
 </div>
 </div>
-</div>
-<div class="dash-card-light-green bento-card p-md flex flex-col justify-between hover:active-glow transition-all rounded">
+<div class="flex flex-col justify-between sm:pl-md sm:border-l border-surface-gray pt-md sm:pt-0 border-t sm:border-t-0">
 <div>
 <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Referral Bonus</span>
 <h3 class="font-hanken font-extrabold text-headline-md text-on-surface mt-base">$<?php echo format_usd_amount($referralBonus); ?></h3>
@@ -153,6 +153,8 @@ $chartBtnIdle = 'px-3 py-1 font-label-md text-label-md hover:bg-white/50 rounded
 View Network Details
 <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
 </a>
+</div>
+</div>
 </div>
 </section>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
