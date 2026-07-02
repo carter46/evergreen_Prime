@@ -8,6 +8,7 @@
 header('Content-Type: application/json');
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
+require_once dirname(__DIR__, 2) . '/includes/admin-audit-log.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -159,6 +160,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($updates as $k => $v) {
         $stmt->execute([$k, $v]);
     }
+    admin_audit_log(
+        $pdo,
+        'update',
+        'settings',
+        null,
+        'Updated site settings (' . count($updates) . ' key(s))',
+        null,
+        $updates
+    );
     echo json_encode(['success' => true, 'data' => ['message' => 'Settings updated']]);
     exit;
 }

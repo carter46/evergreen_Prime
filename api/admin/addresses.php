@@ -11,6 +11,7 @@ header('Content-Type: application/json');
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/payment-methods.php';
+require_once dirname(__DIR__, 2) . '/includes/admin-audit-log.php';
 
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
@@ -151,7 +152,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute(array_values($parsed));
-        echo json_encode(['success' => true, 'id' => (int) $pdo->lastInsertId()]);
+        $newId = (int) $pdo->lastInsertId();
+        $created = get_payment_method_by_id($pdo, $newId, true);
+        admin_audit_log(
+            $pdo,
+            'create',
+            'payment_method',
+            $newId,
+            'Created payment method (' . ($created['method_type'] ?? 'unknown') . ')',
+            null,
+            $created
+        );
+        echo json_encode(['success' => true, 'id' => $newId]);
     } catch (PDOException $e) {
         if ($e->getCode() == 23000) {
             http_response_code(400);
@@ -206,6 +218,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     try {
         $stmt = $pdo->prepare('UPDATE payment_methods SET ' . implode(', ', $sets) . ' WHERE id = ?');
         $stmt->execute($params);
+        $updated = get_payment_method_by_id($pdo, $id, true);
+        admin_audit_log(
+            $pdo,
+            'update',
+            'payment_method',
+            $id,
+            'Updated payment method #' . $id . ' (' . ($updated['method_type'] ?? 'unknown') . ')',
+            $existing,
+            $updated
+        );
         echo json_encode(['success' => true, 'message' => 'Payment method updated']);
     } catch (PDOException $e) {
         if ($e->getCode() == 23000) {
@@ -227,6 +249,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         exit;
     }
 
+    $existing = get_payment_method_by_id($pdo, $id, true);
+    if (!$existing) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'Payment method not found']);
+        exit;
+    }
+
     $stmt = $pdo->prepare('DELETE FROM payment_methods WHERE id = ?');
     $stmt->execute([$id]);
     if ($stmt->rowCount() === 0) {
@@ -234,6 +263,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         echo json_encode(['success' => false, 'error' => 'Payment method not found']);
         exit;
     }
+    admin_audit_log(
+        $pdo,
+        'delete',
+        'payment_method',
+        $id,
+        'Deleted payment method #' . $id . ' (' . ($existing['method_type'] ?? 'unknown') . ')',
+        $existing,
+        null
+    );
     echo json_encode(['success' => true, 'message' => 'Payment method deleted']);
     exit;
 }

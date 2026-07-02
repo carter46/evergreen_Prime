@@ -802,3 +802,25 @@ SET @sql = IF(@idx_exists = 0,
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- Admin audit log (who changed what)
+CREATE TABLE IF NOT EXISTS admin_audit_log (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  admin_id INT UNSIGNED NOT NULL,
+  admin_email VARCHAR(255) NULL,
+  admin_name VARCHAR(120) NULL,
+  action VARCHAR(64) NOT NULL,
+  entity_type VARCHAR(64) NOT NULL,
+  entity_id INT UNSIGNED NULL,
+  summary VARCHAR(500) NOT NULL,
+  before_json LONGTEXT NULL,
+  after_json LONGTEXT NULL,
+  meta_json LONGTEXT NULL,
+  ip_address VARCHAR(45) NULL,
+  user_agent VARCHAR(500) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_admin_audit_admin (admin_id),
+  INDEX idx_admin_audit_entity (entity_type, entity_id),
+  INDEX idx_admin_audit_action (action),
+  INDEX idx_admin_audit_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

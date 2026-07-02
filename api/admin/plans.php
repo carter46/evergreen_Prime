@@ -15,6 +15,7 @@ if (($_SESSION['role'] ?? '') !== 'admin') {
 }
 
 require_once dirname(__DIR__, 2) . '/includes/plan-types.php';
+require_once dirname(__DIR__, 2) . '/includes/admin-audit-log.php';
 
 try {
     $pdo = require dirname(__DIR__, 2) . '/includes/db.php';
@@ -61,6 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit;
 }
 
+function admin_audit_fetch_plan(PDO $pdo, int $id): ?array
+{
+    $stmt = $pdo->prepare('SELECT * FROM plans WHERE id = ? LIMIT 1');
+    $stmt->execute([$id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row ?: null;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
     $action = trim((string)($input['action'] ?? ''));
@@ -82,8 +91,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => false, 'error' => 'Cannot delete: this plan has ' . $total . ' investment record(s). Disable it instead to preserve history.']);
                 exit;
             }
+            $beforePlan = admin_audit_fetch_plan($pdo, $id);
             $del = $pdo->prepare('DELETE FROM plans WHERE id = ?');
             $del->execute([$id]);
+            admin_audit_log(
+                $pdo,
+                'delete',
+                'plan',
+                $id,
+                'Deleted plan #' . $id . ($beforePlan ? (': ' . ($beforePlan['name'] ?? '')) : ''),
+                $beforePlan,
+                null
+            );
             echo json_encode(['success' => true, 'data' => ['message' => 'Plan deleted']]);
             exit;
         } catch (Throwable $e) {
@@ -209,8 +228,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
         }
+        $beforePlan = admin_audit_fetch_plan($pdo, $id);
         $stmt = $pdo->prepare('UPDATE plans SET enabled=? WHERE id=?');
         $stmt->execute([$enabled ? 1 : 0, $id]);
+        $afterPlan = admin_audit_fetch_plan($pdo, $id);
+        admin_audit_log(
+            $pdo,
+            'toggle',
+            'plan',
+            $id,
+            ($enabled ? 'Enabled' : 'Disabled') . ' plan #' . $id . ($beforePlan ? (': ' . ($beforePlan['name'] ?? '')) : ''),
+            $beforePlan,
+            $afterPlan
+        );
         echo json_encode(['success' => true, 'data' => ['message' => 'Plan updated']]);
         exit;
     }
@@ -251,6 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($id > 0) {
+            $beforePlan = admin_audit_fetch_plan($pdo, $id);
             if ($featuresJson !== null) {
                 $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, plan_type=?, description=?, icon=?, logo_url=?, investment_risk=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, liquidation_cost=?, min_duration_days=?, max_duration_days=?, features_json=?, enabled=?, sort_order=? WHERE id=?');
                 $stmt->execute([$name, $slug, $planType, $description, $icon, $logoUrl, $investmentRisk, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $liquidationCost, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder, $id]);
@@ -258,11 +289,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare('UPDATE plans SET name=?, slug=?, plan_type=?, description=?, icon=?, logo_url=?, investment_risk=?, min_deposit=?, max_deposit=?, yield_min=?, yield_max=?, duration_days=?, withdrawal_days=?, liquidation_cost=?, min_duration_days=?, max_duration_days=?, enabled=?, sort_order=? WHERE id=?');
                 $stmt->execute([$name, $slug, $planType, $description, $icon, $logoUrl, $investmentRisk, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $liquidationCost, $minDurationDays, $maxDurationDays, $enabled ? 1 : 0, $sortOrder, $id]);
             }
+            $savedId = $id;
         } else {
             if ($featuresJson === null) $featuresJson = '[]';
             $stmt = $pdo->prepare('INSERT INTO plans (name, slug, plan_type, description, icon, logo_url, investment_risk, min_deposit, max_deposit, yield_min, yield_max, duration_days, withdrawal_days, liquidation_cost, min_duration_days, max_duration_days, features_json, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([$name, $slug, $planType, $description, $icon, $logoUrl, $investmentRisk, $minDeposit, $maxDeposit, $yieldMin, $yieldMax, $durationDays, $withdrawalDays, $liquidationCost, $minDurationDays, $maxDurationDays, $featuresJson, $enabled ? 1 : 0, $sortOrder]);
+            $savedId = (int) $pdo->lastInsertId();
+            $beforePlan = null;
         }
+        $afterPlan = admin_audit_fetch_plan($pdo, $savedId);
+        admin_audit_log(
+            $pdo,
+            $beforePlan ? 'update' : 'create',
+            'plan',
+            $savedId,
+            ($beforePlan ? 'Updated' : 'Created') . ' plan #' . $savedId . ': ' . $name,
+            $beforePlan,
+            $afterPlan
+        );
         echo json_encode(['success' => true, 'data' => ['message' => 'Plan saved successfully']]);
         exit;
     } catch (Throwable $e) {

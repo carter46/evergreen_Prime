@@ -41,6 +41,10 @@ $iconFill = function ($page) use ($current) {
 <span class="material-symbols-outlined text-[22px] shrink-0"<?php echo $iconFill('transactions'); ?>>history</span>
 <span class="font-body-md text-body-md truncate">Transactions</span>
 </a>
+<a class="<?php echo $navClass('audit-log'); ?>" href="/dashboard/admin/audit-log">
+<span class="material-symbols-outlined text-[22px] shrink-0"<?php echo $iconFill('audit-log'); ?>>policy</span>
+<span class="font-body-md text-body-md truncate">Audit Log</span>
+</a>
 <a class="<?php echo $navClass('kyc'); ?>" href="/dashboard/admin/kyc">
 <span class="material-symbols-outlined text-[22px] shrink-0"<?php echo $iconFill('kyc'); ?>>verified_user</span>
 <span class="font-body-md text-body-md truncate">KYC Management</span>

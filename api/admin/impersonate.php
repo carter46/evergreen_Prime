@@ -6,6 +6,7 @@
  */
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
+require_once dirname(__DIR__, 2) . '/includes/admin-audit-log.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     header('Location: /login');
     exit;
@@ -35,6 +36,16 @@ if (!$target || $target['role'] === 'admin') {
 $_SESSION['impersonate_admin_id'] = $_SESSION['user_id'];
 $_SESSION['impersonate_admin_email'] = $_SESSION['email'];
 $_SESSION['impersonate_admin_role'] = $_SESSION['role'];
+
+admin_audit_log(
+    $pdo,
+    'impersonate',
+    'session',
+    (int) $target['id'],
+    'Started impersonating user #' . (int) $target['id'] . ': ' . ($target['email'] ?? ''),
+    null,
+    ['user_id' => (int) $target['id'], 'email' => $target['email'] ?? null]
+);
 
 $_SESSION['user_id'] = (int) $target['id'];
 $_SESSION['email'] = $target['email'];

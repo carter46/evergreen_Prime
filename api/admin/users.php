@@ -11,6 +11,7 @@ header('Content-Type: application/json');
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
 require_once dirname(__DIR__, 2) . '/includes/usd-wallet.php';
+require_once dirname(__DIR__, 2) . '/includes/admin-audit-log.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -301,6 +302,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = 'INSERT INTO users (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $ph) . ')';
         $pdo->prepare($sql)->execute($vals);
         $newId = (int) $pdo->lastInsertId();
+        admin_audit_log(
+            $pdo,
+            'create',
+            'user',
+            $newId,
+            'Created user #' . $newId . ': ' . $email,
+            null,
+            ['id' => $newId, 'email' => $email, 'name' => $name ?: null]
+        );
         echo json_encode(['success' => true, 'data' => ['message' => 'User added', 'user_id' => $newId]]);
         exit;
     }
@@ -334,6 +344,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => false, 'error' => 'Email is required']);
                 exit;
             }
+            $beforeUser = $pdo->prepare('SELECT id, email, name, active, email_verified FROM users WHERE id = ?');
+            $beforeUser->execute([$userId]);
+            $beforeSnapshot = $beforeUser->fetch(PDO::FETCH_ASSOC) ?: null;
             $checkStmt = $pdo->prepare('SELECT id FROM users WHERE email = ? AND id != ?');
             $checkStmt->execute([$email, $userId]);
             if ($checkStmt->fetch()) {
@@ -355,16 +368,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Throwable $e) {
                 // Columns may not exist yet
             }
+            $afterUser = $pdo->prepare('SELECT id, email, name, active, email_verified FROM users WHERE id = ?');
+            $afterUser->execute([$userId]);
+            $afterSnapshot = $afterUser->fetch(PDO::FETCH_ASSOC) ?: null;
+            admin_audit_log(
+                $pdo,
+                'update',
+                'user',
+                $userId,
+                'Updated user profile #' . $userId,
+                $beforeSnapshot,
+                $afterSnapshot,
+                ['password_changed' => !empty($input['password']) && strlen(trim($input['password'])) >= 8]
+            );
             echo json_encode(['success' => true, 'data' => ['message' => 'Profile updated']]);
             exit;
 
         case 'block':
             $pdo->prepare('UPDATE users SET active = 0 WHERE id = ?')->execute([$userId]);
+            admin_audit_log($pdo, 'block', 'user', $userId, 'Blocked user #' . $userId);
             echo json_encode(['success' => true, 'data' => ['message' => 'User blocked']]);
             exit;
 
         case 'unblock':
             $pdo->prepare('UPDATE users SET active = 1 WHERE id = ?')->execute([$userId]);
+            admin_audit_log($pdo, 'unblock', 'user', $userId, 'Unblocked user #' . $userId);
             echo json_encode(['success' => true, 'data' => ['message' => 'User unblocked']]);
             exit;
 
@@ -376,6 +404,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $hash = password_hash($newPassword, PASSWORD_DEFAULT);
             $pdo->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([$hash, $userId]);
+            admin_audit_log($pdo, 'update', 'user', $userId, 'Reset password for user #' . $userId, null, null, ['field' => 'password']);
             echo json_encode(['success' => true, 'data' => ['message' => 'Password reset']]);
             exit;
 
@@ -432,6 +461,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
 
+                    admin_audit_log(
+                        $pdo,
+                        $type === 'credit' ? 'credit' : 'debit',
+                        'user',
+                        $userId,
+                        ucfirst($type) . 'ed USD balance $' . format_usd_amount((float) $amountStr) . ' for user #' . $userId,
+                        null,
+                        ['amount_usd' => (float) $amountStr, 'reference' => $ref]
+                    );
                     echo json_encode(['success' => true, 'data' => ['message' => 'Balance credited']]);
                 } else {
                     if (!debit_user_usd($pdo, $userId, (float) $amountStr)) {
@@ -465,6 +503,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
 
+                    admin_audit_log(
+                        $pdo,
+                        'debit',
+                        'user',
+                        $userId,
+                        'Debited USD balance $' . format_usd_amount((float) $amountStr) . ' for user #' . $userId,
+                        null,
+                        ['amount_usd' => (float) $amountStr, 'reference' => $ref]
+                    );
                     echo json_encode(['success' => true, 'data' => ['message' => 'Balance debited']]);
                 }
             } catch (Throwable $e) {
@@ -514,6 +561,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ->execute([$userId, 'profit_adjustment', $amountStr, 'USD', 'completed', $ref]);
                 }
                 $newProfit = get_user_total_profit($pdo, $userId);
+                admin_audit_log(
+                    $pdo,
+                    $type === 'credit' ? 'credit' : 'debit',
+                    'user',
+                    $userId,
+                    ucfirst($type) . 'ed profit $' . format_usd_amount($amountUsd) . ' for user #' . $userId,
+                    ['total_profit' => $currentProfit],
+                    ['total_profit' => $newProfit, 'amount_usd' => $signedUsd]
+                );
                 echo json_encode([
                     'success' => true,
                     'data' => [
@@ -567,6 +623,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ->execute([$userId, 'referral_bonus_adjustment', $amountStr, 'USD', 'completed', $ref]);
                 }
                 $newReferral = get_user_total_referral_bonus($pdo, $userId);
+                admin_audit_log(
+                    $pdo,
+                    $type === 'credit' ? 'credit' : 'debit',
+                    'user',
+                    $userId,
+                    ucfirst($type) . 'ed referral bonus $' . format_usd_amount($amountUsd) . ' for user #' . $userId,
+                    ['total_referral_bonus' => $currentReferral],
+                    ['total_referral_bonus' => $newReferral, 'amount_usd' => $signedUsd]
+                );
                 echo json_encode([
                     'success' => true,
                     'data' => [
@@ -596,6 +661,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
             $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['paused', $invId]);
+            admin_audit_log($pdo, 'pause', 'investment', $invId, 'Paused investment #' . $invId . ' for user #' . $userId, null, ['status' => 'paused']);
             echo json_encode(['success' => true, 'data' => ['message' => 'Plan paused – daily earnings will not be credited until resumed']]);
             exit;
 
@@ -615,44 +681,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
             $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['active', $invId]);
-            echo json_encode(['success' => true, 'data' => ['message' => 'Plan resumed']]);
-            exit;
-
-        case 'pause_plan':
-            $invId = (int) ($input['investment_id'] ?? 0);
-            if ($invId <= 0) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Invalid investment ID']);
-                exit;
-            }
-            $stmt = $pdo->prepare('SELECT id, user_id, status FROM user_investments WHERE id = ? AND user_id = ?');
-            $stmt->execute([$invId, $userId]);
-            $inv = $stmt->fetch(PDO::FETCH_ASSOC);
-            if (!$inv || $inv['status'] !== 'active') {
-                http_response_code(404);
-                echo json_encode(['success' => false, 'error' => 'Active investment not found']);
-                exit;
-            }
-            $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['paused', $invId]);
-            echo json_encode(['success' => true, 'data' => ['message' => 'Plan paused – daily earnings will not be credited until resumed']]);
-            exit;
-
-        case 'resume_plan':
-            $invId = (int) ($input['investment_id'] ?? 0);
-            if ($invId <= 0) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Invalid investment ID']);
-                exit;
-            }
-            $stmt = $pdo->prepare('SELECT id, user_id, status FROM user_investments WHERE id = ? AND user_id = ?');
-            $stmt->execute([$invId, $userId]);
-            $inv = $stmt->fetch(PDO::FETCH_ASSOC);
-            if (!$inv || $inv['status'] !== 'paused') {
-                http_response_code(404);
-                echo json_encode(['success' => false, 'error' => 'Paused investment not found']);
-                exit;
-            }
-            $pdo->prepare('UPDATE user_investments SET status = ? WHERE id = ?')->execute(['active', $invId]);
+            admin_audit_log($pdo, 'resume', 'investment', $invId, 'Resumed investment #' . $invId . ' for user #' . $userId, null, ['status' => 'active']);
             echo json_encode(['success' => true, 'data' => ['message' => 'Plan resumed']]);
             exit;
 
@@ -681,6 +710,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->prepare('INSERT INTO transactions (user_id, type, amount, currency, status) VALUES (?, ?, ?, ?, ?)')
                     ->execute([$userId, 'deposit', $refundAmount, $walletCurrency, 'completed']);
                 $pdo->commit();
+                admin_audit_log(
+                    $pdo,
+                    'cancel',
+                    'investment',
+                    $invId,
+                    'Cancelled investment #' . $invId . ' and refunded $' . format_usd_amount($refundAmount) . ' to user #' . $userId,
+                    ['status' => 'active', 'amount' => $refundAmount],
+                    ['status' => 'cancelled', 'refund_usd' => $refundAmount]
+                );
                 echo json_encode(['success' => true, 'data' => ['message' => 'Plan cancelled and amount refunded to USD wallet']]);
             } catch (Throwable $e) {
                 $pdo->rollBack();
@@ -690,7 +728,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
 
         case 'delete':
+            $delStmt = $pdo->prepare('SELECT id, email, name, active FROM users WHERE id = ?');
+            $delStmt->execute([$userId]);
+            $deletedUser = $delStmt->fetch(PDO::FETCH_ASSOC) ?: null;
             $pdo->prepare('DELETE FROM users WHERE id = ?')->execute([$userId]);
+            admin_audit_log(
+                $pdo,
+                'delete',
+                'user',
+                $userId,
+                'Deleted user #' . $userId . ($deletedUser ? (': ' . ($deletedUser['email'] ?? '')) : ''),
+                $deletedUser,
+                null
+            );
             echo json_encode(['success' => true, 'data' => ['message' => 'User deleted']]);
             exit;
 
@@ -703,6 +753,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $stmt = $pdo->prepare('UPDATE users SET two_factor_enabled = 1 - COALESCE(two_factor_enabled, 0) WHERE id = ?');
                 $stmt->execute([$userId]);
+                admin_audit_log($pdo, 'toggle', 'user', $userId, 'Toggled 2FA for user #' . $userId);
                 echo json_encode(['success' => true, 'data' => ['message' => '2FA toggled']]);
             } catch (Throwable $e) {
                 echo json_encode(['success' => false, 'error' => '2FA not supported']);
@@ -716,6 +767,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
             $pdo->prepare('UPDATE users SET kyc_status = ? WHERE id = ?')->execute(['verified', $userId]);
+            admin_audit_log($pdo, 'approve', 'user', $userId, 'Manually verified KYC for user #' . $userId);
             echo json_encode(['success' => true, 'data' => ['message' => 'KYC verified (bypass)']]);
             exit;
 

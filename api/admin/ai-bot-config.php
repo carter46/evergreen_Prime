@@ -9,6 +9,7 @@ header('Content-Type: application/json');
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+require_once dirname(__DIR__, 2) . '/includes/admin-audit-log.php';
 
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
@@ -53,6 +54,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($input['action']) && $input['action'] === 'manual_distribute') {
         require_once dirname(__DIR__, 2) . '/includes/earnings-engine.php';
         $result = run_earnings_distribution($pdo, true);
+        admin_audit_log(
+            $pdo,
+            'send',
+            'ai_config',
+            null,
+            'Triggered manual earnings distribution',
+            null,
+            null,
+            $result
+        );
         echo json_encode([
             'success' => true,
             'data' => [
@@ -105,6 +116,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($updates as $k => $v) {
         $stmt->execute([$k, $v]);
     }
+    admin_audit_log(
+        $pdo,
+        'update',
+        'ai_config',
+        null,
+        'Updated AI bot config (' . count($updates) . ' key(s))',
+        null,
+        $updates
+    );
     echo json_encode(['success' => true, 'data' => ['message' => 'Settings updated']]);
     exit;
 }

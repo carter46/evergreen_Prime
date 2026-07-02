@@ -56,6 +56,7 @@ try {
 }
 
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
+require_once dirname(__DIR__, 2) . '/includes/admin-audit-log.php';
 require_once dirname(__DIR__, 2) . '/includes/email-templates/render.php';
 if (function_exists('imap_open')) {
     require_once dirname(__DIR__, 2) . '/includes/imap.php';
@@ -227,6 +228,23 @@ $msg = $testOnly
 if (!empty($errors)) {
     $msg .= ' Some failed: ' . implode('; ', array_slice($errors, 0, 3));
 }
+
+admin_audit_log(
+    $pdo,
+    'send',
+    'broadcast',
+    null,
+    ($testOnly ? 'Sent test broadcast' : 'Sent email broadcast') . ': ' . $subject,
+    null,
+    null,
+    [
+        'test_only' => $testOnly,
+        'recipients' => $recipients,
+        'sent' => $sent,
+        'total' => $total,
+        'external_count' => count($externalEmails),
+    ]
+);
 
 echo json_encode([
     'success' => true,

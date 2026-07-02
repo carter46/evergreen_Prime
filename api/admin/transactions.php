@@ -10,6 +10,7 @@ require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/helpers.php';
 require_once dirname(__DIR__, 2) . '/includes/usd-wallet.php';
 require_once dirname(__DIR__, 2) . '/includes/deposit-expiry.php';
+require_once dirname(__DIR__, 2) . '/includes/admin-audit-log.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -174,6 +175,15 @@ try {
             }
         }
         
+        admin_audit_log(
+            $pdo,
+            'approve',
+            'transaction',
+            $transactionId,
+            'Approved ' . $tx['type'] . ' transaction #' . $transactionId . ' for user #' . (int) $tx['user_id'],
+            ['status' => 'pending', 'type' => $tx['type'], 'amount' => $tx['amount'], 'currency' => $tx['currency']],
+            ['status' => 'completed']
+        );
         echo json_encode([
             'success' => true,
             'data' => ['message' => 'Transaction approved successfully'],
@@ -227,6 +237,15 @@ try {
             }
         }
         
+        admin_audit_log(
+            $pdo,
+            'reject',
+            'transaction',
+            $transactionId,
+            'Rejected ' . $tx['type'] . ' transaction #' . $transactionId . ' for user #' . (int) $tx['user_id'],
+            ['status' => 'pending', 'type' => $tx['type'], 'amount' => $tx['amount'], 'currency' => $tx['currency']],
+            ['status' => 'rejected']
+        );
         echo json_encode([
             'success' => true,
             'data' => ['message' => 'Transaction rejected'],

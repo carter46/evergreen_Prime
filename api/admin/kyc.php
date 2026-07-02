@@ -8,6 +8,7 @@
 header('Content-Type: application/json');
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
+require_once dirname(__DIR__, 2) . '/includes/admin-audit-log.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(403);
     echo json_encode(['success' => false, 'error' => 'Forbidden']);
@@ -92,6 +93,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'error' => 'Failed to approve']);
             exit;
         }
+        admin_audit_log(
+            $pdo,
+            'approve',
+            'kyc',
+            $submissionId,
+            'Approved KYC submission #' . $submissionId . ' for user #' . (int) $sub['user_id'],
+            ['status' => 'pending'],
+            ['status' => 'approved', 'user_id' => (int) $sub['user_id']]
+        );
         echo json_encode(['success' => true, 'data' => ['message' => 'KYC approved']]);
         exit;
     }
@@ -111,6 +121,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'error' => 'Failed to reject']);
             exit;
         }
+        admin_audit_log(
+            $pdo,
+            'reject',
+            'kyc',
+            $submissionId,
+            'Rejected KYC submission #' . $submissionId . ' for user #' . (int) $sub['user_id'],
+            ['status' => 'pending'],
+            ['status' => 'rejected', 'reason' => $reason, 'user_id' => (int) $sub['user_id']]
+        );
         echo json_encode(['success' => true, 'data' => ['message' => 'KYC rejected']]);
         exit;
     }

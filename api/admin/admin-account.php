@@ -7,6 +7,7 @@
 header('Content-Type: application/json');
 
 require_once dirname(__DIR__, 2) . '/includes/session-bootstrap.php';
+require_once dirname(__DIR__, 2) . '/includes/admin-audit-log.php';
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -89,5 +90,16 @@ $pdo->prepare('UPDATE users SET ' . implode(', ', $updates) . ' WHERE id = ?')->
 if ($newEmail !== '') {
     $_SESSION['email'] = $newEmail;
 }
+
+admin_audit_log(
+    $pdo,
+    'update',
+    'user',
+    $userId,
+    'Updated admin account #' . $userId,
+    ['email' => $admin['email']],
+    ['email' => $newEmail !== '' ? $newEmail : $admin['email']],
+    ['password_changed' => $newPassword !== '' && strlen($newPassword) >= 8]
+);
 
 echo json_encode(['success' => true, 'data' => ['message' => 'Account updated']]);
